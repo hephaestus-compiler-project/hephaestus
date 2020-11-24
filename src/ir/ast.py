@@ -70,6 +70,17 @@ class StringConstant(Constant):
         visitor.visitStringConstant(self)
 
 
+class Identifier(Expr):
+    def __init__(self, name):
+        self.name = name
+
+    def accept(self, visitor):
+        visitor.visitIdentifier(self)
+
+    def __str__(self):
+        return str(self.name)
+
+
 class Conditional(Expr):
     def __init__(self, cond, true_branch, false_branch):
         self.cond = cond,
