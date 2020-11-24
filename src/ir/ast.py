@@ -7,6 +7,37 @@ class Node(object):
         raise NotImplementedError('accept() must be implemented')
 
 
+class Declaration(Node):
+    pass
+
+
+class FieldDeclaration(Declaration):
+    def __init__(self, name, field_type):
+        self.name = name
+        self.field_type = field_type
+
+    def accept(self, visitor):
+        visitor.visitFieldDeclaration(self)
+
+    def __str__(self):
+        return str(self.name) + ": " + str(self.type)
+
+
+class ClassDeclaration(Declaration):
+    def __init__(self, name, superclasses, fields=[], functions=[]):
+        self.name = name
+        self.superclasses = superclasses
+        self.fields = fields
+        self.functions = functions
+
+    @property
+    def attributes(self):
+        return self.fields + self.functions
+
+    def accept(self, visitor):
+        visitor.visitClassDeclaration(self)
+
+
 class Expr(Node):
     pass
 
@@ -136,6 +167,18 @@ class ArithExpr(BinaryOp):
 
     def accept(self, visitor):
         visitor.visitArithExr(self)
+
+
+class New(Expr):
+    def __init__(self, class_name, args):
+        self.class_name = class_name
+        self.args = args
+
+    def accept(self, visitor):
+        visitor.visitNew(self)
+
+    def __str__(self):
+        return "new " + str(self.class_name) + "(" + self.args.join(",") + ")"
 
 
 class Statement(Node):
