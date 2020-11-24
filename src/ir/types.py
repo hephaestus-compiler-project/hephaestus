@@ -9,18 +9,23 @@ class Type(object):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
     def get_supertypes(self):
-        """Return all supertypes of a type.
-        """
-        supertypes = list(self.__class__.mro())
-        supertypes.remove(self.__class__)
-        supertypes.remove(object)
-        return tuple(supertypes)
+        raise NotImplementedError("You have to implement 'get_supertypes()'")
 
 
 class Builtin(Type):
 
     def __str__(self):
         return str(self.name) + "(builtin)"
+
+    def is_subtype(self, t):
+        return t.__class__ in self.get_supertypes()
+
+    def get_supertypes(self):
+        supertypes = list(self.__class__.mro())
+        supertypes.remove(object)
+        supertypes.remove(Type)
+        supertypes.remove(Builtin)
+        return tuple(supertypes)
 
 
 class Classifier(Type):
@@ -34,6 +39,9 @@ class SimpleClassifier(Classifier):
 
     def __str__(self):
         return self.name + ": " + self.supertypes.join(", ")
+
+    def get_supertypes(self):
+        return self.supertypes
 
     def is_subtype(self, t):
         return any(s.is_subtype(t) for s in self.supertypes)

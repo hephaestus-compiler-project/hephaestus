@@ -5,9 +5,6 @@ class AnyType(Builtin):
     def __init__(self):
         super(AnyType, self).__init__("Any")
 
-    def is_subtype(self, t):
-        return isinstance(t, AnyType)
-
 
 class NothingType(Builtin):
     def __init__(self):
@@ -17,20 +14,14 @@ class NothingType(Builtin):
         return True
 
 
-class UnitType(Builtin):
+class UnitType(AnyType):
     def __init__(self):
-        super(UnitType, self).__init__("Unit")
-
-    def is_subtype(self, t):
-        return isinstance(t, AnyType) or isinstance(t, UnitType)
+        Builtin.__init__(self, "Unit")
 
 
-class NumberType(Builtin):
+class NumberType(AnyType):
     def __init__(self):
-        super(NumberType, self).__init__("Number")
-
-    def is_subtype(self, t):
-        return isinstance(t, AnyType) or isinstance(t, NumberType)
+        Builtin.__init__(self, "Number")
 
 
 class IntegerType(NumberType):
@@ -61,20 +52,14 @@ class DoubleType(NumberType):
     def __init__(self):
         self.name = "Double"
 
-class CharType(Builtin):
+class CharType(AnyType):
     def __init__(self):
-        super(CharType, self).__init__("Char")
-
-    def is_subtype(self, t):
-        return isinstance(t, AnyType) or isinstance(t, CharType)
+        Builtin.__init__(self, "Char")
 
 
-class StringType(Builtin):
+class StringType(AnyType):
     def __init__(self):
-        super(StringType, self).__init__("String")
-
-    def is_subtype(self, t):
-        return isinstance(t, AnyType) or isinstance(t, StringType)
+        Builtin.__init__(self, "String")
 
 
 Any = AnyType()
