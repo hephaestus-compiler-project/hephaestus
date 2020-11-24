@@ -8,6 +8,14 @@ class Type(object):
     def is_subtype(self, t):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
+    def supertypes(self):
+        """Return all supertypes of a type.
+        """
+        supertypes = list(self.__class__.mro())
+        supertypes.remove(self.__class__)
+        supertypes.remove(object)
+        return tuple(supertypes)
+
 
 class Builtin(Type):
 
