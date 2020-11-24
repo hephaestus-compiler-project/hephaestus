@@ -4,6 +4,15 @@ import os
 import sys
 
 
+
+def is_number(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
+
 def random_string(length=5):
     return ''.join(random.sample(string.ascii_letters + string.digits, length))
 
