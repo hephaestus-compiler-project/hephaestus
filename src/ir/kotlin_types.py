@@ -27,7 +27,7 @@ class UnitType(Builtin):
 
 class NumberType(Builtin):
     def __init__(self):
-        super(UnitType, self).__init__("Number")
+        super(NumberType, self).__init__("Number")
 
     def is_subtype(self, t):
         return isinstance(t, AnyType) or isinstance(t, NumberType)
@@ -63,7 +63,7 @@ class DoubleType(NumberType):
 
 class CharType(Builtin):
     def __init__(self):
-        super(UnitType, self).__init__("Char")
+        super(CharType, self).__init__("Char")
 
     def is_subtype(self, t):
         return isinstance(t, AnyType) or isinstance(t, CharType)
@@ -71,7 +71,7 @@ class CharType(Builtin):
 
 class StringType(Builtin):
     def __init__(self):
-        super(UnitType, self).__init__("String")
+        super(StringType, self).__init__("String")
 
     def is_subtype(self, t):
         return isinstance(t, AnyType) or isinstance(t, StringType)
