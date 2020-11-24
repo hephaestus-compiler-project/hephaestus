@@ -11,6 +11,9 @@ class Type(object):
     def get_supertypes(self):
         raise NotImplementedError("You have to implement 'get_supertypes()'")
 
+    def not_related(self, t):
+        return not(self.is_subtype(t) or t.is_subtype(self))
+
 
 class Builtin(Type):
 
