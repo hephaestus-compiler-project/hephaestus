@@ -1,4 +1,4 @@
-from src.ast.types import Builtin
+from src.ir.types import Builtin
 
 
 class AnyType(Builtin):
