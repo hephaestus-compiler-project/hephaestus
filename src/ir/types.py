@@ -8,7 +8,7 @@ class Type(object):
     def is_subtype(self, t):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
-    def supertypes(self):
+    def get_supertypes(self):
         """Return all supertypes of a type.
         """
         supertypes = list(self.__class__.mro())
