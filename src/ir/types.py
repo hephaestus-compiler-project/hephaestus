@@ -41,7 +41,8 @@ class SimpleClassifier(Classifier):
         self.supertypes = supertypes
 
     def __str__(self):
-        return self.name + ": " + self.supertypes.join(", ")
+        print(self.supertypes)
+        return self.name + ": " + ', '.join(map(str, self.supertypes))
 
     def get_supertypes(self):
         return self.supertypes
@@ -58,5 +59,9 @@ class Function(Classifier):
         self.ret_type = ret_type
 
     def __str__(self):
-        return self.name + "(" + self.param_types.join(",") +") -> " + \
-            str(self.ret_type)
+        return self.name + "(" + ','.join(map(str, self.param_types)) +\
+            ") -> " + str(self.ret_type)
+
+    def is_subtype(self, t):
+        # TODO
+        return False

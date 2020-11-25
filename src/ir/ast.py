@@ -16,7 +16,7 @@ class Program(Node):
         visitor.visitProgram(self)
 
     def __str__(self):
-        return self.declarations.join("\n\n")
+        return "\n\n".join(map(str, self.declarations))
 
 
 class Block(Node):
@@ -27,7 +27,7 @@ class Block(Node):
         visitor.visitBlock(self)
 
     def __str__(self):
-        "{\n  {}\n}".format(self.body.join("\n  "))
+        return "{{\n  {}\n}}".format("\n  ".join(map(str, self.body)))
 
 
 class Declaration(Node):
@@ -52,7 +52,7 @@ class VariableDeclaration(Declaration):
             return "val " + self.name + " = " + str(self.expr)
         else:
             return "val " + self.name + ": " + str(self.var_type) + \
-                " = " + self.expr
+                " = " + str(self.expr)
 
 
 class FieldDeclaration(Declaration):
@@ -64,10 +64,10 @@ class FieldDeclaration(Declaration):
         visitor.visitFieldDeclaration(self)
 
     def get_type(self):
-        return self.var_type
+        return self.field_type
 
     def __str__(self):
-        return str(self.name) + ": " + str(self.type)
+        return str(self.name) + ": " + str(self.field_type)
 
 
 class ClassDeclaration(Declaration):
@@ -75,11 +75,11 @@ class ClassDeclaration(Declaration):
     INTERFACE = 1
     ABSTRACT = 2
 
-    def __init__(self, name, superclasses, class_type=self.REGULAR,
+    def __init__(self, name, superclasses, class_type=None,
                  fields=[], functions=[]):
         self.name = name
         self.superclasses = superclasses
-        self.class_type = class_type
+        self.class_type = class_type or self.REGULAR
         self.fields = fields
         self.functions = functions
 
@@ -100,8 +100,10 @@ class ClassDeclaration(Declaration):
             prefix = "interface"
         else:
             prefix = "abstract class"
-        return "{} {} {\n  {}\n  {}}".format(
-            prefix, self.name, self.fields.join("\n  "), self.functions("\n  ")
+        return "{} {} {{\n  {}\n  {} }}".format(
+            prefix, self.name,
+            "\n  ".join(map(str, self.fields)),
+            "\n  ".join(map(str, self.functions))
         )
 
 
@@ -129,7 +131,7 @@ class FunctionDeclaration(Declaration):
     EXPRESSION_FUNC = 0
     BLOCK_FUNC = 1
 
-    def __init__(self, name, params, ret_type, body, body_type):
+    def __init__(self, name, params, ret_type, body, body_type=BLOCK_FUNC):
         self.name = name
         self.params = params
         self.ret_type = ret_type
@@ -141,15 +143,15 @@ class FunctionDeclaration(Declaration):
 
     def get_type(self):
         return types.Function(
-            name, [p.get_type() for p in self.params], ret_type)
+            self.name, [p.get_type() for p in self.params], self.ret_type)
 
     def __str__(self):
         if self.ret_type is None:
             return "fun {}({}) =\n  {}".format(
-                self.name, self.params.join(","), str(self.body))
+                self.name, ",".join(map(str, self.params)), str(self.body))
         else:
             return "fun {}({}): {} =\n  {}".format(
-                self.name, self.params.join(","), str(self.ret_type),
+                self.name, ",".join(map(str, self.params)), str(self.ret_type),
                 str(self.body))
 
 
@@ -170,6 +172,7 @@ class IntegerConstant(Constant):
     def __init__(self, literal):
         assert isinstance(literal, int) or isinstance(literal, long), (
             'Integer literal must either int or long')
+        super(IntegerConstant, self).__init__(literal)
 
     def accept(self, visitor):
         visitor.visitIntegerConstant(self)
@@ -206,14 +209,20 @@ class CharConstant(Constant):
     def __init__(self, literal):
         assert len(literal) == 1, (
             'Character literal must be a single character')
+        super(CharConstant, self).__init__(literal)
 
     def accept(self, visitor):
         visitor.visitCharConstant(self)
 
+    def __str__(self):
+        return "'{}'".format(self.literal)
 
 class StringConstant(Constant):
     def accept(self, visitor):
         visitor.visitStringConstant(self)
+
+    def __str__(self):
+        return '"{}"'.format(self.literal)
 
 
 class Variable(Expr):
@@ -237,7 +246,7 @@ class Conditional(Expr):
         visitor.visitConditional(self)
 
     def __str__(self):
-        "if ({})\n  {}\nelse\n  {}".format(
+        return "if ({})\n  {}\nelse\n  {}".format(
             str(self.cond), str(self.true_branch), str(self.false_branch))
 
 
@@ -293,7 +302,8 @@ class New(Expr):
         visitor.visitNew(self)
 
     def __str__(self):
-        return "new " + str(self.class_name) + "(" + self.args.join(",") + ")"
+        return "new " + str(self.class_name) + "(" + \
+            ", ".join(map(str, self.args)) + ")"
 
 
 class FieldAccess(Expr):
@@ -319,9 +329,10 @@ class FunctionCall(Expr):
 
     def __str__(self):
         if self.receiver is None:
-            return self.func + "(" + self.args.join(", ") + ")"
+            return self.func + "(" + ", ".join(map(str, self.args)) + ")"
         else:
-            return str(self.receiver) + ".(" + self.args.join(", ") + ")"
+            return str(self.receiver) + ".(" + \
+                ", ".join(map(str, self.args)) + ")"
 
 
 class Assignment(Expr):

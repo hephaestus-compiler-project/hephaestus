@@ -2,7 +2,8 @@ import os
 from random import Random
 import string
 
-from src.ir import ast
+from src import utils
+from src.ir import ast, types
 from src.ir import kotlin_types as kt
 
 
@@ -20,6 +21,7 @@ class Context(object):
                 'vars': {},
                 'classes': {}
             }
+            self._context[namespace][entity][name] = value
 
     def add_func(self, namespace, func_name, func):
         self._add_entity(namespace, 'funcs', func_name, func)
@@ -34,15 +36,15 @@ class Context(object):
         len_namespace = len(namespace)
         assert len_namespace >= 1
         if len_namespace == 1 or only_current:
-            return self._context.get(namespace, {}).get(decl_type)
-        start = namespace[0]
+            return self._context.get(namespace, {}).get(decl_type, {})
+        start = (namespace[0],)
         decls = {}
         for n in namespace[1:]:
             decl = self._context.get(start, {}).get(decl_type)
             if decl is not None:
                 decls.update(decl)
-            start = start + (n, )
-        return decls or None
+            start = start + (n,)
+        return decls
 
     def get_funcs(self, namespace, only_current=False):
         return self._get_declarations(namespace, 'funcs', only_current)
@@ -55,28 +57,12 @@ class Context(object):
 
 
 class Generator(object):
-    EXPR_NODES = {
-        ast.IntegerConstant,
-        ast.RealConstant,
-        ast.BooleanConstant,
-        ast.CharConstant,
-        ast.StringConstant,
-        ast.Variable,
-        ast.Conditional,
-        ast.LogicalExpr,
-        ast.EqualityExpr,
-        ast.ComparisonExpr,
-        ast.ArithExpr,
-        ast.New,
-        ast.FieldAccess,
-        ast.Assignment
-    }
 
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
     WORDS = utils.read_lines(os.path.join(resource_path, 'words'))
 
-    BUILTIN_TYPES = {
+    BUILTIN_TYPES = [
         kt.Any,
         kt.Integer,
         kt.Short,
@@ -86,7 +72,7 @@ class Generator(object):
         kt.Double,
         kt.Boolean,
         kt.String
-    }
+    ]
 
     def __init__(self, max_depth=5, max_fields=3, max_funcs=3, max_params=5):
         self.context = Context()
@@ -104,25 +90,25 @@ class Generator(object):
             return w
         if ident_type == 'lower':
             return w.lower()
-        return w.capitalize
+        return w.capitalize()
 
-    def gen_integer_constant(self):
+    def gen_integer_constant(self, expr_type=None):
         return ast.IntegerConstant(self.r.randint(-100, 100))
 
-    def gen_real_constant(self):
+    def gen_real_constant(self, expr_type=None):
         prefix = str(self.r.randint(0, 100))
         suffix = str(self.r.randint(0, 1000))
         sign = self.r.choice(['', '-'])
         return ast.RealConstant(sign + prefix + "." + suffix)
 
-    def gen_bool_constant(self):
-        return ast.BooleanConstant(self.r.choice['true', 'false'])
+    def gen_bool_constant(self, expr_type=None):
+        return ast.BooleanConstant(self.r.choice(['true', 'false']))
 
-    def gen_char_constant(self):
+    def gen_char_constant(self, expr_type=None):
         return ast.CharConstant(self.r.choice(
             string.ascii_letters + string.digits))
 
-    def gen_string_constant(self):
+    def gen_string_constant(self, expr_type=None):
         return ast.StringConstant(self.gen_identifier())
 
     def gen_field_decl(self):
@@ -130,42 +116,49 @@ class Generator(object):
         field_type = self.gen_type()
         return ast.FieldDeclaration(name, field_type)
 
+    def gen_param_decl(self):
+        name = self.gen_identifier('lower')
+        param_type = self.gen_type()
+        return ast.ParameterDeclaration(name, param_type)
+
     def gen_func_decl(self, etype=None):
         func_name = self.gen_identifier('lower')
+        initial_namespace = self.namespace
         self.namespace += (func_name,)
         self.depth += 1
         params = []
         for _ in range(self.r.randint(0, self.max_params)):
-            p = self.gen_param_declaration()
+            p = self.gen_param_decl()
             params.append(p)
-            self.context.add_var(self.namespace, p.param_name, p)
-        ret_type = etype or self.get_type()
-        decls = self.context.get_vars(self.namespace, True).values() + \
-            self.context.get_classes(self.namespace, True).values() + \
-            self.context.get_funcs(self.namespace, True).values()
+            self.context.add_var(self.namespace, p.name, p)
+        ret_type = etype or self.gen_type()
         expr = self.generate_expr(ret_type)
+        decls = list(self.context.get_vars(self.namespace, True).values()) + \
+            list(self.context.get_classes(self.namespace, True).values()) + \
+            list(self.context.get_funcs(self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
-        body = ast.Body(decls + [expr])
+        body = ast.Block(decls + [expr])
         self.depth -= 1
-        self.namespace = self.namespace[:-1]
+        self.namespace = initial_namespace
         return ast.FunctionDeclaration(func_name, params, ret_type, body)
 
     def gen_class_decl(self):
         class_name = self.gen_identifier('capitalize')
+        initial_namespace = self.namespace
         self.namespace += (class_name,)
         self.depth += 1
         fields = []
         for _ in range(self.r.randint(0, self.max_fields)):
             f = self.gen_field_decl()
             fields.append(f)
-            self.context.add_var(self.namespace, f.var_name, f)
+            self.context.add_var(self.namespace, f.name, f)
         funcs = []
         for _ in range(self.r.randint(0, self.max_funcs)):
             f = self.gen_func_decl()
             funcs.append(f)
-            self.context.add_func(self.namespace, f.func_name, f)
-        self.namespace = self.namespace[:-1]
+            self.context.add_func(('global',), f.name, f)
+        self.namespace = initial_namespace
         self.depth -= 1
         return ast.ClassDeclaration(
             class_name,
@@ -184,8 +177,9 @@ class Generator(object):
             # Not class declaration are available in the current namespace
             # so create a new one.
             decl = self.gen_class_decl()
+            self.context.add_class(('global',), decl.name, decl)
             return decl.get_type()
-        return self.r.choice(class_decls.values()).get_type()
+        return self.r.choice(list(class_decls.values())).get_type()
 
     def gen_variable_decl(self, etype=None):
         var_type = etype if etype is not None else self.gen_type()
@@ -206,11 +200,11 @@ class Generator(object):
         return ast.Conditional(cond, true_expr, false_expr)
 
     def gen_func_call(self, etype):
-        funcs = self.context.get_funcs(self.namespace)
-        funcs = [f for f in funcs if func.get_type().is_subtype(etype)]
+        funcs = self.context.get_funcs(self.namespace).values()
+        funcs = [f for f in funcs if f.get_type().is_subtype(etype)]
         if not funcs:
             func = self.gen_func_decl(etype)
-            self.context.add_func(self.namespace, func.name, func)
+            self.context.add_func(('global',), func.name, func)
             funcs.append(func)
         f = self.r.choice(funcs)
         args = []
@@ -222,10 +216,10 @@ class Generator(object):
 
     def gen_new(self, etype):
         news = {
-            Any: ast.New('Any', args=[]),
-            Unit: ast.New('Unit', args=[])
+            kt.Any: ast.New('Any', args=[]),
+            kt.Unit: ast.New('Unit', args=[])
         }
-        con = new.get(etype)
+        con = news.get(etype)
         if con is not None:
             return con
         class_decl = self.context.get_classes(self.namespace).get(etype.name)
@@ -243,29 +237,31 @@ class Generator(object):
         if etype is not None:
             # If we need to use a variable of a specific types, then filter
             # all variables that match this specific type.
-            variables = [v for v in variables
-                         if v.var_type and v.var_type.is_subtype(etype)]
+            variables = [v for v in variables.values()
+                         if v.get_type().is_subtype(etype)]
         if not variables:
             # If there are not variable declarations that match our criteria,
             # we have to create a new variable declaration.
             var_decl = self.gen_variable_decl(etype)
-            self.context.get_vars(namespace, var_decl.name, var_decl)
+            self.context.add_var(self.namespace, var_decl.name, var_decl)
             return ast.Variable(var_decl.name)
-        return ast.Variable(self.r.choice[variables.keys()])
+        return ast.Variable(self.r.choice([v.name for v in variables]))
 
     def generate_main_func(self):
+        initial_namespace = self.namespace
         self.namespace += ('main', )
         self.depth += 1
         expr = self.generate_expr()
         self.depth -= 1
         main_func = ast.FunctionDeclaration(
-            "main", params=[], ret_type=kt.Unit, body=[expr])
+            "main", params=[], ret_type=kt.Unit, body=ast.Block([expr]))
+        self.namespace = initial_namespace
         return main_func
 
-    def generate_expr(self, expr_type):
+    def generate_expr(self, expr_type=None):
         leaf_canidates = [
             self.gen_new,
-            self.variable
+            self.gen_variable
         ]
         constant_candidates = {
             kt.Integer: self.gen_integer_constant,
@@ -288,26 +284,31 @@ class Generator(object):
                 return gen_func()
             return self.r.choice(leaf_canidates)(expr_type)
         self.depth += 1
-        return self.r.choice(leaf_canidates + other_candidates)(expr_type)
+        con_candidate = constant_candidates.get(expr_type)
+        if con_candidate is not None:
+            candidates = [self.gen_variable, con_candidate]
+        else:
+            candidates = leaf_canidates
+        return self.r.choice(candidates + other_candidates)(expr_type)
 
     def gen_top_level_declaration(self):
-        candidates = {
-            (self.gen_variable_decl, context.add_var),
-            (self.gen_class_decl, context.add_class),
-            (self.gen_func_decl, context.add_func)
-        }
-        gen_func, upd_conext = self.r.choice(candidates)
+        candidates = [
+            (self.gen_variable_decl, self.context.add_var),
+            (self.gen_class_decl, self.context.add_class),
+            (self.gen_func_decl, self.context.add_func)
+        ]
+        gen_func, upd_context = self.r.choice(candidates)
         decl = gen_func()
-        upd_context(self.namespace, gen_func.name, gen_func)
+        upd_context(self.namespace, decl.name, decl)
 
     def generate(self):
         for _ in range(0, self.r.randint(0, 10)):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         decls = sum([
-            self.context.get_vars(self.namespace, True).values(),
-            self.context.get_funcs(self.namespace, True).values(),
-            self.context.get_classes(self.namespace, True).values()
-        ])
+            list(self.context.get_vars(self.namespace, True).values()),
+            list(self.context.get_funcs(self.namespace, True).values()),
+            list(self.context.get_classes(self.namespace, True).values())
+        ], [])
         decls.append(main_func)
-        return Program(decls)
+        return ast.Program(decls)

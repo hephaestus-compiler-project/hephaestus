@@ -81,16 +81,17 @@ class Executor:
         counter = 1 if self.args.stop_cond == "number" else time.time() + self.args.seconds
         while True:
             p = self.generator.generate()
-            for _ in range(self.args.rounds):
-                temp_p = p
-                for _ in range(self.args.transformations):
-                    p1 = self.transformer.transform(temp_p)
-                    temp_p = p1
-                p2 = self.transformer.inject_fault(p1)
-                program_str = self.translator.dummy_concretize_random(p2)
-                status, _, filename = self._compile(program_str)
-                if not status:
-                    self._report(filename)
+            print(str(p))
+            #for _ in range(self.args.rounds):
+            #    temp_p = p
+            #    for _ in range(self.args.transformations):
+            #        p1 = self.transformer.transform(temp_p)
+            #        temp_p = p1
+            #    p2 = self.transformer.inject_fault(p1)
+            #    program_str = self.translator.dummy_concretize_random(p2)
+            #    status, _, filename = self._compile(program_str)
+            #    if not status:
+            #        self._report(filename)
             # Check stop_cond
             if self.args.stop_cond == "number":
                 counter += 1
