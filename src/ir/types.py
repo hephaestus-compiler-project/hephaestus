@@ -48,3 +48,15 @@ class SimpleClassifier(Classifier):
 
     def is_subtype(self, t):
         return any(s.is_subtype(t) for s in self.supertypes)
+
+
+class Function(Classifier):
+    # FIXME: Represent function as a parameterized type
+    def __init__(self, name, args_type, ret_type):
+        super(Function, self).__init__(name)
+        self.arg_types = arg_types
+        self.ret_type = ret_type
+
+    def __str__(self):
+        return self.name + "(" + self.arg_types.join(",") +") -> " + \
+            str(self.ret_type)

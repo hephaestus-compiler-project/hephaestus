@@ -7,8 +7,44 @@ class Node(object):
         raise NotImplementedError('accept() must be implemented')
 
 
+class Program(Node):
+    def __init__(self, declarations):
+        self.declarations = declarations
+
+    def accept(self, visitor):
+        visitor.visitProgram(self)
+
+
+class Block(Node):
+    def __init__(self, body):
+        self.body = body
+
+    def accept(self, visitor):
+        visitor.visitBlock(self)
+
+    def __str__(self):
+        "{\n  {}\n}".format(self.body.join("\n  "))
+
+
 class Declaration(Node):
     pass
+
+
+class VariableDeclaration(Declaration):
+    def __init__(self, name, expr, var_type=None):
+        self.name = name
+        self.expr = expr
+        self.var_type = var_type
+
+    def accept(self, visitor):
+        visitor.visitVariableDeclaration(self)
+
+    def __str__(self):
+        if self.var_type is None:
+            return "val " + self.name + " = " + str(self.expr)
+        else:
+            return "val " + self.name + ": " + str(self.var_type) + \
+                " = " + self.expr
 
 
 class FieldDeclaration(Declaration):
@@ -24,9 +60,15 @@ class FieldDeclaration(Declaration):
 
 
 class ClassDeclaration(Declaration):
-    def __init__(self, name, superclasses, fields=[], functions=[]):
+    REGULAR = 0
+    INTERFACE = 1
+    ABSTRACT = 2
+
+    def __init__(self, name, superclasses, class_type=self.REGULAR,
+                 fields=[], functions=[]):
         self.name = name
         self.superclasses = superclasses
+        self.class_type = class_type
         self.fields = fields
         self.functions = functions
 
@@ -36,6 +78,58 @@ class ClassDeclaration(Declaration):
 
     def accept(self, visitor):
         visitor.visitClassDeclaration(self)
+
+    def __str__(self):
+        if self.class_type == self.REGULAR:
+            prefix = "class"
+        elif self.class_type == self.INTERFACE:
+            prefix = "interface"
+        else:
+            prefix = "abstract class"
+        return "{} {} {\n  {}\n  {}}".format(
+            prefix, self.name, self.fields.join("\n  "), self.functions("\n  ")
+        )
+
+
+class ParameterDeclaration(Declaration):
+    def __init__(self, name, param_type, default=None):
+        self.name = name
+        self.param_type = param_type
+        self.default = default
+
+    def accept(self, visitor):
+        visitor.visitParameterDeclaration(self)
+
+    def __str__(self):
+        if self.default is None:
+            return self.name + ": " + str(self.param_type)
+        else:
+            return self.name + ": " + str(
+                self.param_type) + " = " + str(self.expr)
+
+
+class FunctionDeclaration(Declaration):
+    EXPRESSION_FUNC = 0
+    BLOCK_FUNC = 1
+
+    def __init__(self, name, params, ret_type, body, body_type):
+        self.name = name
+        self.params = params
+        self.ret_type = ret_type
+        self.body = body
+        self.body_type = body_type
+
+    def accept(self, visitor):
+        visitor.visitFunctionDeclaration(self)
+
+    def __str__(self):
+        if self.ret_type is None:
+            return "fun {}({}) =\n  {}".format(
+                self.name, self.params.join(","), str(self.body))
+        else:
+            return "fun {}({}): {} =\n  {}".format(
+                self.name, self.params.join(","), str(self.ret_type),
+                str(self.body))
 
 
 class Expr(Node):
@@ -101,12 +195,12 @@ class StringConstant(Constant):
         visitor.visitStringConstant(self)
 
 
-class Identifier(Expr):
+class Variable(Expr):
     def __init__(self, name):
         self.name = name
 
     def accept(self, visitor):
-        visitor.visitIdentifier(self)
+        visitor.visitVariable(self)
 
     def __str__(self):
         return str(self.name)
@@ -181,20 +275,25 @@ class New(Expr):
         return "new " + str(self.class_name) + "(" + self.args.join(",") + ")"
 
 
-class Statement(Node):
-    pass
+class FieldAccess(Expr):
+    def __init__(self, expr, field):
+        self.expr = expr
+        self.field = field
+
+    def visit(self, visitor):
+        visitor.visitFieldAccess(self)
+
+    def __str__(self):
+        return str(self.expr) + "." + self.field
 
 
-class Assignment(Statement):
-    def __init__(self, var_name, var_type, expr):
+class Assignment(Expr):
+    def __init__(self, var_name, expr):
         self.var_name = var_name
-        self.var_type = var_type
         self.expr = expr
 
     def accept(self, visitor):
         visitor.visitAssignment(self)
 
-
-class Program:
-    def __init__(self):
-        pass
+    def __str__(self):
+        return str(self.var_name) + " = " + str(self.expr)
