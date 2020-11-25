@@ -287,6 +287,22 @@ class FieldAccess(Expr):
         return str(self.expr) + "." + self.field
 
 
+class FunctionCall(Expr):
+    def __init__(self, func, args, receiver=None):
+        self.func = func
+        self.args = args
+        self.receiver = receiver
+
+    def visit(self, visitor):
+        visitor.visitFunctionCall(self)
+
+    def __str__(self):
+        if self.receiver is None:
+            return self.func + "(" + self.args.join(", ") + ")"
+        else:
+            return str(self.receiver) + ".(" + self.args.join(", ") + ")"
+
+
 class Assignment(Expr):
     def __init__(self, var_name, expr):
         self.var_name = var_name
