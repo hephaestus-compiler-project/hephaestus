@@ -15,6 +15,9 @@ class Program(Node):
     def accept(self, visitor):
         visitor.visitProgram(self)
 
+    def __str__(self):
+        return self.declarations.join("\n\n")
+
 
 class Block(Node):
     def __init__(self, body):
