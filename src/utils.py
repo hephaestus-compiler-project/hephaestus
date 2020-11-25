@@ -23,6 +23,14 @@ def safe_random_string(length=5, blacklist=[]):
         if r not in blacklist:
             return r
 
+def read_lines(path):
+    lines = []
+    with open(path, 'r') as f:
+        for line in f:
+            lines.append(line.rstrip('\n'))
+    return lines
+
+
 def mkdir(directory_name):
     """Safe mkdir
     """
