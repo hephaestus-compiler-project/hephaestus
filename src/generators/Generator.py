@@ -253,19 +253,6 @@ class Generator(object):
             return ast.Variable(var_decl.name)
         return ast.Variable(self.r.choice[variables.keys()])
 
-    def get_expr_nodes_candidates(self, expr_type):
-        expr_nodes = set(self.EXPR_NODES)
-        if expr_type is None:
-            # Do not generate trivial expressions.
-            expr_nodes = {n for n in expr_nodes
-                          if n not in [
-                              ast.IntegerConstant,
-                              ast.RealConstant,
-                              ast.CharConstant,
-                              ast.StringConstant]
-                          }
-        pass
-
     def generate_main_func(self):
         self.namespace += ('main', )
         self.depth += 1
