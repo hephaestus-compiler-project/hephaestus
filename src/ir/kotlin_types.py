@@ -62,6 +62,11 @@ class StringType(AnyType):
         Builtin.__init__(self, "String")
 
 
+class BooleanType(AnyType):
+    def __init__(self):
+        Builtin.__init__(self, "Boolean")
+
+
 Any = AnyType()
 Nothing = NothingType()
 Unit = UnitType()
@@ -74,3 +79,4 @@ Float = FloatType()
 Double = DoubleType()
 Char = CharType()
 String = StringType()
+Boolean = BooleanType()
