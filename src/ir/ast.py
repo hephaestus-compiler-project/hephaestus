@@ -235,11 +235,11 @@ class BinaryOp(Expr):
         return str(self.lexpr) + " " + self.operator + " " + str(self.rexpr)
 
 
-class BooleanExpr(BinaryOp):
+class LogicalExpr(BinaryOp):
     VALID_OPERATORS = ['&&', '||']
 
     def accept(self, visitor):
-        visitor.visitBooleanExr(self)
+        visitor.visitLogicalExpr(self)
 
 
 class EqualityExpr(BinaryOp):
