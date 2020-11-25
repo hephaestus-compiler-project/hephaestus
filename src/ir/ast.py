@@ -1,4 +1,5 @@
 from src import utils
+from src.ir import types
 
 
 class Node(object):
@@ -27,7 +28,8 @@ class Block(Node):
 
 
 class Declaration(Node):
-    pass
+    def get_type(self):
+        raise NotImplementedError('get_type() must be implemented')
 
 
 class VariableDeclaration(Declaration):
@@ -38,6 +40,9 @@ class VariableDeclaration(Declaration):
 
     def accept(self, visitor):
         visitor.visitVariableDeclaration(self)
+
+    def get_type(self):
+        return self.var_type
 
     def __str__(self):
         if self.var_type is None:
@@ -54,6 +59,9 @@ class FieldDeclaration(Declaration):
 
     def accept(self, visitor):
         visitor.visitFieldDeclaration(self)
+
+    def get_type(self):
+        return self.var_type
 
     def __str__(self):
         return str(self.name) + ": " + str(self.type)
@@ -79,6 +87,9 @@ class ClassDeclaration(Declaration):
     def accept(self, visitor):
         visitor.visitClassDeclaration(self)
 
+    def get_type(self):
+        return types.SimpleClassifier(self.name, supertypes=self.superclasses)
+
     def __str__(self):
         if self.class_type == self.REGULAR:
             prefix = "class"
@@ -99,6 +110,9 @@ class ParameterDeclaration(Declaration):
 
     def accept(self, visitor):
         visitor.visitParameterDeclaration(self)
+
+    def get_type(self):
+        return self.param_type
 
     def __str__(self):
         if self.default is None:
@@ -121,6 +135,10 @@ class FunctionDeclaration(Declaration):
 
     def accept(self, visitor):
         visitor.visitFunctionDeclaration(self)
+
+    def get_type(self):
+        return types.Function(
+            name, [p.get_type() for p in self.params], ret_type)
 
     def __str__(self):
         if self.ret_type is None:

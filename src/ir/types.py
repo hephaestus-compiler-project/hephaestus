@@ -52,11 +52,11 @@ class SimpleClassifier(Classifier):
 
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
-    def __init__(self, name, args_type, ret_type):
+    def __init__(self, name, param_types, ret_type):
         super(Function, self).__init__(name)
-        self.arg_types = arg_types
+        self.param_types = param_types
         self.ret_type = ret_type
 
     def __str__(self):
-        return self.name + "(" + self.arg_types.join(",") +") -> " + \
+        return self.name + "(" + self.param_types.join(",") +") -> " + \
             str(self.ret_type)
