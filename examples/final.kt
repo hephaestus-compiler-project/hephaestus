@@ -1,3 +1,9 @@
+// Transformation5 (Fault Injection): Replace value with a value that is not
+// subtype of the expected type.
+
+// In this example, we replace a string value with a value of type AnyClass.
+
+
 open class NewCls<in T> {
     open fun foo(t: T): Unit {}
 }

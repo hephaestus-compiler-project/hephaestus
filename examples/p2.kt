@@ -1,3 +1,13 @@
+// Transformation1: Create a type a constructor.
+
+// 1. Choose some random types defined in a class, and make them type parameters.
+// 2. Choose some random points where this class is used, and instantiate
+// the new type constructor by providing the concrrete types.
+
+// In this example, we converted class NewCls into a type constructor.
+// We then instantiated this type constructor at the following point:
+// class InString : NewCls<String> 
+
 open class NewCls<T> {
     open fun foo(t: T): Unit {}
 }

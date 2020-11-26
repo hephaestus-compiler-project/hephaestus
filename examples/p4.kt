@@ -1,3 +1,8 @@
+// Transformation4: Make function parameterized.
+//
+// Choose some random types in a function's signature and replace them
+// with type parameters.
+
 open class NewCls<T> {
     fun foo(t: T): Unit {}
 }
