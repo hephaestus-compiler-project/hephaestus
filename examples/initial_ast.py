@@ -12,19 +12,19 @@ foo_func = FunctionDeclaration(
 
 instring_cls = ClassDeclaration(
     "InString",
-    superclasses=[Any],
+    superclasses=[],
     class_type=ClassDeclaration.REGULAR,
     fields=[],
     functions=[foo_func]
 )
 
-select_body=Body(body=[
+select_body=Block(body=[
     FunctionCall(
         "foo",
         args=[StringConstant("foo")],
         receiver=FunctionCall(
             "select",
-            args=[Variable(a), Variable(b)],
+            args=[Variable('a'), Variable('a')],
             receiver=None
         )
     )
@@ -32,14 +32,14 @@ select_body=Body(body=[
 select_func = FunctionDeclaration(
     "select",
     params=[
-        ParameterDeclaration("x", Classifier(instring_cls.name, instring_cls.superclasses)),
-        ParameterDeclaration(x, Classifier(instring_cls.name, instring_cls.superclasses))
+        ParameterDeclaration("x", instring_cls.get_type()),
+        ParameterDeclaration('x', instring_cls.get_type())
     ],
     ret_type=None,
     body=select_body
 )
 
-main_body = Body(
+main_body = Block(
     body=[
         VariableDeclaration(
             "a",
@@ -48,7 +48,7 @@ main_body = Body(
         ),
         FunctionCall(
             "foo",
-            args=[Variable(a), Variable(a)]
+            args=[Variable('a'), Variable('a')]
         )
     ]
 )
