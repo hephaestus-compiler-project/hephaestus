@@ -35,6 +35,14 @@ class Classifier(Type):
     pass
 
 
+class Object(Classifier):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return "object " + self.name
+
+
 class SimpleClassifier(Classifier):
     def __init__(self, name, supertypes):
         super(SimpleClassifier, self).__init__(name)
@@ -56,7 +64,7 @@ class SimpleClassifier(Classifier):
 
 class ParameterizedClassifier(SimpleClassifier):
     def __init__(self, name, type_parameters, supertypes):
-        assert len(type_parameters) == 0, "type_parameters is empty"
+        assert len(type_parameters) != 0, "type_parameters is empty"
         super(ParameterizedClassifier, self).__init__(name, supertypes)
         self.type_parameters = type_parameters
 
@@ -68,15 +76,27 @@ class ParameterizedClassifier(SimpleClassifier):
             ', '.join(map(str, self.supertypes)))
 
 
+class ConcreteType(Type):
+    """Usually produce by ParameterizedClassifier
+    """
+    def __init__(self, name, types):
+        super(ConcreteType, self).__init__(name)
+        self.types = types
+
+    def __str__(self):
+        return "{} <{}>".format(self.name,
+                                ", ".join(map(str, self.types)))
+
+
 class TypeParameter(Type):
-    INVARIANT=0
-    COVARIANT=1
-    CONTRAVARIANT=2
+    INVARIANT = 0
+    COVARIANT = 1
+    CONTRAVARIANT = 2
 
     def __init__(self, name, variance=None, bound=None):
-        super(TypeParameter).__init__(name)
+        super(TypeParameter, self).__init__(name)
         self.variance = variance or self.INVARIANT
-        assert self.variance == 0 and bound is None, "Cannot set bound in invariant type parameter"
+        assert not (self.variance == 0 and bound is not None), "Cannot set bound in invariant type parameter"
         self.bound = bound
 
     def variance_to_string(self):
@@ -104,6 +124,21 @@ class Function(Classifier):
 
     def __str__(self):
         return self.name + "(" + ','.join(map(str, self.param_types)) +\
+            ") -> " + str(self.ret_type)
+
+    def is_subtype(self, t):
+        # TODO
+        return False
+
+class ParameterizedFunction(Function):
+    # FIXME: Represent function as a parameterized type
+    def __init__(self, name, type_parameters, param_types, ret_type):
+        super(ParameterizedFunction, self).__init__(name, param_types, ret_type)
+        self.type_parameters = type_parameters
+
+    def __str__(self):
+        return self.name + "<" ','.join(map(str, self.type_parameters)) + ">" + \
+            "(" + ','.join(map(str, self.param_types)) +\
             ") -> " + str(self.ret_type)
 
     def is_subtype(self, t):

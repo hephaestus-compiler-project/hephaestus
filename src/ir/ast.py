@@ -73,6 +73,17 @@ class FieldDeclaration(Declaration):
         return str(self.name) + ": " + str(self.field_type)
 
 
+class ObjectDecleration(Declaration):
+    def __init__(self, name):
+        self.name = name
+
+    def get_type(self):
+        return types.Object(self.name)
+
+    def __str__(self):
+        return "object " + self.name
+
+
 class ClassDeclaration(Declaration):
     REGULAR = 0
     INTERFACE = 1
@@ -104,8 +115,11 @@ class ClassDeclaration(Declaration):
         return "abstract class"
 
     def __str__(self):
-        return "{} {} {{\n  {}\n  {} }}".format(
+        superclasses = " : " + ", ".join(map(str, self.superclasses)) \
+            if len(self.superclasses) > 0 else ""
+        return "{} {}{} {{\n  {}\n  {} }}".format(
             self._get_prefix(), self.name,
+            superclasses,
             "\n  ".join(map(str, self.fields)),
             "\n  ".join(map(str, self.functions))
         )
@@ -118,14 +132,55 @@ class ParameterizedClassDeclaration(ClassDeclaration):
     """
     def __init__(self, name, type_parameters, superclasses, class_type=None,
             fields=[], functions=[]):
-        super(ParameterizedClassDeclaration).__init__(
-            name, superclasses, class_type, fields, functions)
+        super(ParameterizedClassDeclaration, self).__init__(
+            name, superclasses, class_type=class_type, fields=fields,
+            functions=functions)
         self.type_parameters = type_parameters
 
 
     def get_type(self):
         return types.ParameterizedClassifier(self.name, self.type_parameters,
                                              self.superclasses)
+
+    def __str__(self):
+        return "{} {}{} {{\n  {}\n  {} }}".format(
+            self._get_prefix(), self.name,
+            ", ".join(map(str, self.type_parameters)),
+            "\n  ".join(map(str, self.fields)),
+            "\n  ".join(map(str, self.functions))
+        )
+
+
+class TypeParameterDecleration(Declaration):
+    def __init__(self, name, variance=None, bound=None):
+        self.name = name
+        self.variance = variance
+        self.bound = bound
+
+    def childer(self):
+        return []
+
+    def get_type(self):
+        return types.TypeParameter(self.name, self.variance, self.bound)
+
+    def __str__(self):
+        return "<" + str(self.get_type()) + ">"
+
+
+class ConcreteTypeDecleration(Declaration):
+    def __init__(self, classifier, types):
+        self.classifier = classifier
+        self.name = classifier.name
+        self.types = types
+
+    def childer(self):
+        return []
+
+    def get_type(self):
+        return types.ConcreteType(self.name, self.types)
+
+    def __str__(self):
+        return "{}<{}>".format(self.name, ", ".join(map(str, self.types)))
 
 
 class ParameterDeclaration(Declaration):
@@ -152,12 +207,14 @@ class FunctionDeclaration(Declaration):
     EXPRESSION_FUNC = 0
     BLOCK_FUNC = 1
 
-    def __init__(self, name, params, ret_type, body, body_type=BLOCK_FUNC):
+    def __init__(self, name, params, ret_type, body, body_type=BLOCK_FUNC,
+                 keywords=[]):
         self.name = name
         self.params = params
         self.ret_type = ret_type
         self.body = body
         self.body_type = body_type
+        self.keywords = keywords
 
     def children(self):
         return self.params + [self.body]
@@ -167,11 +224,45 @@ class FunctionDeclaration(Declaration):
             self.name, [p.get_type() for p in self.params], self.ret_type)
 
     def __str__(self):
+        keywords = ""
+        if len(keywords) > 0:
+            keywords = " ".join(map(lambda x: x.name, self.keywords))
         if self.ret_type is None:
-            return "fun {}({}) =\n  {}".format(
+            return "{}fun {}({}) =\n  {}".format(
+                keywords,
                 self.name, ",".join(map(str, self.params)), str(self.body))
         else:
-            return "fun {}({}): {} =\n  {}".format(
+            return "{}fun {}({}): {} =\n  {}".format(
+                keywords,
+                self.name, ",".join(map(str, self.params)), str(self.ret_type),
+                str(self.body))
+
+class ParameterizedFunctionDeclaration(FunctionDeclaration):
+    EXPRESSION_FUNC = 0
+    BLOCK_FUNC = 1
+
+    def __init__(self, name, type_parameters, params, ret_type, body,
+                 body_type=BLOCK_FUNC, keywords=[]):
+        super(ParameterizedFunctionDeclaration, self).__init__(name, params,
+              ret_type, body, body_type, keywords)
+        self.type_parameters = type_parameters
+
+    def get_type(self):
+        return types.ParameterizedFunction(
+            self.name, type_parameters,
+            [p.get_type() for p in self.params], self.ret_type)
+
+    def __str__(self):
+        keywords = ""
+        if len(keywords) > 0:
+            keywords = " ".join(map(lambda x: x.name, self.keywords))
+        if self.ret_type is None:
+            return "{}fun<{}> {}({}) =\n  {}".format(
+                keywords, ",".join(map(str, self.type_parameters)),
+                self.name, ",".join(map(str, self.params)), str(self.body))
+        else:
+            return "{}fun<{}> {}({}): {} =\n  {}".format(
+                keywords, ",".join(map(str, self.type_parameters)),
                 self.name, ",".join(map(str, self.params)), str(self.ret_type),
                 str(self.body))
 
