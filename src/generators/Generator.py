@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import os
 from random import Random
 import string
@@ -17,9 +18,9 @@ class Context(object):
             self._context[namespace][entity][name] = value
         else:
             self._context[namespace] = {
-                'funcs': {},
-                'vars': {},
-                'classes': {}
+                'funcs': OrderedDict(),
+                'vars': OrderedDict(),
+                'classes': OrderedDict()
             }
             self._context[namespace][entity][name] = value
 
@@ -55,6 +56,10 @@ class Context(object):
     def get_classes(self, namespace, only_current=False):
         return self._get_declarations(namespace, 'classes', only_current)
 
+    def remove_namespace(self, namespace):
+        if namespace in self._context:
+            self._context.pop(namespace)
+
 
 class Generator(object):
 
@@ -68,7 +73,7 @@ class Generator(object):
         kt.Short,
         kt.Long,
         kt.Char,
-        kt.Float,
+        #kt.Float,
         kt.Double,
         kt.Boolean,
         kt.String
@@ -140,6 +145,7 @@ class Generator(object):
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
         self.depth -= 1
+        self.context.remove_namespace(self.namespace)
         self.namespace = initial_namespace
         return ast.FunctionDeclaration(func_name, params, ret_type, body)
 
@@ -157,7 +163,8 @@ class Generator(object):
         for _ in range(self.r.randint(0, self.max_funcs)):
             f = self.gen_func_decl()
             funcs.append(f)
-            self.context.add_func(('global',), f.name, f)
+            self.context.add_func(self.namespace, f.name, f)
+        self.context.remove_namespace(self.namespace)
         self.namespace = initial_namespace
         self.depth -= 1
         return ast.ClassDeclaration(
@@ -176,8 +183,11 @@ class Generator(object):
         if not class_decls:
             # Not class declaration are available in the current namespace
             # so create a new one.
+            initial_namespace = self.namespace
+            self.namespace = ('global',)
             decl = self.gen_class_decl()
-            self.context.add_class(('global',), decl.name, decl)
+            self.context.add_class(self.namespace, decl.name, decl)
+            self.namespace = initial_namespace
             return decl.get_type()
         return self.r.choice(list(class_decls.values())).get_type()
 
@@ -204,7 +214,7 @@ class Generator(object):
         funcs = [f for f in funcs if f.get_type().is_subtype(etype)]
         if not funcs:
             func = self.gen_func_decl(etype)
-            self.context.add_func(('global',), func.name, func)
+            self.context.add_func(self.namespace, func.name, func)
             funcs.append(func)
         f = self.r.choice(funcs)
         args = []
@@ -252,9 +262,13 @@ class Generator(object):
         self.namespace += ('main', )
         self.depth += 1
         expr = self.generate_expr()
+        decls = list(self.context.get_vars(self.namespace, True).values())
+        decls = [d for d in decls
+                 if not isinstance(d, ast.ParameterDeclaration)]
+        body = ast.Block(decls + [expr])
         self.depth -= 1
         main_func = ast.FunctionDeclaration(
-            "main", params=[], ret_type=kt.Unit, body=ast.Block([expr]))
+            "main", params=[], ret_type=kt.Unit, body=body)
         self.namespace = initial_namespace
         return main_func
 
@@ -305,6 +319,7 @@ class Generator(object):
         for _ in range(0, self.r.randint(0, 10)):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
+        self.namespace = ('global',)
         decls = sum([
             list(self.context.get_vars(self.namespace, True).values()),
             list(self.context.get_funcs(self.namespace, True).values()),
