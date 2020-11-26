@@ -26,7 +26,7 @@ class NumberType(AnyType):
 
 class IntegerType(NumberType):
     def __init__(self):
-        self.name = "Integer"
+        self.name = "Int"
 
 
 class ShortType(NumberType):
