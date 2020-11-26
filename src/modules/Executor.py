@@ -82,8 +82,11 @@ class Executor:
             p = self.generator.generate()
             self.translator = KotlinTranslator()
 
-            print(str(p))
             self.translator.visit(p)
+            status, _, filename = self._compile(self.translator.get_program(),
+                                                compiler_pass=True)
+            if not status:
+                self._report(filename)
             #for _ in range(self.args.rounds):
             #    temp_p = p
             #    for _ in range(self.args.transformations):
