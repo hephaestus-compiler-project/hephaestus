@@ -4,7 +4,7 @@ import subprocess as sp
 from shutil import copyfile
 from src.generators.Generator import Generator
 from src.transformations.Transformer import Transformer
-from src.translators.kotlin import Kotlin
+from src.translators.kotlin import KotlinTranslator
 from src.utils import mkdir
 
 
@@ -29,9 +29,7 @@ class Executor:
 
     def __init__(self, args):
         self.args = args
-        self.generator = Generator()
         self.transformer = Transformer()
-        self.translator = Kotlin()
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -80,8 +78,12 @@ class Executor:
         # Set counter to time_end in case of timeout option
         counter = 1 if self.args.stop_cond == "number" else time.time() + self.args.seconds
         while True:
+            self.generator = Generator()
             p = self.generator.generate()
+            self.translator = KotlinTranslator()
+
             print(str(p))
+            self.translator.visit(p)
             #for _ in range(self.args.rounds):
             #    temp_p = p
             #    for _ in range(self.args.transformations):
