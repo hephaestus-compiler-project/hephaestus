@@ -18,20 +18,24 @@ class Context(object):
             self._context[namespace][entity][name] = value
         else:
             self._context[namespace] = {
-                'funcs': OrderedDict(),
-                'vars': OrderedDict(),
-                'classes': OrderedDict()
+                'funcs': {},
+                'vars': {},
+                'classes': {},
+                'decls': OrderedDict() # Here we keep the declaration order
             }
             self._context[namespace][entity][name] = value
 
     def add_func(self, namespace, func_name, func):
         self._add_entity(namespace, 'funcs', func_name, func)
+        self._add_entity(namespace, 'decls', func_name, func)
 
     def add_var(self, namespace, var_name, var):
         self._add_entity(namespace, 'vars', var_name, var)
+        self._add_entity(namespace, 'decls', var_name, var)
 
     def add_class(self, namespace, class_name, cls):
         self._add_entity(namespace, 'classes', class_name, cls)
+        self._add_entity(namespace, 'decls', class_name, cls)
 
     def _get_declarations(self, namespace, decl_type, only_current):
         len_namespace = len(namespace)
@@ -55,6 +59,9 @@ class Context(object):
 
     def get_classes(self, namespace, only_current=False):
         return self._get_declarations(namespace, 'classes', only_current)
+
+    def get_declarations(self, namespace, only_current=False):
+        return self._get_declarations(namespace, 'decls', only_current)
 
     def remove_namespace(self, namespace):
         if namespace in self._context:
@@ -140,9 +147,8 @@ class Generator(object):
             self.context.add_var(self.namespace, p.name, p)
         ret_type = etype or self.gen_type()
         expr = self.generate_expr(ret_type)
-        decls = list(self.context.get_vars(self.namespace, True).values()) + \
-            list(self.context.get_classes(self.namespace, True).values()) + \
-            list(self.context.get_funcs(self.namespace, True).values())
+        decls = list(self.context.get_declarations(
+            self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
@@ -264,8 +270,8 @@ class Generator(object):
         self.namespace += ('main', )
         self.depth += 1
         expr = self.generate_expr()
-        decls = list(self.context.get_vars(self.namespace, True).values()) + \
-            list(self.context.get_funcs(self.namespace, True).values())
+        decls = list(self.context.get_declarations(
+            self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
@@ -323,10 +329,7 @@ class Generator(object):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         self.namespace = ('global',)
-        decls = sum([
-            list(self.context.get_vars(self.namespace, True).values()),
-            list(self.context.get_funcs(self.namespace, True).values()),
-            list(self.context.get_classes(self.namespace, True).values())
-        ], [])
+        decls = list(self.context.get_declarations(
+            self.namespace, True).values())
         decls.append(main_func)
         return ast.Program(decls)
