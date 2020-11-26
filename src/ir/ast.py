@@ -198,9 +198,6 @@ class IntegerConstant(Constant):
             'Integer literal must either int or long')
         super(IntegerConstant, self).__init__(literal)
 
-    def accept(self, visitor):
-        visitor.visitIntegerConstant(self)
-
 
 class RealConstant(Constant):
 
@@ -215,18 +212,12 @@ class RealConstant(Constant):
             'Real literal is not valid')
         self.literal = literal_nums + ('' if suffix is None else suffix)
 
-    def accept(self, visitor):
-        visitor.visitRealConstant(self)
-
 
 class BooleanConstant(Constant):
     def __init__(self, literal):
         assert literal == 'true' or literal == 'false', (
             'Boolean literal is not "true" or "false"')
         super(BooleanConstant, self).__init__(literal)
-
-    def accept(self, visitor):
-        visitor.visitBooleanConstant(self)
 
 
 class CharConstant(Constant):
@@ -235,15 +226,11 @@ class CharConstant(Constant):
             'Character literal must be a single character')
         super(CharConstant, self).__init__(literal)
 
-    def accept(self, visitor):
-        visitor.visitCharConstant(self)
-
     def __str__(self):
         return "'{}'".format(self.literal)
 
+
 class StringConstant(Constant):
-    def accept(self, visitor):
-        visitor.visitStringConstant(self)
 
     def __str__(self):
         return '"{}"'.format(self.literal)
@@ -262,7 +249,7 @@ class Variable(Expr):
 
 class Conditional(Expr):
     def __init__(self, cond, true_branch, false_branch):
-        self.cond = cond,
+        self.cond = cond
         self.true_branch = true_branch
         self.false_branch = false_branch
 
@@ -348,7 +335,6 @@ class FunctionCall(Expr):
         else:
             return str(self.receiver) + ".(" + \
                 ", ".join(map(str, self.args)) + ")"
-
 
 class Assignment(Expr):
     def __init__(self, var_name, expr):
