@@ -38,6 +38,9 @@ class Classifier(Type):
 class SimpleClassifier(Classifier):
     def __init__(self, name, supertypes):
         super(SimpleClassifier, self).__init__(name)
+        # TODO: the transitive closure of supertypes must be
+        # consistent, i.e. does not contain two parameterized types with
+        # different type arguments.
         self.supertypes = supertypes
 
     def __str__(self):
@@ -49,6 +52,20 @@ class SimpleClassifier(Classifier):
 
     def is_subtype(self, t):
         return any(s.is_subtype(t) for s in self.supertypes)
+
+
+class ParameterizedClassifier(SimpleClassifier):
+    def __init__(self, name, type_parameters, supertypes):
+        assert len(type_parameters) == 0, "type_parameters is empty"
+        super(ParameterizedClassifier, self).__init__(name, supertypes)
+        self.type_parameters = type_parameters
+
+    def __str__(self):
+        return "{}<{}> {} {}".format(
+            self.name,
+            ', '.join(map(str, self.type_parameters)),
+            ':' if self.supertypes else '',
+            ', '.join(map(str, self.supertypes)))
 
 
 class Function(Classifier):

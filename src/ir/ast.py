@@ -94,20 +94,38 @@ class ClassDeclaration(Declaration):
         return self.fields + self.functions
 
     def get_type(self):
-        return types.SimpleClassifier(self.name, supertypes=self.superclasses)
+        return types.SimpleClassifier(self.name, self.superclasses)
+
+    def _get_prefix(self):
+        if self.class_type == self.REGULAR:
+            return "class"
+        if self.class_type == self.INTERFACE:
+            return "interface"
+        return "abstract class"
 
     def __str__(self):
-        if self.class_type == self.REGULAR:
-            prefix = "class"
-        elif self.class_type == self.INTERFACE:
-            prefix = "interface"
-        else:
-            prefix = "abstract class"
         return "{} {} {{\n  {}\n  {} }}".format(
-            prefix, self.name,
+            self._get_prefix(), self.name,
             "\n  ".join(map(str, self.fields)),
             "\n  ".join(map(str, self.functions))
         )
+
+
+class ParameterizedClassDeclaration(ClassDeclaration):
+    """Parameterized (i.e., Generic) class declaration
+
+    NOTE: Maybe this class is redundant.
+    """
+    def __init__(self, name, type_parameters, superclasses, class_type=None,
+            fields=[], functions=[]):
+        super(ParameterizedClassDeclaration).__init__(
+            name, superclasses, class_type, fields, functions)
+        self.type_parameters = type_parameters
+
+
+    def get_type(self):
+        return types.ParameterizedClassifier(self.name, self.type_parameters,
+                                             self.superclasses)
 
 
 class ParameterDeclaration(Declaration):
