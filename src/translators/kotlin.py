@@ -14,11 +14,11 @@ class KotlinTranslator(ASTVisitor):
 
     @staticmethod
     def get_filename():
-        return Kotlin.filename
+        return KotlinTranslator.filename
 
     @staticmethod
     def get_executable():
-        return Kotlin.executable
+        return KotlinTranslator.executable
 
     @staticmethod
     def get_cmd_build(filename, executable):
@@ -27,6 +27,11 @@ class KotlinTranslator(ASTVisitor):
     @staticmethod
     def get_cmd_exec(executable):
         return ['java', '-jar', executable]
+
+    def get_program(self):
+        if self.program is None:
+            raise Exception('You have to translate the program first')
+        return self.program
 
     def pop_children_res(self, children):
         len_c = len(children)
@@ -41,8 +46,6 @@ class KotlinTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         self.program = '\n'.join(self.pop_children_res(children))
-        with open(self.filename, 'w') as f:
-            f.write(self.program)
 
     def visit_block(self, node):
         children = node.children()
@@ -75,7 +78,10 @@ class KotlinTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "val " + node.name + " = " + children_res[0]
+        res = "val " + node.name
+        if node.var_type is not None:
+            res += ": " + node.var_type.name
+        res += " = " + children_res[0]
         self._children_res.append(res)
 
     def visit_field_decl(self, node):
@@ -97,7 +103,9 @@ class KotlinTranslator(ASTVisitor):
         if node.ret_type:
             res += ": " + node.ret_type.name
             if isinstance(node.ret_type, kt.UnitType):
-                body_res = body_res.replace("return", "")
+                # Remove the last of occurrence of 'return' if the
+                # return type of the function is Unit.
+                body_res = "".join(body_res.rsplit("return", 1))
         res += " " + body_res
         self._children_res.append(res)
 
