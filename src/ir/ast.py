@@ -6,8 +6,6 @@ class Node(object):
 
     def accept(self, visitor):
         visitor.visit(self)
-        for c in self.children():
-            visitor.visit(c)
 
     def children(self):
         raise NotImplementedError('children() must be implemented')
@@ -144,7 +142,7 @@ class FunctionDeclaration(Declaration):
         self.body_type = body_type
 
     def children(self):
-        return [self.body]
+        return self.params + [self.body]
 
     def get_type(self):
         return types.Function(
