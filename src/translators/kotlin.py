@@ -105,10 +105,7 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(str(node.literal))
 
     def visit_real_constant(self, node):
-        res = node.literal
-        if isinstance(node, kt.FloatType):
-            res = str(res) + "f"
-        self._children_res.append(res)
+        self._children_res.append(str(node.literal))
 
     def visit_char_constant(self, node):
         self._children_res.append("'{}'".format(node.literal))

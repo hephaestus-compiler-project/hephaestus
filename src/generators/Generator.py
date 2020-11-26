@@ -73,7 +73,7 @@ class Generator(object):
         kt.Short,
         kt.Long,
         kt.Char,
-        #kt.Float,
+        kt.Float,
         kt.Double,
         kt.Boolean,
         kt.String
@@ -104,6 +104,8 @@ class Generator(object):
         prefix = str(self.r.randint(0, 100))
         suffix = str(self.r.randint(0, 1000))
         sign = self.r.choice(['', '-'])
+        if expr_type is kt.Float:
+            suffix += "f"
         return ast.RealConstant(sign + prefix + "." + suffix)
 
     def gen_bool_constant(self, expr_type=None):
@@ -295,7 +297,7 @@ class Generator(object):
         if self.depth >= self.max_depth:
             gen_func = constant_candidates.get(expr_type)
             if gen_func:
-                return gen_func()
+                return gen_func(expr_type)
             return self.r.choice(leaf_canidates)(expr_type)
         self.depth += 1
         con_candidate = constant_candidates.get(expr_type)
