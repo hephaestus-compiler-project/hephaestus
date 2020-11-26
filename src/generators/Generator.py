@@ -264,7 +264,8 @@ class Generator(object):
         self.namespace += ('main', )
         self.depth += 1
         expr = self.generate_expr()
-        decls = list(self.context.get_vars(self.namespace, True).values())
+        decls = list(self.context.get_vars(self.namespace, True).values()) + \
+            list(self.context.get_funcs(self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
