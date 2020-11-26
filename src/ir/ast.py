@@ -5,15 +5,20 @@ from src.ir import types
 class Node(object):
 
     def accept(self, visitor):
-        raise NotImplementedError('accept() must be implemented')
+        visitor.visit(self)
+        for c in self.children():
+            visitor.visit(c)
+
+    def children(self):
+        raise NotImplementedError('children() must be implemented')
 
 
 class Program(Node):
     def __init__(self, declarations):
         self.declarations = declarations
 
-    def accept(self, visitor):
-        visitor.visitProgram(self)
+    def children(self):
+        return self.declarations
 
     def __str__(self):
         return "\n\n".join(map(str, self.declarations))
@@ -23,8 +28,8 @@ class Block(Node):
     def __init__(self, body):
         self.body = body
 
-    def accept(self, visitor):
-        visitor.visitBlock(self)
+    def children(self):
+        return self.body
 
     def __str__(self):
         return "{{\n  {}\n}}".format("\n  ".join(map(str, self.body)))
@@ -41,8 +46,8 @@ class VariableDeclaration(Declaration):
         self.expr = expr
         self.var_type = var_type
 
-    def accept(self, visitor):
-        visitor.visitVariableDeclaration(self)
+    def children(self):
+        return [self.expr]
 
     def get_type(self):
         return self.var_type
@@ -60,8 +65,8 @@ class FieldDeclaration(Declaration):
         self.name = name
         self.field_type = field_type
 
-    def accept(self, visitor):
-        visitor.visitFieldDeclaration(self)
+    def children(self):
+        return []
 
     def get_type(self):
         return self.field_type
@@ -87,8 +92,8 @@ class ClassDeclaration(Declaration):
     def attributes(self):
         return self.fields + self.functions
 
-    def accept(self, visitor):
-        visitor.visitClassDeclaration(self)
+    def children(self):
+        return self.fields + self.functions
 
     def get_type(self):
         return types.SimpleClassifier(self.name, supertypes=self.superclasses)
@@ -113,8 +118,8 @@ class ParameterDeclaration(Declaration):
         self.param_type = param_type
         self.default = default
 
-    def accept(self, visitor):
-        visitor.visitParameterDeclaration(self)
+    def children(self):
+        return []
 
     def get_type(self):
         return self.param_type
@@ -138,8 +143,8 @@ class FunctionDeclaration(Declaration):
         self.body = body
         self.body_type = body_type
 
-    def accept(self, visitor):
-        visitor.visitFunctionDeclaration(self)
+    def children(self):
+        return [self.body]
 
     def get_type(self):
         return types.Function(
@@ -162,6 +167,9 @@ class Expr(Node):
 class Constant(Expr):
     def __init__(self, literal):
         self.literal = literal
+
+    def children(self):
+        return []
 
     def __str__(self):
         return str(self.literal)
@@ -229,8 +237,8 @@ class Variable(Expr):
     def __init__(self, name):
         self.name = name
 
-    def accept(self, visitor):
-        visitor.visitVariable(self)
+    def children(self):
+        return []
 
     def __str__(self):
         return str(self.name)
@@ -242,8 +250,8 @@ class Conditional(Expr):
         self.true_branch = true_branch
         self.false_branch = false_branch
 
-    def accept(self, visitor):
-        visitor.visitConditional(self)
+    def children(self):
+        return [self.cond, self.true_branch, self.false_branch]
 
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
@@ -261,6 +269,9 @@ class BinaryOp(Expr):
         self.rexpr = rexpr
         self.operator = operator
 
+    def children(self):
+        return [self.lexpr, self.rexpr]
+
     def __str__(self):
         return str(self.lexpr) + " " + self.operator + " " + str(self.rexpr)
 
@@ -268,29 +279,17 @@ class BinaryOp(Expr):
 class LogicalExpr(BinaryOp):
     VALID_OPERATORS = ['&&', '||']
 
-    def accept(self, visitor):
-        visitor.visitLogicalExpr(self)
-
 
 class EqualityExpr(BinaryOp):
     VALID_OPERATORS = ['==', '===', '!=', '!==']
-
-    def accept(self, visitor):
-        visitor.visitEqualityExr(self)
 
 
 class ComparisonExpr(BinaryOp):
     VALID_OPERATORS = ['>', '>=', '<', '<=']
 
-    def accept(self, visitor):
-        visitor.visitComparisonExr(self)
-
 
 class ArithExpr(BinaryOp):
     VALID_OPERATORS = ['+', '-', '/', '*']
-
-    def accept(self, visitor):
-        visitor.visitArithExr(self)
 
 
 class New(Expr):
@@ -298,8 +297,8 @@ class New(Expr):
         self.class_name = class_name
         self.args = args
 
-    def accept(self, visitor):
-        visitor.visitNew(self)
+    def children(self):
+        return self.args
 
     def __str__(self):
         return "new " + str(self.class_name) + "(" + \
@@ -311,8 +310,8 @@ class FieldAccess(Expr):
         self.expr = expr
         self.field = field
 
-    def visit(self, visitor):
-        visitor.visitFieldAccess(self)
+    def children(self):
+        return [self.expr]
 
     def __str__(self):
         return str(self.expr) + "." + self.field
@@ -324,8 +323,8 @@ class FunctionCall(Expr):
         self.args = args
         self.receiver = receiver
 
-    def visit(self, visitor):
-        visitor.visitFunctionCall(self)
+    def children(self):
+        return self.args
 
     def __str__(self):
         if self.receiver is None:
@@ -340,8 +339,8 @@ class Assignment(Expr):
         self.var_name = var_name
         self.expr = expr
 
-    def accept(self, visitor):
-        visitor.visitAssignment(self)
+    def children(self):
+        return [self.expr]
 
     def __str__(self):
         return str(self.var_name) + " = " + str(self.expr)
