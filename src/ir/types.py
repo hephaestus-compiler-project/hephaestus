@@ -68,6 +68,33 @@ class ParameterizedClassifier(SimpleClassifier):
             ', '.join(map(str, self.supertypes)))
 
 
+class TypeParameter(Type):
+    INVARIANT=0
+    COVARIANT=1
+    CONTRAVARIANT=2
+
+    def __init__(self, name, variance=None, bound=None):
+        super(TypeParameter).__init__(name)
+        self.variance = variance or self.INVARIANT
+        assert self.variance == 0 and bound is None, "Cannot set bound in invariant type parameter"
+        self.bound = bound
+
+    def variance_to_string(self):
+        if self.variance == 0:
+            return ''
+        if self.variance == 1:
+            return 'out'
+        if self.variance == 2:
+            return 'in'
+
+    def __str__(self):
+        return "{}{}{}".format(
+            self.variance_to_string() + ' ' if self.variance != self.INVARIANT else '',
+            self.name,
+            ' ' + self.bound if self.bound is not None else ''
+        )
+
+
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, param_types, ret_type):
