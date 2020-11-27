@@ -2,6 +2,9 @@
 bugs/*
 temp/
 notes/
+*.class
+META-INF/
+*.jar
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
