@@ -155,7 +155,7 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         res = "{}{} {} {}".format(
-            " " * self.ident, children_res[0], node.operator,
+            " " * old_ident, children_res[0], node.operator,
             children_res[1])
         self.ident = old_ident
         self._children_res.append(res)
