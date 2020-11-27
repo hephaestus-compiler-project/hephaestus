@@ -129,6 +129,16 @@ class Generator(object):
     def gen_string_constant(self, expr_type=None):
         return ast.StringConstant(self.gen_identifier())
 
+    def gen_equality_expr(self, expr_type=None):
+        initial_depth = self.depth
+        self.depth += 1
+        etype = self.gen_type()
+        op = self.r.choice(ast.EqualityExpr.VALID_OPERATORS)
+        e1 = self.generate_expr(etype)
+        e2 = self.generate_expr(etype)
+        self.depth = initial_depth
+        return ast.EqualityExpr(e1, e2, op)
+
     def gen_logical_expr(self, expr_type=None):
         initial_depth = self.depth
         self.depth += 1
@@ -322,7 +332,7 @@ class Generator(object):
             kt.Boolean: self.gen_bool_constant
         }
         binary_ops = {
-            kt.Boolean: [self.gen_logical_expr],
+            kt.Boolean: [self.gen_logical_expr, self.gen_equality_expr],
         }
         other_candidates = [
             self.gen_func_call,
