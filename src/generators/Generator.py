@@ -86,14 +86,18 @@ class Generator(object):
         kt.String
     ]
 
-    def __init__(self, max_depth=5, max_fields=3, max_funcs=3, max_params=5):
+    def __init__(self, max_depth=6, max_fields=3, max_funcs=3, max_params=3,
+                 max_var_decls=4):
         self.context = Context()
         self.max_depth = max_depth
         self.max_fields = max_fields
         self.max_funcs = max_funcs
         self.max_params = max_params
+        self.max_var_decls = max_var_decls
         self.depth = 0
         self.r = Random()
+        self._vars_in_context = {}
+        self._stop_var = False
         self.namespace = ('global',)
 
     def gen_identifier(self, ident_type=None):
@@ -258,9 +262,15 @@ class Generator(object):
             variables = [v for v in variables.values()
                          if v.get_type().is_subtype(etype)]
         if not variables:
+            if self.namespace in self._vars_in_context:
+                self._vars_in_context[self.namespace] += 1
+            else:
+                self._vars_in_context[self.namespace] = 1
+            self._stop_var = True
             # If there are not variable declarations that match our criteria,
             # we have to create a new variable declaration.
             var_decl = self.gen_variable_decl(etype)
+            self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             return ast.Variable(var_decl.name)
         return ast.Variable(self.r.choice([v.name for v in variables]))
@@ -284,7 +294,6 @@ class Generator(object):
     def generate_expr(self, expr_type=None):
         leaf_canidates = [
             self.gen_new,
-            self.gen_variable
         ]
         constant_candidates = {
             kt.Integer: self.gen_integer_constant,
@@ -298,13 +307,22 @@ class Generator(object):
         }
         other_candidates = [
             self.gen_func_call,
-            self.gen_conditional
+            self.gen_conditional,
+            self.gen_variable,
         ]
         expr_type = expr_type or self.gen_type()
         if self.depth >= self.max_depth:
             gen_func = constant_candidates.get(expr_type)
             if gen_func:
                 return gen_func(expr_type)
+            gen_var = self._vars_in_context.get(
+                self.namespace, 0) < self.max_var_decls and not self._stop_var
+            if gen_var:
+                # Decide if we can generate a variable.
+                # If the maximum numbers of variables in a specific context
+                # has been reached, or we have previously declared a variable
+                # of a specific type, then we should avoid variable creation.
+                leaf_canidates.append(self.gen_variable)
             return self.r.choice(leaf_canidates)(expr_type)
         self.depth += 1
         con_candidate = constant_candidates.get(expr_type)
