@@ -148,6 +148,44 @@ class Generator(object):
         self.depth = initial_depth
         return ast.LogicalExpr(e1, e2, op)
 
+    def gen_comparison_expr(self, expr_type=None):
+        valid_types = [
+            kt.String,
+            kt.Boolean,
+            kt.Double,
+            kt.Char,
+            kt.Float,
+            kt.Integer,
+            kt.Short,
+            kt.Long
+        ]
+        number_types = [
+            kt.Short,
+            kt.Integer,
+            kt.Long,
+            kt.Float,
+            kt.Double,
+        ]
+        e2_types = {
+            kt.String: [kt.String],
+            kt.Boolean: [kt.Boolean],
+            kt.Double: number_types,
+            kt.Char: [kt.Char],
+            kt.Float: number_types,
+            kt.Integer: number_types,
+            kt.Short: number_types,
+            kt.Long: number_types
+        }
+        initial_depth = self.depth
+        self.depth += 1
+        op = self.r.choice(ast.ComparisonExpr.VALID_OPERATORS)
+        e1_type = self.r.choice(valid_types)
+        e2_type = self.r.choice(e2_types[e1_type])
+        e1 = self.generate_expr(e1_type)
+        e2 = self.generate_expr(e2_type)
+        self.depth = initial_depth
+        return ast.ComparisonExpr(e1, e2, op)
+
     def gen_field_decl(self):
         name = self.gen_identifier('lower')
         field_type = self.gen_type()
@@ -332,7 +370,11 @@ class Generator(object):
             kt.Boolean: self.gen_bool_constant
         }
         binary_ops = {
-            kt.Boolean: [self.gen_logical_expr, self.gen_equality_expr],
+            kt.Boolean: [
+                self.gen_logical_expr,
+                self.gen_equality_expr,
+                self.gen_comparison_expr
+            ],
         }
         other_candidates = [
             self.gen_func_call,
