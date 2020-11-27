@@ -148,6 +148,8 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(" " * self.ident + node.name)
 
     def visit_binary_op(self, node):
+        old_ident = self.ident
+        self.ident = 0
         children = node.children()
         for c in children:
             c.accept(self)
@@ -155,6 +157,7 @@ class KotlinTranslator(ASTVisitor):
         res = "{}{} {} {}".format(
             " " * self.ident, children_res[0], node.operator,
             children_res[1])
+        self.ident = old_ident
         self._children_res.append(res)
 
     def visit_logical_expr(self, node):
