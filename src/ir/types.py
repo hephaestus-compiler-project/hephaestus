@@ -1,9 +1,15 @@
+from typing import List, Set
+
+
 class Type(object):
     def __init__(self, name):
         self.name = name
 
     def __str__(self):
         return str(self.name)
+
+    def __repr__(self):
+        return self.__str__()
 
     def is_subtype(self, t):
         raise NotImplementedError("You have to implement 'is_subtype()'")
@@ -17,18 +23,36 @@ class Type(object):
 
 class Builtin(Type):
 
+    def __init__(self, name: str):
+        super(Builtin, self).__init__(name)
+        self.supertypes = [self]
+
     def __str__(self):
         return str(self.name) + "(builtin)"
 
-    def is_subtype(self, t):
-        return t.__class__ in self.get_supertypes()
+    def __eq__(self, other: Type):
+        """Check if two Builtin objects are of the same Type"""
+        return self.__class__ == other.__class__
 
-    def get_supertypes(self):
-        supertypes = list(self.__class__.mro())
-        supertypes.remove(object)
-        supertypes.remove(Type)
-        supertypes.remove(Builtin)
-        return tuple(supertypes)
+    def __hash__(self):
+        """Hash based on the Type"""
+        return hash(self.__class__)
+
+    def _dfs(self, t: Type, visited: Set[Type]):
+        if t not in visited:
+            visited.add(t)
+            for supertype in t.get_supertypes(visited):
+                if supertype not in visited:
+                    self._dfs(supertype, visited)
+
+    def get_supertypes(self, supertypes=set()) -> Set[Type]:
+        """Return self and the transitive closure of the supertypes"""
+        for supertype in self.supertypes:
+            self._dfs(supertype, supertypes)
+        return supertypes
+
+    def is_subtype(self, t: Type) -> bool:
+        return t in self.get_supertypes()
 
 
 class Classifier(Type):
@@ -52,14 +76,27 @@ class SimpleClassifier(Classifier):
         self.supertypes = supertypes
 
     def __str__(self):
-        print(self.supertypes)
-        return self.name + ": " + ', '.join(map(str, self.supertypes))
+        return "{}{}".format(
+            self.name,
+            '' if not self.supertypes else ": (" +
+            ', '.join(map(str, self.supertypes)) + ")"
+        )
 
-    def get_supertypes(self):
-        return self.supertypes
+    def _dfs(self, t: Type, visited: Set[Type]):
+        if t not in visited:
+            visited.add(t)
+            for supertype in t.get_supertypes(visited):
+                if supertype not in visited:
+                    self._dfs(supertype, visited)
 
-    def is_subtype(self, t):
-        return any(s.is_subtype(t) for s in self.supertypes)
+    def get_supertypes(self, supertypes=set()) -> Set[Type]:
+        """Return self and the transitive closure of the supertypes"""
+        for supertype in [self] + self.supertypes:
+            self._dfs(supertype, supertypes)
+        return supertypes
+
+    def is_subtype(self, t: Type) -> bool:
+        return t in self.get_supertypes()
 
 
 class ParameterizedClassifier(SimpleClassifier):
