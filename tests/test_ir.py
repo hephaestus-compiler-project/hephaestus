@@ -43,3 +43,5 @@ def test_classifier_sypertypes():
         if e.args[0] == "assert False":
             assert False
         assert True
+    c_type_i2 = ConcreteType(pcls, [IntegerType()])
+    cls4 = SimpleClassifier("Cls4", [c_type_i2, c_type_i])

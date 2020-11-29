@@ -100,7 +100,6 @@ class SimpleClassifier(Classifier):
         """The transitive closure of supertypes must be consistent, i.e., does
         not contain two parameterized types with different type arguments.
         """
-        # FIXME the dictionary contains duplicate keys
         pc = {}  # Parameterized Classifiers
         for s in filter(lambda x: isinstance(x, ConcreteType), self.get_supertypes()):
             pc[s.p_classifier] = pc.get(s.p_classifier, []) + [s]
@@ -114,12 +113,13 @@ class SimpleClassifier(Classifier):
     def _dfs(self, t: Type, visited: Set[Type]):
         if t not in visited:
             visited.add(t)
-            for supertype in t.get_supertypes(visited):
+            for supertype in t.get_supertypes():
                 if supertype not in visited:
                     self._dfs(supertype, visited)
 
-    def get_supertypes(self, supertypes: Set[Type] = set()) -> Set[Type]:
+    def get_supertypes(self) -> Set[Type]:
         """Return self and the transitive closure of the supertypes"""
+        supertypes = set()
         for supertype in self.supertypes:
             self._dfs(supertype, supertypes)
         return supertypes.union({self})
@@ -175,7 +175,7 @@ class ParameterizedClassifier(SimpleClassifier):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
                 self.supertypes == other.supertypes and
-                self.type_parameters == other.type_parameters)
+                str(self.type_parameters) == str(other.type_parameters))
 
     def __hash__(self):
         """Hash based on the Type"""
