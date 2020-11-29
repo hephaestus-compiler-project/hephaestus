@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Set
 
 
@@ -22,6 +23,8 @@ class Type(object):
 
 
 class Builtin(Type):
+    """https://kotlinlang.org/spec/type-system.html#built-in-types
+    """
 
     def __init__(self, name: str):
         super(Builtin, self).__init__(name)
@@ -36,7 +39,7 @@ class Builtin(Type):
 
     def __hash__(self):
         """Hash based on the Type"""
-        return hash(self.__class__)
+        return hash(str(self.__class__))
 
     def _dfs(self, t: Type, visited: Set[Type]):
         if t not in visited:
@@ -68,12 +71,13 @@ class Object(Classifier):
 
 
 class SimpleClassifier(Classifier):
-    def __init__(self, name, supertypes):
+    """https://kotlinlang.org/spec/type-system.html#simple-classifier-types
+    """
+
+    def __init__(self, name: str, supertypes: List[Type] = []):
         super(SimpleClassifier, self).__init__(name)
-        # TODO: the transitive closure of supertypes must be
-        # consistent, i.e. does not contain two parameterized types with
-        # different type arguments.
         self.supertypes = supertypes
+        self._check_supertypes()
 
     def __str__(self):
         return "{}{}".format(
@@ -82,6 +86,31 @@ class SimpleClassifier(Classifier):
             ', '.join(map(str, self.supertypes)) + ")"
         )
 
+    def __eq__(self, other: Type):
+        """Check if two Builtin objects are of the same Type"""
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.supertypes == other.supertypes)
+
+    def __hash__(self):
+        """Hash based on the Type"""
+        return hash(str(self.__class__) + str(self.name) + str(self.supertypes))
+
+    def _check_supertypes(self):
+        """The transitive closure of supertypes must be consistent, i.e., does
+        not contain two parameterized types with different type arguments.
+        """
+        # FIXME the dictionary contains duplicate keys
+        pc = {}  # Parameterized Classifiers
+        for s in filter(lambda x: isinstance(x, ConcreteType), self.get_supertypes()):
+            pc[s.p_classifier] = pc.get(s.p_classifier, []) + [s]
+        for p_class in pc.values():
+            #  We are inside a class, we cannot use scoped objects in a comprehension
+            for p in p_class:
+                assert p.types == p_class[0].types, \
+                    "The concrete types of {} do not have the same types".format(
+                        p_class[0].p_classifier)
+
     def _dfs(self, t: Type, visited: Set[Type]):
         if t not in visited:
             visited.add(t)
@@ -89,40 +118,14 @@ class SimpleClassifier(Classifier):
                 if supertype not in visited:
                     self._dfs(supertype, visited)
 
-    def get_supertypes(self, supertypes=set()) -> Set[Type]:
+    def get_supertypes(self, supertypes: Set[Type] = set()) -> Set[Type]:
         """Return self and the transitive closure of the supertypes"""
-        for supertype in [self] + self.supertypes:
+        for supertype in self.supertypes:
             self._dfs(supertype, supertypes)
-        return supertypes
+        return supertypes.union({self})
 
     def is_subtype(self, t: Type) -> bool:
         return t in self.get_supertypes()
-
-
-class ParameterizedClassifier(SimpleClassifier):
-    def __init__(self, name, type_parameters, supertypes):
-        assert len(type_parameters) != 0, "type_parameters is empty"
-        super(ParameterizedClassifier, self).__init__(name, supertypes)
-        self.type_parameters = type_parameters
-
-    def __str__(self):
-        return "{}<{}> {} {}".format(
-            self.name,
-            ', '.join(map(str, self.type_parameters)),
-            ':' if self.supertypes else '',
-            ', '.join(map(str, self.supertypes)))
-
-
-class ConcreteType(Type):
-    """Usually produce by ParameterizedClassifier
-    """
-    def __init__(self, name, types):
-        super(ConcreteType, self).__init__(name)
-        self.types = types
-
-    def __str__(self):
-        return "{} <{}>".format(self.name,
-                                ", ".join(map(str, self.types)))
 
 
 class TypeParameter(Type):
@@ -130,10 +133,11 @@ class TypeParameter(Type):
     COVARIANT = 1
     CONTRAVARIANT = 2
 
-    def __init__(self, name, variance=None, bound=None):
+    def __init__(self, name: str, variance=None, bound: Type = None):
         super(TypeParameter, self).__init__(name)
         self.variance = variance or self.INVARIANT
-        assert not (self.variance == 0 and bound is not None), "Cannot set bound in invariant type parameter"
+        assert not (self.variance == 0 and bound is not None), \
+                "Cannot set bound in invariant type parameter"
         self.bound = bound
 
     def variance_to_string(self):
@@ -150,6 +154,64 @@ class TypeParameter(Type):
             self.name,
             ' ' + self.bound if self.bound is not None else ''
         )
+
+
+class ParameterizedClassifier(SimpleClassifier):
+    def __init__(self, name: str, type_parameters: List[TypeParameter],
+                 supertypes: List[Type] = []):
+        assert len(type_parameters) != 0, "type_parameters is empty"
+        self.type_parameters = type_parameters
+        super(ParameterizedClassifier, self).__init__(name, supertypes)
+
+    def __str__(self):
+        return "{}<{}> {} {}".format(
+            self.name,
+            ', '.join(map(str, self.type_parameters)),
+            ':' if self.supertypes else '',
+            ', '.join(map(str, self.supertypes)))
+
+    def __eq__(self, other: Type):
+        """Check if two Builtin objects are of the same Type"""
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.supertypes == other.supertypes and
+                self.type_parameters == other.type_parameters)
+
+    def __hash__(self):
+        """Hash based on the Type"""
+        return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
+                    + str(self.type_parameters))
+
+
+class ConcreteType(SimpleClassifier):
+    def __init__(self, p_classifier: ParameterizedClassifier, types: List[Type]):
+        #  self.p_classifier = p_classifier
+        self.p_classifier = deepcopy(p_classifier)
+        # TODO check bounds
+        self.types = types
+        assert len(self.p_classifier.type_parameters) == len(types), \
+                "You should provide {} types for {}".format(
+                    len(self.p_classifier.type_parameters), self.p_classifier)
+        super(ConcreteType, self).__init__(self.p_classifier.name,
+                                           self.p_classifier.supertypes)
+
+    def __eq__(self, other: Type):
+        """Check if two Builtin objects are of the same Type"""
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.supertypes == other.supertypes and
+                self.p_classifier.type_parameters ==
+                    other.p_classifier.type_parameters and
+                self.types == self.types)
+
+    def __hash__(self):
+        """Hash based on the Type"""
+        return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
+                    + str(self.p_classifier.type_parameters) + str(self.types))
+
+    def __str__(self):
+        return "{}<{}>".format(self.name,
+                                ", ".join(map(str, self.types)))
 
 
 class Function(Classifier):
