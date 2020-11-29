@@ -28,7 +28,7 @@ class Builtin(Type):
 
     def __init__(self, name: str):
         super(Builtin, self).__init__(name)
-        self.supertypes = [self]
+        self.supertypes = []
 
     def __str__(self):
         return str(self.name) + "(builtin)"
@@ -55,7 +55,7 @@ class Builtin(Type):
         return supertypes
 
     def is_subtype(self, t: Type) -> bool:
-        return t in self.get_supertypes()
+        return t == self or t in self.get_supertypes()
 
 
 class Classifier(Type):
@@ -122,10 +122,10 @@ class SimpleClassifier(Classifier):
         supertypes = set()
         for supertype in self.supertypes:
             self._dfs(supertype, supertypes)
-        return supertypes.union({self})
+        return supertypes
 
     def is_subtype(self, t: Type) -> bool:
-        return t in self.get_supertypes()
+        return t == self or t in self.get_supertypes()
 
 
 class TypeParameter(Type):
