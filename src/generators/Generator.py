@@ -217,7 +217,12 @@ class Generator(object):
         self.depth = initial_depth
         self.context.remove_namespace(self.namespace)
         self.namespace = initial_namespace
-        return ast.FunctionDeclaration(func_name, params, ret_type, body)
+        if self.namespace[-1][0].isupper():
+            func_type = ast.FunctionDeclaration.CLASS_METHOD
+        else:
+            func_type = ast.FunctionDeclaration.FUNCTION
+        return ast.FunctionDeclaration(
+            func_name, params, ret_type, body, func_type=func_type)
 
     def gen_class_decl(self):
         class_name = self.gen_identifier('capitalize')
@@ -351,7 +356,8 @@ class Generator(object):
         body = ast.Block(decls + [expr])
         self.depth = initial_depth
         main_func = ast.FunctionDeclaration(
-            "main", params=[], ret_type=kt.Unit, body=body)
+            "main", params=[], ret_type=kt.Unit, body=body,
+            func_type=ast.FunctionDeclaration.FUNCTION)
         self.namespace = initial_namespace
         return main_func
 
