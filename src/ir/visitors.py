@@ -3,8 +3,12 @@ from src.ir import ast
 
 class ASTVisitor(object):
 
+    def result(self):
+        raise NotImplementedError('result() must be implemented')
+
     def visit(self, node):
         visitors = {
+            ast.SuperClassInstantiation: self.visit_super_instantiation,
             ast.ClassDeclaration: self.visit_class_decl,
             ast.FieldDeclaration: self.visit_field_decl,
             ast.VariableDeclaration: self.visit_var_decl,
@@ -39,6 +43,10 @@ class ASTVisitor(object):
 
     def visit_block(self, node):
         raise NotImplementedError('visit_block() must be implemented')
+
+    def visit_super_instantiation(self, node):
+        raise NotImplementedError(
+            'visit_super_instantiation() must be implemented')
 
     def visit_class_decl(self, node):
         raise NotImplementedError('visit_class_decl() must be implemented')

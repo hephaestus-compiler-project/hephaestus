@@ -60,6 +60,19 @@ class KotlinTranslator(ASTVisitor):
             children_res[-1][self.ident:] + "\n" + " " * (self.ident - 2) + "}"
         self._children_res.append(res)
 
+    def visit_super_instantiation(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        if node.args is None:
+            self._children_res.append(node.name)
+            return
+        self._children_res.append(
+            node.name + "(" + ", ".join(children_res) + ")")
+
     def visit_class_decl(self, node):
         old_ident = self.ident
         self.ident += 2
@@ -67,8 +80,12 @@ class KotlinTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        field_res = [children_res[i] for i, _ in enumerate(node.fields)]
-        function_res = children_res[len(field_res):]
+        superclasses_res = [children_res[i]
+                            for i, _ in enumerate(node.superclasses)]
+        len_superclasses = len(superclasses_res)
+        field_res = [children_res[i + len_superclasses]
+                     for i, _ in enumerate(node.fields)]
+        function_res = children_res[len(field_res) + len(superclasses_res):]
         prefix = " " * old_ident
         prefix += "" if node.is_final else "open "
         if not field_res:
@@ -76,8 +93,8 @@ class KotlinTranslator(ASTVisitor):
         else:
             res = prefix + "class " + node.name + "(" + ", ".join(
                 field_res) + ")"
-        if node.superclasses:
-            res += ": " + ", ".join([s.name for s in node.superclasses])
+        if superclasses_res:
+            res += ": " + ", ".join(superclasses_res)
         if function_res:
             res += " {\n" + "\n\n".join(
                 function_res) + "\n" + " " * old_ident + "}"
@@ -102,7 +119,7 @@ class KotlinTranslator(ASTVisitor):
     def visit_field_decl(self, node):
         prefix = '' if node.is_final else 'open '
         prefix += '' if not node.override else 'override '
-        res = "val " + node.name + ": " + node.field_type.name
+        res = prefix + "val " + node.name + ": " + node.field_type.name
         self._children_res.append(res)
 
     def visit_param_decl(self, node):

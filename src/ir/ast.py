@@ -62,7 +62,6 @@ class FieldDeclaration(Declaration):
     def __init__(self, name, field_type, is_final=True, override=False):
         self.name = name
         self.field_type = field_type
-        assert is_final != override
         self.is_final = is_final
         self.override = override
 
@@ -87,6 +86,21 @@ class ObjectDecleration(Declaration):
         return "object " + self.name
 
 
+class SuperClassInstantiation(Node):
+    def __init__(self, name, args=[]):
+        self.name = name
+        self.args = args
+
+    def children(self):
+        return self.args or []
+
+    def __str__(self):
+        if self.args is None:
+            return self.name
+        else:
+            return self.name + "(" + ", ".join(map(str, self.args)) + ")"
+
+
 class ClassDeclaration(Declaration):
     REGULAR = 0
     INTERFACE = 1
@@ -106,12 +120,12 @@ class ClassDeclaration(Declaration):
         return self.fields + self.functions
 
     def children(self):
-        return self.fields + self.functions
+        return self.superclasses + self.fields + self.functions
 
     def get_type(self):
         return types.SimpleClassifier(self.name, self.superclasses)
 
-    def _get_prefix(self):
+    def get_class_prefix(self):
         if self.class_type == self.REGULAR:
             return "class"
         if self.class_type == self.INTERFACE:
@@ -122,7 +136,7 @@ class ClassDeclaration(Declaration):
         superclasses = " : " + ", ".join(map(str, self.superclasses)) \
             if len(self.superclasses) > 0 else ""
         return "{} {}{} {{\n  {}\n  {} }}".format(
-            self._get_prefix(), self.name,
+            self.get_class_prefix(), self.name,
             superclasses,
             "\n  ".join(map(str, self.fields)),
             "\n  ".join(map(str, self.functions))
@@ -148,7 +162,7 @@ class ParameterizedClassDeclaration(ClassDeclaration):
 
     def __str__(self):
         return "{} {}{} {{\n  {}\n  {} }}".format(
-            self._get_prefix(), self.name,
+            self.get_class_prefix(), self.name,
             ", ".join(map(str, self.type_parameters)),
             "\n  ".join(map(str, self.fields)),
             "\n  ".join(map(str, self.functions))
@@ -218,7 +232,6 @@ class FunctionDeclaration(Declaration):
         self.ret_type = ret_type
         self.body = body
         self.func_type = func_type
-        assert is_final != override
         self.is_final = is_final
         self.override = override
 
