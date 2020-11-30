@@ -27,7 +27,7 @@ class NumberType(AnyType):
 
 
 class IntegerType(NumberType):
-    def __init__(self, name="Integer"):
+    def __init__(self, name="Int"):
         super(IntegerType, self).__init__(name)
         self.supertypes.append(NumberType())
 
