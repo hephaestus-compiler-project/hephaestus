@@ -80,12 +80,12 @@ class KotlinTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        superclasses_res = [children_res[i]
-                            for i, _ in enumerate(node.superclasses)]
-        len_superclasses = len(superclasses_res)
-        field_res = [children_res[i + len_superclasses]
+        field_res = [children_res[i]
                      for i, _ in enumerate(node.fields)]
-        function_res = children_res[len(field_res) + len(superclasses_res):]
+        len_fields = len(field_res)
+        superclasses_res = [children_res[i + len_fields]
+                            for i, _ in enumerate(node.superclasses)]
+        function_res = children_res[len_fields + len(superclasses_res):]
         prefix = " " * old_ident
         prefix += "" if node.is_final else "open "
         if not field_res:

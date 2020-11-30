@@ -3,7 +3,7 @@ import time
 import subprocess as sp
 from shutil import copyfile
 from src.generators.Generator import Generator
-from src.transformations.Transformer import Transformer
+from src.transformations.supertypes import SupertypeCreation
 from src.translators.kotlin import KotlinTranslator
 from src.utils import mkdir
 
@@ -29,7 +29,6 @@ class Executor:
 
     def __init__(self, args):
         self.args = args
-        self.transformer = Transformer()
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -78,16 +77,45 @@ class Executor:
         # Set counter to time_end in case of timeout option
         counter = 1 if self.args.stop_cond == "number" else time.time() + self.args.seconds
         while True:
-            self.generator = Generator()
-            p = self.generator.generate()
-            self.translator = KotlinTranslator()
+            for i in range(self.args.iterations):
+                generator = Generator()
+                p = generator.generate()
+                print('Processing program ' + str(i + 1))
+                self.translator = KotlinTranslator()
+                self.translator.visit(p)
+                status, _, filename = self._compile(self.translator.result(),
+                                                    compiler_pass=True)
+                if not status:
+                    self._report(filename)
+                    continue
+                print()
+                for j in range(self.args.transformations):
+                    print('Applying tranformation ' + str(j + 1))
+                    temp_p = p
+                    transformer = SupertypeCreation()
+                    transformer.visit(temp_p)
+                    p = transformer.result()
+                    if p is None:
+                        p = temp_p
+                        continue
 
-            self.translator.visit(p)
-            status, _, filename = self._compile(self.translator.get_program(),
-                                                compiler_pass=True)
-            if not status:
-                self._report(filename)
-            #for _ in range(self.args.rounds):
+                    self.translator = KotlinTranslator()
+                    self.translator.visit(p)
+
+                    status, _, filename = self._compile(self.translator.result(),
+                                                        compiler_pass=True)
+                    if not status:
+                        self._report(filename)
+
+                print()
+            break
+            #if self.args.stop_cond == "number":
+            #    counter += 1
+            #    print(counter)
+            #    if counter > self.args.iterations:
+            #        break
+            #elif time.time() > counter:
+            #    break
             #    temp_p = p
             #    for _ in range(self.args.transformations):
             #        p1 = self.transformer.transform(temp_p)
@@ -98,9 +126,3 @@ class Executor:
             #    if not status:
             #        self._report(filename)
             # Check stop_cond
-            if self.args.stop_cond == "number":
-                counter += 1
-                if counter > self.args.iterations:
-                    break
-            elif time.time() > counter:
-                break
