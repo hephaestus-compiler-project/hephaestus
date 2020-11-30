@@ -1,10 +1,10 @@
-class Foo
+class Bar
 
 
-fun foo(): Foo? {
+fun foo(): Bar? {
     return null
 }
 
 fun main() {
-    val a: Foo? = foo()
+    val a: Bar? = foo()
 }

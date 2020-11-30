@@ -1,4 +1,4 @@
-// Transformation: Create subtype
+// Transformation: Create supertype
 
 open class Foo
 class Bar: Foo
