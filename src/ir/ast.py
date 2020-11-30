@@ -120,10 +120,11 @@ class ClassDeclaration(Declaration):
         return self.fields + self.functions
 
     def children(self):
-        return self.superclasses + self.fields + self.functions
+        return self.fields + self.superclasses + self.functions
 
     def get_type(self):
-        return types.SimpleClassifier(self.name, self.superclasses)
+        return types.SimpleClassifier(
+            self.name, [s.name for s in self.superclasses])
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:

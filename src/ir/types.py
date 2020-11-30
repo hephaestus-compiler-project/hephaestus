@@ -77,7 +77,7 @@ class SimpleClassifier(Classifier):
     def __init__(self, name: str, supertypes: List[Type] = []):
         super(SimpleClassifier, self).__init__(name)
         self.supertypes = supertypes
-        self._check_supertypes()
+        #self._check_supertypes()
 
     def __str__(self):
         return "{}{}".format(
