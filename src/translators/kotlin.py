@@ -29,7 +29,7 @@ class KotlinTranslator(ASTVisitor):
     def get_cmd_exec(executable):
         return ['java', '-jar', executable]
 
-    def get_program(self):
+    def result(self):
         if self.program is None:
             raise Exception('You have to translate the program first')
         return self.program
@@ -70,13 +70,14 @@ class KotlinTranslator(ASTVisitor):
         field_res = [children_res[i] for i, _ in enumerate(node.fields)]
         function_res = children_res[len(field_res):]
         prefix = " " * old_ident
+        prefix += "" if node.is_final else "open "
         if not field_res:
             res = prefix + "class " + node.name
         else:
             res = prefix + "class " + node.name + "(" + ", ".join(
                 field_res) + ")"
         if node.superclasses:
-            res += ": " + ", ".join(map(str, node.superclasses))
+            res += ": " + ", ".join([s.name for s in node.superclasses])
         if function_res:
             res += " {\n" + "\n\n".join(
                 function_res) + "\n" + " " * old_ident + "}"
@@ -99,6 +100,8 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_field_decl(self, node):
+        prefix = '' if node.is_final else 'open '
+        prefix += '' if not node.override else 'override '
         res = "val " + node.name + ": " + node.field_type.name
         self._children_res.append(res)
 
@@ -116,6 +119,8 @@ class KotlinTranslator(ASTVisitor):
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1]
         prefix = " " * old_ident
+        prefix += "" if node.is_final else "open "
+        prefix += "" if not node.override else "override "
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
         if node.ret_type:
             res += ": " + node.ret_type.name
