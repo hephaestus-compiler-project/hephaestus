@@ -110,3 +110,80 @@ class ASTVisitor(object):
 
     def visit_assign(self, node):
         raise NotImplementedError('visit_assign() must be implemented')
+
+
+class DefaultVisitor(ASTVisitor):
+
+    def _visit_node(self, node):
+        children = node.children()
+        for c in children:
+            c.accept(self)
+
+    def visit_program(self, node):
+        self._visit_node(node)
+
+    def visit_block(self, node):
+        self._visit_node(node)
+
+    def visit_super_instantiation(self, node):
+        self._visit_node(node)
+
+    def visit_class_decl(self, node):
+        self._visit_node(node)
+
+    def visit_var_decl(self, node):
+        self._visit_node(node)
+
+    def visit_field_decl(self, node):
+        self._visit_node(node)
+
+    def visit_param_decl(self, node):
+        self._visit_node(node)
+
+    def visit_func_decl(self, node):
+        self._visit_node(node)
+
+    def visit_integer_constant(self, node):
+        self._visit_node(node)
+
+    def visit_real_constant(self, node):
+        self._visit_node(node)
+
+    def visit_char_constant(self, node):
+        self._visit_node(node)
+
+    def visit_string_constant(self, node):
+        self._visit_node(node)
+
+    def visit_boolean_constant(self, node):
+        self._visit_node(node)
+
+    def visit_variable(self, node):
+        self._visit_node(node)
+
+    def visit_logical_expr(self, node):
+        self._visit_node(node)
+
+    def visit_equality_expr(self, node):
+        self._visit_node(node)
+
+    def visit_comparison_expr(self, node):
+        self._visit_node(node)
+
+    def visit_arith_expr(self, node):
+        self._visit_node(node)
+
+    def visit_conditional(self, node):
+        self._visit_node(node)
+
+    def visit_new(self, node):
+        self._visit_node(node)
+
+    def visit_field_access(self, node):
+        self._visit_node(node)
+
+    def visit_func_call(self, node):
+        self._visit_node(node)
+
+    def visit_assign(self, node):
+        self._visit_node(node)
