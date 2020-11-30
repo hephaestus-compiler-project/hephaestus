@@ -59,9 +59,12 @@ class VariableDeclaration(Declaration):
 
 
 class FieldDeclaration(Declaration):
-    def __init__(self, name, field_type):
+    def __init__(self, name, field_type, is_final=True, override=False):
         self.name = name
         self.field_type = field_type
+        assert is_final != override
+        self.is_final = is_final
+        self.override = override
 
     def children(self):
         return []
@@ -90,12 +93,13 @@ class ClassDeclaration(Declaration):
     ABSTRACT = 2
 
     def __init__(self, name, superclasses, class_type=None,
-                 fields=[], functions=[]):
+                 fields=[], functions=[], is_final=True):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
         self.fields = fields
         self.functions = functions
+        self.is_final = is_final
 
     @property
     def attributes(self):
@@ -204,17 +208,19 @@ class ParameterDeclaration(Declaration):
 
 
 class FunctionDeclaration(Declaration):
-    EXPRESSION_FUNC = 0
-    BLOCK_FUNC = 1
+    CLASS_METHOD = 0
+    FUNCTION = 1
 
-    def __init__(self, name, params, ret_type, body, body_type=BLOCK_FUNC,
-                 keywords=[]):
+    def __init__(self, name, params, ret_type, body, func_type,
+                 is_final=True, override=False):
         self.name = name
         self.params = params
         self.ret_type = ret_type
         self.body = body
-        self.body_type = body_type
-        self.keywords = keywords
+        self.func_type = func_type
+        assert is_final != override
+        self.is_final = is_final
+        self.override = override
 
     def children(self):
         return self.params + [self.body]
@@ -224,27 +230,22 @@ class FunctionDeclaration(Declaration):
             self.name, [p.get_type() for p in self.params], self.ret_type)
 
     def __str__(self):
-        keywords = ""
-        if len(keywords) > 0:
-            keywords = " ".join(map(lambda x: x.name, self.keywords))
         if self.ret_type is None:
-            return "{}fun {}({}) =\n  {}".format(
-                keywords,
+            return "fun {}({}) =\n  {}".format(
                 self.name, ",".join(map(str, self.params)), str(self.body))
         else:
-            return "{}fun {}({}): {} =\n  {}".format(
-                keywords,
+            return "fun {}({}): {} =\n  {}".format(
                 self.name, ",".join(map(str, self.params)), str(self.ret_type),
                 str(self.body))
 
 class ParameterizedFunctionDeclaration(FunctionDeclaration):
-    EXPRESSION_FUNC = 0
-    BLOCK_FUNC = 1
+    CLASS_METHOD = 0
+    FUNCTION = 1
 
     def __init__(self, name, type_parameters, params, ret_type, body,
-                 body_type=BLOCK_FUNC, keywords=[]):
+                 func_type, is_final=True, override=False):
         super(ParameterizedFunctionDeclaration, self).__init__(name, params,
-              ret_type, body, body_type, keywords)
+              ret_type, body, func_type, is_final, override)
         self.type_parameters = type_parameters
 
     def get_type(self):
