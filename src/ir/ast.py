@@ -237,6 +237,8 @@ class FunctionDeclaration(Declaration):
         self.override = override
 
     def children(self):
+        if self.body is None:
+            return self.params
         return self.params + [self.body]
 
     def get_type(self):

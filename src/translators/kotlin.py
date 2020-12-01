@@ -1,4 +1,4 @@
-from src.ir import kotlin_types as kt
+from src.ir import ast, kotlin_types as kt
 from src.ir.visitors import ASTVisitor
 
 
@@ -87,12 +87,17 @@ class KotlinTranslator(ASTVisitor):
                             for i, _ in enumerate(node.superclasses)]
         function_res = children_res[len_fields + len(superclasses_res):]
         prefix = " " * old_ident
-        prefix += "" if node.is_final else "open "
+        prefix += (
+            "open "
+            if not node.is_final and node.class_type != ast.ClassDeclaration.INTERFACE
+            else ""
+        )
         if not field_res:
-            res = prefix + "class " + node.name
+            res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
         else:
-            res = prefix + "class " + node.name + "(" + ", ".join(
-                field_res) + ")"
+            res = "{}{} {}({})".format(
+                prefix, node.get_class_prefix(), node.name,
+                ", ".join(field_res))
         if superclasses_res:
             res += ": " + ", ".join(superclasses_res)
         if function_res:
@@ -134,10 +139,11 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
-        body_res = children_res[-1]
+        body_res = children_res[-1] if node.body else ''
         prefix = " " * old_ident
         prefix += "" if node.is_final else "open "
         prefix += "" if not node.override else "override "
+        prefix += "" if node.body is not None else "abstract "
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
         if node.ret_type:
             res += ": " + node.ret_type.name
@@ -145,7 +151,8 @@ class KotlinTranslator(ASTVisitor):
                 # Remove the last of occurrence of 'return' if the
                 # return type of the function is Unit.
                 body_res = "".join(body_res.rsplit("return", 1))
-        res += " " + body_res
+        if body_res:
+            res += " " + body_res
         self.ident = old_ident
         self._children_res.append(res)
 

@@ -45,6 +45,43 @@ def create_override_functions(functions):
     ]
 
 
+def create_interface(class_decl):
+    functions = [
+        ast.FunctionDeclaration(f.name, f.params, f.ret_type, None,
+                                f.func_type, is_final=False,
+                                override=f.override)
+        for f in class_decl.functions
+    ]
+    return ast.ClassDeclaration(utils.random.word().capitalize(),
+                                superclasses=[], fields=[],
+                                class_type=ast.ClassDeclaration.INTERFACE,
+                                functions=functions)
+
+
+def create_abstract_class(class_decl):
+    functions = []
+    for f in class_decl.functions:
+        # Some functions are randomly made abstract.
+        body_f = None if utils.random.bool() else f.body
+        functions.append(
+            ast.FunctionDeclaration(f.name, f.params, f.ret_type, body_f,
+                                    f.func_type, is_final=False,
+                                    override=f.override))
+    return ast.ClassDeclaration(utils.random.word().capitalize(),
+                                superclasses=[],
+                                fields=create_non_final_fields(class_decl.fields),
+                                class_type=ast.ClassDeclaration.ABSTRACT,
+                                functions=functions, is_final=False)
+
+
+def create_regular_class(class_decl):
+    return ast.ClassDeclaration(
+        utils.random.word().capitalize(), superclasses=[],
+        fields=create_non_final_fields(class_decl.fields),
+        functions=create_non_final_functions(class_decl.functions),
+        is_final=False)
+
+
 class SupertypeCreation(Transformation):
 
     def __init__(self):
@@ -56,12 +93,40 @@ class SupertypeCreation(Transformation):
         self.program = None
 
     def _create_supertype(self, class_decl):
-        cls_name = "Super" + class_decl.name
-        return ast.ClassDeclaration(
-            cls_name, superclasses=[],
-            fields=create_non_final_fields(class_decl.fields),
-            functions=create_non_final_functions(class_decl.functions),
-            is_final=False)
+        if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
+            # An interface cannot inherit from a class.
+            return create_interface(class_decl)
+
+        if class_decl.class_type == ast.ClassDeclaration.ABSTRACT:
+            return create_abstract_class(class_decl)
+
+        class_types = [
+            create_regular_class,
+            create_abstract_class,
+        ]
+        if not class_decl.fields:
+            # If the subclass does not contain any fields, then
+            # we can safely create a superclass which is an interface.
+            class_types.append(create_interface)
+        return utils.random.choice(class_types)(class_decl)
+
+    def _get_subtype_functions(self, class_decl):
+        functions = []
+        func_map = {f.name: f for f in class_decl.functions}
+        for f in self._supertype.functions:
+            f2 = func_map[f.name]
+            over_func = ast.FunctionDeclaration(
+                f2.name, f2.params, f2.ret_type,
+                f2.body, f2.func_type, is_final=f2.is_final, override=True)
+            if f.body is None:
+                # The function of supertype is abstract, so we definetely
+                # need to override it.
+                functions.append(over_func)
+                continue
+            if utils.random.bool():
+                # Randomly choose to override a function from supertype.
+                functions.append(over_func)
+        return functions
 
     def _create_subtype(self, class_decl):
         args = (
@@ -71,12 +136,12 @@ class SupertypeCreation(Transformation):
         )
         superInstantiation = ast.SuperClassInstantiation(self._supertype.name,
                                                          args)
+        functions = self._get_subtype_functions(class_decl)
         return ast.ClassDeclaration(
             class_decl.name, superclasses=[superInstantiation],
             class_type=class_decl.class_type,
             fields=create_override_fields(class_decl.fields),
-            functions=create_override_functions(class_decl.functions),
-            is_final=class_decl.is_final)
+            functions=functions, is_final=class_decl.is_final)
 
     def _replace_subtype_with_supertype(self, decl, setter):
         if decl.get_type().name == self._subtype.get_type().name:
