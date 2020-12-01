@@ -223,7 +223,7 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         self.ident = old_ident
         self._children_res.append(
-            " " * self.ident + node.class_name + "(" + ", ".join(
+            " " * self.ident + node.class_type.name + "(" + ", ".join(
                 children_res) + ")")
 
     def visit_field_access(self, node):

@@ -236,8 +236,8 @@ class Generator(object):
 
     def gen_new(self, etype):
         news = {
-            kt.Any: ast.New('Any', args=[]),
-            kt.Unit: ast.New('Unit', args=[])
+            kt.Any: ast.New(kt.AnyType(), args=[]),
+            kt.Unit: ast.New(kt.UnitType(), args=[])
         }
         con = news.get(etype)
         if con is not None:
@@ -249,7 +249,7 @@ class Generator(object):
         for f in class_decl.fields:
             args.append(self.generate_expr(f.get_type()))
         self.depth = initial_depth
-        return ast.New(class_decl.name, args)
+        return ast.New(class_decl.get_type(), args)
 
     def gen_variable(self, etype):
         # Get all variables declared in the current namespace or

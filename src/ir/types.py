@@ -1,4 +1,5 @@
 from copy import deepcopy
+from collections import defaultdict
 from typing import List, Set
 
 
@@ -20,6 +21,17 @@ class Type(object):
 
     def not_related(self, t):
         return not(self.is_subtype(t) or t.is_subtype(self))
+
+
+class AbstractType(Type):
+    def is_subtype(self, t):
+        raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
+
+    def get_supertypes(self):
+        raise TypeError("You cannot call 'get_supertypes()' in an AbstractType")
+
+    def not_related(self, t):
+        raise TypeError("You cannot call 'not_related()' in an AbstractType")
 
 
 class Builtin(Type):
@@ -74,10 +86,11 @@ class SimpleClassifier(Classifier):
     """https://kotlinlang.org/spec/type-system.html#simple-classifier-types
     """
 
-    def __init__(self, name: str, supertypes: List[Type] = []):
+    def __init__(self, name: str, supertypes: List[Type] = [], check=False):
         super(SimpleClassifier, self).__init__(name)
         self.supertypes = supertypes
-        #self._check_supertypes()
+        if check:
+            self._check_supertypes()
 
     def __str__(self):
         return "{}{}".format(
@@ -100,15 +113,15 @@ class SimpleClassifier(Classifier):
         """The transitive closure of supertypes must be consistent, i.e., does
         not contain two parameterized types with different type arguments.
         """
-        pc = {}  # Parameterized Classifiers
-        for s in filter(lambda x: isinstance(x, ConcreteType), self.get_supertypes()):
-            pc[s.p_classifier] = pc.get(s.p_classifier, []) + [s]
-        for p_class in pc.values():
-            #  We are inside a class, we cannot use scoped objects in a comprehension
-            for p in p_class:
-                assert p.types == p_class[0].types, \
+        tc = defaultdict(list)  # Type Constructors
+        for s in filter(lambda x: isinstance(x, ParameterizedType), self.get_supertypes()):
+            tc[s.t_constructor] = tc[s.t_constructor] + [s]
+        print(tc)
+        for t_class in tc.values():
+            for p in t_class:
+                assert p.type_args == t_class[0].type_args, \
                     "The concrete types of {} do not have the same types".format(
-                        p_class[0].p_classifier)
+                        t_class[0].t_constructor)
 
     def _dfs(self, t: Type, visited: Set[Type]):
         if t not in visited:
@@ -128,7 +141,7 @@ class SimpleClassifier(Classifier):
         return t == self or t in self.get_supertypes()
 
 
-class TypeParameter(Type):
+class TypeParameter(AbstractType):
     INVARIANT = 0
     COVARIANT = 1
     CONTRAVARIANT = 2
@@ -156,12 +169,14 @@ class TypeParameter(Type):
         )
 
 
-class ParameterizedClassifier(SimpleClassifier):
+# Type Constructor
+class TypeConstructor(AbstractType):
     def __init__(self, name: str, type_parameters: List[TypeParameter],
                  supertypes: List[Type] = []):
         assert len(type_parameters) != 0, "type_parameters is empty"
         self.type_parameters = type_parameters
-        super(ParameterizedClassifier, self).__init__(name, supertypes)
+        self.supertypes = supertypes
+        super(TypeConstructor, self).__init__(name)
 
     def __str__(self):
         return "{}<{}> {} {}".format(
@@ -170,48 +185,47 @@ class ParameterizedClassifier(SimpleClassifier):
             ':' if self.supertypes else '',
             ', '.join(map(str, self.supertypes)))
 
-    def __eq__(self, other: Type):
-        """Check if two Builtin objects are of the same Type"""
+    def __eq__(self, other: AbstractType):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
                 self.supertypes == other.supertypes and
                 str(self.type_parameters) == str(other.type_parameters))
 
     def __hash__(self):
-        """Hash based on the Type"""
         return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
                     + str(self.type_parameters))
 
+    def new(self, type_args: List[Type]):
+        return ParameterizedType(self, type_args)
 
-class ConcreteType(SimpleClassifier):
-    def __init__(self, p_classifier: ParameterizedClassifier, types: List[Type]):
-        #  self.p_classifier = p_classifier
-        self.p_classifier = deepcopy(p_classifier)
+
+class ParameterizedType(SimpleClassifier):
+    def __init__(self, t_constructor: TypeConstructor, type_args: List[Type]):
+        self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
-        self.types = types
-        assert len(self.p_classifier.type_parameters) == len(types), \
-                "You should provide {} types for {}".format(
-                    len(self.p_classifier.type_parameters), self.p_classifier)
-        super(ConcreteType, self).__init__(self.p_classifier.name,
-                                           self.p_classifier.supertypes)
+        self.type_args = type_args
+        assert len(self.t_constructor.type_parameters) == len(type_args), \
+            "You should provide {} types for {}".format(
+                len(self.t_constructor.type_parameters), self.t_constructor)
+        super(ParameterizedType, self).__init__(self.t_constructor.name,
+                                                self.t_constructor.supertypes)
 
     def __eq__(self, other: Type):
-        """Check if two Builtin objects are of the same Type"""
-        return (self.__class__ == other.__class__ and
-                self.name == other.name and
+        if not isinstance(other, ParameterizedType):
+            return False
+        return (self.name == other.name and
                 self.supertypes == other.supertypes and
-                self.p_classifier.type_parameters ==
-                    other.p_classifier.type_parameters and
-                self.types == self.types)
+                self.t_constructor.type_parameters ==
+                other.t_constructor.type_parameters and
+                self.type_args == other.type_args)
 
     def __hash__(self):
-        """Hash based on the Type"""
-        return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
-                    + str(self.p_classifier.type_parameters) + str(self.types))
+        return hash(str(self.name) + str(self.supertypes) + str(self.type_args)
+                    + str(self.t_constructor.type_parameters))
 
     def __str__(self):
         return "{}<{}>".format(self.name,
-                                ", ".join(map(str, self.types)))
+                               ", ".join(map(str, self.type_args)))
 
 
 class Function(Classifier):

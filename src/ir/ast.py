@@ -107,13 +107,14 @@ class ClassDeclaration(Declaration):
     ABSTRACT = 2
 
     def __init__(self, name, superclasses, class_type=None,
-                 fields=[], functions=[], is_final=True):
+                 fields=[], functions=[], is_final=True, type_parameters=[]):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
         self.fields = fields
         self.functions = functions
         self.is_final = is_final
+        self.type_parameters = type_parameters
 
     @property
     def attributes(self):
@@ -123,8 +124,10 @@ class ClassDeclaration(Declaration):
         return self.fields + self.superclasses + self.functions
 
     def get_type(self):
-        return types.SimpleClassifier(
-            self.name, [s.name for s in self.superclasses])
+        if self.type_parameters:
+            return types.TypeConstructor(self.name, self.type_parameters,
+                                         self.superclasses)
+        return types.SimpleClassifier(self.name, self.superclasses)
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:
@@ -136,70 +139,20 @@ class ClassDeclaration(Declaration):
     def __str__(self):
         superclasses = " : " + ", ".join(map(str, self.superclasses)) \
             if len(self.superclasses) > 0 else ""
+        if self.type_parameters:
+            return "{} {}<{}>{} {{\n  {}\n  {} }}".format(
+                self.get_class_prefix(), self.name,
+                ", ".join(map(str, self.type_parameters)),
+                superclasses,
+                "\n  ".join(map(str, self.fields)),
+                "\n  ".join(map(str, self.functions))
+            )
         return "{} {}{} {{\n  {}\n  {} }}".format(
             self.get_class_prefix(), self.name,
             superclasses,
             "\n  ".join(map(str, self.fields)),
             "\n  ".join(map(str, self.functions))
         )
-
-
-class ParameterizedClassDeclaration(ClassDeclaration):
-    """Parameterized (i.e., Generic) class declaration
-
-    NOTE: Maybe this class is redundant.
-    """
-    def __init__(self, name, type_parameters, superclasses, class_type=None,
-            fields=[], functions=[]):
-        super(ParameterizedClassDeclaration, self).__init__(
-            name, superclasses, class_type=class_type, fields=fields,
-            functions=functions)
-        self.type_parameters = type_parameters
-
-
-    def get_type(self):
-        return types.ParameterizedClassifier(self.name, self.type_parameters,
-                                             self.superclasses)
-
-    def __str__(self):
-        return "{} {}{} {{\n  {}\n  {} }}".format(
-            self.get_class_prefix(), self.name,
-            ", ".join(map(str, self.type_parameters)),
-            "\n  ".join(map(str, self.fields)),
-            "\n  ".join(map(str, self.functions))
-        )
-
-
-class TypeParameterDecleration(Declaration):
-    def __init__(self, name, variance=None, bound=None):
-        self.name = name
-        self.variance = variance
-        self.bound = bound
-
-    def childer(self):
-        return []
-
-    def get_type(self):
-        return types.TypeParameter(self.name, self.variance, self.bound)
-
-    def __str__(self):
-        return "<" + str(self.get_type()) + ">"
-
-
-class ConcreteTypeDecleration(Declaration):
-    def __init__(self, classifier, types):
-        self.classifier = classifier
-        self.name = classifier.name
-        self.types = types
-
-    def childer(self):
-        return []
-
-    def get_type(self):
-        return types.ConcreteType(self.name, self.types)
-
-    def __str__(self):
-        return "{}<{}>".format(self.name, ", ".join(map(str, self.types)))
 
 
 class ParameterDeclaration(Declaration):
@@ -404,15 +357,23 @@ class ArithExpr(BinaryOp):
 
 
 class New(Expr):
-    def __init__(self, class_name, args):
-        self.class_name = class_name
+    def __init__(self, class_type: types.Type, args, type_args=[]):
+        self.class_type = class_type
         self.args = args
+        self.type_args = type_args
 
     def children(self):
         return self.args
 
     def __str__(self):
-        return "new " + str(self.class_name) + "(" + \
+        if self.type_args:
+            return " new {}<{}> ({})".format(
+                str(self.class_type.name),
+                ", ".join(map(str, self.type_args)) + ")",
+                ", ".join(map(str, self.args)) + ")"
+            )
+
+        return "new " + self.class_type.name + "(" + \
             ", ".join(map(str, self.args)) + ")"
 
 

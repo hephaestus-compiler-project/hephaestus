@@ -40,24 +40,32 @@ def test_simple_classifier():
     assert nothing.is_subtype(cls1)
     assert nothing.is_subtype(cls2)
     assert nothing.is_subtype(cls3)
-
-def test_zero_division():
-    with pytest.raises(ZeroDivisionError):
-        1 / 0
-
-def test_classifier_sypertypes():
     type_param_a = TypeParameter("A")
-    pcls = ParameterizedClassifier("Pcls", [type_param_a], [IntegerType()])
-    c_type_s = ConcreteType(pcls, [StringType()])
-    c_type_i = ConcreteType(pcls, [IntegerType()])
-    cls1 = SimpleClassifier("Cls1", [c_type_i])
-    cls2 = SimpleClassifier("Cls2", [c_type_s])
+    t_constructor = TypeConstructor("Pcls", [type_param_a])
+    p_type_i = ParameterizedType(t_constructor, [IntegerType()])
+    cls4 = SimpleClassifier("Cls4", [cls2, p_type_i])
+    assert (cls4.get_supertypes() ==
+            {cls1, cls2, p_type_i})
+    assert cls4.is_subtype(p_type_i)
+    assert cls4.is_subtype(cls1)
+    assert cls4.is_subtype(cls2)
+    assert cls4.is_subtype(cls4)
+    assert not cls4.is_subtype(IntegerType())
+
+
+def test_classifier_check_supertypes():
+    type_param_a = TypeParameter("A")
+    t_constructor = TypeConstructor("Pcls", [type_param_a], [IntegerType()])
+    p_type_s = ParameterizedType(t_constructor, [StringType()])
+    p_type_i = ParameterizedType(t_constructor, [IntegerType()])
+    cls1 = SimpleClassifier("Cls1", [p_type_i], True)
+    cls2 = SimpleClassifier("Cls2", [p_type_s], True)
     try:
-        cls3 = SimpleClassifier("Cls3", [cls2, c_type_i])
+        cls3 = SimpleClassifier("Cls3", [cls2, p_type_i], True)
         assert False
     except AssertionError as e:
         if e.args[0] == "assert False":
             assert False
         assert True
-    c_type_i2 = ConcreteType(pcls, [IntegerType()])
-    cls4 = SimpleClassifier("Cls4", [c_type_i2, c_type_i])
+    p_type_i2 = ParameterizedType(t_constructor, [IntegerType()])
+    cls4 = SimpleClassifier("Cls4", [p_type_i2, p_type_i], True)
