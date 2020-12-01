@@ -1,14 +1,14 @@
 from collections import defaultdict
 from random import Random
 
+from src import utils
 from src.ir import ast
 from src.ir.visitors import DefaultVisitor
 
 
 class Transformation(DefaultVisitor):
-    def __init__(self, seed=None):
+    def __init__(self):
         self.transform = False
-        self.r = Random(seed)
 
 
 def create_non_final_fields(fields):
@@ -80,7 +80,7 @@ class SupertypeCreation(Transformation):
 
     def _replace_subtype_with_supertype(self, decl, setter):
         if decl.get_type().name == self._subtype.get_type().name:
-            if self.r.choice([True, False]):
+            if utils.random.bool():
                 setter(decl, self._supertype.get_type())
             else:
                 setter(decl, self._subtype.get_type())
@@ -95,7 +95,7 @@ class SupertypeCreation(Transformation):
         if not classes:
             ## There are not user-defined types.
             return
-        index = self.r.randint(0, len(classes) - 1)
+        index = utils.random.integer(0, len(classes) - 1)
         class_decl = classes[index]
         self._supertype = self._create_supertype(class_decl)
         self._subtype = self._create_subtype(class_decl)

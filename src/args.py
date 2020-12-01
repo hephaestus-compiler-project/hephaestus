@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from src.utils import random_string, mkdir
+from src.utils import random, mkdir
 
 
 cwd = os.getcwd()
@@ -36,7 +36,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "-n", "--name",
-    default=random_string(),
+    default=random.str(),
     help="Set name of this testing instance (default: random string)"
 )
 args = parser.parse_args()

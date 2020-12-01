@@ -1,7 +1,3 @@
-import os
-from random import Random
-import string
-
 from src import utils
 from src.ir import ast, types
 from src.ir import kotlin_types as kt
@@ -9,10 +5,6 @@ from src.ir.context import Context
 
 
 class Generator(object):
-
-    resource_path = os.path.join(os.path.split(__file__)[0], "resources")
-
-    WORDS = utils.read_lines(os.path.join(resource_path, 'words'))
 
     BUILTIN_TYPES = [
         kt.Any,
@@ -35,13 +27,12 @@ class Generator(object):
         self.max_params = max_params
         self.max_var_decls = max_var_decls
         self.depth = 1
-        self.r = Random()
         self._vars_in_context = {}
         self._stop_var = False
         self.namespace = ('global',)
 
     def gen_identifier(self, ident_type=None):
-        w = self.r.choice(self.WORDS)
+        w = utils.random.word()
         if ident_type is None:
             return w
         if ident_type == 'lower':
@@ -49,22 +40,22 @@ class Generator(object):
         return w.capitalize()
 
     def gen_integer_constant(self, expr_type=None):
-        return ast.IntegerConstant(self.r.randint(-100, 100))
+        return ast.IntegerConstant(utils.random.integer(-100, 100))
 
     def gen_real_constant(self, expr_type=None):
-        prefix = str(self.r.randint(0, 100))
-        suffix = str(self.r.randint(0, 1000))
-        sign = self.r.choice(['', '-'])
+        prefix = str(utils.random.integer(0, 100))
+        suffix = str(utils.random.integer(0, 1000))
+        sign = utils.random.choice(['', '-'])
         if expr_type is kt.Float:
             suffix += "f"
         return ast.RealConstant(sign + prefix + "." + suffix)
 
     def gen_bool_constant(self, expr_type=None):
-        return ast.BooleanConstant(self.r.choice(['true', 'false']))
+        return ast.BooleanConstant(
+            utils.random.choice(['true', 'false']))
 
     def gen_char_constant(self, expr_type=None):
-        return ast.CharConstant(self.r.choice(
-            string.ascii_letters + string.digits))
+        return ast.CharConstant(utils.random.char())
 
     def gen_string_constant(self, expr_type=None):
         return ast.StringConstant(self.gen_identifier())
@@ -73,7 +64,7 @@ class Generator(object):
         initial_depth = self.depth
         self.depth += 1
         etype = self.gen_type()
-        op = self.r.choice(ast.EqualityExpr.VALID_OPERATORS)
+        op = utils.random.choice(ast.EqualityExpr.VALID_OPERATORS)
         e1 = self.generate_expr(etype)
         e2 = self.generate_expr(etype)
         self.depth = initial_depth
@@ -82,7 +73,7 @@ class Generator(object):
     def gen_logical_expr(self, expr_type=None):
         initial_depth = self.depth
         self.depth += 1
-        op = self.r.choice(ast.LogicalExpr.VALID_OPERATORS)
+        op = utils.random.choice(ast.LogicalExpr.VALID_OPERATORS)
         e1 = self.generate_expr(kt.Boolean)
         e2 = self.generate_expr(kt.Boolean)
         self.depth = initial_depth
@@ -118,9 +109,9 @@ class Generator(object):
         }
         initial_depth = self.depth
         self.depth += 1
-        op = self.r.choice(ast.ComparisonExpr.VALID_OPERATORS)
-        e1_type = self.r.choice(valid_types)
-        e2_type = self.r.choice(e2_types[e1_type])
+        op = utils.random.choice(ast.ComparisonExpr.VALID_OPERATORS)
+        e1_type = utils.random.choice(valid_types)
+        e2_type = utils.random.choice(e2_types[e1_type])
         e1 = self.generate_expr(e1_type)
         e2 = self.generate_expr(e2_type)
         self.depth = initial_depth
@@ -143,7 +134,7 @@ class Generator(object):
         initial_depth = self.depth
         self.depth += 1
         params = []
-        for _ in range(self.r.randint(0, self.max_params)):
+        for _ in range(utils.random.integer(0, self.max_params)):
             p = self.gen_param_decl()
             params.append(p)
             self.context.add_var(self.namespace, p.name, p)
@@ -171,12 +162,12 @@ class Generator(object):
         initial_depth = self.depth
         self.depth += 1
         fields = []
-        for _ in range(self.r.randint(0, self.max_fields)):
+        for _ in range(utils.random.integer(0, self.max_fields)):
             f = self.gen_field_decl()
             fields.append(f)
             self.context.add_var(self.namespace, f.name, f)
         funcs = []
-        for _ in range(self.r.randint(0, self.max_funcs)):
+        for _ in range(utils.random.integer(0, self.max_funcs)):
             f = self.gen_func_decl()
             funcs.append(f)
             self.context.add_func(self.namespace, f.name, f)
@@ -192,8 +183,8 @@ class Generator(object):
 
     def gen_type(self):
         # Randomly choose whether we should generate a builtin type or not.
-        if self.r.choice([True, False]):
-            return self.r.choice(self.BUILTIN_TYPES)
+        if utils.random.bool():
+            return utils.random.choice(self.BUILTIN_TYPES)
         # Get all class declarations in the current namespace
         class_decls = self.context.get_classes(self.namespace)
         if not class_decls:
@@ -205,7 +196,7 @@ class Generator(object):
             self.context.add_class(self.namespace, decl.name, decl)
             self.namespace = initial_namespace
             return decl.get_type()
-        return self.r.choice(list(class_decls.values())).get_type()
+        return utils.random.choice(list(class_decls.values())).get_type()
 
     def gen_variable_decl(self, etype=None):
         var_type = etype if etype is not None else self.gen_type()
@@ -234,7 +225,7 @@ class Generator(object):
             func = self.gen_func_decl(etype)
             self.context.add_func(self.namespace, func.name, func)
             funcs.append(func)
-        f = self.r.choice(funcs)
+        f = utils.random.choice(funcs)
         args = []
         initial_depth = self.depth
         self.depth += 1
@@ -281,7 +272,7 @@ class Generator(object):
             self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             return ast.Variable(var_decl.name)
-        return ast.Variable(self.r.choice([v.name for v in variables]))
+        return ast.Variable(utils.random.choice([v.name for v in variables]))
 
     def generate_main_func(self):
         initial_namespace = self.namespace
@@ -340,14 +331,14 @@ class Generator(object):
                 # has been reached, or we have previously declared a variable
                 # of a specific type, then we should avoid variable creation.
                 leaf_canidates.append(self.gen_variable)
-            return self.r.choice(leaf_canidates)(expr_type)
+            return utils.random.choice(leaf_canidates)(expr_type)
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
             candidates = [self.gen_variable, con_candidate] + binary_ops.get(
                 expr_type, [])
         else:
             candidates = leaf_canidates
-        return self.r.choice(candidates + other_candidates)(expr_type)
+        return utils.random.choice(candidates + other_candidates)(expr_type)
 
     def gen_top_level_declaration(self):
         candidates = [
@@ -355,12 +346,12 @@ class Generator(object):
             (self.gen_class_decl, self.context.add_class),
             (self.gen_func_decl, self.context.add_func)
         ]
-        gen_func, upd_context = self.r.choice(candidates)
+        gen_func, upd_context = utils.random.choice(candidates)
         decl = gen_func()
         upd_context(self.namespace, decl.name, decl)
 
     def generate(self):
-        for _ in range(0, self.r.randint(0, 10)):
+        for _ in range(0, utils.random.integer(0, 10)):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         self.namespace = ('global',)
