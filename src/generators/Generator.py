@@ -19,8 +19,8 @@ class Generator(object):
     ]
 
     def __init__(self, max_depth=4, max_fields=3, max_funcs=3, max_params=3,
-                 max_var_decls=3):
-        self.context = Context()
+                 max_var_decls=3, context=None):
+        self.context = context or Context()
         self.max_depth = max_depth
         self.max_fields = max_fields
         self.max_funcs = max_funcs
@@ -60,26 +60,26 @@ class Generator(object):
     def gen_string_constant(self, expr_type=None):
         return ast.StringConstant(self.gen_identifier())
 
-    def gen_equality_expr(self, expr_type=None):
+    def gen_equality_expr(self, expr_type=None, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
         etype = self.gen_type()
         op = utils.random.choice(ast.EqualityExpr.VALID_OPERATORS)
-        e1 = self.generate_expr(etype)
-        e2 = self.generate_expr(etype)
+        e1 = self.generate_expr(etype, only_leaves)
+        e2 = self.generate_expr(etype, only_leaves)
         self.depth = initial_depth
         return ast.EqualityExpr(e1, e2, op)
 
-    def gen_logical_expr(self, expr_type=None):
+    def gen_logical_expr(self, expr_type=None, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
         op = utils.random.choice(ast.LogicalExpr.VALID_OPERATORS)
-        e1 = self.generate_expr(kt.Boolean)
-        e2 = self.generate_expr(kt.Boolean)
+        e1 = self.generate_expr(kt.Boolean, only_leaves)
+        e2 = self.generate_expr(kt.Boolean, only_leaves)
         self.depth = initial_depth
         return ast.LogicalExpr(e1, e2, op)
 
-    def gen_comparison_expr(self, expr_type=None):
+    def gen_comparison_expr(self, expr_type=None, only_leaves=False):
         valid_types = [
             kt.String,
             kt.Boolean,
@@ -112,19 +112,19 @@ class Generator(object):
         op = utils.random.choice(ast.ComparisonExpr.VALID_OPERATORS)
         e1_type = utils.random.choice(valid_types)
         e2_type = utils.random.choice(e2_types[e1_type])
-        e1 = self.generate_expr(e1_type)
-        e2 = self.generate_expr(e2_type)
+        e1 = self.generate_expr(e1_type, only_leaves)
+        e2 = self.generate_expr(e2_type, only_leaves)
         self.depth = initial_depth
         return ast.ComparisonExpr(e1, e2, op)
 
-    def gen_field_decl(self):
+    def gen_field_decl(self, etype=None):
         name = self.gen_identifier('lower')
-        field_type = self.gen_type()
+        field_type = etype or self.gen_type()
         return ast.FieldDeclaration(name, field_type)
 
-    def gen_param_decl(self):
+    def gen_param_decl(self, etype=None):
         name = self.gen_identifier('lower')
-        param_type = self.gen_type()
+        param_type = etype or self.gen_type()
         return ast.ParameterDeclaration(name, param_type)
 
     def gen_func_decl(self, etype=None):
@@ -146,7 +146,6 @@ class Generator(object):
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
         self.depth = initial_depth
-        self.context.remove_namespace(self.namespace)
         self.namespace = initial_namespace
         if self.namespace[-1][0].isupper():
             func_type = ast.FunctionDeclaration.CLASS_METHOD
@@ -171,7 +170,6 @@ class Generator(object):
             f = self.gen_func_decl()
             funcs.append(f)
             self.context.add_func(self.namespace, f.name, f)
-        self.context.remove_namespace(self.namespace)
         self.namespace = initial_namespace
         self.depth = initial_depth
         return ast.ClassDeclaration(
@@ -198,23 +196,23 @@ class Generator(object):
             return decl.get_type()
         return utils.random.choice(list(class_decls.values())).get_type()
 
-    def gen_variable_decl(self, etype=None):
+    def gen_variable_decl(self, etype=None, only_leaves=False):
         var_type = etype if etype is not None else self.gen_type()
         initial_depth = self.depth
         self.depth += 1
-        expr = self.generate_expr(var_type)
+        expr = self.generate_expr(var_type, only_leaves)
         self.depth = initial_depth
         return ast.VariableDeclaration(
             self.gen_identifier('lower'),
             expr=expr,
             var_type=var_type)
 
-    def gen_conditional(self, etype):
+    def gen_conditional(self, etype, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
-        cond = self.generate_expr(kt.Boolean)
-        true_expr = self.generate_expr(etype)
-        false_expr = self.generate_expr(etype)
+        cond = self.generate_expr(kt.Boolean, only_leaves)
+        true_expr = self.generate_expr(etype, only_leaves)
+        false_expr = self.generate_expr(etype, only_leaves)
         self.depth = initial_depth
         return ast.Conditional(cond, true_expr, false_expr)
 
@@ -234,7 +232,7 @@ class Generator(object):
         self.depth = initial_depth
         return ast.FunctionCall(f.name, args)
 
-    def gen_new(self, etype):
+    def gen_new(self, etype, only_leaves=False):
         news = {
             kt.Any: ast.New(kt.Any, args=[]),
             kt.Unit: ast.New(kt.Unit, args=[])
@@ -247,11 +245,11 @@ class Generator(object):
         self.depth += 1
         args = []
         for f in class_decl.fields:
-            args.append(self.generate_expr(f.get_type()))
+            args.append(self.generate_expr(f.get_type(), only_leaves))
         self.depth = initial_depth
-        return ast.New(class_decl.get_type(), args)
+        return ast.New(etype, args)
 
-    def gen_variable(self, etype):
+    def gen_variable(self, etype, only_leaves=False):
         # Get all variables declared in the current namespace or
         # the outer namespace.
         variables = self.context.get_vars(self.namespace)
@@ -268,7 +266,7 @@ class Generator(object):
             self._stop_var = True
             # If there are not variable declarations that match our criteria,
             # we have to create a new variable declaration.
-            var_decl = self.gen_variable_decl(etype)
+            var_decl = self.gen_variable_decl(etype, only_leaves)
             self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             return ast.Variable(var_decl.name)
@@ -292,7 +290,7 @@ class Generator(object):
         self.namespace = initial_namespace
         return main_func
 
-    def generate_expr(self, expr_type=None):
+    def generate_expr(self, expr_type=None, only_leaves=False):
         leaf_canidates = [
             self.gen_new,
         ]
@@ -319,19 +317,20 @@ class Generator(object):
             self.gen_variable,
         ]
         expr_type = expr_type or self.gen_type()
-        if self.depth >= self.max_depth:
+        if self.depth >= self.max_depth or only_leaves:
             gen_func = constant_candidates.get(expr_type)
             if gen_func:
                 return gen_func(expr_type)
             gen_var = self._vars_in_context.get(
-                self.namespace, 0) < self.max_var_decls and not self._stop_var
+                self.namespace, 0) < self.max_var_decls and not (
+                    self._stop_var or only_leaves)
             if gen_var:
                 # Decide if we can generate a variable.
                 # If the maximum numbers of variables in a specific context
                 # has been reached, or we have previously declared a variable
                 # of a specific type, then we should avoid variable creation.
                 leaf_canidates.append(self.gen_variable)
-            return utils.random.choice(leaf_canidates)(expr_type)
+            return utils.random.choice(leaf_canidates)(expr_type, only_leaves)
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
             candidates = [self.gen_variable, con_candidate] + binary_ops.get(
@@ -358,4 +357,4 @@ class Generator(object):
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
         decls.append(main_func)
-        return ast.Program(decls)
+        return ast.Program(decls, self.context)

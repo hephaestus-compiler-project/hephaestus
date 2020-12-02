@@ -12,8 +12,9 @@ class Node(object):
 
 
 class Program(Node):
-    def __init__(self, declarations):
+    def __init__(self, declarations, context):
         self.declarations = declarations
+        self.context = context
 
     def children(self):
         return self.declarations
