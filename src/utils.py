@@ -63,5 +63,11 @@ class RandomUtils(object):
         return ''.join(self.r.sample(
             string.ascii_letters + string.digits, length))
 
+    def caps(self, length=1, blacklist=[]):
+        while True:
+            res = ''.join(self.r.sample(string.ascii_uppercase, length))
+            if res not in blacklist:
+                return res
+
 
 random = RandomUtils()

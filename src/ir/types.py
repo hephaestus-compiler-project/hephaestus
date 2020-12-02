@@ -19,6 +19,8 @@ class Type(object):
     def get_supertypes(self):
         raise NotImplementedError("You have to implement 'get_supertypes()'")
 
+        raise NotImplementedError("You have to implement 'get_type_str()'")
+
     def not_related(self, t):
         return not(self.is_subtype(t) or t.is_subtype(self))
 
@@ -68,6 +70,9 @@ class Builtin(Type):
 
     def is_subtype(self, t: Type) -> bool:
         return t == self or t in self.get_supertypes()
+
+    def get_type_str(self):
+        return str(self.name)
 
 
 class Classifier(Type):
@@ -169,7 +174,6 @@ class TypeParameter(AbstractType):
         )
 
 
-# Type Constructor
 class TypeConstructor(AbstractType):
     def __init__(self, name: str, type_parameters: List[TypeParameter],
                  supertypes: List[Type] = []):
@@ -226,6 +230,10 @@ class ParameterizedType(SimpleClassifier):
     def __str__(self):
         return "{}<{}>".format(self.name,
                                ", ".join(map(str, self.type_args)))
+
+    def get_type_str(self):
+        return "{}<{}>".format(self.name, ", ".join([t.get_type_str()
+                                                     for t in self.type_args]))
 
 
 class Function(Classifier):

@@ -1,4 +1,4 @@
-from src.ir import ast, kotlin_types as kt
+from src.ir import ast, types, kotlin_types as kt
 from src.ir.visitors import ASTVisitor
 
 
@@ -85,6 +85,7 @@ class KotlinTranslator(ASTVisitor):
         len_fields = len(field_res)
         superclasses_res = [children_res[i + len_fields]
                             for i, _ in enumerate(node.superclasses)]
+        type_parameters_res = ", ".join(map(str, node.type_parameters))
         function_res = children_res[len_fields + len(superclasses_res):]
         prefix = " " * old_ident
         prefix += (
@@ -92,12 +93,12 @@ class KotlinTranslator(ASTVisitor):
             if not node.is_final and node.class_type != ast.ClassDeclaration.INTERFACE
             else ""
         )
-        if not field_res:
-            res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
-        else:
-            res = "{}{} {}({})".format(
-                prefix, node.get_class_prefix(), node.name,
-                ", ".join(field_res))
+        res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
+        if type_parameters_res:
+            res = "{}<{}>".format(res, type_parameters_res)
+        if field_res:
+            res = "{}({})".format(
+                res, ", ".join(field_res))
         if superclasses_res:
             res += ": " + ", ".join(superclasses_res)
         if function_res:
@@ -116,7 +117,10 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         res = prefix + "val " + node.name
         if node.var_type is not None:
-            res += ": " + node.var_type.name
+            if isinstance(node.var_type, types.ParameterizedType):
+                res += ": " + node.var_type.get_type_str()
+            else:
+                res += ": " + node.var_type.name
         res += " = " + children_res[0]
         self.ident = old_ident
         self._children_res.append(res)
@@ -128,7 +132,11 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
-        res = node.name + ": " + node.param_type.name
+        res = node.name + ": {}".format(
+            node.param_type.get_type_str()
+            if isinstance(node.param_type, types.ParameterizedType)
+            else node.param_type.name
+        )
         self._children_res.append(res)
 
     def visit_func_decl(self, node):
