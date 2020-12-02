@@ -5,11 +5,15 @@ from src.ir import types
 class Node(object):
 
     def accept(self, visitor):
-        visitor.visit(self)
+        return visitor.visit(self)
 
     def children(self):
         raise NotImplementedError('children() must be implemented')
 
+    def update_children(self, children):
+        assert len(children) == len(self.children()), (
+            'The number of the given children is not compatible'
+            ' with the number of the node\'s children.')
 
 class Program(Node):
     def __init__(self, declarations, context):
@@ -18,6 +22,10 @@ class Program(Node):
 
     def children(self):
         return self.declarations
+
+    def update_children(self, children):
+        super(Program, self).update_children(children)
+        self.declarations = children
 
     def __str__(self):
         return "\n\n".join(map(str, self.declarations))
@@ -29,6 +37,10 @@ class Block(Node):
 
     def children(self):
         return self.body
+
+    def update_children(self, children):
+        super(Block, self).update_children(children)
+        self.body = children
 
     def __str__(self):
         return "{{\n  {}\n}}".format("\n  ".join(map(str, self.body)))
@@ -51,6 +63,10 @@ class VariableDeclaration(Declaration):
     def get_type(self):
         return self.var_type
 
+    def update_children(self, children):
+        super(VariableDeclaration, self).update_children(children)
+        self.expr = children[0]
+
     def __str__(self):
         if self.var_type is None:
             return "val " + self.name + " = " + str(self.expr)
@@ -72,6 +88,9 @@ class FieldDeclaration(Declaration):
     def get_type(self):
         return self.field_type
 
+    def update_children(self, children):
+        pass
+
     def __str__(self):
         return str(self.name) + ": " + str(self.field_type)
 
@@ -82,6 +101,9 @@ class ObjectDecleration(Declaration):
 
     def get_type(self):
         return types.Object(self.name)
+
+    def update_children(self, children):
+        pass
 
     def __str__(self):
         return "object " + self.name
@@ -94,6 +116,11 @@ class SuperClassInstantiation(Node):
 
     def children(self):
         return self.args or []
+
+    def update_children(self, children):
+        super(SuperClassInstantiation, self).update_children(children)
+        if self.args is not None:
+            self.args = children
 
     def __str__(self):
         if self.args is None:
@@ -123,6 +150,17 @@ class ClassDeclaration(Declaration):
 
     def children(self):
         return self.fields + self.superclasses + self.functions
+
+    def update_children(self, children):
+        super(ClassDeclaration, self).update_children(children)
+        len_fields = len(self.fields)
+        len_supercls = len(self.superclasses)
+        for i, c in enumerate(children[:len_fields]):
+            self.fields[i] = c
+        for i, c in enumerate(children[len_fields:len_fields + len_supercls]):
+            self.superclasses[i] = c
+        for i, c in enumerate(children[len_fields + len_supercls:]):
+            self.functions[i] = c
 
     def get_type(self):
         if self.type_parameters:
@@ -167,6 +205,9 @@ class ParameterDeclaration(Declaration):
     def children(self):
         return []
 
+    def update_children(self, children):
+        pass
+
     def get_type(self):
         return self.param_type
 
@@ -196,6 +237,15 @@ class FunctionDeclaration(Declaration):
         if self.body is None:
             return self.params
         return self.params + [self.body]
+
+    def update_children(self, children):
+        super(FunctionDeclaration, self).update_children(children)
+        len_params = len(self.params)
+        for i, c in enumerate(children[:len_params]):
+            self.params[i] = c
+        if self.body is None:
+            return
+        self.body = children[-1]
 
     def get_type(self):
         return types.Function(
@@ -250,6 +300,9 @@ class Constant(Expr):
 
     def children(self):
         return []
+
+    def update_children(self, children):
+        pass
 
     def __str__(self):
         return str(self.literal)
@@ -307,6 +360,9 @@ class Variable(Expr):
     def children(self):
         return []
 
+    def update_children(self, children):
+        pass
+
     def __str__(self):
         return str(self.name)
 
@@ -319,6 +375,12 @@ class Conditional(Expr):
 
     def children(self):
         return [self.cond, self.true_branch, self.false_branch]
+
+    def update_children(self, children):
+        super(Conditional, self).update_children(children)
+        self.cond = children[0]
+        self.true_branch = children[1]
+        self.false_branch = children[2]
 
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
@@ -338,6 +400,11 @@ class BinaryOp(Expr):
 
     def children(self):
         return [self.lexpr, self.rexpr]
+
+    def update_children(self, children):
+        super(BinaryOp, self).update_children(children)
+        self.lexpr = children[0]
+        self.rexpr = children[1]
 
     def __str__(self):
         return str(self.lexpr) + " " + self.operator + " " + str(self.rexpr)
@@ -368,6 +435,10 @@ class New(Expr):
     def children(self):
         return self.args
 
+    def update_children(self, children):
+        super(New, self).update_children(children)
+        self.args = children
+
     def __str__(self):
         if self.type_args:
             return " new {}<{}> ({})".format(
@@ -388,6 +459,10 @@ class FieldAccess(Expr):
     def children(self):
         return [self.expr]
 
+    def update_children(self, children):
+        super(FieldAccess, self).update_children(children)
+        self.expr = children[0]
+
     def __str__(self):
         return str(self.expr) + "." + self.field
 
@@ -399,7 +474,17 @@ class FunctionCall(Expr):
         self.receiver = receiver
 
     def children(self):
-        return self.args
+        if self.receiver is None:
+            return self.args
+        return self.args + [self.receiver]
+
+    def update_children(self, children):
+        super(FunctionCall, self).update_children(children)
+        if self.receiver is None:
+            self.args = children
+        else:
+            self.args = children[:-1]
+            self.receiver = children[-1]
 
     def __str__(self):
         if self.receiver is None:
@@ -415,6 +500,10 @@ class Assignment(Expr):
 
     def children(self):
         return [self.expr]
+
+    def update_children(self, children):
+        super(Assignment, self).update_children(children)
+        self.expr = children[0]
 
     def __str__(self):
         return str(self.var_name) + " = " + str(self.expr)
