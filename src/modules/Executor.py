@@ -102,8 +102,9 @@ class Executor:
                     self.translator = KotlinTranslator()
                     self.translator.visit(p)
 
-                    status, _, filename = self._compile(self.translator.result(),
-                                                        compiler_pass=True)
+                    status, _, filename = self._compile(
+                        self.translator.result(),
+                        compiler_pass=transformer.preserve_correctness())
                     if not status:
                         self._report(filename)
 

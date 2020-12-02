@@ -1,14 +1,10 @@
 from collections import defaultdict
-from random import Random
 
 from src import utils
 from src.ir import ast
 from src.ir.visitors import DefaultVisitor
+from src.transformations.base import Transformation
 
-
-class Transformation(DefaultVisitor):
-    def __init__(self):
-        self.transform = False
 
 
 def create_non_final_fields(fields):
@@ -83,6 +79,8 @@ def create_regular_class(class_decl):
 
 
 class SupertypeCreation(Transformation):
+
+    CORRECTNESS_PRESERVING = True
 
     def __init__(self):
         super(SupertypeCreation, self).__init__()
