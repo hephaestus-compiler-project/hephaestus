@@ -1,12 +1,15 @@
-from src.ir.visitors import DefaultVisitor
+from src.ir.visitors import DefaultVisitorUpdate
 
 
-class Transformation(DefaultVisitor):
+class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
     NAME = None
 
     def __init__(self):
         self.transform = False
+
+    def result(self):
+        return self.program
 
     @classmethod
     def get_name(cls):

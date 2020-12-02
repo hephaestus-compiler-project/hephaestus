@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from src import utils
 from src.ir import ast
-from src.ir.visitors import DefaultVisitor
 from src.generators import Generator
 from src.transformations.base import Transformation
 
@@ -95,9 +94,6 @@ class TypeCreation(Transformation):
     def adapt_old_class(self, class_decl):
         raise NotImplementedError('adapt_old_class() must be implemented')
 
-    def result(self):
-        return self.program
-
     def get_candidates_classes(self, node):
         # Get all class declarations
         return [d for d in node.declarations
@@ -123,6 +119,7 @@ class TypeCreation(Transformation):
         decls = [d for d in node.declarations if d != class_decl]
         self.program = ast.Program(self.get_updated_classes() + decls,
                                    node.context)
+        return self.program
         #super(TypeCreation, self).visit_program(self.program)
 
 
