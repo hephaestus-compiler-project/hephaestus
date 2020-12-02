@@ -3,9 +3,10 @@ import time
 import subprocess as sp
 from shutil import copyfile
 from src.generators.Generator import Generator
-from src.transformations.supertypes import SupertypeCreation
+from src.transformations.type_creation import (
+    SupertypeCreation, SubtypeCreation)
 from src.translators.kotlin import KotlinTranslator
-from src.utils import mkdir
+from src.utils import mkdir, random
 
 
 def run_command(arguments):
@@ -26,6 +27,11 @@ def run_command(arguments):
 
 
 class Executor:
+
+    TRANSFORMATIONS = [
+        SupertypeCreation,
+        SubtypeCreation
+    ]
 
     def __init__(self, args):
         self.args = args
@@ -90,9 +96,10 @@ class Executor:
                     continue
                 print()
                 for j in range(self.args.transformations):
-                    print('Applying tranformation ' + str(j + 1))
                     temp_p = p
-                    transformer = SupertypeCreation()
+                    transformer = random.choice(self.TRANSFORMATIONS)()
+                    print('Applying tranformation ' + str(j + 1) + ': ' +\
+                          transformer.get_name())
                     transformer.visit(temp_p)
                     p = transformer.result()
                     if p is None:

@@ -3,6 +3,7 @@ from collections import defaultdict
 from src import utils
 from src.ir import ast
 from src.ir.visitors import DefaultVisitor
+from src.generators import Generator
 from src.transformations.base import Transformation
 
 
@@ -78,19 +79,122 @@ def create_regular_class(class_decl):
         is_final=False)
 
 
-class SupertypeCreation(Transformation):
+class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
     def __init__(self):
-        super(SupertypeCreation, self).__init__()
-        self._supertype = None
-        self._subtype = None
-        self._defs = defaultdict(bool)
-        self._namespace = ('global',)
+        super(TypeCreation, self).__init__()
+        self._new_class = None
+        self._old_class = None
         self.program = None
 
-    def _create_supertype(self, class_decl):
+    def create_new_class(self, class_decl, node):
+        raise NotImplementedError('create_new_class() must be implemented')
+
+    def adapt_old_class(self, class_decl):
+        raise NotImplementedError('adapt_old_class() must be implemented')
+
+    def result(self):
+        return self.program
+
+    def get_candidates_classes(self, node):
+        # Get all class declarations
+        return [d for d in node.declarations
+                if isinstance(d, ast.ClassDeclaration)]
+
+    def get_updated_classes(self):
+        raise NotImplementedError('get_updated_classes() must be implemented')
+
+    def visit_program(self, node):
+        # Get all class declarations
+        classes = self.get_candidates_classes(node)
+        if not classes:
+            ## There are not user-defined types.
+            return
+        index = utils.random.integer(0, len(classes) - 1)
+        class_decl = classes[index]
+        self._new_class = self.create_new_class(class_decl, node)
+        self._old_class = self.adapt_old_class(class_decl)
+        node.context.add_class(('global',), self._new_class.name,
+                               self._new_class)
+        node.context.add_class(('global',), self._old_class.name,
+                               self._old_class)
+        decls = [d for d in node.declarations if d != class_decl]
+        self.program = ast.Program(self.get_updated_classes() + decls,
+                                   node.context)
+        #super(TypeCreation, self).visit_program(self.program)
+
+
+class SubtypeCreation(TypeCreation):
+    NAME = 'Subtype Creator'
+
+    def __init__(self):
+        super(SubtypeCreation, self).__init__()
+        self.generator = None
+
+    def _create_super_instantiation(self, class_decl):
+        if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
+            return ast.SuperClassInstantiation(class_decl.name, args=None)
+        return ast.SuperClassInstantiation(
+            class_decl.name,
+            args=[self.generator.generate_expr(f.get_type(), only_leaves=True)
+                  for f in class_decl.fields])
+
+    def create_new_class(self, class_decl, node):
+        self.generator = Generator(context=node.context)
+        # Here the new class corresponds to a subtype from the given
+        # `class_decl`.
+        decls = [d for d in node.declarations
+                 if (d != class_decl and isinstance(d, ast.ClassDeclaration) and
+                     d.class_type == ast.ClassDeclaration.REGULAR)]
+        types = [d.get_type() for d in decls] + self.generator.BUILTIN_TYPES
+        overriden_fields = utils.random.sample(class_decl.fields)
+        new_fields_nu = self.generator.max_fields - len(overriden_fields)
+        fields = []
+        for f in overriden_fields:
+            fields.append(ast.FieldDeclaration(
+                f.name, f.field_type, is_final=True, override=True))
+        for i in range(utils.random.integer(0, new_fields_nu)):
+            etype = utils.random.choice(types)
+            fields.append(self.generator.gen_field_decl(etype))
+        abstract_functions = [f for f in class_decl.functions
+                              if f.body is None]
+        functions = []
+        for f in abstract_functions:
+            expr = self.generator.generate_expr(f.ret_type, only_leaves=True)
+            functions.append(
+                ast.FunctionDeclaration(f.name, f.params, f.ret_type,
+                                        body=ast.Block([expr]),
+                                        func_type=f.func_type,
+                                        is_final=True, override=True)
+            )
+        return ast.ClassDeclaration(
+            utils.random.word().capitalize(),
+            [self._create_super_instantiation(class_decl)],
+            class_type=ast.ClassDeclaration.REGULAR, fields=fields,
+            functions=functions, is_final=True)
+
+    def adapt_old_class(self, class_decl):
+        return ast.ClassDeclaration(
+            class_decl.name, class_decl.superclasses, class_decl.class_type,
+            fields=create_non_final_fields(class_decl.fields),
+            functions=create_non_final_functions(class_decl.functions),
+            is_final=False, type_parameters=class_decl.type_parameters)
+
+    def get_updated_classes(self):
+        return [self._old_class, self._new_class]
+
+
+class SupertypeCreation(TypeCreation):
+    NAME = 'Supertype Creator'
+
+    def __init__(self):
+        super(SupertypeCreation, self).__init__()
+        self._defs = defaultdict(bool)
+        self._namespace = ('global',)
+
+    def create_new_class(self, class_decl, node):
         if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
             # An interface cannot inherit from a class.
             return create_interface(class_decl)
@@ -111,7 +215,7 @@ class SupertypeCreation(Transformation):
     def _get_subtype_functions(self, class_decl):
         functions = []
         func_map = {f.name: f for f in class_decl.functions}
-        for f in self._supertype.functions:
+        for f in self._new_class.functions:
             f2 = func_map[f.name]
             over_func = ast.FunctionDeclaration(
                 f2.name, f2.params, f2.ret_type,
@@ -126,13 +230,13 @@ class SupertypeCreation(Transformation):
                 functions.append(over_func)
         return functions
 
-    def _create_subtype(self, class_decl):
+    def adapt_old_class(self, class_decl):
         args = (
             None
-            if self._supertype.class_type == ast.ClassDeclaration.INTERFACE
-            else [ast.Variable(f.name) for f in self._supertype.fields]
+            if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
+            else [ast.Variable(f.name) for f in self._new_class.fields]
         )
-        superInstantiation = ast.SuperClassInstantiation(self._supertype.name,
+        superInstantiation = ast.SuperClassInstantiation(self._new_class.name,
                                                          args)
         functions = self._get_subtype_functions(class_decl)
         return ast.ClassDeclaration(
@@ -142,29 +246,19 @@ class SupertypeCreation(Transformation):
             functions=functions, is_final=class_decl.is_final)
 
     def _replace_subtype_with_supertype(self, decl, setter):
-        if decl.get_type().name == self._subtype.get_type().name:
+        if decl.get_type().name == self._old_class.get_type().name:
             if utils.random.bool():
-                setter(decl, self._supertype.get_type())
+                setter(decl, self._new_class.get_type())
             else:
-                setter(decl, self._subtype.get_type())
+                setter(decl, self._old_class.get_type())
 
-    def result(self):
-        return self.program
+    def get_candidates_classes(self, node):
+        return [d for d in node.declarations
+                if (isinstance(d, ast.ClassDeclaration) and not
+                    d.superclasses)]
 
-    def visit_program(self, node):
-        classes = [d for d in node.declarations
-                   if (isinstance(d, ast.ClassDeclaration) and not
-                       d.superclasses)]
-        if not classes:
-            ## There are not user-defined types.
-            return
-        index = utils.random.integer(0, len(classes) - 1)
-        class_decl = classes[index]
-        self._supertype = self._create_supertype(class_decl)
-        self._subtype = self._create_subtype(class_decl)
-        decls = [d for d in node.declarations if d != class_decl]
-        self.program = ast.Program([self._supertype, self._subtype] + decls)
-        super(SupertypeCreation, self).visit_program(self.program)
+    def get_updated_classes(self):
+        return [self._new_class, self._old_class]
 
     def visit_block(self, node):
         # Inside a block we are interested in variable declarations.

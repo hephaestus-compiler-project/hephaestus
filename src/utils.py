@@ -55,6 +55,10 @@ class RandomUtils(object):
     def choice(self, choices):
         return self.r.choice(choices)
 
+    def sample(self, choices):
+        k = self.integer(0, len(choices))
+        return self.r.sample(choices, k)
+
     def str(self, length=5):
         return ''.join(self.r.sample(
             string.ascii_letters + string.digits, length))
