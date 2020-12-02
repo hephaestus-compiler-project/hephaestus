@@ -135,9 +135,10 @@ class SubtypeCreation(TypeCreation):
 
     def _create_super_instantiation(self, class_decl):
         if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
-            return ast.SuperClassInstantiation(class_decl.name, args=None)
+            return ast.SuperClassInstantiation(
+                class_decl.get_type(), args=None)
         return ast.SuperClassInstantiation(
-            class_decl.name,
+            class_decl.get_type(),
             args=[self.generator.generate_expr(f.get_type(), only_leaves=True)
                   for f in class_decl.fields])
 
@@ -236,8 +237,8 @@ class SupertypeCreation(TypeCreation):
             if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
             else [ast.Variable(f.name) for f in self._new_class.fields]
         )
-        superInstantiation = ast.SuperClassInstantiation(self._new_class.name,
-                                                         args)
+        superInstantiation = ast.SuperClassInstantiation(
+            self._new_class.get_type(), args)
         functions = self._get_subtype_functions(class_decl)
         return ast.ClassDeclaration(
             class_decl.name, superclasses=[superInstantiation],

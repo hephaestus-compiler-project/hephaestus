@@ -88,8 +88,8 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def __init__(self, name, args=[]):
-        self.name = name
+    def __init__(self, class_type, args=[]):
+        self.class_type = class_type
         self.args = args
 
     def children(self):
@@ -97,9 +97,9 @@ class SuperClassInstantiation(Node):
 
     def __str__(self):
         if self.args is None:
-            return self.name
+            return self.class_type.name
         else:
-            return self.name + "(" + ", ".join(map(str, self.args)) + ")"
+            return self.class_type.name + "(" + ", ".join(map(str, self.args)) + ")"
 
 
 class ClassDeclaration(Declaration):
@@ -126,9 +126,11 @@ class ClassDeclaration(Declaration):
 
     def get_type(self):
         if self.type_parameters:
-            return types.TypeConstructor(self.name, self.type_parameters,
-                                         self.superclasses)
-        return types.SimpleClassifier(self.name, self.superclasses)
+            return types.TypeConstructor(
+                self.name, self.type_parameters,
+                [s.class_type for s in self.superclasses])
+        return types.SimpleClassifier(
+            self.name, [s.class_type for s in self.superclasses])
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:

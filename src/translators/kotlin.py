@@ -68,10 +68,10 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if node.args is None:
-            self._children_res.append(node.name)
+            self._children_res.append(node.class_type.name)
             return
         self._children_res.append(
-            node.name + "(" + ", ".join(children_res) + ")")
+            node.class_type.name + "(" + ", ".join(children_res) + ")")
 
     def visit_class_decl(self, node):
         old_ident = self.ident
