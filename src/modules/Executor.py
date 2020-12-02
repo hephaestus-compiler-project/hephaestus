@@ -3,6 +3,7 @@ import time
 import subprocess as sp
 from shutil import copyfile
 from src.generators.Generator import Generator
+from src.transformations.value_subtitution import ValueSubtitution
 from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.translators.kotlin import KotlinTranslator
@@ -30,7 +31,8 @@ class Executor:
 
     TRANSFORMATIONS = [
         SupertypeCreation,
-        SubtypeCreation
+        SubtypeCreation,
+        ValueSubtitution
     ]
 
     def __init__(self, args):
