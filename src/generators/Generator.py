@@ -236,8 +236,8 @@ class Generator(object):
 
     def gen_new(self, etype):
         news = {
-            kt.Any: ast.New(kt.AnyType(), args=[]),
-            kt.Unit: ast.New(kt.UnitType(), args=[])
+            kt.Any: ast.New(kt.Any, args=[]),
+            kt.Unit: ast.New(kt.Unit, args=[])
         }
         con = news.get(etype)
         if con is not None:
