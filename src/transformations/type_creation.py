@@ -18,7 +18,8 @@ def create_non_final_fields(fields):
 
 def create_non_final_functions(functions):
     return [
-        ast.FunctionDeclaration(f.name, f.params, f.ret_type, deepcopy(f.body),
+        ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type,
+                                deepcopy(f.body),
                                 f.func_type, is_final=False,
                                 override=f.override)
         for f in functions
@@ -35,7 +36,8 @@ def create_override_fields(fields):
 
 def create_override_functions(functions):
     return [
-        ast.FunctionDeclaration(f.name, f.params, f.ret_type, deepcopy(f.body),
+        ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type,
+                                deepcopy(f.body),
                                 f.func_type, is_final=f.is_final,
                                 override=True)
         for f in functions
@@ -44,7 +46,7 @@ def create_override_functions(functions):
 
 def create_interface(class_decl):
     functions = [
-        ast.FunctionDeclaration(f.name, f.params, f.ret_type, None,
+        ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type, None,
                                 f.func_type, is_final=False,
                                 override=f.override)
         for f in class_decl.functions
@@ -61,7 +63,7 @@ def create_abstract_class(class_decl):
         # Some functions are randomly made abstract.
         body_f = None if utils.random.bool() else deepcopy(f.body)
         functions.append(
-            ast.FunctionDeclaration(f.name, f.params, f.ret_type, body_f,
+            ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type, body_f,
                                     f.func_type, is_final=False,
                                     override=f.override))
     return ast.ClassDeclaration(utils.random.word().capitalize(),
@@ -189,7 +191,7 @@ class SubtypeCreation(TypeCreation):
         for f in abstract_functions:
             expr = self.generator.generate_expr(f.ret_type, only_leaves=True)
             functions.append(
-                ast.FunctionDeclaration(f.name, f.params, f.ret_type,
+                ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type,
                                         body=ast.Block([expr]),
                                         func_type=f.func_type,
                                         is_final=True, override=True)
@@ -248,7 +250,7 @@ class SupertypeCreation(TypeCreation):
         for f in self._new_class.functions:
             f2 = func_map[f.name]
             over_func = ast.FunctionDeclaration(
-                f2.name, f2.params, f2.ret_type,
+                f2.name, deepcopy(f2.params), f2.ret_type,
                 f2.body, f2.func_type, is_final=f2.is_final, override=True)
             if f.body is None:
                 # The function of supertype is abstract, so we definetely
