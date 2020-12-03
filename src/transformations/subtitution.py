@@ -17,7 +17,6 @@ class ValueSubtitution(Transformation):
         super(ValueSubtitution, self).__init__()
         self.program = None
         self.generator = None
-        self.types = []
 
     def visit_program(self, node):
         self.generator = Generator(context=node.context)
@@ -42,7 +41,7 @@ class ValueSubtitution(Transformation):
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super(ValueSubtitution, self).visit_new(node)
-        subclasses = self.find_subtypes(node)
+        subclasses = self.find_subtypes(node.class_type)
         if not subclasses:
             return node
         subclasses = [c for c in subclasses
@@ -76,14 +75,19 @@ class TypeSubtitution(Transformation):
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self._current_function = None
+        self._cached_type_widenings = {}
 
     def _type_widening(self, decl, setter):
         superclasses = self.find_supertypes(decl.get_type())
         if not superclasses:
             return False
-        sup_t = utils.random.choice(superclasses)
-        if isinstance(sup_t, ast.ClassDeclaration):
-            sup_t = sup_t.get_type()
+        sup_t = self._cached_type_widenings.get(
+            (decl.name, decl.get_type().name))
+        if sup_t is None:
+            sup_t = utils.random.choice(superclasses)
+            if isinstance(sup_t, ast.ClassDeclaration):
+                sup_t = sup_t.get_type()
+            self._cached_type_widenings[(decl.name, decl.get_type().name)] = sup_t
         self.transform = True
         setter(decl, sup_t)
         return True
@@ -105,9 +109,10 @@ class TypeSubtitution(Transformation):
             if_cond = ast.Conditional(is_expr, deepcopy(function.body),
                                       ast.Variable(var_decl.name))
             return ast.Block([var_decl, if_cond])
-        if_cond = ast.Conditional(is_expr, deepcopy(function.body[1:]),
+        if_cond = ast.Conditional(is_expr,
+                                  ast.Block(deepcopy(function.body.body[1:])),
                                   ast.Variable(var_decl.name))
-        return ast.Block([function.body[0] + if_cond])
+        return ast.Block([function.body.body[0], if_cond])
 
     def visit_class_decl(self, node):
         initial_namespace = self._namespace
@@ -161,16 +166,19 @@ class TypeSubtitution(Transformation):
         self._current_function = node
         new_node = super(TypeSubtitution, self).visit_func_decl(node)
         var_decl = self.generate_variable_declaration("ret", node.ret_type)
-        is_declared = False
+        use = False
         for p in new_node.params:
             # Perform type widening on this function's parameters.
             old_type = p.param_type
             transform = self._type_widening(
                 p, lambda x, y: setattr(x, 'param_type', y))
-            if not self._defs[(self._namespace, p.name)] or not transform:
-                # If the parameter is not used in the function's body or
-                # the type widening operation was not applied,
-                # then we are done.
+            if (not self._defs[(self._namespace, p.name)] or
+                    not transform or new_node.body is None):
+                # We are done, if one of the following applies:
+                #
+                # * The parameter is not used in the function.
+                # * The type widening operator was not applied.
+                # * The function is abstract.
                 continue
 
             # Otherwise, replace the function body as follows
@@ -180,10 +188,14 @@ class TypeSubtitution(Transformation):
             #   val ret : R = ...
             #   if (x is T1) ... else ret
             # }
-            new_node.body = self._create_function_block(
-                new_node, ast.Is(ast.Variable(p.name), old_type), var_decl,
-                is_declared)
-            is_declared = True
+            use = True
+            if_cond = ast.Conditional(
+                ast.Is(ast.Variable(p.name), old_type),
+                deepcopy(new_node.body),
+                ast.Variable(var_decl.name))
+            new_node.body = ast.Block([if_cond])
+        if use:
+            new_node.body = ast.Block([var_decl, if_cond])
         self._namespace = initial_namespace
         self._current_function = None
         return new_node
@@ -193,7 +205,7 @@ class TypeSubtitution(Transformation):
         while len(namespace) > 0:
             if (namespace, node.name) in self._defs:
                 # Specify the namespace where this variable is used.
-                self._defs[(namespace, node.name)] = self._current_function
+                self._defs[(namespace, node.name)] = True
                 break
             else:
                 namespace = namespace[:-1]

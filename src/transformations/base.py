@@ -30,6 +30,7 @@ class Transformation(DefaultVisitorUpdate):
                 continue
             if find_subtypes and t2.is_subtype(t):
                 lst.append(c)
+                continue
             if not find_subtypes and t.is_subtype(t2):
                 lst.append(c)
         return lst
