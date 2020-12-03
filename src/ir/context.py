@@ -35,12 +35,12 @@ class Context(object):
         if len_namespace == 1 or only_current:
             return self._context.get(namespace, {}).get(decl_type, {})
         start = (namespace[0],)
-        decls = {}
+        decls = dict(self._context.get(start, {}).get(decl_type) or {})
         for n in namespace[1:]:
+            start = start + (n,)
             decl = self._context.get(start, {}).get(decl_type)
             if decl is not None:
                 decls.update(decl)
-            start = start + (n,)
         return decls
 
     def get_funcs(self, namespace, only_current=False):
