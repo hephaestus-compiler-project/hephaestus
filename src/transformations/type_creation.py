@@ -1,3 +1,4 @@
+from copy import deepcopy
 from collections import defaultdict
 
 from src import utils
@@ -17,7 +18,7 @@ def create_non_final_fields(fields):
 
 def create_non_final_functions(functions):
     return [
-        ast.FunctionDeclaration(f.name, f.params, f.ret_type, f.body,
+        ast.FunctionDeclaration(f.name, f.params, f.ret_type, deepcopy(f.body),
                                 f.func_type, is_final=False,
                                 override=f.override)
         for f in functions
@@ -34,7 +35,7 @@ def create_override_fields(fields):
 
 def create_override_functions(functions):
     return [
-        ast.FunctionDeclaration(f.name, f.params, f.ret_type, f.body,
+        ast.FunctionDeclaration(f.name, f.params, f.ret_type, deepcopy(f.body),
                                 f.func_type, is_final=f.is_final,
                                 override=True)
         for f in functions
@@ -58,7 +59,7 @@ def create_abstract_class(class_decl):
     functions = []
     for f in class_decl.functions:
         # Some functions are randomly made abstract.
-        body_f = None if utils.random.bool() else f.body
+        body_f = None if utils.random.bool() else deepcopy(f.body)
         functions.append(
             ast.FunctionDeclaration(f.name, f.params, f.ret_type, body_f,
                                     f.func_type, is_final=False,
@@ -151,10 +152,17 @@ class SubtypeCreation(TypeCreation):
         if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
             return ast.SuperClassInstantiation(
                 class_decl.get_type(), args=None)
-        return ast.SuperClassInstantiation(
-            class_decl.get_type(),
-            args=[self.generator.generate_expr(f.get_type(), only_leaves=True)
-                  for f in class_decl.fields])
+        args = []
+        for f in class_decl.fields:
+            subtypes = self.find_subtypes(f.get_type())
+            subtypes = [c for c in subtypes
+                        if not (isinstance(c, ast.ClassDeclaration) and
+                              c.class_type != ast.ClassDeclaration.REGULAR)]
+            t = utils.random.choice(subtypes) if subtypes else f.get_type()
+            if isinstance(t, ast.ClassDeclaration):
+                t = t.get_type()
+            args.append(self.generator.generate_expr(t, only_leaves=True))
+        return ast.SuperClassInstantiation(class_decl.get_type(), args)
 
     def create_new_class(self, class_decl, node):
         self.generator = Generator(context=node.context)
@@ -163,7 +171,7 @@ class SubtypeCreation(TypeCreation):
         decls = [d for d in node.declarations
                  if (d != class_decl and isinstance(d, ast.ClassDeclaration) and
                      d.class_type == ast.ClassDeclaration.REGULAR)]
-        types = [d.get_type() for d in decls] + self.generator.BUILTIN_TYPES
+        self.types = decls + self.generator.BUILTIN_TYPES
         overriden_fields = utils.random.sample(class_decl.fields)
         new_fields_nu = self.generator.max_fields - len(overriden_fields)
         fields = []
@@ -171,7 +179,9 @@ class SubtypeCreation(TypeCreation):
             fields.append(ast.FieldDeclaration(
                 f.name, f.field_type, is_final=True, override=True))
         for i in range(utils.random.integer(0, new_fields_nu)):
-            etype = utils.random.choice(types)
+            etype = utils.random.choice(self.types)
+            if isinstance(etype, ast.ClassDeclaration):
+                etype = etype.get_type()
             fields.append(self.generator.gen_field_decl(etype))
         abstract_functions = [f for f in class_decl.functions
                               if f.body is None]
