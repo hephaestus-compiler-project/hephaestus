@@ -222,6 +222,18 @@ class KotlinTranslator(ASTVisitor):
         self.ident = old_ident
         self._children_res.append(res)
 
+    def visit_is(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        res = "{}{} is {}".format(
+            " " * old_ident, children_res[0], node.etype.name)
+        self.ident = old_ident
+        self._children_res.append(res)
+
     def visit_new(self, node):
         old_ident = self.ident
         self.ident = 0

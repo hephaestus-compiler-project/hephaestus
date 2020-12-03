@@ -25,6 +25,7 @@ class ASTVisitor(object):
             ast.ComparisonExpr: self.visit_comparison_expr,
             ast.ArithExpr: self.visit_arith_expr,
             ast.Conditional: self.visit_conditional,
+            ast.Is: self.visit_is,
             ast.New: self.visit_new,
             ast.FieldAccess: self.visit_field_access,
             ast.FunctionCall: self.visit_func_call,
@@ -98,6 +99,9 @@ class ASTVisitor(object):
 
     def visit_conditional(self, node):
         raise NotImplementedError('visit_conditional() must be implemented')
+
+    def visit_is(self, node):
+        raise NotImplementedError('visit_is() must be implemented')
 
     def visit_new(self, node):
         raise NotImplementedError('visit_new() must be implemented')
@@ -174,6 +178,9 @@ class DefaultVisitor(ASTVisitor):
         return self._visit_node(node)
 
     def visit_conditional(self, node):
+        return self._visit_node(node)
+
+    def visit_is(self, node):
         return self._visit_node(node)
 
     def visit_new(self, node):

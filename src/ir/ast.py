@@ -426,6 +426,22 @@ class ArithExpr(BinaryOp):
     VALID_OPERATORS = ['+', '-', '/', '*']
 
 
+class Is(Expr):
+    def __init__(self, expr: Expr, etype: types.Type):
+        self.expr = expr
+        self.etype = etype
+
+    def children(self):
+        return [self.expr]
+
+    def update_children(self, children):
+        super(Is, self).update_children(children)
+        self.expr = children[0]
+
+    def __str__(self):
+        return str(self.expr) + " is " + str(self.etype)
+
+
 class New(Expr):
     def __init__(self, class_type: types.Type, args, type_args=[]):
         self.class_type = class_type
