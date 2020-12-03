@@ -34,7 +34,7 @@ class ValueSubtitution(Transformation):
             args=[self.generator.generate_expr(f.field_type, only_leaves=True)
                   for f in class_decl.fields])
 
-    def visit_new(self, node):
+    def _find_subclasses(self, node):
         con_type = node.class_type
         subclasses = []
         for sub_c in self.types:
@@ -46,8 +46,17 @@ class ValueSubtitution(Transformation):
                 continue
             if sub_t.is_subtype(con_type):
                 subclasses.append(sub_c)
+        return subclasses
+
+    def visit_new(self, node):
+        # If this node has children then randomly decide if we
+        # gonna subtitute one of its children or the current node.
+        if node.children() and utils.random.bool():
+            return super(ValueSubtitution, self).visit_new(node)
+        subclasses = self._find_subclasses(node)
         if not subclasses:
             return node
+        self.transform = True
         sub_c = utils.random.choice(subclasses)
         generators = {
             kt.Boolean: self.generator.gen_bool_constant,
@@ -60,5 +69,4 @@ class ValueSubtitution(Transformation):
             kt.Double: self.generator.gen_real_constant,
         }
         generate = generators.get(sub_c, lambda: self.generate_new(sub_c))
-        new_node = generate()
-        return new_node
+        return generate()
