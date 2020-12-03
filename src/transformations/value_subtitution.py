@@ -26,7 +26,7 @@ class ValueSubtitution(Transformation):
         new_node = super(ValueSubtitution, self).visit_program(node)
         if self.transform:
             self.program = new_node
-        return node
+        return new_node
 
     def generate_new(self, class_decl):
         return ast.New(
