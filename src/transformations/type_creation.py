@@ -119,8 +119,25 @@ class TypeCreation(Transformation):
         decls = [d for d in node.declarations if d != class_decl]
         self.program = ast.Program(self.get_updated_classes() + decls,
                                    node.context)
-        return self.program
-        #super(TypeCreation, self).visit_program(self.program)
+        return super(TypeCreation, self).visit_program(self.program)
+
+    def visit_field_decl(self, node):
+        new_type = self._old_class.get_type()
+        if node.field_type.name == new_type.name:
+            node.field_type = new_type
+        return node
+
+    def visit_param_decl(self, node):
+        new_type = self._old_class.get_type()
+        if node.param_type.name == new_type.name:
+            node.param_type = new_type
+        return node
+
+    def visit_var_decl(self, node):
+        new_type = self._old_class.get_type()
+        if node.var_type.name == new_type.name:
+            node.var_type = new_type
+        return super(TypeCreation, self).visit_var_decl(node)
 
 
 class SubtypeCreation(TypeCreation):
@@ -167,11 +184,16 @@ class SubtypeCreation(TypeCreation):
                                         func_type=f.func_type,
                                         is_final=True, override=True)
             )
-        return ast.ClassDeclaration(
-            utils.random.word().capitalize(),
+        name = utils.random.word().capitalize()
+        for f in functions:
+            node.context.add_func(('global', name), f.name, f)
+        cls = ast.ClassDeclaration(
+            name,
             [self._create_super_instantiation(class_decl)],
             class_type=ast.ClassDeclaration.REGULAR, fields=fields,
             functions=functions, is_final=True)
+        node.context.add_class(('global',), cls.name, cls)
+        return cls
 
     def adapt_old_class(self, class_decl):
         return ast.ClassDeclaration(
@@ -257,58 +279,3 @@ class SupertypeCreation(TypeCreation):
 
     def get_updated_classes(self):
         return [self._new_class, self._old_class]
-
-    def visit_block(self, node):
-        # Inside a block we are interested in variable declarations.
-        # If there are variable declarations that are not used
-        # and their declared type matches the type of the created class,
-        # we randomly assign it to this supertype.
-        super(SupertypeCreation, self).visit_block(node)
-        for e in node.body:
-            if not isinstance(e, ast.VariableDeclaration):
-                continue
-            if self._defs[(self._namespace, e.name)]:
-                continue
-            self._replace_subtype_with_supertype(
-                e, lambda x, y: setattr(x, 'var_type', y))
-
-    def visit_class_decl(self, node):
-        initial_namespace = self._namespace
-        self._namespace += (node.name,)
-        super(SupertypeCreation, self).visit_class_decl(node)
-        for f in node.fields:
-            if self._defs[(self._namespace, f.name)]:
-                continue
-            self._replace_subtype_with_supertype(
-                f, lambda x, y: setattr(x, 'field_type', y))
-        self._namespace = initial_namespace
-
-    def visit_param_decl(self, node):
-        self._defs[(self._namespace, node.name)] = False
-
-    def visit_field_decl(self, node):
-        self._defs[(self._namespace, node.name)] = False
-
-    def visit_var_decl(self, node):
-        super(SupertypeCreation, self).visit_var_decl(node)
-        self._defs[(self._namespace, node.name)] = False
-
-    def visit_func_decl(self, node):
-        initial_namespace = self._namespace
-        self._namespace += (node.name,)
-        super(SupertypeCreation, self).visit_func_decl(node)
-        for p in node.params:
-            if self._defs[(self._namespace, p.name)]:
-                continue
-            self._replace_subtype_with_supertype(
-                p, lambda x, y: setattr(x, 'param_type', y))
-        self._namespace = initial_namespace
-
-    def visit_variable(self, node):
-        namespace = self._namespace
-        while len(namespace) > 0:
-            if (namespace, node.name) in self._defs:
-                self._defs[(namespace, node.name)] = True
-                break
-            else:
-                namespace = namespace[:-1]
