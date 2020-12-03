@@ -127,6 +127,14 @@ class Generator(object):
         param_type = etype or self.gen_type()
         return ast.ParameterDeclaration(name, param_type)
 
+    def _get_func_ret_type(self, params, etype):
+        if etype is not None:
+            return etype
+        param_types = [p.param_type for p in params]
+        if param_types and utils.random.bool():
+            return utils.random.choice(param_types)
+        return self.gen_type()
+
     def gen_func_decl(self, etype=None):
         func_name = self.gen_identifier('lower')
         initial_namespace = self.namespace
@@ -138,7 +146,7 @@ class Generator(object):
             p = self.gen_param_decl()
             params.append(p)
             self.context.add_var(self.namespace, p.name, p)
-        ret_type = etype or self.gen_type()
+        ret_type = self._get_func_ret_type(params, etype)
         expr = self.generate_expr(ret_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
@@ -270,7 +278,8 @@ class Generator(object):
             self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             return ast.Variable(var_decl.name)
-        return ast.Variable(utils.random.choice([v.name for v in variables]))
+        varia = utils.random.choice([v.name for v in variables])
+        return ast.Variable(varia)
 
     def generate_main_func(self):
         initial_namespace = self.namespace
@@ -354,7 +363,7 @@ class Generator(object):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         self.namespace = ('global',)
+        self.context.add_func(self.namespace, 'main', main_func)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
-        decls.append(main_func)
         return ast.Program(decls, self.context)
