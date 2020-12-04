@@ -8,13 +8,13 @@ from src.generators import Generator
 from src.transformations.base import Transformation
 
 
-class ValueSubtitution(Transformation):
+class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
-    NAME = 'Value Subtitution'
+    NAME = 'Value Substitution'
 
     def __init__(self):
-        super(ValueSubtitution, self).__init__()
+        super(ValueSubstitution, self).__init__()
         self.program = None
         self.generator = None
 
@@ -25,7 +25,7 @@ class ValueSubtitution(Transformation):
             self.generator.BUILTIN_TYPES
         self.types = usr_types
         usr_types.remove(kt.Any)
-        new_node = super(ValueSubtitution, self).visit_program(node)
+        new_node = super(ValueSubstitution, self).visit_program(node)
         if self.transform:
             self.program = new_node
         return new_node
@@ -40,7 +40,7 @@ class ValueSubtitution(Transformation):
         # If this node has children then randomly decide if we
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
-            return super(ValueSubtitution, self).visit_new(node)
+            return super(ValueSubstitution, self).visit_new(node)
         subclasses = self.find_subtypes(node.class_type)
         subclasses = [c for c in subclasses
                       if not (isinstance(c, ast.ClassDeclaration) and
@@ -63,13 +63,13 @@ class ValueSubtitution(Transformation):
         return generate()
 
 
-class TypeSubtitution(Transformation):
+class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
-    NAME = 'Type Subtitution (Widening/Narrowing)'
+    NAME = 'Type Substitution (Widening/Narrowing)'
 
 
     def __init__(self):
-        super(TypeSubtitution, self).__init__()
+        super(TypeSubstitution, self).__init__()
         self.program = None
         self.generator = None
         self._defs = defaultdict(bool)
@@ -97,7 +97,7 @@ class TypeSubtitution(Transformation):
                      if isinstance(d, ast.ClassDeclaration)] + \
             self.generator.BUILTIN_TYPES
         self.types = usr_types
-        new_node = super(TypeSubtitution, self).visit_program(node)
+        new_node = super(TypeSubstitution, self).visit_program(node)
         if self.transform:
             self.program = new_node
         return new_node
@@ -116,7 +116,7 @@ class TypeSubtitution(Transformation):
     def visit_class_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
-        new_node = super(TypeSubtitution, self).visit_class_decl(node)
+        new_node = super(TypeSubstitution, self).visit_class_decl(node)
         self._namespace = initial_namespace
         return new_node
 
@@ -135,7 +135,7 @@ class TypeSubtitution(Transformation):
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
-        new_node = super(TypeSubtitution, self).visit_func_decl(node)
+        new_node = super(TypeSubstitution, self).visit_func_decl(node)
         var_decl = self.generate_variable_declaration("ret", node.ret_type)
         use = False
         for p in new_node.params:
