@@ -17,9 +17,17 @@ class Type(object):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
     def get_supertypes(self):
-        raise NotImplementedError("You have to implement 'get_supertypes()'")
-
-        raise NotImplementedError("You have to implement 'get_type_str()'")
+        """Return self and the transitive closure of the supertypes"""
+        stack = [self]
+        visited = set()
+        while stack:
+            source = stack[-1]
+            for supertype in source.supertypes:
+                if supertype not in visited:
+                    visited.add(supertype)
+                    stack.append(supertype)
+            stack = stack[1:]
+        return visited
 
     def not_related(self, t):
         return not(self.is_subtype(t) or t.is_subtype(self))
@@ -54,19 +62,6 @@ class Builtin(Type):
     def __hash__(self):
         """Hash based on the Type"""
         return hash(str(self.__class__))
-
-    def _dfs(self, t: Type, visited: Set[Type]):
-        if t not in visited:
-            visited.add(t)
-            for supertype in t.get_supertypes(visited):
-                if supertype not in visited:
-                    self._dfs(supertype, visited)
-
-    def get_supertypes(self, supertypes=set()) -> Set[Type]:
-        """Return self and the transitive closure of the supertypes"""
-        for supertype in self.supertypes:
-            self._dfs(supertype, supertypes)
-        return supertypes
 
     def is_subtype(self, t: Type) -> bool:
         return t == self or t in self.get_supertypes()
@@ -127,20 +122,6 @@ class SimpleClassifier(Classifier):
                 assert p.type_args == t_class[0].type_args, \
                     "The concrete types of {} do not have the same types".format(
                         t_class[0].t_constructor)
-
-    def _dfs(self, t: Type, visited: Set[Type]):
-        if t not in visited:
-            visited.add(t)
-            for supertype in t.get_supertypes():
-                if supertype not in visited:
-                    self._dfs(supertype, visited)
-
-    def get_supertypes(self) -> Set[Type]:
-        """Return self and the transitive closure of the supertypes"""
-        supertypes = set()
-        for supertype in self.supertypes:
-            self._dfs(supertype, supertypes)
-        return supertypes
 
     def is_subtype(self, t: Type) -> bool:
         return t == self or t in self.get_supertypes()
