@@ -248,14 +248,18 @@ class Generator(object):
         con = news.get(etype)
         if con is not None:
             return con
-        class_decl = self.context.get_classes(self.namespace).get(etype.name)
+        class_decls = self.context.get_classes(self.namespace).values()
+        class_decls = [c for c in class_decls
+                       if (c.get_type().is_subtype(etype) and
+                           c.class_type == ast.ClassDeclaration.REGULAR)]
+        class_decl = utils.random.choice(class_decls)
         initial_depth = self.depth
         self.depth += 1
         args = []
         for f in class_decl.fields:
             args.append(self.generate_expr(f.get_type(), only_leaves))
         self.depth = initial_depth
-        return ast.New(etype, args)
+        return ast.New(class_decl.get_type(), args)
 
     def gen_variable(self, etype, only_leaves=False):
         # Get all variables declared in the current namespace or
