@@ -175,6 +175,7 @@ class ClassDeclaration(Declaration):
         self.functions = functions
         self.is_final = is_final
         self.type_parameters = type_parameters
+        self.supertypes = [s.class_type for s in self.superclasses]
 
     @property
     def attributes(self):
@@ -191,6 +192,7 @@ class ClassDeclaration(Declaration):
             self.fields[i] = c
         for i, c in enumerate(children[len_fields:len_fields + len_supercls]):
             self.superclasses[i] = c
+            self.supertypes[i] = c.class_type
         for i, c in enumerate(children[len_fields + len_supercls:]):
             self.functions[i] = c
 
@@ -198,9 +200,9 @@ class ClassDeclaration(Declaration):
         if self.type_parameters:
             return types.TypeConstructor(
                 self.name, self.type_parameters,
-                [s.class_type for s in self.superclasses])
+                self.supertypes)
         return types.SimpleClassifier(
-            self.name, [s.class_type for s in self.superclasses])
+            self.name, self.supertypes)
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:
