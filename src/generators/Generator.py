@@ -18,7 +18,7 @@ class Generator(object):
         kt.String
     ]
 
-    def __init__(self, max_depth=4, max_fields=3, max_funcs=3, max_params=3,
+    def __init__(self, max_depth=4, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, context=None):
         self.context = context or Context()
         self.max_depth = max_depth
@@ -364,6 +364,4 @@ class Generator(object):
         main_func = self.generate_main_func()
         self.namespace = ('global',)
         self.context.add_func(self.namespace, 'main', main_func)
-        decls = list(self.context.get_declarations(
-            self.namespace, True).values())
-        return ast.Program(decls, self.context)
+        return ast.Program(self.context)

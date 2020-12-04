@@ -8,6 +8,7 @@ class Transformation(DefaultVisitorUpdate):
 
     def __init__(self):
         self.transform = False
+        self.program = None
         self.types = []
 
     def result(self):

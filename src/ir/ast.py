@@ -1,5 +1,10 @@
+from collections import OrderedDict
+
 from src import utils
-from src.ir import types
+from src.ir import types, context as ctx
+
+
+GLOBAL_NAMESPACE = ('global',)
 
 
 class Node(object):
@@ -15,20 +20,47 @@ class Node(object):
             'The number of the given children is not compatible'
             ' with the number of the node\'s children.')
 
+
 class Program(Node):
-    def __init__(self, declarations, context):
-        self.declarations = declarations
+    def __init__(self, context: ctx.Context):
         self.context = context
 
     def children(self):
-        return self.declarations
+        return self.context.get_declarations(GLOBAL_NAMESPACE,
+                                             only_current=True).values()
 
     def update_children(self, children):
         super(Program, self).update_children(children)
-        self.declarations = children
+        for c in children:
+            self.add_declaration(c)
+
+    @property
+    def declarations(self):
+        # Get declarations as list
+        return self.get_declarations().values()
+
+    def get_declarations(self):
+        return self.context.get_declarations(GLOBAL_NAMESPACE,
+                                             only_current=True)
+
+    def add_declaration(self, decl):
+        decl_types = {
+            FunctionDeclaration: self.context.add_func,
+            ClassDeclaration: self.context.add_class,
+            VariableDeclaration: self.context.add_var,
+        }
+        decl_types[decl.__class__](GLOBAL_NAMESPACE, decl.name, decl)
+
+    def remove_declaration(self, decl):
+        decl_types = {
+            FunctionDeclaration: self.context.remove_func,
+            ClassDeclaration: self.context.remove_class,
+            VariableDeclaration: self.context.remove_var,
+        }
+        decl_types[decl.__class__](GLOBAL_NAMESPACE, decl.name)
 
     def __str__(self):
-        return "\n\n".join(map(str, self.declarations))
+        return "\n\n".join(map(str, self.children()))
 
 
 class Block(Node):

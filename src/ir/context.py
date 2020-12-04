@@ -17,6 +17,12 @@ class Context(object):
             }
             self._context[namespace][entity][name] = value
 
+    def _remove_entity(self, namespace, entity, name):
+        if namespace not in self._context:
+            return
+        if name in self._context[namespace][entity]:
+            del self._context[namespace][entity][name]
+
     def add_func(self, namespace, func_name, func):
         self._add_entity(namespace, 'funcs', func_name, func)
         self._add_entity(namespace, 'decls', func_name, func)
@@ -29,13 +35,25 @@ class Context(object):
         self._add_entity(namespace, 'classes', class_name, cls)
         self._add_entity(namespace, 'decls', class_name, cls)
 
+    def remove_var(self, namespace, var_name):
+        self._remove_entity(namespace, 'vars', var_name)
+        self._remove_entity(namespace, 'decls', var_name)
+
+    def remove_func(self, namespace, func_name):
+        self._remove_entity(namespace, 'funcs', func_name)
+        self._remove_entity(namespace, 'decls', func_name)
+
+    def remove_class(self, namespace, class_name):
+        self._remove_entity(namespace, 'classes', class_name)
+        self._remove_entity(namespace, 'decls', class_name)
+
     def _get_declarations(self, namespace, decl_type, only_current):
         len_namespace = len(namespace)
         assert len_namespace >= 1
         if len_namespace == 1 or only_current:
             return self._context.get(namespace, {}).get(decl_type, {})
         start = (namespace[0],)
-        decls = dict(self._context.get(start, {}).get(decl_type) or {})
+        decls = OrderedDict(self._context.get(start, {}).get(decl_type) or {})
         for n in namespace[1:]:
             start = start + (n,)
             decl = self._context.get(start, {}).get(decl_type)
