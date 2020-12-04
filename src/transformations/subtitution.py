@@ -42,11 +42,11 @@ class ValueSubtitution(Transformation):
         if node.children() and utils.random.bool():
             return super(ValueSubtitution, self).visit_new(node)
         subclasses = self.find_subtypes(node.class_type)
-        if not subclasses:
-            return node
         subclasses = [c for c in subclasses
                       if not (isinstance(c, ast.ClassDeclaration) and
                               c.class_type != ast.ClassDeclaration.REGULAR)]
+        if not subclasses:
+            return node
         self.transform = True
         sub_c = utils.random.choice(subclasses)
         generators = {
@@ -74,7 +74,6 @@ class TypeSubtitution(Transformation):
         self.generator = None
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
-        self._current_function = None
         self._cached_type_widenings = {}
 
     def _type_widening(self, decl, setter):
@@ -118,33 +117,6 @@ class TypeSubtitution(Transformation):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
         new_node = super(TypeSubtitution, self).visit_class_decl(node)
-        #functions = {}
-        ## Perform type widening on class fields.
-        ## and find where these fields are used.
-        ## If necessary modify the body of the functions where these fields
-        ## are used (for details about function modification,
-        ## see `visit_func_decl()`).
-        #for f in new_node.fields:
-        #    old_type = f.field_type
-        #    transform = self._type_widening(
-        #        f, lambda x, y: setattr(x, 'field_type', y))
-        #    if not self._defs[(self._namespace, f.name)] or not transform:
-        #        continue
-        #    fun = self._defs[(self._namespace, f.name)]
-        #    var_decl = functions.get(fun.name)
-        #    is_declared = False
-        #    if var_decl is None:
-        #        # It's the first time to declare the variable for the false
-        #        # branch of the if (x is T) condition.
-        #        var_decl = self.generate_variable_declaration(
-        #            "field_ret", fun.ret_type)
-        #        functions[fun.name] = var_decl
-        #    else:
-        #        # We have already declared the variable for the else branch.
-        #        is_declared = True
-        #    fun.body = self._create_function_block(
-        #        fun, ast.Is(ast.Variable(f.name), old_type), var_decl,
-        #        is_declared)
         self._namespace = initial_namespace
         return new_node
 
@@ -163,7 +135,6 @@ class TypeSubtitution(Transformation):
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
-        self._current_function = node
         new_node = super(TypeSubtitution, self).visit_func_decl(node)
         var_decl = self.generate_variable_declaration("ret", node.ret_type)
         use = False
@@ -197,7 +168,6 @@ class TypeSubtitution(Transformation):
         if use:
             new_node.body = ast.Block([var_decl, if_cond])
         self._namespace = initial_namespace
-        self._current_function = None
         return new_node
 
     def visit_variable(self, node):
