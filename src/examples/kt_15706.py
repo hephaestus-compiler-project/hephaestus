@@ -1,5 +1,6 @@
 from src.ir.ast import *
 from src.ir.kotlin_types import *
+from src.ir.context import *
 
 
 child_cls = ClassDeclaration(
@@ -43,6 +44,8 @@ main_func = FunctionDeclaration(
     body=main_body
 )
 
-program = Program(
-    declarations=[child_cls, test_func, main_func]
-)
+ctx = Context()
+ctx.add_class(GLOBAL_NAMESPACE, child_cls.name, child_cls)
+ctx.add_func(GLOBAL_NAMESPACE, test_func.name, test_func)
+ctx.add_func(GLOBAL_NAMESPACE, main_func.name, main_func)
+program = Program(ctx)
