@@ -46,7 +46,7 @@ class Generator(object):
         prefix = str(utils.random.integer(0, 100))
         suffix = str(utils.random.integer(0, 1000))
         sign = utils.random.choice(['', '-'])
-        if expr_type is kt.Float:
+        if expr_type == kt.Float:
             suffix += "f"
         return ast.RealConstant(sign + prefix + "." + suffix)
 
@@ -321,7 +321,7 @@ class Generator(object):
         binary_ops = {
             kt.Boolean: [
                 self.gen_logical_expr,
-                self.gen_equality_expr,
+                #self.gen_equality_expr,
                 self.gen_comparison_expr
             ],
         }
