@@ -6,6 +6,7 @@ from typing import List, Set
 class Type(object):
     def __init__(self, name):
         self.name = name
+        self.supertypes = []
 
     def __str__(self):
         return str(self.name)
@@ -21,12 +22,11 @@ class Type(object):
         stack = [self]
         visited = set()
         while stack:
-            source = stack[-1]
+            source = stack.pop()
             for supertype in source.supertypes:
                 if supertype not in visited:
                     visited.add(supertype)
                     stack.append(supertype)
-            stack = stack[1:]
         return visited
 
     def not_related(self, t):
