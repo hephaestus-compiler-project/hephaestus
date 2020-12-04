@@ -124,28 +124,62 @@ class TypeCreation(Transformation):
         self._new_class = self.create_new_class(class_decl)
         self._old_class = self.adapt_old_class(class_decl)
         # Add the newly created class to the program's context.
+        new_node = super(TypeCreation, self).visit_program(self.program)
         self.add_class_context(self._new_class)
         # Update the old class.
         node.add_declaration(self._old_class)
-        return super(TypeCreation, self).visit_program(self.program)
+        return new_node
+
+    def update_supertypes(self, t, new_type):
+        visited = [t]
+        while visited:
+            source = visited[-1]
+            for i, st in enumerate(source.supertypes):
+                if st.name == new_type.name and st == new_type:
+                    return
+                if st.name == new_type.name:
+                    source.supertypes[i] = new_type
+                    return
+                if st not in visited:
+                    visited.append(st)
+            visited = visited[1:]
+
+    def update_type(self, node, attr):
+        new_type = self._old_class.get_type()
+        attr_value = getattr(node, attr)
+        if attr_value is not None:
+            self.update_supertypes(attr_value, new_type)
+        if attr_value.name == new_type.name:
+            setattr(node, attr, new_type)
+        return node
+
+    def visit_super_instantiation(self, node):
+        new_node = super(TypeCreation, self).visit_super_instantiation(node)
+        self.update_type(new_node, 'class_type')
+        return new_node
+
+    def visit_new(self, node):
+        new_node = super(TypeCreation, self).visit_new(node)
+        self.update_type(new_node, 'class_type')
+        return new_node
+
+    def visit_func_decl(self, node):
+        new_node = super(TypeCreation, self).visit_func_decl(node)
+        self.update_type(new_node, 'ret_type')
+        return new_node
 
     def visit_field_decl(self, node):
-        new_type = self._old_class.get_type()
-        if node.field_type.name == new_type.name:
-            node.field_type = new_type
+        self.update_type(node, 'field_type')
         return node
 
     def visit_param_decl(self, node):
-        new_type = self._old_class.get_type()
-        if node.param_type.name == new_type.name:
-            node.param_type = new_type
+        self.update_type(node, 'param_type')
         return node
 
     def visit_var_decl(self, node):
-        new_type = self._old_class.get_type()
-        if node.var_type.name == new_type.name:
-            node.var_type = new_type
-        return super(TypeCreation, self).visit_var_decl(node)
+        new_node = super(TypeCreation, self).visit_var_decl(node)
+        self.update_type(new_node, 'var_type')
+        return new_node
 
 
 class SubtypeCreation(TypeCreation):
@@ -186,7 +220,8 @@ class SubtypeCreation(TypeCreation):
             fields.append(ast.FieldDeclaration(
                 f.name, f.field_type, is_final=True, override=True))
         for i in range(utils.random.integer(0, new_fields_nu)):
-            etype = utils.random.choice(self.types)
+            etype = utils.random.choice([t for t in self.types
+                                         if not class_decl.get_type().is_subtype(t)])
             if isinstance(etype, ast.ClassDeclaration):
                 etype = etype.get_type()
             fields.append(self.generator.gen_field_decl(etype))
@@ -207,11 +242,10 @@ class SubtypeCreation(TypeCreation):
             functions=functions, is_final=True)
 
     def adapt_old_class(self, class_decl):
-        return ast.ClassDeclaration(
-            class_decl.name, class_decl.superclasses, class_decl.class_type,
-            fields=create_non_final_fields(class_decl.fields),
-            functions=create_non_final_functions(class_decl.functions),
-            is_final=False, type_parameters=class_decl.type_parameters)
+        class_decl.fields = create_non_final_fields(class_decl.fields)
+        class_decl.functions = create_non_final_functions(class_decl.functions)
+        class_decl.is_final = False
+        return class_decl
 
 
 class SupertypeCreation(TypeCreation):
@@ -267,11 +301,11 @@ class SupertypeCreation(TypeCreation):
         superInstantiation = ast.SuperClassInstantiation(
             self._new_class.get_type(), args)
         functions = self._get_subtype_functions(class_decl)
-        return ast.ClassDeclaration(
-            class_decl.name, superclasses=[superInstantiation],
-            class_type=class_decl.class_type,
-            fields=create_override_fields(class_decl.fields),
-            functions=functions, is_final=class_decl.is_final)
+        class_decl.superclasses.append(superInstantiation)
+        class_decl.supertypes.append(superInstantiation.class_type)
+        class_decl.fields = create_override_fields(class_decl.fields)
+        class_decl.functions = functions
+        return class_decl
 
     def get_candidates_classes(self):
         return [d for d in self.program.declarations
