@@ -252,7 +252,8 @@ class Generator(object):
         class_decls = [c for c in class_decls
                        if (c.get_type().is_subtype(etype) and
                            c.class_type == ast.ClassDeclaration.REGULAR)]
-        class_decl = utils.random.choice(class_decls)
+        class_decl = utils.random.choice(
+            [s for s in class_decls if s.name == etype.name] or class_decls)
         initial_depth = self.depth
         self.depth += 1
         args = []
