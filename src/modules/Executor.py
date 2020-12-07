@@ -120,6 +120,7 @@ class Executor:
                         self._report(filename)
 
                 print()
+                random.reset_word_pool()
             break
             #if self.args.stop_cond == "number":
             #    counter += 1
