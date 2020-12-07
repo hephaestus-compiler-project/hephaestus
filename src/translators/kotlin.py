@@ -185,7 +185,7 @@ class KotlinTranslator(ASTVisitor):
         literal = str(node.literal)
         literal = (
             "(" + literal + ")"
-            if suffix and literal == '-'
+            if suffix and literal[0] == '-'
             else literal
         )
         self._children_res.append(" " * self.ident + literal + suffix)
