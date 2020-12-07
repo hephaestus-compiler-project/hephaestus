@@ -35,7 +35,7 @@ class RandomUtils(object):
 
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
-    WORDS = read_lines(os.path.join(resource_path, 'words'))
+    WORDS = set(read_lines(os.path.join(resource_path, 'words')))
 
     def __init__(self, seed=None):
         self.r = random.Random(seed)
@@ -44,7 +44,10 @@ class RandomUtils(object):
         return self.r.choice([True, False])
 
     def word(self):
-        return self.r.choice(self.WORDS)
+        # TODO: revit regarding efficiency
+        w = self.r.choice(tuple(self.WORDS))
+        self.WORDS.remove(w)
+        return w
 
     def integer(self, min_int=0, max_int=10):
         return self.r.randint(min_int, max_int)
