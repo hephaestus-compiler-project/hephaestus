@@ -173,7 +173,7 @@ class TypeSubstitution(Transformation):
                     new_node.body.body[0].name == 'ret':
                 use = False
                 if_body = ast.Block(deepcopy(new_node.body.body[1:]))
-                func_stmt = var_decl
+                func_stmt = [var_decl]
             else:
                 if_body = deepcopy(new_node.body)
                 func_stmt = []
@@ -185,7 +185,7 @@ class TypeSubstitution(Transformation):
                 # if (x !is T) var else ...
                 if_cond = ast.Conditional(
                     and_expr, ast.Variable(var_decl.name), if_body)
-            new_node.body = ast.Block([func_stmt, if_cond])
+            new_node.body = ast.Block(func_stmt + [if_cond])
         if use:
             new_node.body = ast.Block([var_decl, if_cond])
         self._namespace = initial_namespace
