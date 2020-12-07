@@ -142,7 +142,8 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def __init__(self, class_type, args=[]):
+    def  __init__(self, class_type, args=[]):
+        assert not isinstance(class_type, types.AbstractType)
         self.class_type = class_type
         self.args = args
 
@@ -166,8 +167,9 @@ class ClassDeclaration(Declaration):
     INTERFACE = 1
     ABSTRACT = 2
 
-    def __init__(self, name, superclasses, class_type=None,
-                 fields=[], functions=[], is_final=True, type_parameters=[]):
+    def __init__(self, name, superclasses: SuperClassInstantiation,
+                 class_type=None, fields=[], functions=[], is_final=True,
+                 type_parameters=[]):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
