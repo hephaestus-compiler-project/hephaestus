@@ -162,10 +162,13 @@ class TypeSubstitution(Transformation):
             use = True
             bool_expr = self.generator.generate_expr(kt.Boolean,
                                                      only_leaves=True)
-            is_expr = ast.Is(ast.Variable(p.name), old_type)
+            is_expr = ast.Is(ast.Variable(p.name), old_type,
+                             utils.random.bool())
             and_expr = ast.LogicalExpr(
                 bool_expr, is_expr,
-                '&&' if bool_expr.literal == 'true' else '||')
+                ast.Operator('&&')
+                if bool_expr.literal == 'true'
+                else ast.Operator('||'))
             if isinstance(new_node.body.body[0], ast.VariableDeclaration) and \
                     new_node.body.body[0].name == 'ret':
                 use = False
@@ -174,8 +177,14 @@ class TypeSubstitution(Transformation):
             else:
                 if_body = deepcopy(new_node.body)
                 func_stmt = []
-            if_cond = ast.Conditional(
-                and_expr, if_body, ast.Variable(var_decl.name))
+            if not is_expr.operator.is_not:
+                # if (x is T) ... else var
+                if_cond = ast.Conditional(
+                    and_expr, if_body, ast.Variable(var_decl.name))
+            else:
+                # if (x !is T) var else ...
+                if_cond = ast.Conditional(
+                    and_expr, ast.Variable(var_decl.name), if_body)
             new_node.body = ast.Block([func_stmt, if_cond])
         if use:
             new_node.body = ast.Block([var_decl, if_cond])

@@ -422,10 +422,35 @@ class Conditional(Expr):
             str(self.cond), str(self.true_branch), str(self.false_branch))
 
 
+class Operator(Node):
+    def __init__(self, name, is_not=False):
+        self.name = name
+        self.is_not = is_not
+
+    def children(self):
+        return []
+
+    def update_children(self, children):
+        pass
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.is_not == other.is_not)
+
+    def __hash__(self):
+        hash(str(self.__class__) + str(self.name) + str(self.is_not))
+
+    def __str__(self):
+        if self.is_not:
+            return "!" + self.name
+        return self.name
+
+
 class BinaryOp(Expr):
     VALID_OPERATORS = None
 
-    def __init__(self, lexpr, rexpr, operator):
+    def __init__(self, lexpr, rexpr, operator: Operator):
         if self.VALID_OPERATORS is not None:
             assert operator in self.VALID_OPERATORS, (
                 'Binary operator ' + operator + ' is not valid')
@@ -442,39 +467,55 @@ class BinaryOp(Expr):
         self.rexpr = children[1]
 
     def __str__(self):
-        return str(self.lexpr) + " " + self.operator + " " + str(self.rexpr)
+        return str(self.lexpr) + " " + str(self.operator) + " " + str(self.rexpr)
 
 
 class LogicalExpr(BinaryOp):
-    VALID_OPERATORS = ['&&', '||']
+    VALID_OPERATORS = [
+        Operator('&&'),
+        Operator('||')
+    ]
 
 
 class EqualityExpr(BinaryOp):
-    VALID_OPERATORS = ['==', '===', '!=', '!==']
+    VALID_OPERATORS = [
+        Operator('=='),
+        Operator('==='),
+        Operator('=', is_not=True),
+        Operator('==', is_not=True)
+    ]
 
 
 class ComparisonExpr(BinaryOp):
-    VALID_OPERATORS = ['>', '>=', '<', '<=']
+    VALID_OPERATORS = [
+        Operator('>'),
+        Operator('>='),
+        Operator('<'),
+        Operator('<=')
+    ]
 
 
 class ArithExpr(BinaryOp):
-    VALID_OPERATORS = ['+', '-', '/', '*']
+    VALID_OPERATORS = [
+        Operator('+'),
+        Operator('-'),
+        Operator('/'),
+        Operator('*')
+    ]
 
 
-class Is(Expr):
-    def __init__(self, expr: Expr, etype: types.Type):
-        self.expr = expr
-        self.etype = etype
+class Is(BinaryOp):
+    def __init__(self, expr: Expr, etype: types.Type, is_not=False):
+        self.lexpr = expr
+        self.rexpr = etype
+        self.operator = Operator('is', is_not=is_not)
 
     def children(self):
-        return [self.expr]
+        return [self.lexpr]
 
     def update_children(self, children):
-        super(Is, self).update_children(children)
-        self.expr = children[0]
-
-    def __str__(self):
-        return str(self.expr) + " is " + str(self.etype)
+        super(BinaryOp, self).update_children(children)
+        self.lexpr = children[0]
 
 
 class New(Expr):
