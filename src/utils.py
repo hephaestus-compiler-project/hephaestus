@@ -36,7 +36,9 @@ class RandomUtils(object):
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
     WORD_POOL_LEN = 10000
-    WORDS = set(read_lines(os.path.join(resource_path, 'words'))[:WORD_POOL_LEN])
+    # Construct a random word pool of size 'WORD_POOL_LEN'.
+    WORDS = set(random.sample(
+        read_lines(os.path.join(resource_path, 'words')), WORD_POOL_LEN))
     INITIAL_WORDS = set(WORDS)
 
     def __init__(self, seed=None):
@@ -49,7 +51,7 @@ class RandomUtils(object):
         return self.r.choice([True, False])
 
     def word(self):
-        # TODO: revit regarding efficiency
+        # TODO: revisit regarding efficiency
         w = self.r.choice(tuple(self.WORDS))
         self.WORDS.remove(w)
         return w
