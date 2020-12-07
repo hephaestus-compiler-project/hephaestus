@@ -41,7 +41,8 @@ class Generator(object):
         return w.capitalize()
 
     def gen_integer_constant(self, expr_type=None):
-        return ast.IntegerConstant(utils.random.integer(-100, 100))
+        return ast.IntegerConstant(utils.random.integer(-100, 100),
+                                   expr_type)
 
     def gen_real_constant(self, expr_type=None):
         prefix = str(utils.random.integer(0, 100))

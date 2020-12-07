@@ -13,6 +13,7 @@ class KotlinTranslator(ASTVisitor):
         self.program = None
         self.ident = 0
         self.is_func_block = False
+        self._cast_integers = False
 
     @staticmethod
     def get_filename():
@@ -173,7 +174,21 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_integer_constant(self, node):
-        self._children_res.append(" " * self.ident + str(node.literal))
+        if not self._cast_integers:
+            self._children_res.append(" " * self.ident + str(node.literal))
+            return
+        integer_types = {
+            kt.Long: ".toLong()",
+            kt.Short: ".toShort()",
+        }
+        suffix = integer_types.get(node.integer_type, "")
+        literal = str(node.literal)
+        literal = (
+            "(" + literal + ")"
+            if suffix and literal == '-'
+            else literal
+        )
+        self._children_res.append(" " * self.ident + literal + suffix)
 
     def visit_real_constant(self, node):
         self._children_res.append(" " * self.ident + str(node.literal))
@@ -209,7 +224,18 @@ class KotlinTranslator(ASTVisitor):
         self.visit_binary_op(node)
 
     def visit_equality_expr(self, node):
+        prev = self._cast_integers
+        # When we encounter equality epxressions,
+        # we need to explicitly cast integer literals.
+        # Kotlin does not permit operations like the following
+        # val d: Short = 1
+        # d == 2
+        #
+        # As a workaround, we can do
+        # d == 2.toShort()
+        self._cast_integers = True
         self.visit_binary_op(node)
+        self._cast_integers = False
 
     def visit_comparison_expr(self, node):
         self.visit_binary_op(node)
