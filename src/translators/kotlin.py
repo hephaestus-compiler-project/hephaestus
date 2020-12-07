@@ -61,8 +61,13 @@ class KotlinTranslator(ASTVisitor):
         if children_res[:-1]:
             res += "\n"
         ret_keyword = "return " if prev else ""
-        res += " " * self.ident  + ret_keyword + \
-            children_res[-1][self.ident:] + "\n" + " " * (self.ident - 2) + "}"
+        if children_res:
+            res += " " * self.ident  + ret_keyword + \
+                   children_res[-1][self.ident:] + "\n" + \
+                   " " * (self.ident - 2) + "}"
+        else:
+            res += " " * self.ident  + ret_keyword + "\n" + \
+                   " " * (self.ident - 2) + "}"
         self.is_func_block = prev
         self._children_res.append(res)
 
