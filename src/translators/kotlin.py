@@ -235,7 +235,7 @@ class KotlinTranslator(ASTVisitor):
         # d == 2.toShort()
         self._cast_integers = True
         self.visit_binary_op(node)
-        self._cast_integers = False
+        self._cast_integers = prev
 
     def visit_comparison_expr(self, node):
         self.visit_binary_op(node)
