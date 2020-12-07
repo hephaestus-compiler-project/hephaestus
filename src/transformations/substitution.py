@@ -36,6 +36,15 @@ class ValueSubstitution(Transformation):
             args=[self.generator.generate_expr(f.field_type, only_leaves=True)
                   for f in class_decl.fields])
 
+    def visit_equality_expr(self, node):
+        # We are conservative here, because value subtitution may in the
+        # children of an equality expression may break the corectness of
+        # the program.
+        #
+        # To preserve corectness, wee need to get the greatest lower bound
+        # of children. TODO: revisit.
+        return node
+
     def visit_new(self, node):
         # If this node has children then randomly decide if we
         # gonna subtitute one of its children or the current node.
