@@ -12,6 +12,7 @@ class KotlinTranslator(ASTVisitor):
         self._children_res = []
         self.program = None
         self.ident = 0
+        self.is_func_block = False
 
     @staticmethod
     def get_filename():
@@ -50,14 +51,18 @@ class KotlinTranslator(ASTVisitor):
 
     def visit_block(self, node):
         children = node.children()
+        prev = self.is_func_block
+        self.is_func_block = False
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
         res = "{\n" + "\n".join(children_res[:-1])
         if children_res[:-1]:
             res += "\n"
-        res += " " * self.ident  + "return " + \
+        ret_keyword = "return " if prev else ""
+        res += " " * self.ident  + ret_keyword + \
             children_res[-1][self.ident:] + "\n" + " " * (self.ident - 2) + "}"
+        self.is_func_block = prev
         self._children_res.append(res)
 
     def visit_super_instantiation(self, node):
@@ -143,6 +148,8 @@ class KotlinTranslator(ASTVisitor):
         old_ident = self.ident
         self.ident += 2
         children = node.children()
+        prev = self.is_func_block
+        self.is_func_block = True
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
@@ -162,6 +169,7 @@ class KotlinTranslator(ASTVisitor):
         if body_res:
             res += " " + body_res
         self.ident = old_ident
+        self.is_func_block = prev
         self._children_res.append(res)
 
     def visit_integer_constant(self, node):
