@@ -18,7 +18,7 @@ class Generator(object):
         kt.String
     ]
 
-    def __init__(self, max_depth=4, max_fields=2, max_funcs=2, max_params=2,
+    def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, context=None):
         self.context = context or Context()
         self.max_depth = max_depth
@@ -28,6 +28,7 @@ class Generator(object):
         self.max_var_decls = max_var_decls
         self.depth = 1
         self._vars_in_context = {}
+        self._new_from_class = None
         self._stop_var = False
         self.namespace = ('global',)
 
@@ -64,9 +65,17 @@ class Generator(object):
         initial_depth = self.depth
         self.depth += 1
         etype = self.gen_type()
+        prev = self._new_from_class
+        if not isinstance(etype, types.Builtin):
+            # We need this because if are going to create two
+            # 'New' expressions, they must stem from the same
+            # constructor.
+            class_decl = self._get_subclass(etype)
+            self._new_from_class = class_decl
         op = utils.random.choice(ast.EqualityExpr.VALID_OPERATORS)
         e1 = self.generate_expr(etype, only_leaves)
         e2 = self.generate_expr(etype, only_leaves)
+        self._new_from_class = prev
         self.depth = initial_depth
         return ast.EqualityExpr(e1, e2, op)
 
@@ -240,6 +249,16 @@ class Generator(object):
         self.depth = initial_depth
         return ast.FunctionCall(f.name, args)
 
+    def _get_subclass(self, etype):
+        class_decls = self.context.get_classes(self.namespace).values()
+        # Get all classes that are subtype of the given type, and there
+        # are regular classes (no interfaces or abstract classes).
+        class_decls = [c for c in class_decls
+                       if (c.get_type().is_subtype(etype) and
+                           c.class_type == ast.ClassDeclaration.REGULAR)]
+        return utils.random.choice(
+            [s for s in class_decls if s.name == etype.name] or class_decls)
+
     def gen_new(self, etype, only_leaves=False):
         news = {
             kt.Any: ast.New(kt.Any, args=[]),
@@ -248,12 +267,9 @@ class Generator(object):
         con = news.get(etype)
         if con is not None:
             return con
-        class_decls = self.context.get_classes(self.namespace).values()
-        class_decls = [c for c in class_decls
-                       if (c.get_type().is_subtype(etype) and
-                           c.class_type == ast.ClassDeclaration.REGULAR)]
-        class_decl = utils.random.choice(
-            [s for s in class_decls if s.name == etype.name] or class_decls)
+        class_decl = (
+            self._new_from_class
+            if self._new_from_class else self._get_subclass(etype))
         initial_depth = self.depth
         self.depth += 1
         args = []
@@ -321,7 +337,7 @@ class Generator(object):
         binary_ops = {
             kt.Boolean: [
                 self.gen_logical_expr,
-                #self.gen_equality_expr,
+                self.gen_equality_expr,
                 self.gen_comparison_expr
             ],
         }
