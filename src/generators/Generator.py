@@ -71,7 +71,7 @@ class Generator(object):
             # 'New' expressions, they must stem from the same
             # constructor.
             class_decl = self._get_subclass(etype)
-            self._new_from_class = class_decl
+            self._new_from_class = (etype, class_decl)
         op = utils.random.choice(ast.EqualityExpr.VALID_OPERATORS)
         e1 = self.generate_expr(etype, only_leaves)
         e2 = self.generate_expr(etype, only_leaves)
@@ -267,14 +267,20 @@ class Generator(object):
         con = news.get(etype)
         if con is not None:
             return con
-        class_decl = (
+        etype2, from_class = (
             self._new_from_class
-            if self._new_from_class else self._get_subclass(etype))
+            if self._new_from_class else (None, None))
+        class_decl = (
+            from_class
+            if etype2 == etype else self._get_subclass(etype))
         initial_depth = self.depth
         self.depth += 1
         args = []
+        prev = self._new_from_class
+        self._new_from_class = None
         for f in class_decl.fields:
             args.append(self.generate_expr(f.get_type(), only_leaves))
+        self._new_from_class = prev
         self.depth = initial_depth
         return ast.New(class_decl.get_type(), args)
 
