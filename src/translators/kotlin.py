@@ -224,7 +224,7 @@ class KotlinTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}if ({})\n{}\n{}else\n{}".format(
+        res = "{}(if ({})\n{}\n{}else\n{})".format(
             " " * old_ident, children_res[0][self.ident:], children_res[1],
             " " * old_ident, children_res[2])
         self.ident = old_ident
