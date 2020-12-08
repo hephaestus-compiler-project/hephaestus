@@ -521,10 +521,9 @@ class Is(BinaryOp):
 
 
 class New(Expr):
-    def __init__(self, class_type: types.Type, args, type_args=[]):
+    def __init__(self, class_type: types.Type, args):
         self.class_type = class_type
         self.args = args
-        self.type_args = type_args
 
     def children(self):
         return self.args
@@ -534,10 +533,10 @@ class New(Expr):
         self.args = children
 
     def __str__(self):
-        if self.type_args:
+        if getattr(self.class_type, 'type_args') is not None:
             return " new {}<{}> ({})".format(
                 str(self.class_type.name),
-                ", ".join(map(str, self.type_args)) + ")",
+                ", ".join(map(str, self.class_type.type_args)) + ")",
                 ", ".join(map(str, self.args)) + ")"
             )
 
