@@ -149,7 +149,7 @@ class TypeParameter(AbstractType):
         return "{}{}{}".format(
             self.variance_to_string() + ' ' if self.variance != self.INVARIANT else '',
             self.name,
-            ' ' + self.bound if self.bound is not None else ''
+            ': ' + self.bound.get_name() if self.bound is not None else ''
         )
 
 
