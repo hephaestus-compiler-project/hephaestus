@@ -91,6 +91,19 @@ class ParameterizedSubstitution(Transformation):
             #  pass
         return new_node
 
+    def visit_super_instantiation(self, node):
+        new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
+        if new_node.class_type == self._old_class:
+            new_node.class_type = self._parameterized_type
+        return new_node
+
+    def visit_new(self, node):
+        new_node = super(ParameterizedSubstitution, self).visit_new(node)
+        # TODO update args?
+        if new_node.class_type == self._old_class:
+            new_node.class_type = self._parameterized_type
+        return new_node
+
     def visit_param_decl(self, node):
         if node.param_type == self._old_class:
             node.param_type = self._parameterized_type
@@ -106,6 +119,8 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_func_decl(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
+        if new_node.ret_type == self._old_class:
+            new_node.ret_type = self._parameterized_type
         #  for p in node.params:
             #  pass
         return new_node
