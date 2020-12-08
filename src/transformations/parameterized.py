@@ -42,6 +42,7 @@ class ParameterizedSubstitution(Transformation):
         self._type_params_constraints = defaultdict(lambda: None)
         self._parameterized_type = None
         self._in_changed_type_decl = False
+        self._in_override = False
 
         self._namespace = ('global',)
         self.program = None
@@ -80,7 +81,6 @@ class ParameterizedSubstitution(Transformation):
             ## There are not user-defined simple classifier declarations.
             return
         index = utils.random.integer(0, len(classes) - 1)
-        index = 0
         class_decl = classes[index]
         self._old_class_decl = class_decl
         self._old_class = class_decl.get_type()
@@ -106,6 +106,8 @@ class ParameterizedSubstitution(Transformation):
         constraints to type parameters.
         """
         if self._in_changed_type_decl:
+            if self._in_override:
+                return t
             # TODO Add randomness
             for tp in self._type_params:
                 if self._type_params_constraints[tp] is None:
@@ -135,8 +137,11 @@ class ParameterizedSubstitution(Transformation):
         return self.update_type(new_node, 'var_type')
 
     def visit_func_decl(self, node):
+        if node.override:
+            self._in_override = True
         if node.ret_type != kt.Unit:
             node.ret_type = self._use_type_parameter(node.ret_type)
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         new_node = self.update_type(new_node, 'ret_type')
+        self._in_override = False
         return new_node
