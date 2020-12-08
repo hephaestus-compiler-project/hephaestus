@@ -284,8 +284,7 @@ class FunctionDeclaration(Declaration):
         self.body = children[-1]
 
     def get_type(self):
-        return types.Function(
-            self.name, [p.get_type() for p in self.params], self.ret_type)
+        return self.ret_type
 
     def __str__(self):
         if self.ret_type is None:

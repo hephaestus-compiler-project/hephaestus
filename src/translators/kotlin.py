@@ -280,7 +280,15 @@ class KotlinTranslator(ASTVisitor):
                 children_res) + ")")
 
     def visit_field_access(self, node):
-        raise NotImplementedError('visit_field_access() must be implemented')
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+        res = "{}{}.{}".format(" " * self.ident, children_res[0], node.field)
+        self._children_res.append(res)
 
     def visit_func_call(self, node):
         old_ident = self.ident

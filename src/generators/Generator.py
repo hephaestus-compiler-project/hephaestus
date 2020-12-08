@@ -76,8 +76,8 @@ class Generator(object):
             class_decl = self._get_subclass(etype)
             self._new_from_class = (etype, class_decl)
         op = utils.random.choice(ast.EqualityExpr.VALID_OPERATORS)
-        e1 = self.generate_expr(etype, only_leaves)
-        e2 = self.generate_expr(etype, only_leaves)
+        e1 = self.generate_expr(etype, only_leaves, subtype=False)
+        e2 = self.generate_expr(etype, only_leaves, subtype=False)
         self._new_from_class = prev
         self.depth = initial_depth
         return ast.EqualityExpr(e1, e2, op)
@@ -247,8 +247,28 @@ class Generator(object):
         self.depth = initial_depth
         return ast.Conditional(cond, true_expr, false_expr)
 
+    def _get_matching_objects(self, etype, subtype,
+                              attr_name) -> List[Tuple[ast.Expr, ast.Declaration]]:
+        decls = []
+        for v in self.context.get_vars(self.namespace).values():
+            var_type = v.get_type()
+            # We are only interested in variables of class types.
+            if isinstance(var_type, types.Builtin):
+                continue
+            cls = self._get_class(var_type)
+            assert cls is not None
+            for f in getattr(cls, attr_name):
+                t = f.get_type()
+                if not t:
+                    continue
+                cond = t.is_subtype(etype) if subtype else t == etype
+                if not cond:
+                    continue
+                decls.append((ast.Variable(v.name), f))
+        return decls
+
     def _get_function_declarations(self, etype,
-                                   subtype) -> List[Tuple[ast.Expr, ast.FunctionDeclaration]]:
+                                   subtype) -> List[Tuple[ast.Expr, ast.Declaration]]:
         functions = []
         # First find all top-level functions or methods included
         # in the current class.
@@ -262,33 +282,18 @@ class Generator(object):
             if not cond:
                 continue
             functions.append((None, f))
-        for v in self.context.get_vars(self.namespace).values():
-            # We are only interested in variables of class types.
-            var_type = v.get_type()
-            if isinstance(var_type, types.Builtin):
-                continue
-            cls = self._get_class(var_type)
-            assert cls is not None
-            for f in cls.functions:
-                if not f.ret_type:
-                    continue
-                cond = (
-                    f.ret_type.is_subtype(etype)
-                    if subtype else f.ret_type == etype)
-                if not cond:
-                    continue
-                functions.append((ast.Variable(v.name), f))
-        return functions
+        return functions + self._get_matching_objects(etype, subtype,
+                                                      'functions')
 
-    def _get_class_with_function(self, etype, subtype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
+    def _get_matching_class(self, etype, subtype,
+                            attr_name) -> Tuple[ast.ClassDeclaration, ast.Declaration]:
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
-            for f in c.functions:
-                if not f.ret_type:
+            for f in getattr(c, attr_name):
+                t = f.get_type()
+                if not t:
                     continue
-                cond = (
-                    f.ret_type.is_subtype(etype)
-                    if subtype else f.ret_type == etype)
+                cond = t.is_subtype(etype) if subtype else t == etype
                 if not cond:
                     continue
                 # Now here we keep the class and the function that match
@@ -298,7 +303,22 @@ class Generator(object):
             return None
         return utils.random.choice(class_decls)
 
-    def _gen_matching_func(self, etype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
+    def _gen_matching_class(self, etype,
+                            attr_name) -> Tuple[ast.ClassDeclaration, ast.Declaration]:
+        initial_namespace = self.namespace
+        self.namespace = ast.GLOBAL_NAMESPACE
+        if attr_name == 'functions':
+            kwargs = {'fret_type': etype}
+        else:
+            kwargs = {'field_type': etype}
+        cls = self.gen_class_decl(**kwargs)
+        self.context.add_class(self.namespace, cls.name, cls)
+        self.namespace = initial_namespace
+        for f in getattr(cls, attr_name):
+            if f.get_type() == etype:
+                return cls, f
+
+    def _gen_matching_func(self, etype) -> Tuple[ast.ClassDeclaration, ast.Declaration]:
         # Randomly choose to generate a function or a class method.
         if utils.random.bool():
             initial_namespace = self.namespace
@@ -310,19 +330,12 @@ class Generator(object):
             self.namespace = initial_namespace
             return None, func
         # Generate a class containing the requested function
-        initial_namespace = self.namespace
-        self.namespace = ast.GLOBAL_NAMESPACE
-        cls = self.gen_class_decl(fret_type=etype)
-        self.context.add_class(self.namespace, cls.name, cls)
-        self.namespace = initial_namespace
-        for f in cls.functions:
-            if f.ret_type == etype:
-                return cls, f
+        return self._gen_matching_class(etype, 'functions')
 
     def gen_func_call(self, etype, only_leaves=False, subtype=True):
         funcs = self._get_function_declarations(etype, subtype)
         if not funcs:
-            cls_fun = self._get_class_with_function(etype, subtype)
+            cls_fun = self._get_matching_class(etype, subtype, 'functions')
             if cls_fun is None:
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
@@ -339,6 +352,18 @@ class Generator(object):
             args.append(self.generate_expr(p.get_type(), only_leaves))
         self.depth = initial_depth
         return ast.FunctionCall(f.name, args, receiver)
+
+    def gen_field_access(self, etype, only_leaves=False, subtype=True):
+        objs = self._get_matching_objects(etype, subtype, 'fields')
+        if not objs:
+            cls_f = self._get_matching_class(etype, subtype, 'fields')
+            if cls_f is None:
+                cls_f = self._gen_matching_class(etype, 'fields')
+            cls, f = cls_f
+            receiver = self.generate_expr(cls.get_type(), only_leaves)
+            objs.append((receiver, f))
+        receiver, f = utils.random.choice(objs)
+        return ast.FieldAccess(receiver, f.name)
 
     def _get_class(self, etype: types.Type):
         # Get class declaration based on the given type.
@@ -389,10 +414,10 @@ class Generator(object):
         variables = self.context.get_vars(self.namespace)
         # If we need to use a variable of a specific types, then filter
         # all variables that match this specific type.
-        fun = (
-            lambda v, t: v.get_type().is_subtype(etype)
-            if subtype
-            else lambda v, t: v == t)
+        if subtype:
+            fun = lambda v, t: v.get_type().is_subtype(t)
+        else:
+            fun = lambda v, t: v.get_type() == t
         variables = [v for v in variables.values() if fun(v, etype)]
         if not variables:
             if self.namespace in self._vars_in_context:
@@ -452,6 +477,7 @@ class Generator(object):
             ],
         }
         other_candidates = [
+            lambda x: self.gen_field_access(x, only_leaves, subtype),
             lambda x: self.gen_func_call(x, only_leaves=only_leaves,
                                          subtype=subtype),
             lambda x: self.gen_conditional(x, only_leaves=only_leaves,
