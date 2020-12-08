@@ -533,7 +533,7 @@ class New(Expr):
         self.args = children
 
     def __str__(self):
-        if getattr(self.class_type, 'type_args') is not None:
+        if getattr(self.class_type, 'type_args', None) is not None:
             return " new {}<{}> ({})".format(
                 str(self.class_type.name),
                 ", ".join(map(str, self.class_type.type_args)) + ")",
