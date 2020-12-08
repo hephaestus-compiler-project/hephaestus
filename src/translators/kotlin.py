@@ -128,7 +128,7 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         res = prefix + "val " + node.name
         if node.var_type is not None:
-            res += ": " + node.get_name()
+            res += ": " + node.var_type.get_name()
         res += " = " + children_res[0]
         self.ident = old_ident
         self._children_res.append(res)
