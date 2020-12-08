@@ -79,10 +79,10 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if node.args is None:
-            self._children_res.append(node.class_type.name)
+            self._children_res.append(node.class_type.get_name())
             return
         self._children_res.append(
-            node.class_type.name + "(" + ", ".join(children_res) + ")")
+            node.class_type.get_name() + "(" + ", ".join(children_res) + ")")
 
     def visit_class_decl(self, node):
         old_ident = self.ident
@@ -128,10 +128,7 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         res = prefix + "val " + node.name
         if node.var_type is not None:
-            if isinstance(node.var_type, types.ParameterizedType):
-                res += ": " + node.var_type.get_type_str()
-            else:
-                res += ": " + node.var_type.name
+            res += ": " + node.get_name()
         res += " = " + children_res[0]
         self.ident = old_ident
         self._children_res.append(res)
@@ -139,15 +136,11 @@ class KotlinTranslator(ASTVisitor):
     def visit_field_decl(self, node):
         prefix = '' if node.is_final else 'open '
         prefix += '' if not node.override else 'override '
-        res = prefix + "val " + node.name + ": " + node.field_type.name
+        res = prefix + "val " + node.name + ": " + node.field_type.get_name()
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
-        res = node.name + ": {}".format(
-            node.param_type.get_type_str()
-            if isinstance(node.param_type, types.ParameterizedType)
-            else node.param_type.name
-        )
+        res = node.name + ": " + node.param_type.get_name()
         self._children_res.append(res)
 
     def visit_func_decl(self, node):
@@ -167,7 +160,7 @@ class KotlinTranslator(ASTVisitor):
         prefix += "" if node.body is not None else "abstract "
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
         if node.ret_type:
-            res += ": " + node.ret_type.name
+            res += ": " + node.ret_type.get_name()
             if isinstance(node.ret_type, kt.UnitType):
                 # Remove the last of occurrence of 'return' if the
                 # return type of the function is Unit.
@@ -283,7 +276,7 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         self.ident = old_ident
         self._children_res.append(
-            " " * self.ident + node.class_type.name + "(" + ", ".join(
+            " " * self.ident + node.class_type.get_name() + "(" + ", ".join(
                 children_res) + ")")
 
     def visit_field_access(self, node):

@@ -32,6 +32,9 @@ class Type(object):
     def not_related(self, t):
         return not(self.is_subtype(t) or t.is_subtype(self))
 
+    def get_name(self):
+        return str(self.name)
+
 
 class AbstractType(Type):
     def is_subtype(self, t):
@@ -65,9 +68,6 @@ class Builtin(Type):
 
     def is_subtype(self, t: Type) -> bool:
         return t == self or t in self.get_supertypes()
-
-    def get_type_str(self):
-        return str(self.name)
 
 
 class Classifier(Type):
@@ -212,8 +212,8 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name,
                                ", ".join(map(str, self.type_args)))
 
-    def get_type_str(self):
-        return "{}<{}>".format(self.name, ", ".join([t.get_type_str()
+    def get_name(self):
+        return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
 
