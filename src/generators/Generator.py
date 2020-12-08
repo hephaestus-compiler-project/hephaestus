@@ -228,7 +228,7 @@ class Generator(object):
         return utils.random.choice(list(class_decls.values())).get_type()
 
     def gen_variable_decl(self, etype=None, only_leaves=False):
-        var_type = etype if etype is not None else self.gen_type()
+        var_type = etype if etype else self.gen_type()
         initial_depth = self.depth
         self.depth += 1
         expr = self.generate_expr(var_type, only_leaves)
@@ -238,22 +238,28 @@ class Generator(object):
             expr=expr,
             var_type=var_type)
 
-    def gen_conditional(self, etype, only_leaves=False):
+    def gen_conditional(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
         self.depth += 1
         cond = self.generate_expr(kt.Boolean, only_leaves)
-        true_expr = self.generate_expr(etype, only_leaves)
-        false_expr = self.generate_expr(etype, only_leaves)
+        true_expr = self.generate_expr(etype, only_leaves, subtype)
+        false_expr = self.generate_expr(etype, only_leaves, subtype)
         self.depth = initial_depth
         return ast.Conditional(cond, true_expr, false_expr)
 
-    def _get_function_declarations(self, etype) -> List[Tuple[ast.Expr, ast.FunctionDeclaration]]:
+    def _get_function_declarations(self, etype,
+                                   subtype) -> List[Tuple[ast.Expr, ast.FunctionDeclaration]]:
         functions = []
         # First find all top-level functions or methods included
         # in the current class.
         for f in self.context.get_funcs(self.namespace).values():
+            if not f.ret_type:
+                continue
+            cond = (
+                f.ret_type.is_subtype(etype)
+                if subtype else f.ret_type == etype)
             # The receiver object for this kind of functions is None.
-            if not (f.ret_type and f.ret_type.is_subtype(etype)):
+            if not cond:
                 continue
             functions.append((None, f))
         for v in self.context.get_vars(self.namespace).values():
@@ -264,16 +270,26 @@ class Generator(object):
             cls = self._get_class(var_type)
             assert cls is not None
             for f in cls.functions:
-                if not (f.ret_type and f.ret_type.is_subtype(etype)):
+                if not f.ret_type:
+                    continue
+                cond = (
+                    f.ret_type.is_subtype(etype)
+                    if subtype else f.ret_type == etype)
+                if not cond:
                     continue
                 functions.append((ast.Variable(v.name), f))
         return functions
 
-    def _get_class_with_function(self, etype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
+    def _get_class_with_function(self, etype, subtype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
             for f in c.functions:
-                if not (f.ret_type and f.ret_type.is_subtype(etype)):
+                if not f.ret_type:
+                    continue
+                cond = (
+                    f.ret_type.is_subtype(etype)
+                    if subtype else f.ret_type == etype)
+                if not cond:
                     continue
                 # Now here we keep the class and the function that match
                 # the given type.
@@ -303,23 +319,24 @@ class Generator(object):
             if f.ret_type == etype:
                 return cls, f
 
-    def gen_func_call(self, etype):
-        funcs = self._get_function_declarations(etype)
+    def gen_func_call(self, etype, only_leaves=False, subtype=True):
+        funcs = self._get_function_declarations(etype, subtype)
         if not funcs:
-            cls_fun = self._get_class_with_function(etype)
+            cls_fun = self._get_class_with_function(etype, subtype)
             if cls_fun is None:
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
                 cls_fun = self._gen_matching_func(etype)
             cls, f = cls_fun
-            receiver = None if cls is None else self.generate_expr(cls.get_type())
+            receiver = None if cls is None else self.generate_expr(
+                cls.get_type(), only_leaves)
             funcs.append((receiver, f))
         receiver, f = utils.random.choice(funcs)
         args = []
         initial_depth = self.depth
         self.depth += 1
         for p in f.params:
-            args.append(self.generate_expr(p.get_type()))
+            args.append(self.generate_expr(p.get_type(), only_leaves))
         self.depth = initial_depth
         return ast.FunctionCall(f.name, args, receiver)
 
@@ -341,7 +358,7 @@ class Generator(object):
         return utils.random.choice(
             [s for s in class_decls if s.name == etype.name] or class_decls)
 
-    def gen_new(self, etype, only_leaves=False):
+    def gen_new(self, etype, only_leaves=False, subtype=True):
         news = {
             kt.Any: ast.New(kt.Any, args=[]),
             kt.Unit: ast.New(kt.Unit, args=[])
@@ -366,15 +383,17 @@ class Generator(object):
         self.depth = initial_depth
         return ast.New(class_decl.get_type(), args)
 
-    def gen_variable(self, etype, only_leaves=False):
+    def gen_variable(self, etype, only_leaves=False, subtype=True):
         # Get all variables declared in the current namespace or
         # the outer namespace.
         variables = self.context.get_vars(self.namespace)
-        if etype is not None:
-            # If we need to use a variable of a specific types, then filter
-            # all variables that match this specific type.
-            variables = [v for v in variables.values()
-                         if v.get_type().is_subtype(etype)]
+        # If we need to use a variable of a specific types, then filter
+        # all variables that match this specific type.
+        fun = (
+            lambda v, t: v.get_type().is_subtype(etype)
+            if subtype
+            else lambda v, t: v == t)
+        variables = [v for v in variables.values() if fun(v, etype)]
         if not variables:
             if self.namespace in self._vars_in_context:
                 self._vars_in_context[self.namespace] += 1
@@ -408,7 +427,7 @@ class Generator(object):
         self.namespace = initial_namespace
         return main_func
 
-    def generate_expr(self, expr_type=None, only_leaves=False):
+    def generate_expr(self, expr_type=None, only_leaves=False, subtype=True):
         leaf_canidates = [
             self.gen_new,
         ]
@@ -424,15 +443,18 @@ class Generator(object):
         }
         binary_ops = {
             kt.Boolean: [
-                self.gen_logical_expr,
-                self.gen_equality_expr,
-                self.gen_comparison_expr
+                lambda x: self.gen_logical_expr(x, only_leaves),
+                lambda x: self.gen_equality_expr(only_leaves),
+                lambda x: self.gen_comparison_expr(only_leaves)
             ],
         }
         other_candidates = [
-            self.gen_func_call,
-            self.gen_conditional,
-            self.gen_variable,
+            lambda x: self.gen_func_call(x, only_leaves=only_leaves,
+                                         subtype=subtype),
+            lambda x: self.gen_conditional(x, only_leaves=only_leaves,
+                                           subtype=subtype),
+            lambda x: self.gen_variable(x, only_leaves=only_leaves,
+                                        subtype=subtype),
         ]
         expr_type = expr_type or self.gen_type()
         if self.depth >= self.max_depth or only_leaves:
@@ -448,7 +470,7 @@ class Generator(object):
                 # has been reached, or we have previously declared a variable
                 # of a specific type, then we should avoid variable creation.
                 leaf_canidates.append(self.gen_variable)
-            return utils.random.choice(leaf_canidates)(expr_type, only_leaves)
+            return utils.random.choice(leaf_canidates)(expr_type)
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
             candidates = [self.gen_variable, con_candidate] + binary_ops.get(
