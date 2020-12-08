@@ -122,6 +122,10 @@ class ParameterizedSubstitution(Transformation):
         # TODO update args?
         return self.update_type(new_node, 'class_type')
 
+    def visit_field_decl(self, node):
+        node.field_type = self._use_type_parameter(node.field_type)
+        return self.update_type(node, 'field_type')
+
     def visit_param_decl(self, node):
         node.param_type = self._use_type_parameter(node.param_type)
         return self.update_type(node, 'param_type')
