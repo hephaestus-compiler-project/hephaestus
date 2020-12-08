@@ -135,8 +135,6 @@ class TypeParameter(AbstractType):
     def __init__(self, name: str, variance=None, bound: Type = None):
         super(TypeParameter, self).__init__(name)
         self.variance = variance or self.INVARIANT
-        assert not (self.variance == 0 and bound is not None), \
-                "Cannot set bound in invariant type parameter"
         self.bound = bound
 
     def variance_to_string(self):
