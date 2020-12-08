@@ -428,8 +428,11 @@ class Generator(object):
         return main_func
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True):
+        def gen_variable(x):
+            return self.gen_variable(x, only_leaves, subtype)
+
         leaf_canidates = [
-            self.gen_new,
+            lambda x: self.gen_new(x, only_leaves, subtype),
         ]
         constant_candidates = {
             kt.Integer: self.gen_integer_constant,
@@ -453,8 +456,7 @@ class Generator(object):
                                          subtype=subtype),
             lambda x: self.gen_conditional(x, only_leaves=only_leaves,
                                            subtype=subtype),
-            lambda x: self.gen_variable(x, only_leaves=only_leaves,
-                                        subtype=subtype),
+            gen_variable
         ]
         expr_type = expr_type or self.gen_type()
         if self.depth >= self.max_depth or only_leaves:
@@ -469,11 +471,11 @@ class Generator(object):
                 # If the maximum numbers of variables in a specific context
                 # has been reached, or we have previously declared a variable
                 # of a specific type, then we should avoid variable creation.
-                leaf_canidates.append(self.gen_variable)
+                leaf_canidates.append(gen_variable)
             return utils.random.choice(leaf_canidates)(expr_type)
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
-            candidates = [self.gen_variable, con_candidate] + binary_ops.get(
+            candidates = [gen_variable, con_candidate] + binary_ops.get(
                 expr_type, [])
         else:
             candidates = leaf_canidates
