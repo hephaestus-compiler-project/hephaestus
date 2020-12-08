@@ -59,6 +59,18 @@ class ParameterizedSubstitution(Transformation):
     def result(self):
         return self.program
 
+    def update_type(self, node, attr, is_decl=False):
+        old_type = self._old_class_decl if is_decl else self._old_class
+        new_type = self._type_constructor_decl if is_decl \
+                   else self._parameterized_type
+        if attr is None:
+            if node == old_type:
+                return new_type
+            return node
+        if getattr(node, attr) == old_type:
+            setattr(node, attr, new_type)
+        return node
+
     def visit_program(self, node):
         """Replace one class declaration with one type constructor and
         initialize type parameters.
@@ -85,42 +97,30 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_class_decl(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
-        if new_node == self._old_class_decl:
-            new_node = self._type_constructor_decl
+        new_node = self.update_type(new_node, attr=None, is_decl=True)
         #  for f in node.fields:
             #  pass
         return new_node
 
     def visit_super_instantiation(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
-        if new_node.class_type == self._old_class:
-            new_node.class_type = self._parameterized_type
-        return new_node
+        return self.update_type(new_node, 'class_type')
 
     def visit_new(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
         # TODO update args?
-        if new_node.class_type == self._old_class:
-            new_node.class_type = self._parameterized_type
-        return new_node
+        return self.update_type(new_node, 'class_type')
 
     def visit_param_decl(self, node):
-        if node.param_type == self._old_class:
-            node.param_type = self._parameterized_type
-            if node.default:
-                raise NotImplementedError
-        return node
+        return self.update_type(node, 'param_type')
 
     def visit_var_decl(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
-        if new_node.var_type == self._old_class:
-            new_node.var_type = self._parameterized_type
-        return new_node
+        return self.update_type(new_node, 'var_type')
 
     def visit_func_decl(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
-        if new_node.ret_type == self._old_class:
-            new_node.ret_type = self._parameterized_type
+        new_node = self.update_type(new_node, 'ret_type')
         #  for p in node.params:
             #  pass
         return new_node
