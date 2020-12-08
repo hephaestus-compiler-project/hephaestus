@@ -569,15 +569,15 @@ class FunctionCall(Expr):
     def children(self):
         if self.receiver is None:
             return self.args
-        return self.args + [self.receiver]
+        return [self.receiver] + self.args
 
     def update_children(self, children):
         super(FunctionCall, self).update_children(children)
         if self.receiver is None:
             self.args = children
         else:
-            self.args = children[:-1]
-            self.receiver = children[-1]
+            self.receiver = children[0]
+            self.args = children[1:]
 
     def __str__(self):
         if self.receiver is None:

@@ -290,8 +290,14 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
-        self._children_res.append(
-            " " * self.ident + node.func + "(" + ", ".join(children_res) + ")")
+        if node.receiver:
+            res = "{}{}.{}({})".format(
+                " " * self.ident, children_res[0], node.func,
+                ", ".join(children_res[1:]))
+        else:
+            res = "{}{}({})".format(
+                " " * self.ident, node.func, ", ".join(children_res))
+        self._children_res.append(res)
 
     def visit_assign(self, node):
         raise NotImplementedError('visit_assign() must be implemented')
