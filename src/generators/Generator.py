@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 from src import utils
 from src.ir import ast, types
 from src.ir import kotlin_types as kt
@@ -172,22 +174,33 @@ class Generator(object):
         return ast.FunctionDeclaration(
             func_name, params, ret_type, body, func_type=func_type)
 
-    def gen_class_decl(self):
+    def _add_field_to_class(self, field, fields):
+        fields.append(field)
+        self.context.add_var(self.namespace, field.name, field)
+
+    def _add_func_to_class(self, func, funcs):
+        funcs.append(func)
+        self.context.add_func(self.namespace, func.name, func)
+
+    def gen_class_decl(self, field_type=None, fret_type=None):
         class_name = self.gen_identifier('capitalize')
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
         self.depth += 1
         fields = []
-        for _ in range(utils.random.integer(0, self.max_fields)):
-            f = self.gen_field_decl()
-            fields.append(f)
-            self.context.add_var(self.namespace, f.name, f)
+        max_fields = self.max_fields - 1 if field_type else self.max_fields
+        max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
+        if field_type:
+            self._add_field_to_class(self.gen_field_decl(field_type),
+                                     fields)
+        for _ in range(utils.random.integer(0, max_fields)):
+            self._add_field_to_class(self.gen_field_decl(), fields)
         funcs = []
-        for _ in range(utils.random.integer(0, self.max_funcs)):
-            f = self.gen_func_decl()
-            funcs.append(f)
-            self.context.add_func(self.namespace, f.name, f)
+        if fret_type:
+            self._add_func_to_class(self.gen_func_decl(fret_type), funcs)
+        for _ in range(utils.random.integer(0, max_funcs)):
+            self._add_func_to_class(self.gen_func_decl(), funcs)
         self.namespace = initial_namespace
         self.depth = initial_depth
         return ast.ClassDeclaration(
@@ -234,23 +247,91 @@ class Generator(object):
         self.depth = initial_depth
         return ast.Conditional(cond, true_expr, false_expr)
 
-    def gen_func_call(self, etype):
-        funcs = self.context.get_funcs(self.namespace).values()
-        funcs = [f for f in funcs if f.get_type().is_subtype(etype)]
-        if not funcs:
+    def _get_function_declarations(self, etype) -> List[Tuple[ast.Expr, ast.FunctionDeclaration]]:
+        functions = []
+        # First find all top-level functions or methods included
+        # in the current class.
+        for f in self.context.get_funcs(self.namespace).values():
+            # The receiver object for this kind of functions is None.
+            if not (f.ret_type and f.ret_type.is_subtype(etype)):
+                continue
+            functions.append((None, f))
+        for v in self.context.get_vars(self.namespace).values():
+            # We are only interested in variables of class types.
+            var_type = v.get_type()
+            if isinstance(var_type, types.Builtin):
+                continue
+            cls = self._get_class(var_type)
+            assert cls is not None
+            for f in cls.functions:
+                if not (f.ret_type and f.ret_type.is_subtype(etype)):
+                    continue
+                functions.append((ast.Variable(v.name), f))
+        return functions
+
+    def _get_class_with_function(self, etype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
+        class_decls = []
+        for c in self.context.get_classes(self.namespace).values():
+            for f in c.functions:
+                if not (f.ret_type and f.ret_type.is_subtype(etype)):
+                    continue
+                # Now here we keep the class and the function that match
+                # the given type.
+                class_decls.append((c, f))
+        if not class_decls:
+            return None
+        return utils.random.choice(class_decls)
+
+    def _gen_matching_func(self, etype) -> Tuple[ast.ClassDeclaration, ast.FunctionDeclaration]:
+        # Randomly choose to generate a function or a class method.
+        if utils.random.bool():
+            initial_namespace = self.namespace
+            self.namespace = (self.namespace
+                              if utils.random.bool() else ast.GLOBAL_NAMESPACE)
+            # Generate a function
             func = self.gen_func_decl(etype)
             self.context.add_func(self.namespace, func.name, func)
-            funcs.append(func)
-        f = utils.random.choice(funcs)
+            self.namespace = initial_namespace
+            return None, func
+        # Generate a class containing the requested function
+        initial_namespace = self.namespace
+        self.namespace = ast.GLOBAL_NAMESPACE
+        cls = self.gen_class_decl(fret_type=etype)
+        self.context.add_class(self.namespace, cls.name, cls)
+        self.namespace = initial_namespace
+        for f in cls.functions:
+            if f.ret_type == etype:
+                return cls, f
+
+    def gen_func_call(self, etype):
+        funcs = self._get_function_declarations(etype)
+        if not funcs:
+            cls_fun = self._get_class_with_function(etype)
+            if cls_fun is None:
+                # Here, we generate a function or a class containing a function
+                # whose return type is 'etype'.
+                cls_fun = self._gen_matching_func(etype)
+            cls, f = cls_fun
+            receiver = None if cls is None else self.generate_expr(cls.get_type())
+            funcs.append((receiver, f))
+        receiver, f = utils.random.choice(funcs)
         args = []
         initial_depth = self.depth
         self.depth += 1
         for p in f.params:
             args.append(self.generate_expr(p.get_type()))
         self.depth = initial_depth
-        return ast.FunctionCall(f.name, args)
+        return ast.FunctionCall(f.name, args, receiver)
 
-    def _get_subclass(self, etype):
+    def _get_class(self, etype: types.Type):
+        # Get class declaration based on the given type.
+        class_decls = self.context.get_classes(self.namespace).values()
+        for c in class_decls:
+            t = c.get_type()
+            if t.is_subtype(etype) and t.name == etype.name:
+                return c
+
+    def _get_subclass(self, etype: types.Type):
         class_decls = self.context.get_classes(self.namespace).values()
         # Get all classes that are subtype of the given type, and there
         # are regular classes (no interfaces or abstract classes).
