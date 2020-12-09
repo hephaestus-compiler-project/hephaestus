@@ -18,7 +18,7 @@ def create_non_final_fields(fields):
 
 def create_non_final_functions(functions):
     return [
-        ast.FunctionDeclaration(f.name, deepcopy(f.params), f.ret_type,
+        ast.FunctionDeclaration(f.name, deepcopy(f.params), f.get_type(),
                                 deepcopy(f.body),
                                 f.func_type, inferred_type=f.inferred_type,
                                 is_final=False, override=f.override)
@@ -62,9 +62,8 @@ def create_abstract_class(class_decl):
     for f in class_decl.functions:
         # Some functions are randomly made abstract.
         body_f = None if utils.random.bool() else deepcopy(f.body)
-        ret_type = f.get_type() if not body_f else f.ret_type
         functions.append(
-            ast.FunctionDeclaration(f.name, deepcopy(f.params), ret_type, body_f,
+            ast.FunctionDeclaration(f.name, deepcopy(f.params), f.get_type(), body_f,
                                     f.func_type, inferred_type=f.inferred_type,
                                     is_final=False, override=f.override))
     return ast.ClassDeclaration(utils.random.word().capitalize(),
