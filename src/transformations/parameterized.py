@@ -116,7 +116,8 @@ class ParameterizedSubstitution(Transformation):
         return self.program
 
     def update_type(self, node, attr):
-        if getattr(node, attr) == self._old_class:
+        attr_value = getattr(node, attr, None)
+        if attr_value and attr_value  == self._old_class:
             setattr(node, attr, self._parameterized_type)
         return node
 
@@ -210,5 +211,6 @@ class ParameterizedSubstitution(Transformation):
             #  node.ret_type = self._use_type_parameter(node.ret_type, True)
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         new_node = self.update_type(new_node, 'ret_type')
+        new_node = self.update_type(new_node, 'inferred_type')
         self._in_override = False
         return new_node
