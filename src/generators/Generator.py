@@ -164,7 +164,15 @@ class Generator(object):
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
-        body = ast.Block(decls + [expr])
+        if not decls:
+            # The function does not contain any declarations, so we can
+            # create an expression-based function.
+            inferred_type = ret_type
+            body = expr
+            ret_type = None
+        else:
+            inferred_type = None
+            body = ast.Block(decls + [expr])
         self.depth = initial_depth
         self.namespace = initial_namespace
         if self.namespace[-1][0].isupper():
@@ -172,7 +180,8 @@ class Generator(object):
         else:
             func_type = ast.FunctionDeclaration.FUNCTION
         return ast.FunctionDeclaration(
-            func_name, params, ret_type, body, func_type=func_type)
+            func_name, params, ret_type, body, func_type=func_type,
+            inferred_type=inferred_type)
 
     def _add_field_to_class(self, field, fields):
         fields.append(field)
@@ -273,11 +282,9 @@ class Generator(object):
         # First find all top-level functions or methods included
         # in the current class.
         for f in self.context.get_funcs(self.namespace).values():
-            if not f.ret_type:
-                continue
             cond = (
-                f.ret_type.is_subtype(etype)
-                if subtype else f.ret_type == etype)
+                f.get_type().is_subtype(etype)
+                if subtype else f.get_type() == etype)
             # The receiver object for this kind of functions is None.
             if not cond:
                 continue

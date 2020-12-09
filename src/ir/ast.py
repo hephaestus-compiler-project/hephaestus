@@ -260,7 +260,7 @@ class FunctionDeclaration(Declaration):
     FUNCTION = 1
 
     def __init__(self, name, params, ret_type, body, func_type,
-                 is_final=True, override=False):
+                 inferred_type=None, is_final=True, override=False):
         self.name = name
         self.params = params
         self.ret_type = ret_type
@@ -268,6 +268,10 @@ class FunctionDeclaration(Declaration):
         self.func_type = func_type
         self.is_final = is_final
         self.override = override
+        self.inferred_type = (
+            self.ret_type if inferred_type is None else inferred_type)
+        assert self.inferred_type, ("The inferred_type of a function must"
+                                    " be not None")
 
     def children(self):
         if self.body is None:
@@ -284,7 +288,7 @@ class FunctionDeclaration(Declaration):
         self.body = children[-1]
 
     def get_type(self):
-        return self.ret_type
+        return self.inferred_type
 
     def __str__(self):
         if self.ret_type is None:
@@ -294,6 +298,7 @@ class FunctionDeclaration(Declaration):
             return "fun {}({}): {} =\n  {}".format(
                 self.name, ",".join(map(str, self.params)), str(self.ret_type),
                 str(self.body))
+
 
 class ParameterizedFunctionDeclaration(FunctionDeclaration):
     CLASS_METHOD = 0

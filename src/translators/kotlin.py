@@ -149,6 +149,10 @@ class KotlinTranslator(ASTVisitor):
         children = node.children()
         prev = self.is_func_block
         self.is_func_block = True
+        prev_c = self._cast_integers
+        is_expression = not isinstance(node.body, ast.Block)
+        if is_expression:
+            self._cast_integers = True
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
@@ -166,9 +170,11 @@ class KotlinTranslator(ASTVisitor):
                 # return type of the function is Unit.
                 body_res = "".join(body_res.rsplit("return", 1))
         if body_res:
-            res += " " + body_res
+            sign = "=" if is_expression else ""
+            res += " " + sign + "\n" + body_res
         self.ident = old_ident
         self.is_func_block = prev
+        self._cast_integers = prev_c
         self._children_res.append(res)
 
     def visit_integer_constant(self, node):

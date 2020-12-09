@@ -141,12 +141,71 @@ class TypeSubstitution(Transformation):
         expr = self.generator.generate_expr(etype, only_leaves=True)
         return ast.VariableDeclaration(name, expr, var_type=etype)
 
+    def _add_is_expr(self, node, var_decl, param, old_type):
+        bool_expr = self.generator.generate_expr(kt.Boolean, only_leaves=True)
+        is_expr = ast.Is(ast.Variable(param.name), old_type,
+                         utils.random.bool())
+        and_expr = ast.LogicalExpr(
+            bool_expr, is_expr,
+            ast.Operator('&&')
+            if bool_expr.literal == 'true'
+            else ast.Operator('||'))
+        use_var = False
+        ret_var = []
+        if var_decl:
+            # This function has already declared a ret variable.
+            if isinstance(node.body.body[0], ast.VariableDeclaration) and \
+                    node.body.body[0].name == 'ret':
+                if_body = ast.Block(deepcopy(node.body.body[1:]))
+                ret_var = [var_decl]
+            else:
+                if_body = deepcopy(node.body)
+                use_var = True
+        else:
+            if_body = deepcopy(node.body)
+        # If we have define a variable declaration, create a reference
+        # to this variable. Otherwise, we create an expresssion of the
+        # expected type (same with the return type of the function).
+        else_expr = (
+            ast.Variable(var_decl.name)
+            if var_decl
+            else self.generator.generate_expr(node.get_type(),
+                                              only_leaves=True))
+        if not is_expr.operator.is_not:
+            # if (x is T) ... else var
+            if_cond = ast.Conditional(
+                and_expr, if_body, else_expr)
+        else:
+            # if (x !is T) var else ...
+            if_cond = ast.Conditional(
+                and_expr, else_expr, if_body)
+        node.body = if_cond if not var_decl else ast.Block(
+            ret_var + [if_cond])
+        return use_var
+
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
         new_node = super(TypeSubstitution, self).visit_func_decl(node)
-        var_decl = self.generate_variable_declaration("ret", node.ret_type)
-        use = False
+        is_expression = not isinstance(new_node.body, ast.Block)
+        if not is_expression:
+            # If function is not expression-based, create a variable
+            # declaration holding a value whose type is the same with the
+            # return type of the function.
+
+            # This variable declaration is gonna be used, if we ll create
+            # a conditional expression inside the function. E.g.,
+
+            # fun foo(x: Any): R {
+            #   val ret: R = ...
+            #   if (x is T) ..
+            #   else return ret
+            # }
+            var_decl = self.generate_variable_declaration("ret",
+                                                          new_node.get_type())
+        else:
+            var_decl = None
+        use_var = False
         for p in new_node.params:
             # Perform type widening on this function's parameters.
             old_type = p.param_type
@@ -168,35 +227,9 @@ class TypeSubstitution(Transformation):
             #   val ret : R = ...
             #   if (x is T1) ... else ret
             # }
-            use = True
-            bool_expr = self.generator.generate_expr(kt.Boolean,
-                                                     only_leaves=True)
-            is_expr = ast.Is(ast.Variable(p.name), old_type,
-                             utils.random.bool())
-            and_expr = ast.LogicalExpr(
-                bool_expr, is_expr,
-                ast.Operator('&&')
-                if bool_expr.literal == 'true'
-                else ast.Operator('||'))
-            if isinstance(new_node.body.body[0], ast.VariableDeclaration) and \
-                    new_node.body.body[0].name == 'ret':
-                use = False
-                if_body = ast.Block(deepcopy(new_node.body.body[1:]))
-                func_stmt = [var_decl]
-            else:
-                if_body = deepcopy(new_node.body)
-                func_stmt = []
-            if not is_expr.operator.is_not:
-                # if (x is T) ... else var
-                if_cond = ast.Conditional(
-                    and_expr, if_body, ast.Variable(var_decl.name))
-            else:
-                # if (x !is T) var else ...
-                if_cond = ast.Conditional(
-                    and_expr, ast.Variable(var_decl.name), if_body)
-            new_node.body = ast.Block(func_stmt + [if_cond])
-        if use:
-            new_node.body = ast.Block([var_decl, if_cond])
+            use_var = self._add_is_expr(new_node, var_decl, p, old_type)
+        if use_var:
+            new_node.body = ast.Block([var_decl, new_node.body.body[0]])
         self._namespace = initial_namespace
         return new_node
 
