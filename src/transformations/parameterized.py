@@ -96,7 +96,7 @@ class ParameterizedSubstitution(Transformation):
                 if tp.variance == CONTRAVARIANT:
                     possible_types = list(constraint.get_supertypes())
                 if tp.variance == COVARIANT:
-                    possible_types = self.find_subtypes(constraint)
+                    possible_types = self.find_subtypes(constraint, True)
                     possible_types += [bt for bt in kt.NonNothingTypes
                                        if bt.is_subtype(constraint)]
                 if tp.bound:
