@@ -6,7 +6,7 @@ from src.ir.kotlin_types import *
 
 def test_simple_classifier():
     short = ShortType()
-    assert short.get_supertypes() == {AnyType(), NumberType()}
+    assert short.get_supertypes() == {AnyType(), NumberType(), short}
     assert short.is_subtype(AnyType())
     assert short.is_subtype(NumberType())
     assert short.is_subtype(ShortType())
@@ -14,17 +14,17 @@ def test_simple_classifier():
     assert not short.is_subtype(IntegerType())
     cls1 = SimpleClassifier("Cls1", [])
     assert cls1.name == "Cls1"
-    assert cls1.get_supertypes() == set()
+    assert cls1.get_supertypes() == {cls1}
     assert cls1.supertypes == []
     assert cls1.is_subtype(cls1)
     assert not cls1.is_subtype(ShortType())
     cls2 = SimpleClassifier("Cls2", [cls1])
-    assert cls2.get_supertypes() == {cls1}
+    assert cls2.get_supertypes() == {cls1, cls2}
     assert cls2.is_subtype(cls1)
     assert cls2.is_subtype(cls2)
     cls3 = SimpleClassifier("Cls3", [cls2, ShortType()])
     assert (cls3.get_supertypes() ==
-            {cls1, cls2, ShortType(), NumberType(), AnyType()})
+            {cls1, cls2, ShortType(), NumberType(), AnyType(), cls3})
     assert cls3.is_subtype(cls1)
     assert cls3.is_subtype(cls2)
     assert cls3.is_subtype(cls3)
@@ -45,7 +45,7 @@ def test_simple_classifier():
     p_type_i = ParameterizedType(t_constructor, [IntegerType()])
     cls4 = SimpleClassifier("Cls4", [cls2, p_type_i])
     assert (cls4.get_supertypes() ==
-            {cls1, cls2, p_type_i})
+            {cls1, cls2, p_type_i, cls4})
     assert cls4.is_subtype(p_type_i)
     assert cls4.is_subtype(cls1)
     assert cls4.is_subtype(cls2)

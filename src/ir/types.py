@@ -20,7 +20,7 @@ class Type(object):
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
         stack = [self]
-        visited = set()
+        visited = {self}
         while stack:
             source = stack.pop()
             for supertype in source.supertypes:
@@ -53,7 +53,7 @@ class Builtin(Type):
 
     def __init__(self, name: str):
         super(Builtin, self).__init__(name)
-        self.supertypes = []
+        self.supertypes = [self]
 
     def __str__(self):
         return str(self.name) + "(builtin)"
