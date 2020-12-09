@@ -201,8 +201,13 @@ class ParameterizedSubstitution(Transformation):
     def visit_func_decl(self, node):
         if node.override:
             self._in_override = True
-        if node.ret_type != kt.Unit:
-            node.ret_type = self._use_type_parameter(node.ret_type, True)
+        # TODO return statement must return a value of TypeParameter.
+        # Maybe if the return statement returns a function parameter or
+        # a field, then we can replace the types for both the return and
+        # the function parameter or the field to have the same TypeParameter
+        # a value
+        #  if node.ret_type != kt.Unit:
+            #  node.ret_type = self._use_type_parameter(node.ret_type, True)
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         new_node = self.update_type(new_node, 'ret_type')
         self._in_override = False
