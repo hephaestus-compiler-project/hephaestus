@@ -84,16 +84,19 @@ class Declaration(Node):
 
 
 class VariableDeclaration(Declaration):
-    def __init__(self, name, expr, var_type=None):
+    def __init__(self, name, expr, var_type=None, inferred_type=None):
         self.name = name
         self.expr = expr
         self.var_type = var_type
+        self.inferred_type = var_type if var_type else inferred_type
+        assert self.inferred_type, ("The inferred_type of a variable must"
+                                    " be not None")
 
     def children(self):
         return [self.expr]
 
     def get_type(self):
-        return self.var_type
+        return self.inferred_type
 
     def update_children(self, children):
         super(VariableDeclaration, self).update_children(children)

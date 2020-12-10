@@ -123,6 +123,9 @@ class KotlinTranslator(ASTVisitor):
         prefix = " " * self.ident
         self.ident = 0
         children = node.children()
+        prev = self._cast_integers
+        if node.var_type is None:
+            self._cast_integers = True
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
@@ -131,6 +134,7 @@ class KotlinTranslator(ASTVisitor):
             res += ": " + node.var_type.get_name()
         res += " = " + children_res[0]
         self.ident = old_ident
+        self._cast_integers = prev
         self._children_res.append(res)
 
     def visit_field_decl(self, node):

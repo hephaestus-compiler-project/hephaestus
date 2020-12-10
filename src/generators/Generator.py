@@ -242,10 +242,12 @@ class Generator(object):
         self.depth += 1
         expr = self.generate_expr(var_type, only_leaves)
         self.depth = initial_depth
+        vtype = var_type if utils.random.bool() else None
         return ast.VariableDeclaration(
             self.gen_identifier('lower'),
             expr=expr,
-            var_type=var_type)
+            var_type=vtype,
+            inferred_type=var_type)
 
     def gen_conditional(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
