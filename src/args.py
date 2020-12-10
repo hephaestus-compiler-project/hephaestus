@@ -56,6 +56,11 @@ parser.add_argument(
     action="store_true",
     help="Test only the last transformation"
 )
+parser.add_argument(
+    "-k", "--keep-all",
+    action="store_true",
+    help="Save all programs"
+)
 
 
 args = parser.parse_args()

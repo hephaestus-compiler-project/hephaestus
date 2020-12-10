@@ -106,6 +106,13 @@ class Executor:
         generator = Generator()
         p = generator.generate()
         program_str = self._translate_program(p)
+        if self.args.keep_all:
+            dst_dir = os.path.join(self.args.test_directory, "generator")
+            mkdir(dst_dir)
+            # Save the program
+            dst_filename = os.path.join(dst_dir, self.translator.get_filename())
+            with open(dst_filename, 'w') as out:
+                out.write(program_str)
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
             self._report(program_str)
@@ -120,11 +127,20 @@ class Executor:
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
+        program_str = self._translate_program(p)
         if p is None:
             return "continue", prev_p
+        if self.args.keep_all:
+            dst_dir = os.path.join(self.args.test_directory,
+                                   "transformations",
+                                   str(transformation_number))
+            mkdir(dst_dir)
+            # Save the program
+            dst_filename = os.path.join(dst_dir, self.translator.get_filename())
+            with open(dst_filename, 'w') as out:
+                out.write(program_str)
         if not comp:
             return "succeed", p
-        program_str = self._translate_program(p)
         status, _ = self._compile(
             self.translator.result(),
             compiler_pass=transformer.preserve_correctness()
