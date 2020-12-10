@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 from src.utils import random, mkdir
+from src.modules.Executor import Executor
 
 
 cwd = os.getcwd()
@@ -39,6 +40,19 @@ parser.add_argument(
     default=random.str(),
     help="Set name of this testing instance (default: random string)"
 )
+parser.add_argument(
+    "-T", "--transformation-types",
+    default=Executor.TRANSFORMATIONS.keys(),
+    nargs="*",
+    choices=Executor.TRANSFORMATIONS.keys(),
+    help="Select specific transformations to perform"
+)
+parser.add_argument(
+    "-R", "--replay",
+    help="Give a program to use instead of a randomly generated (pickled)"
+)
+
+
 args = parser.parse_args()
 
 # CHECK ARGUMENTS
@@ -58,16 +72,15 @@ if not os.path.isdir(args.bugs):
     mkdir(args.bugs)
 
 args.test_directory = os.path.join(args.bugs, args.name)
-if not os.path.isdir(args.test_directory):
-    mkdir(args.test_directory)
 
 args.stop_cond = "timeout" if args.seconds else "number"
 args.temp_directory = os.path.join(cwd, "temp")
 
 # LOGGING
-print("{} {} ({})".format("stop_cond".ljust(16), args.stop_cond,
+print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
                           args.seconds if args.stop_cond == "timeout" else args.iterations))
-print("{} {}".format("rounds".ljust(16), args.rounds))
-print("{} {}".format("transformations".ljust(16), args.transformations))
-print("{} {}".format("bugs".ljust(16), args.bugs))
-print("{} {}".format("name".ljust(16), args.name))
+print("{} {}".format("rounds".ljust(21), args.rounds))
+print("{} {}".format("transformations".ljust(21), args.transformations))
+print("{} {}".format("transformation_types".ljust(21), ",".join(args.transformation_types)))
+print("{} {}".format("bugs".ljust(21), args.bugs))
+print("{} {}".format("name".ljust(21), args.name))
