@@ -83,7 +83,7 @@ class Executor:
             out.write(program_str)
         # Save initial (previous) program
         initial_filename = os.path.join(mismatch, "initial")
-        with open(initial_filename, 'w') as out:
+        with open(initial_filename + "_" + self.translator.get_filename(), 'w') as out:
             out.write(self._translate_program(initial_p))
         with open(initial_filename + ".bin", 'wb') as out:
             pickle.dump(initial_p, out)
