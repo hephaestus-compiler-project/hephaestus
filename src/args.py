@@ -51,6 +51,11 @@ parser.add_argument(
     "-R", "--replay",
     help="Give a program to use instead of a randomly generated (pickled)"
 )
+parser.add_argument(
+    "-l", "--only-last",
+    action="store_true",
+    help="Test only the last transformation"
+)
 
 
 args = parser.parse_args()

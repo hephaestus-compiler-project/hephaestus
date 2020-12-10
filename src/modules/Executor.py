@@ -112,7 +112,7 @@ class Executor:
             return False
         return True, p
 
-    def _apply_trasnformation(self, transformation_number, program):
+    def _apply_trasnformation(self, transformation_number, program, comp=True):
         transformer = random.choice(self.transformations)()
         print('Applying tranformation {}: {}'.format(
             str(transformation_number + 1), transformer.get_name()
@@ -122,6 +122,8 @@ class Executor:
         p = transformer.result()
         if p is None:
             return "continue", prev_p
+        if not comp:
+            return "succeed", p
         program_str = self._translate_program(p)
         status, _ = self._compile(
             self.translator.result(),
@@ -135,7 +137,10 @@ class Executor:
     def _apply_trasnformations(self, program):
         try:
             for j in range(self.args.transformations):
-                status, program = self._apply_trasnformation(j, program)
+                comp = True
+                if self.args.only_last and j != self.args.transformations - 1:
+                    comp = False
+                status, program = self._apply_trasnformation(j, program, comp)
                 if status == "continue":
                     continue
                 if status == "break":
