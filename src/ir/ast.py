@@ -90,7 +90,7 @@ class VariableDeclaration(Declaration):
         self.var_type = var_type
         self.inferred_type = var_type if var_type else inferred_type
         assert self.inferred_type, ("The inferred_type of a variable must"
-                                    " be not None")
+                                    " not be None")
 
     def children(self):
         return [self.expr]
@@ -274,7 +274,7 @@ class FunctionDeclaration(Declaration):
         self.inferred_type = (
             self.ret_type if inferred_type is None else inferred_type)
         assert self.inferred_type, ("The inferred_type of a function must"
-                                    " be not None")
+                                    " not be None")
 
     def children(self):
         if self.body is None:
