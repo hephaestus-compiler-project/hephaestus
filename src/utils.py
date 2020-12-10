@@ -25,7 +25,7 @@ def mkdir(directory_name):
     """Safe mkdir
     """
     try:
-        os.mkdir(directory_name)
+        os.makedirs(directory_name, exist_ok=True)
     except Exception as e:
         print(e)
         sys.exit(0)
