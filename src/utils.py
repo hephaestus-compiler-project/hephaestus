@@ -4,7 +4,6 @@ import os
 import sys
 
 
-
 def is_number(string):
     try:
         float(string)
@@ -29,6 +28,12 @@ def mkdir(directory_name):
     except Exception as e:
         print(e)
         sys.exit(0)
+
+
+def fprint(string):
+    """Full screen print"""
+    _, terminal_width = os.popen('stty size', 'r').read().split()
+    print(string.center(int(terminal_width), "="))
 
 
 class RandomUtils(object):

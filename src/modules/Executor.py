@@ -4,6 +4,7 @@ import tempfile
 import pickle
 import subprocess as sp
 from copy import deepcopy
+from collections import defaultdict
 from src.generators.Generator import Generator
 from src.transformations.substitution import (
     ValueSubstitution, TypeSubstitution)
@@ -11,7 +12,7 @@ from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.transformations.parameterized import ParameterizedSubstitution
 from src.translators.kotlin import KotlinTranslator
-from src.utils import mkdir, random
+from src.utils import mkdir, random, fprint
 
 
 def run_command(arguments):
@@ -48,6 +49,7 @@ class Executor:
             Executor.TRANSFORMATIONS[t]
             for t in self.args.transformation_types
         ]
+        self.iterations = defaultdict(lambda: [list(), False])
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -119,8 +121,9 @@ class Executor:
             return False
         return True, p
 
-    def _apply_trasnformation(self, transformation_number, program, comp=True):
+    def _apply_trasnformation(self, transformation_number, program, comp, i):
         transformer = random.choice(self.transformations)()
+        self.iterations[i][0].append(transformer.get_name())
         print('Applying tranformation {}: {}'.format(
             str(transformation_number + 1), transformer.get_name()
         ))
@@ -147,16 +150,17 @@ class Executor:
         )
         if not status:
             self._report(program_str, prev_p)
+            self.iterations[i][1] = True
             return "break", p
         return "succeed", p
 
-    def _apply_trasnformations(self, program):
+    def _apply_trasnformations(self, program, i):
         try:
             for j in range(self.args.transformations):
                 comp = True
                 if self.args.only_last and j != self.args.transformations - 1:
                     comp = False
-                status, program = self._apply_trasnformation(j, program, comp)
+                status, program = self._apply_trasnformation(j, program, comp, i)
                 if status == "continue":
                     continue
                 if status == "break":
@@ -170,19 +174,23 @@ class Executor:
         #  counter = 1 if self.args.stop_cond == "number" else time.time() + self.args.seconds
         #  while True:
         for i in range(self.args.iterations):
+            print()
             if self.args.replay:
-                print('\nProcessing program ' + self.args.replay)
+                fprint('Processing program ' + self.args.replay)
                 with open(self.args.replay, 'rb') as initial_bin:
                     program = pickle.load(initial_bin)
             else:
-                print('\nProcessing program ' + str(i + 1))
+                fprint('Processing program ' + str(i + 1))
                 succeed, program = self._generate_program()
                 if not succeed:
                     continue
-            self._apply_trasnformations(program)
+            self._apply_trasnformations(program, i)
 
             random.reset_word_pool()
         print("\nTotal mismatches: {}".format(str(self.mismatch - 1)))
+        for k, v in self.iterations.items():
+            if v[1]:
+                print("Iteration {}: {}".format(k, ", ".join(v[0])))
             #  break
             #if self.args.stop_cond == "number":
             #    counter += 1
