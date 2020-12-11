@@ -21,9 +21,6 @@ def get_type_params_names(total):
 
 
 def create_type_parameter(name: str, type_constraint: types.Type, out: bool):
-    """If out is True it means that we can create a covariant type parameter,
-    if it's not we can create a contravariant type parameter.
-    """
     variance = random.choice([INVARIANT, COVARIANT if out else CONTRAVARIANT])
     bound = None
     if type_constraint is not None and random.random() < .5:
@@ -126,14 +123,11 @@ class ParameterizedSubstitution(Transformation):
         initialize type parameters.
         """
         self.program = node
-        classes = [d for d in node.declarations
-                   if (isinstance(d, ast.ClassDeclaration) and
-                       isinstance(d.get_type(), types.SimpleClassifier))]
+        classes = self.get_candidates_classes()
         if not classes:
             ## There are not user-defined simple classifier declarations.
             return
         index = utils.random.integer(0, len(classes) - 1)
-        index = 0
         class_decl = classes[index]
         self._old_class_decl = class_decl
         self._old_class = class_decl.get_type()
@@ -158,6 +152,14 @@ class ParameterizedSubstitution(Transformation):
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
+            #  print("===========")
+            #  print("old_class: " + str(self._old_class.get_name()))
+            #  print("old_decl: " + str(self._old_class_decl.name))
+            #  print("type_const: " + str(self._type_constructor_decl.name))
+            #  print("type_params: " + str(self._type_params))
+            #  print("param_type: " + str(self._parameterized_type.get_name()))
+            #  print("===========")
+            #  print()
         self._in_changed_type_decl = False
         return new_node
 
