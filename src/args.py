@@ -61,6 +61,12 @@ parser.add_argument(
     action="store_true",
     help="Save all programs"
 )
+parser.add_argument(
+    "--max-depth",
+    type=int,
+    default=7,
+    help="Max depth of generated programs"
+)
 
 
 args = parser.parse_args()

@@ -108,7 +108,7 @@ class Executor:
         return self.translator.result()
 
     def _generate_program(self):
-        generator = Generator()
+        generator = Generator(max_depth=self.args.max_depth)
         p = generator.generate()
         program_str = self._translate_program(p)
         if self.args.keep_all:
