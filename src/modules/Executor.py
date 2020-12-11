@@ -75,7 +75,7 @@ class Executor:
             status, err = run_command(command_args)
             return not(bool(compiler_pass) ^ bool(status)), err
 
-    def _report(self, program_str, initial_p=None):
+    def _report(self, program_str, program, initial_p=None):
         mismatch = os.path.join(self.args.test_directory, str(self.mismatch))
         self.mismatch += 1
         mkdir(mismatch)
@@ -83,12 +83,15 @@ class Executor:
         dst_filename = os.path.join(mismatch, self.translator.get_filename())
         with open(dst_filename, 'w') as out:
             out.write(program_str)
+        with open(dst_filename + ".bin", 'wb') as out:
+            pickle.dump(program, out)
         # Save initial (previous) program
-        initial_filename = os.path.join(mismatch, "initial")
-        with open(initial_filename + "_" + self.translator.get_filename(), 'w') as out:
-            out.write(self._translate_program(initial_p))
-        with open(initial_filename + ".bin", 'wb') as out:
-            pickle.dump(initial_p, out)
+        if initial_p:
+            initial_filename = os.path.join(mismatch, "initial")
+            with open(initial_filename + "_" + self.translator.get_filename(), 'w') as out:
+                out.write(self._translate_program(initial_p))
+            with open(initial_filename + ".bin", 'wb') as out:
+                pickle.dump(initial_p, out)
         # Create a test script
         dst_executable = os.path.join(mismatch, self.translator.get_executable())
         cmd_build = self.translator.get_cmd_build(dst_filename, dst_executable)
@@ -117,7 +120,7 @@ class Executor:
                 out.write(program_str)
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
-            self._report(program_str)
+            self._report(program_str, p)
             return False
         return True, p
 
@@ -149,7 +152,7 @@ class Executor:
             compiler_pass=transformer.preserve_correctness()
         )
         if not status:
-            self._report(program_str, prev_p)
+            self._report(program_str, p, prev_p)
             self.iterations[i][1] = True
             return "break", p
         return "succeed", p
@@ -176,6 +179,11 @@ class Executor:
                 fprint('Processing program ' + self.args.replay)
                 with open(self.args.replay, 'rb') as initial_bin:
                     program = pickle.load(initial_bin)
+                program_str = self._translate_program(program)
+                status, _ = self._compile(program_str, compiler_pass=True)
+                if not status:
+                    self._report(program_str, program)
+                    break
             else:
                 fprint('Processing program ' + str(i + 1))
                 succeed, program = self._generate_program()
