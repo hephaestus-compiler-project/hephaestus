@@ -20,11 +20,12 @@ def get_type_params_names(total):
     return random_caps
 
 
-def create_type_parameter(name: str, type_constraint: types.Type, out: bool):
-    variance = random.choice([INVARIANT, COVARIANT if out else CONTRAVARIANT])
+def create_type_parameter(name: str, type_constraint: types.Type, variance):
     bound = None
-    if type_constraint is not None and random.random() < .5:
-        bound = random.choice(list(type_constraint.get_supertypes()))
+    # TODO: add bounds
+    # Bounds were SimpleClassifier when it should be ParameterizedType
+    #  if type_constraint is not None and random.random() < .5:
+        #  bound = random.choice(list(type_constraint.get_supertypes()))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -69,7 +70,7 @@ class ParameterizedSubstitution(Transformation):
         self._old_class = None
         self._old_class_decl = None
         self._type_constructor_decl = None
-        self._type_params_constraints = {} # Name -> (Type, covariant: bool)
+        self._type_params_constraints = {} # Name -> (Type, variance)
         self._type_params = []
         self._parameterized_type = None
         self._in_changed_type_decl = False
@@ -86,6 +87,7 @@ class ParameterizedSubstitution(Transformation):
                 possible_types = kt.NonNothingTypes
             else:
                 constraint = constraint[0]
+                # TODO check the code about variance
                 if tp.variance == INVARIANT:
                     type_args.append(constraint)
                     continue
@@ -132,8 +134,10 @@ class ParameterizedSubstitution(Transformation):
         self._old_class_decl = class_decl
         self._old_class = class_decl.get_type()
         total_type_params = utils.random.integer(1, self._max_type_params)
+        # Initialize constraints to None
         self._type_params_constraints = {
-            name: None for name in get_type_params_names(total_type_params)}
+            name: None for name in get_type_params_names(total_type_params)
+        }
         return super(ParameterizedSubstitution, self).visit_program(self.program)
 
     def visit_class_decl(self, node):
@@ -141,25 +145,19 @@ class ParameterizedSubstitution(Transformation):
             self._in_changed_type_decl = True
         new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
         if self._in_changed_type_decl and node == self._old_class_decl:
-            # Initiate unused type_params
+            # Initialize unused type_params
             self._type_params.extend([
-                create_type_parameter(tp_name, None, False)
+                create_type_parameter(tp_name, None, INVARIANT)
                 for tp_name, constraint in self._type_params_constraints.items()
                 if constraint is None
             ])
+            # Here we use new node instead of old_class_decl because
+            # old_class_decl contains the old functions and fields
             self._type_constructor_decl = create_type_constructor_decl(
-                self._old_class_decl, self._type_params
+                new_node, self._type_params
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
-            #  print("===========")
-            #  print("old_class: " + str(self._old_class.get_name()))
-            #  print("old_decl: " + str(self._old_class_decl.name))
-            #  print("type_const: " + str(self._type_constructor_decl.name))
-            #  print("type_params: " + str(self._type_params))
-            #  print("param_type: " + str(self._parameterized_type.get_name()))
-            #  print("===========")
-            #  print()
         self._in_changed_type_decl = False
         return new_node
 
@@ -175,8 +173,10 @@ class ParameterizedSubstitution(Transformation):
                 return t
             for tp_name, constraints in self._type_params_constraints.items():
                 if constraints is None:
-                    self._type_params_constraints[tp_name] = (t, covariant)
-                    type_param = create_type_parameter(tp_name, t, covariant)
+                    # TODO handle variance
+                    variance = INVARIANT
+                    self._type_params_constraints[tp_name] = (t, variance)
+                    type_param = create_type_parameter(tp_name, t, variance)
                     self._type_params.append(type_param)
                     return type_param
         return t
