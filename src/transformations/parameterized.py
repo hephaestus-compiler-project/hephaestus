@@ -105,6 +105,26 @@ class ParameterizedSubstitution(Transformation):
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
+    def _use_type_parameter(self, t, covariant=False):
+        """Change concrete type with type parameter and add the corresponding
+        constraints to type parameters.
+        """
+        if self._in_changed_type_decl:
+            if self._in_override:
+                return t
+            # We can increase the probability based on already used type_params
+            if random.random() < .5:
+                return t
+            for tp_name, constraints in self._type_params_constraints.items():
+                if constraints is None:
+                    # TODO handle variance
+                    variance = INVARIANT
+                    self._type_params_constraints[tp_name] = (t, variance)
+                    type_param = create_type_parameter(tp_name, t, variance)
+                    self._type_params.append(type_param)
+                    return type_param
+        return t
+
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
         return [d for d in self.program.declarations
@@ -115,9 +135,16 @@ class ParameterizedSubstitution(Transformation):
         return self.program
 
     def update_type(self, node, attr):
-        attr_value = getattr(node, attr, None)
-        if attr_value and attr_value  == self._old_class:
-            setattr(node, attr, self._parameterized_type)
+        attr_type = getattr(node, attr, None)
+        if attr_type:
+            if attr_type == self._old_class:
+                setattr(node, attr, self._parameterized_type)
+            elif isinstance(attr_type, types.ParameterizedType):
+                attr_type.type_args = [
+                    self._parameterized_type if t == self._old_class else t
+                    for t in attr_type.type_args
+                ]
+                setattr(node, attr, attr_type)
         return node
 
     def visit_program(self, node):
@@ -161,29 +188,13 @@ class ParameterizedSubstitution(Transformation):
         self._in_changed_type_decl = False
         return new_node
 
-    def _use_type_parameter(self, t, covariant=False):
-        """Change concrete type with type parameter and add the corresponding
-        constraints to type parameters.
-        """
-        if self._in_changed_type_decl:
-            if self._in_override:
-                return t
-            # We can increase the probability based on already used type_params
-            if random.random() < .5:
-                return t
-            for tp_name, constraints in self._type_params_constraints.items():
-                if constraints is None:
-                    # TODO handle variance
-                    variance = INVARIANT
-                    self._type_params_constraints[tp_name] = (t, variance)
-                    type_param = create_type_parameter(tp_name, t, variance)
-                    self._type_params.append(type_param)
-                    return type_param
-        return t
-
     def visit_super_instantiation(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
         return self.update_type(new_node, 'class_type')
+
+    def visit_var_decl(self, node):
+        new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
+        return self.update_type(new_node, 'var_type')
 
     def visit_new(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
@@ -196,10 +207,6 @@ class ParameterizedSubstitution(Transformation):
     def visit_param_decl(self, node):
         node.param_type = self._use_type_parameter(node.param_type)
         return self.update_type(node, 'param_type')
-
-    def visit_var_decl(self, node):
-        new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
-        return self.update_type(new_node, 'var_type')
 
     def visit_func_decl(self, node):
         if node.override:
