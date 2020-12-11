@@ -107,7 +107,7 @@ class ParameterizedSubstitution(Transformation):
         """Get all simple classifier declarations."""
         return [d for d in self.program.declarations
                 if (isinstance(d, ast.ClassDeclaration) and
-                isinstance(d.get_type(), types.SimpleClassifier))]
+                type(d.get_type()) == types.SimpleClassifier)]
 
     def result(self):
         return self.program
