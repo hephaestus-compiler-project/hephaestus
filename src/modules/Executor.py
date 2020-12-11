@@ -170,9 +170,6 @@ class Executor:
             print(e)
 
     def run(self):
-        # Set counter to time_end in case of timeout option
-        #  counter = 1 if self.args.stop_cond == "number" else time.time() + self.args.seconds
-        #  while True:
         for i in range(self.args.iterations):
             print()
             if self.args.replay:
@@ -191,21 +188,3 @@ class Executor:
         for k, v in self.iterations.items():
             if v[1]:
                 print("Iteration {}: {}".format(k, ", ".join(v[0])))
-            #  break
-            #if self.args.stop_cond == "number":
-            #    counter += 1
-            #    print(counter)
-            #    if counter > self.args.iterations:
-            #        break
-            #elif time.time() > counter:
-            #    break
-            #    temp_p = p
-            #    for _ in range(self.args.transformations):
-            #        p1 = self.transformer.transform(temp_p)
-            #        temp_p = p1
-            #    p2 = self.transformer.inject_fault(p1)
-            #    program_str = self.translator.dummy_concretize_random(p2)
-            #    status, _, filename = self._compile(program_str)
-            #    if not status:
-            #        self._report(filename)
-            # Check stop_cond
