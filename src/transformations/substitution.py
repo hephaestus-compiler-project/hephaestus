@@ -166,11 +166,14 @@ class TypeSubstitution(Transformation):
         # If we have define a variable declaration, create a reference
         # to this variable. Otherwise, we create an expresssion of the
         # expected type (same with the return type of the function).
-        else_expr = (
-            ast.Variable(var_decl.name)
-            if var_decl
-            else self.generator.generate_expr(node.get_type(),
-                                              only_leaves=True))
+        if var_decl:
+            else_expr = ast.Variable(var_decl.name)
+        elif node.get_type() == kt.Unit:
+            else_expr = ast.Block([])
+        else:
+            print(node.get_type())
+            else_expr = self.generator.generate_expr(node.get_type(),
+                                                     only_leaves=True)
         if not is_expr.operator.is_not:
             # if (x is T) ... else var
             if_cond = ast.Conditional(
@@ -187,7 +190,8 @@ class TypeSubstitution(Transformation):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
         new_node = super(TypeSubstitution, self).visit_func_decl(node)
-        is_expression = not isinstance(new_node.body, ast.Block)
+        is_expression = (not isinstance(new_node.body, ast.Block) or
+                         new_node.get_type() == kt.Unit)
         if not is_expression:
             # If function is not expression-based, create a variable
             # declaration holding a value whose type is the same with the

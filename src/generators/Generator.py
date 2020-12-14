@@ -450,6 +450,32 @@ class Generator(object):
         varia = utils.random.choice([v.name for v in variables])
         return ast.Variable(varia)
 
+    def gen_assignment(self, expr_type, only_leaves=False, subtype=True):
+        # Get all all non-final variables for performing the assignment.
+        variables = [v
+                     for v in self.context.get_vars(self.namespace).values()
+                     if not getattr(v, 'is_final', True)]
+        if not variables:
+            etype = self.gen_type()
+            if self.namespace in self._vars_in_context:
+                self._vars_in_context[self.namespace] += 1
+            else:
+                self._vars_in_context[self.namespace] = 1
+            self._stop_var = True
+            # If there are not variable declarations that match our criteria,
+            # we have to create a new variable declaration.
+            var_decl = self.gen_variable_decl(etype, only_leaves)
+            var_decl.is_final = False
+            self._stop_var = False
+            self.context.add_var(self.namespace, var_decl.name, var_decl)
+            return ast.Assignment(var_decl.name,
+                                  self.generate_expr(var_decl.get_type(),
+                                                     only_leaves, subtype))
+        v = utils.random.choice(variables)
+        return ast.Assignment(v.name, self.generate_expr(
+            v.get_type(), only_leaves, subtype))
+
+
     def generate_main_func(self):
         initial_namespace = self.namespace
         self.namespace += ('main', )
@@ -505,7 +531,8 @@ class Generator(object):
         ]
 
         if expr_type == kt.Unit:
-            return [gen_fun_call]
+            return [gen_fun_call,
+                    lambda x: self.gen_assignment(x, only_leaves)]
 
         if self.depth >= self.max_depth or only_leaves:
             gen_con = constant_candidates.get(expr_type)

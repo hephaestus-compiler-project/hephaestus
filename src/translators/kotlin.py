@@ -319,4 +319,16 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_assign(self, node):
-        raise NotImplementedError('visit_assign() must be implemented')
+        old_ident = self.ident
+        prev = self._cast_integers
+        self._cast_integers = True
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        self.ident = old_ident
+        children_res = self.pop_children_res(children)
+        res = (" " * old_ident) + node.var_name + " = " + children_res[0]
+        self.ident = old_ident
+        self._cast_integers = prev
+        self._children_res.append(res)
