@@ -2,7 +2,7 @@ from copy import deepcopy
 from collections import defaultdict
 
 from src import utils
-from src.ir import ast
+from src.ir import ast, kotlin_types as kt
 from src.generators import Generator
 from src.transformations.base import Transformation
 
@@ -231,6 +231,9 @@ class SubtypeCreation(TypeCreation):
         functions = []
         for f in abstract_functions:
             expr = self.generator.generate_expr(f.get_type(), only_leaves=True)
+            if f.get_type() == kt.Unit:
+                # We must create a block, if functions returns Unit.
+                expr = ast.Block([expr])
             functions.append(
                 ast.FunctionDeclaration(f.name, deepcopy(f.params), None,
                                         body=expr,

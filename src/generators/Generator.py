@@ -177,7 +177,14 @@ class Generator(object):
             ret_type = None
         else:
             inferred_type = None
-            body = ast.Block(decls + [expr])
+            # Generate a number of expressions with side-effects.
+            exprs = [self.generate_expr(kt.Unit)
+                     for _ in range(utils.random.integer(0, 2))]
+            decls = list(self.context.get_declarations(
+                self.namespace, True).values())
+            decls = [d for d in decls
+                     if not isinstance(d, ast.ParameterDeclaration)]
+            body = ast.Block(decls + exprs + [expr])
         self.depth = initial_depth
         self.namespace = initial_namespace
         if self.namespace[-1][0].isupper():
@@ -248,11 +255,13 @@ class Generator(object):
         self.depth += 1
         expr = self.generate_expr(var_type, only_leaves)
         self.depth = initial_depth
-        vtype = var_type if utils.random.bool() else None
+        is_final = utils.random.bool()
+        # We never omit type in non-final variables.
+        vtype = var_type if utils.random.bool() or not is_final else None
         return ast.VariableDeclaration(
             self.gen_identifier('lower'),
             expr=expr,
-            is_final=utils.random.bool(),
+            is_final=is_final,
             var_type=vtype,
             inferred_type=var_type)
 
@@ -455,6 +464,8 @@ class Generator(object):
         variables = [v
                      for v in self.context.get_vars(self.namespace).values()
                      if not getattr(v, 'is_final', True)]
+        initial_depth = self.depth
+        self.depth += 1
         if not variables:
             etype = self.gen_type()
             if self.namespace in self._vars_in_context:
@@ -466,12 +477,15 @@ class Generator(object):
             # we have to create a new variable declaration.
             var_decl = self.gen_variable_decl(etype, only_leaves)
             var_decl.is_final = False
+            var_decl.var_type = var_decl.get_type()
             self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
+            self.depth = initial_depth
             return ast.Assignment(var_decl.name,
                                   self.generate_expr(var_decl.get_type(),
                                                      only_leaves, subtype))
         v = utils.random.choice(variables)
+        self.depth = initial_depth
         return ast.Assignment(v.name, self.generate_expr(
             v.get_type(), only_leaves, subtype))
 

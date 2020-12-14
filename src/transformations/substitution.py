@@ -171,7 +171,6 @@ class TypeSubstitution(Transformation):
         elif node.get_type() == kt.Unit:
             else_expr = ast.Block([])
         else:
-            print(node.get_type())
             else_expr = self.generator.generate_expr(node.get_type(),
                                                      only_leaves=True)
         if not is_expr.operator.is_not:
@@ -182,8 +181,12 @@ class TypeSubstitution(Transformation):
             # if (x !is T) var else ...
             if_cond = ast.Conditional(
                 and_expr, else_expr, if_body)
-        node.body = if_cond if not var_decl else ast.Block(
-            ret_var + [if_cond])
+        if var_decl:
+            node.body = ast.Block(ret_var + [if_cond])
+        elif node.get_type() == kt.Unit:
+            node.body = ast.Block([if_cond])
+        else:
+            node.body = if_cond
         return use_var
 
     def visit_func_decl(self, node):

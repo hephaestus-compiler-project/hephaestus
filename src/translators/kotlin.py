@@ -153,7 +153,7 @@ class KotlinTranslator(ASTVisitor):
         self.ident += 2
         children = node.children()
         prev = self.is_func_block
-        self.is_func_block = True
+        self.is_func_block = node.get_type() != kt.Unit
         prev_c = self._cast_integers
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
@@ -170,12 +170,8 @@ class KotlinTranslator(ASTVisitor):
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
         if node.ret_type:
             res += ": " + node.ret_type.get_name()
-            if isinstance(node.ret_type, kt.UnitType):
-                # Remove the last of occurrence of 'return' if the
-                # return type of the function is Unit.
-                body_res = "".join(body_res.rsplit("return", 1))
         if body_res:
-            sign = "=" if is_expression else ""
+            sign = "=" if is_expression and node.get_type() != kt.Unit else ""
             res += " " + sign + "\n" + body_res
         self.ident = old_ident
         self.is_func_block = prev
