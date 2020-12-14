@@ -23,13 +23,14 @@ class Generator(object):
     BUILTIN_TYPES = RET_BUILTIN_TYPES + [kt.Unit]
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
-                 max_var_decls=3, context=None):
+                 max_var_decls=3, max_side_effects=1, context=None):
         self.context = context or Context()
         self.max_depth = max_depth
         self.max_fields = max_fields
         self.max_funcs = max_funcs
         self.max_params = max_params
         self.max_var_decls = max_var_decls
+        self.max_side_effects = max_side_effects
         self.depth = 1
         self._vars_in_context = {}
         self._new_from_class = None
@@ -179,7 +180,7 @@ class Generator(object):
             inferred_type = None
             # Generate a number of expressions with side-effects.
             exprs = [self.generate_expr(kt.Unit)
-                     for _ in range(utils.random.integer(0, 2))]
+                     for _ in range(utils.random.integer(0, self.max_side_effects))]
             decls = list(self.context.get_declarations(
                 self.namespace, True).values())
             decls = [d for d in decls
