@@ -134,9 +134,9 @@ class Executor:
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
-        program_str = self._translate_program(p)
         if p is None:
             return "continue", prev_p
+        program_str = self._translate_program(p)
         if self.args.keep_all:
             dst_dir = os.path.join(self.args.test_directory,
                                    "transformations",
