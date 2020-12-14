@@ -2,6 +2,17 @@ from src.ir import ast
 from src.ir.visitors import DefaultVisitorUpdate
 
 
+def change_namespace(visit):
+    def inner(self, node):
+        initial_namespace = self._namespace
+        self._namespace += (node.name,)
+        print(self._namespace)
+        new_node = visit(self, node)
+        self._namespace = initial_namespace
+        return new_node
+    return inner
+
+
 class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
     NAME = None
