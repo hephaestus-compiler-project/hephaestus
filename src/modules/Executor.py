@@ -108,12 +108,13 @@ class Executor:
         self.translator.visit(p)
         return self.translator.result()
 
-    def _generate_program(self):
+    def _generate_program(self, i):
         generator = Generator(max_depth=self.args.max_depth)
         p = generator.generate()
         program_str = self._translate_program(p)
         if self.args.keep_all:
-            dst_dir = os.path.join(self.args.test_directory, "generator")
+            dst_dir = os.path.join(self.args.test_directory, "generator",
+                                   "iter_" + str(i))
             mkdir(dst_dir)
             # Save the program
             dst_filename = os.path.join(dst_dir, self.translator.get_filename())
@@ -122,7 +123,7 @@ class Executor:
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
             self._report(program_str, p)
-            return False
+            return False, p
         return True, p
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
@@ -190,10 +191,10 @@ class Executor:
                     break
             else:
                 fprint('Processing program ' + str(i + 1))
-                succeed, program = self._generate_program()
+                succeed, program = self._generate_program(i + 1)
                 if not succeed:
                     continue
-            self._apply_trasnformations(program, i)
+            self._apply_trasnformations(program, i + 1)
 
             random.reset_word_pool()
         print("\nTotal mismatches: {}".format(str(self.mismatch - 1)))
