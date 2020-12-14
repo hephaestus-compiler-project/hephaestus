@@ -140,7 +140,8 @@ class Executor:
         if self.args.keep_all:
             dst_dir = os.path.join(self.args.test_directory,
                                    "transformations",
-                                   str(transformation_number))
+                                   "iter_" + str(i),
+                                   str(transformation_number + 1))
             mkdir(dst_dir)
             # Save the program
             dst_filename = os.path.join(dst_dir, self.translator.get_filename())
