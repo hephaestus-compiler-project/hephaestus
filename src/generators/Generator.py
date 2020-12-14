@@ -162,6 +162,8 @@ class Generator(object):
             self.context.add_var(self.namespace, p.name, p)
         ret_type = self._get_func_ret_type(params, etype)
         expr_type = self.gen_type(False) if ret_type == kt.Unit else ret_type
+        # TODO: Consider adding some side-effects (e.g., assignments)
+        # to the body of the function.
         expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
@@ -250,6 +252,7 @@ class Generator(object):
         return ast.VariableDeclaration(
             self.gen_identifier('lower'),
             expr=expr,
+            is_final=utils.random.bool(),
             var_type=vtype,
             inferred_type=var_type)
 

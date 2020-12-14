@@ -89,10 +89,11 @@ class Declaration(Node):
 
 
 class VariableDeclaration(Declaration):
-    def __init__(self, name: str, expr: Expr, var_type: types.Type=None,
-            inferred_type: types.Type=None):
+    def __init__(self, name: str, expr: Expr, is_final: bool=True,
+                 var_type: types.Type=None, inferred_type: types.Type=None):
         self.name = name
         self.expr = expr
+        self.is_final = is_final
         self.var_type = var_type
         self.inferred_type = var_type if var_type else inferred_type
         assert self.inferred_type, ("The inferred_type of a variable must"
@@ -109,10 +110,11 @@ class VariableDeclaration(Declaration):
         self.expr = children[0]
 
     def __str__(self):
+        prefix = "val " if self.is_final else "var "
         if self.var_type is None:
-            return "val " + self.name + " = " + str(self.expr)
+            return prefix + self.name + " = " + str(self.expr)
         else:
-            return "val " + self.name + ": " + str(self.var_type) + \
+            return prefix + self.name + ": " + str(self.var_type) + \
                 " = " + str(self.expr)
 
 
