@@ -40,6 +40,61 @@ def create_type_constructor_decl(class_decl, type_parameters):
     )
 
 
+def find_all_paths(graph, start, path=[]):
+    path = path + [start]
+    if start not in graph:
+        return [path]
+    paths = [path]
+    for node in graph[start]:
+        if node not in path:
+            newpaths = find_all_paths(graph, node, path)
+            for newpath in newpaths:
+                paths.append(newpath)
+    return paths
+
+
+def find_longest_paths(graph, vertex):
+    def exist(x, y):
+        """Checks if x is in y with the same order"""
+        return x == y[:len(y)-len(x)+1]
+    paths = find_all_paths(graph, vertex)
+    if len(paths) == 1:
+        return paths
+    return [x for x in paths if not any(exist(x, p) for p in paths)]
+
+
+def reachable(graph, start_vertex, dest_vertex):
+    # Find if a start_vertex can reach dest_vertex with BFS
+    visited = {v: False for v in graph.keys()}
+
+    queue=[]
+    queue.append(start_vertex)
+    visited[start_vertex] = True
+
+    while queue:
+        next_v = queue.pop(0)
+
+        if next_v == dest_vertex:
+             return True
+
+        for v in graph[next_v]:
+            if visited[v] == False:
+                queue.append(v)
+                visited[v] = True
+    return False
+
+
+def check_vertices(vertices, graph):
+    # TODO optimize
+    none_vertices = [v for v in graph.keys() if "None" in v[1]]
+    res = {v: True for v in vertices}
+    for v in vertices:
+        for vn in none_vertices:
+            if bool(reachable(graph, v, vn) or reachable(graph, vn, v)):
+                res[v] = False
+    return res
+
+
 class ParameterizedSubstitution(Transformation):
     """To create a ParameterizedType, we do the following steps:
         1. Select a SimpleClassifier ClassDeclaration (visit_program)
@@ -82,8 +137,13 @@ class ParameterizedSubstitution(Transformation):
         self._in_analysis = False
 
         #  self._use_graph = defaultdict(lambda: list())
-        self._use_graph = {}  # node ((namespace, name)) => [node]
-        self._func_calls = {}  # func_name => (namespace, params)
+        # node = ((namespace, name))
+        self._use_entries = set()  # set of nodes
+        self._use_graph = defaultdict(lambda: list())  # node => [node]
+        self._use_boolean_dict = {}  # node => [node]
+        self._func_calls = defaultdict(lambda: list())  # func_name => (namespace, params)
+        self._type_params_nodes = {}  # node => TypeParameter
+        self._none_counter = 1  # Counter for None nodes
 
         self._namespace = ('global',)
         self.program = None
@@ -114,12 +174,14 @@ class ParameterizedSubstitution(Transformation):
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
-    def _use_type_parameter(self, t, covariant=False):
+    def _use_type_parameter(self, name, t, covariant=False):
         """Change concrete type with type parameter and add the corresponding
         constraints to type parameters.
         """
         if self._in_changed_type_decl:
             if self._in_override:
+                return t
+            if not self._use_boolean_dict[(self._namespace, name)]:
                 return t
             # We can increase the probability based on already used type_params
             if random.random() < .5:
@@ -131,8 +193,23 @@ class ParameterizedSubstitution(Transformation):
                     self._type_params_constraints[tp_name] = (t, variance)
                     type_param = create_type_parameter(tp_name, t, variance)
                     self._type_params.append(type_param)
+                    self._use_boolean_dict[(self._namespace, name)] = False
+                    self._type_params_nodes[(self._namespace, name)] = type_param
                     return type_param
         return t
+
+    def _add_flow_from_parent(self, variable_node):
+        parent_node = None
+        namespace_similarity = 0
+        for gnode in self._use_graph.keys():
+            if gnode[1] == variable_node[1] and gnode != variable_node:
+                *_, similarity = (i for i in range(0, len(variable_node))
+                                  if gnode[0][:i] == variable_node[0][:i])
+                if similarity > namespace_similarity:
+                    parent_node = gnode
+                    namespace_similarity = similarity
+        if parent_node is not None:
+            self._use_graph[parent_node].append(variable_node)
 
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
@@ -146,6 +223,7 @@ class ParameterizedSubstitution(Transformation):
     def update_type(self, node, attr):
         attr_type = getattr(node, attr, None)
         if attr_type:
+            # Change old_class types to new parameterized type
             if attr_type == self._old_class:
                 setattr(node, attr, self._parameterized_type)
             elif isinstance(attr_type, types.ParameterizedType):
@@ -154,6 +232,30 @@ class ParameterizedSubstitution(Transformation):
                     for t in attr_type.type_args
                 ]
                 setattr(node, attr, attr_type)
+            # Handle return type for intra-procedural functions
+            elif isinstance(node, ast.FunctionDeclaration):
+                # TODO Refactor
+                if len(node.body.body) > 0:
+                    return_stmt = node.body.body[-1]
+                    if hasattr(return_stmt, 'name'):
+                        gnode = (self._namespace, return_stmt.name)
+                        match = [tp for v, tp in self._type_params_nodes.items()
+                                 if reachable(self._use_graph, v, gnode)]
+                        if match:
+                            self._use_boolean_dict[gnode] = False
+                            setattr(node, attr, match[0])
+            # Check if there is a flow from a changed type to node
+            else:
+                if hasattr(node, 'name'):
+                    gnode = (self._namespace, node.name)
+                    # There can be only one result
+                    # TODO make sure that there cannot be two results
+                    match = [tp for v, tp in self._type_params_nodes.items()
+                             if reachable(self._use_graph, v, gnode)]
+                    if match:
+                        # TODO probably we have to do that check earlier
+                        self._use_boolean_dict[gnode] = False
+                        setattr(node, attr, match[0])
         return node
 
     def visit_program(self, node):
@@ -166,11 +268,12 @@ class ParameterizedSubstitution(Transformation):
             ## There are not user-defined simple classifier declarations.
             return
         index = utils.random.integer(0, len(classes) - 1)
-        index = 0
+        index = 0  # TODO
         class_decl = classes[index]
         self._old_class_decl = class_decl
         self._old_class = class_decl.get_type()
         total_type_params = utils.random.integer(1, self._max_type_params)
+        total_type_params = 1  # TODO
         # Initialize constraints to None
         self._type_params_constraints = {
             name: None for name in get_type_params_names(total_type_params)
@@ -185,6 +288,8 @@ class ParameterizedSubstitution(Transformation):
             _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
             print("###Use graph###")
             __import__('pprint').pprint(self._use_graph)
+            self._use_boolean_dict = check_vertices(
+                self._use_entries, self._use_graph)
             self._in_analysis = False
             self._in_changed_type_decl = True
 
@@ -228,7 +333,10 @@ class ParameterizedSubstitution(Transformation):
                 matches = [x for x in self._use_graph.keys() if x[1] == arg.name]
                 if matches:
                     # FIXME check if type is in class decleration
-                    self._use_graph[matches[0]].append(None)
+                    gnode = (self._namespace, "None" + str(self._none_counter))
+                    self._none_counter += 1
+                    self._use_graph[matches[0]].append(gnode)
+                    self._use_graph[gnode]
             print("Visit(new): " + str(node))
             return super(ParameterizedSubstitution, self).visit_new(node)
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
@@ -237,19 +345,21 @@ class ParameterizedSubstitution(Transformation):
     def visit_field_decl(self, node):
         if self._in_analysis:
             gnode = (self._namespace, node.name)
-            self._use_graph[gnode] = []
+            self._use_graph[gnode]
+            self._use_entries.add(gnode)
             print("Visit(field_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_field_decl(node)
-        node.field_type = self._use_type_parameter(node.field_type, True)
+        node.field_type = self._use_type_parameter(node.name, node.field_type, True)
         return self.update_type(node, 'field_type')
 
     def visit_param_decl(self, node):
         if self._in_analysis:
             gnode = (self._namespace, node.name)
-            self._use_graph[gnode] = []
+            self._use_graph[gnode]  # initialize the node
+            self._use_entries.add(gnode)
             print("Visit(param_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_param_decl(node)
-        node.param_type = self._use_type_parameter(node.param_type)
+        node.param_type = self._use_type_parameter(node.name, node.param_type)
         return self.update_type(node, 'param_type')
 
     @change_namespace
@@ -262,8 +372,10 @@ class ParameterizedSubstitution(Transformation):
                 len(self._func_calls[node.name]) == len(node.params)):
                 args = self._func_calls[node.name]
                 for arg, param in zip(args, node.params):
-                    if arg in self._use_graph:
-                        self._use_graph[arg].append((self._namespace, param.name))
+                    # FIXME
+                    if arg[1] is None:
+                        print(arg)
+                    self._use_graph[arg].append((self._namespace, param.name))
             print("Visit(func_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_func_decl(node)
         if node.override:
@@ -283,15 +395,21 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_func_call(self, node):
         if self._in_analysis:
-            self._func_calls[node.func] = [
-                (self._namespace, getattr(x, 'name', None)) for x in node.args
-            ]
+            for arg in node.args:
+                name = getattr(arg, 'name', None)
+                if name is None:
+                    name = "None" + str(self._none_counter)
+                    self._none_counter += 1
+                self._func_calls[node.func].append((self._namespace, name))
             print("Visit(func_call): " + node.func)
             return super(ParameterizedSubstitution, self).visit_func_call(node)
         return super(ParameterizedSubstitution, self).visit_func_call(node)
 
     def visit_variable(self, node):
         if self._in_analysis:
+            gnode = (self._namespace, node.name)
+            self._use_graph[gnode]
+            self._add_flow_from_parent(gnode)
             print("Visit(variable): " + node.name)
             return super(ParameterizedSubstitution, self).visit_variable(node)
         return super(ParameterizedSubstitution, self).visit_variable(node)
