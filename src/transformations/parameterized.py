@@ -223,6 +223,12 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_new(self, node):
         if self._in_analysis:
+            for arg in [x for x in node.args if isinstance(x, ast.Variable)]:
+                # FIXME handle cases were len(matches) > 1)
+                matches = [x for x in self._use_graph.keys() if x[1] == arg.name]
+                if matches:
+                    # FIXME check if type is in class decleration
+                    self._use_graph[matches[0]].append(None)
             print("Visit(new): " + str(node))
             return super(ParameterizedSubstitution, self).visit_new(node)
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
