@@ -459,14 +459,48 @@ class Generator(object):
         varia = utils.random.choice([v.name for v in variables])
         return ast.Variable(varia)
 
+    def _get_assignable_vars(self):
+        variables = []
+        for v in self.context.get_vars(self.namespace).values():
+            if not getattr(v, 'is_final', True):
+                variables.append((None, v))
+                continue
+            t = v.get_type()
+            if isinstance(t, types.Builtin):
+                continue
+            cls = self._get_class(t)
+            for f in cls.fields:
+                if not f.is_final:
+                    variables.append((ast.Variable(v.name), f))
+        return variables
+
+    def _get_classes_with_assignable_fields(self):
+        classes = []
+        class_decls = self.context.get_classes(self.namespace).values()
+        for c in class_decls:
+            for f in c.fields:
+                if not f.is_final:
+                    classes.append((c, f))
+        if not classes:
+            return None
+        return utils.random.choice(classes)
+
     def gen_assignment(self, expr_type, only_leaves=False, subtype=True):
         # Get all all non-final variables for performing the assignment.
-        variables = [v
-                     for v in self.context.get_vars(self.namespace).values()
-                     if not getattr(v, 'is_final', True)]
+        variables = self._get_assignable_vars()
         initial_depth = self.depth
         self.depth += 1
         if not variables:
+            # Ok, it's time to find a class with non-final fields,
+            # generate an object of this class, and perform the assignment.
+            res = self._get_classes_with_assignable_fields()
+            if res:
+                cls, f = res
+                variables = [(self.generate_expr(cls.get_type(),
+                                                 only_leaves, subtype), f)]
+        if not variables:
+            # Nothing of the above worked, so generate a 'var' variable,
+            # and perform the assignment
             etype = self.gen_type()
             if self.namespace in self._vars_in_context:
                 self._vars_in_context[self.namespace] += 1
@@ -484,10 +518,10 @@ class Generator(object):
             return ast.Assignment(var_decl.name,
                                   self.generate_expr(var_decl.get_type(),
                                                      only_leaves, subtype))
-        v = utils.random.choice(variables)
+        receiver, variable = utils.random.choice(variables)
         self.depth = initial_depth
-        return ast.Assignment(v.name, self.generate_expr(
-            v.get_type(), only_leaves, subtype))
+        return ast.Assignment(variable.name, self.generate_expr(
+            variable.get_type(), only_leaves, subtype), receiver=receiver)
 
 
     def generate_main_func(self):
