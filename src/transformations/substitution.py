@@ -22,7 +22,7 @@ class ValueSubstitution(Transformation):
         self.generator = Generator(context=node.context)
         usr_types = [d for d in node.declarations
                      if isinstance(d, ast.ClassDeclaration)] + \
-            self.generator.BUILTIN_TYPES
+            self.generator.RET_BUILTIN_TYPES
         self.types = usr_types
         usr_types.remove(kt.Any)
         new_node = super(ValueSubstitution, self).visit_program(node)
@@ -104,7 +104,7 @@ class TypeSubstitution(Transformation):
         self.generator = Generator(context=node.context)
         usr_types = [d for d in node.declarations
                      if isinstance(d, ast.ClassDeclaration)] + \
-            self.generator.BUILTIN_TYPES
+            self.generator.RET_BUILTIN_TYPES
         self.types = usr_types
         new_node = super(TypeSubstitution, self).visit_program(node)
         if self.transform:

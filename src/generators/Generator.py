@@ -8,7 +8,7 @@ from src.ir.context import Context
 
 class Generator(object):
 
-    BUILTIN_TYPES = [
+    RET_BUILTIN_TYPES = [
         kt.Any,
         kt.Integer,
         kt.Short,
@@ -17,8 +17,10 @@ class Generator(object):
         kt.Float,
         kt.Double,
         kt.Boolean,
-        kt.String
+        kt.String,
     ]
+
+    BUILTIN_TYPES = RET_BUILTIN_TYPES + [kt.Unit]
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, context=None):
@@ -145,7 +147,7 @@ class Generator(object):
         param_types = [p.param_type for p in params]
         if param_types and utils.random.bool():
             return utils.random.choice(param_types)
-        return self.gen_type()
+        return self.gen_type(ret_types=False)
 
     def gen_func_decl(self, etype=None):
         func_name = self.gen_identifier('lower')
@@ -159,14 +161,15 @@ class Generator(object):
             params.append(p)
             self.context.add_var(self.namespace, p.name, p)
         ret_type = self._get_func_ret_type(params, etype)
-        expr = self.generate_expr(ret_type)
+        expr_type = self.gen_type(False) if ret_type == kt.Unit else ret_type
+        expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
-        if not decls:
-            # The function does not contain any declarations, so we can
-            # create an expression-based function.
+        if not decls and ret_type != kt.Unit:
+            # The function does not contain any declarations and its return
+            # type is not Unit. So, we can create an expression-based function.
             inferred_type = ret_type
             body = expr
             ret_type = None
@@ -219,10 +222,11 @@ class Generator(object):
             functions=funcs
         )
 
-    def gen_type(self):
+    def gen_type(self, ret_types=True):
         # Randomly choose whether we should generate a builtin type or not.
         if utils.random.bool():
-            return utils.random.choice(self.BUILTIN_TYPES)
+            builtins = self.RET_BUILTIN_TYPES if ret_types else self.BUILTIN_TYPES
+            return utils.random.choice(builtins)
         # Get all class declarations in the current namespace
         class_decls = self.context.get_classes(self.namespace)
         if not class_decls:
@@ -461,9 +465,13 @@ class Generator(object):
         self.namespace = initial_namespace
         return main_func
 
-    def generate_expr(self, expr_type=None, only_leaves=False, subtype=True):
+    def get_generators(self, expr_type, only_leaves, subtype):
         def gen_variable(x):
             return self.gen_variable(x, only_leaves, subtype)
+
+        def gen_fun_call(x):
+            return self.gen_func_call(x, only_leaves=only_leaves,
+                                      subtype=subtype)
 
         leaf_canidates = [
             lambda x: self.gen_new(x, only_leaves, subtype),
@@ -487,17 +495,19 @@ class Generator(object):
         }
         other_candidates = [
             lambda x: self.gen_field_access(x, only_leaves, subtype),
-            lambda x: self.gen_func_call(x, only_leaves=only_leaves,
-                                         subtype=subtype),
             lambda x: self.gen_conditional(x, only_leaves=only_leaves,
                                            subtype=subtype),
+            gen_fun_call,
             gen_variable
         ]
-        expr_type = expr_type or self.gen_type()
+
+        if expr_type == kt.Unit:
+            return [gen_fun_call]
+
         if self.depth >= self.max_depth or only_leaves:
-            gen_func = constant_candidates.get(expr_type)
-            if gen_func:
-                return gen_func(expr_type)
+            gen_con = constant_candidates.get(expr_type)
+            if gen_con is not None:
+                return [gen_con]
             gen_var = self._vars_in_context.get(
                 self.namespace, 0) < self.max_var_decls and not (
                     self._stop_var or only_leaves)
@@ -507,14 +517,19 @@ class Generator(object):
                 # has been reached, or we have previously declared a variable
                 # of a specific type, then we should avoid variable creation.
                 leaf_canidates.append(gen_variable)
-            return utils.random.choice(leaf_canidates)(expr_type)
+            return leaf_canidates
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
             candidates = [gen_variable, con_candidate] + binary_ops.get(
                 expr_type, [])
         else:
             candidates = leaf_canidates
-        return utils.random.choice(candidates + other_candidates)(expr_type)
+        return other_candidates + candidates
+
+    def generate_expr(self, expr_type=None, only_leaves=False, subtype=True):
+        expr_type = expr_type or self.gen_type()
+        gens = self.get_generators(expr_type, only_leaves, subtype)
+        return utils.random.choice(gens)(expr_type)
 
     def gen_top_level_declaration(self):
         candidates = [

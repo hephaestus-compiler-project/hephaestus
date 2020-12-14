@@ -213,7 +213,7 @@ class SubtypeCreation(TypeCreation):
         decls = [d for d in self.program.declarations
                  if (d != class_decl and isinstance(d, ast.ClassDeclaration) and
                      d.class_type == ast.ClassDeclaration.REGULAR)]
-        self.types = decls + self.generator.BUILTIN_TYPES
+        self.types = decls + self.generator.RET_BUILTIN_TYPES
         overriden_fields = utils.random.sample(class_decl.fields)
         new_fields_nu = self.generator.max_fields - len(overriden_fields)
         fields = []
