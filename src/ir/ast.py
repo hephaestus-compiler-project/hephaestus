@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import List, Set
 
 from src import utils
 from src.ir import types, context as ctx
@@ -19,6 +20,10 @@ class Node(object):
         assert len(children) == len(self.children()), (
             'The number of the given children is not compatible'
             ' with the number of the node\'s children.')
+
+
+class Expr(Node):
+    pass
 
 
 class Program(Node):
@@ -64,7 +69,7 @@ class Program(Node):
 
 
 class Block(Node):
-    def __init__(self, body):
+    def __init__(self, body: List[Node]):
         self.body = body
 
     def children(self):
@@ -84,7 +89,8 @@ class Declaration(Node):
 
 
 class VariableDeclaration(Declaration):
-    def __init__(self, name, expr, var_type=None, inferred_type=None):
+    def __init__(self, name: str, expr: Expr, var_type: types.Type=None,
+            inferred_type: types.Type=None):
         self.name = name
         self.expr = expr
         self.var_type = var_type
@@ -111,7 +117,8 @@ class VariableDeclaration(Declaration):
 
 
 class FieldDeclaration(Declaration):
-    def __init__(self, name, field_type, is_final=True, override=False):
+    def __init__(self, name: str, field_type: types.Type, is_final=True,
+                 override=False):
         self.name = name
         self.field_type = field_type
         self.is_final = is_final
@@ -131,7 +138,7 @@ class FieldDeclaration(Declaration):
 
 
 class ObjectDecleration(Declaration):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def get_type(self):
@@ -145,7 +152,7 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def  __init__(self, class_type, args=[]):
+    def  __init__(self, class_type: types.Type, args: List[Expr]=[]):
         assert not isinstance(class_type, types.AbstractType)
         self.class_type = class_type
         self.args = args
@@ -165,14 +172,84 @@ class SuperClassInstantiation(Node):
             return self.class_type.name + "(" + ", ".join(map(str, self.args)) + ")"
 
 
+class ParameterDeclaration(Declaration):
+    def __init__(self, name: str, param_type: types.Type, default: Expr=None):
+        self.name = name
+        self.param_type = param_type
+        self.default = default
+
+    def children(self):
+        return []
+
+    def update_children(self, children):
+        pass
+
+    def get_type(self):
+        return self.param_type
+
+    def __str__(self):
+        if self.default is None:
+            return self.name + ": " + str(self.param_type)
+        else:
+            return self.name + ": " + str(
+                self.param_type) + " = " + str(self.default)
+
+
+class FunctionDeclaration(Declaration):
+    CLASS_METHOD = 0
+    FUNCTION = 1
+
+    def __init__(self, name: str, params: List[ParameterDeclaration],
+                 ret_type: types.Type, body: Block, func_type: int,
+                 inferred_type: types.Type=None, is_final=True, override=False):
+        self.name = name
+        self.params = params
+        self.ret_type = ret_type
+        self.body = body
+        self.func_type = func_type
+        self.is_final = is_final
+        self.override = override
+        self.inferred_type = (
+            self.ret_type if inferred_type is None else inferred_type)
+        assert self.inferred_type, ("The inferred_type of a function must"
+                                    " not be None")
+
+    def children(self):
+        if self.body is None:
+            return self.params
+        return self.params + [self.body]
+
+    def update_children(self, children):
+        super(FunctionDeclaration, self).update_children(children)
+        len_params = len(self.params)
+        for i, c in enumerate(children[:len_params]):
+            self.params[i] = c
+        if self.body is None:
+            return
+        self.body = children[-1]
+
+    def get_type(self):
+        return self.inferred_type
+
+    def __str__(self):
+        if self.ret_type is None:
+            return "fun {}({}) =\n  {}".format(
+                self.name, ",".join(map(str, self.params)), str(self.body))
+        else:
+            return "fun {}({}): {} =\n  {}".format(
+                self.name, ",".join(map(str, self.params)), str(self.ret_type),
+                str(self.body))
+
+
 class ClassDeclaration(Declaration):
     REGULAR = 0
     INTERFACE = 1
     ABSTRACT = 2
 
-    def __init__(self, name, superclasses: SuperClassInstantiation,
-                 class_type=None, fields=[], functions=[], is_final=True,
-                 type_parameters=[]):
+    def __init__(self, name: str, superclasses: List[SuperClassInstantiation],
+                 class_type: types.Type=None, fields: List[FieldDeclaration]=[],
+                 functions: List[FunctionDeclaration]=[], is_final=True,
+                 type_parameters: List[types.TypeParameter]=[]):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
@@ -235,93 +312,26 @@ class ClassDeclaration(Declaration):
         )
 
 
-class ParameterDeclaration(Declaration):
-    def __init__(self, name, param_type, default=None):
-        self.name = name
-        self.param_type = param_type
-        self.default = default
-
-    def children(self):
-        return []
-
-    def update_children(self, children):
-        pass
-
-    def get_type(self):
-        return self.param_type
-
-    def __str__(self):
-        if self.default is None:
-            return self.name + ": " + str(self.param_type)
-        else:
-            return self.name + ": " + str(
-                self.param_type) + " = " + str(self.expr)
-
-
-class FunctionDeclaration(Declaration):
-    CLASS_METHOD = 0
-    FUNCTION = 1
-
-    def __init__(self, name, params, ret_type, body, func_type,
-                 inferred_type=None, is_final=True, override=False):
-        self.name = name
-        self.params = params
-        self.ret_type = ret_type
-        self.body = body
-        self.func_type = func_type
-        self.is_final = is_final
-        self.override = override
-        self.inferred_type = (
-            self.ret_type if inferred_type is None else inferred_type)
-        assert self.inferred_type, ("The inferred_type of a function must"
-                                    " not be None")
-
-    def children(self):
-        if self.body is None:
-            return self.params
-        return self.params + [self.body]
-
-    def update_children(self, children):
-        super(FunctionDeclaration, self).update_children(children)
-        len_params = len(self.params)
-        for i, c in enumerate(children[:len_params]):
-            self.params[i] = c
-        if self.body is None:
-            return
-        self.body = children[-1]
-
-    def get_type(self):
-        return self.inferred_type
-
-    def __str__(self):
-        if self.ret_type is None:
-            return "fun {}({}) =\n  {}".format(
-                self.name, ",".join(map(str, self.params)), str(self.body))
-        else:
-            return "fun {}({}): {} =\n  {}".format(
-                self.name, ",".join(map(str, self.params)), str(self.ret_type),
-                str(self.body))
-
-
 class ParameterizedFunctionDeclaration(FunctionDeclaration):
     CLASS_METHOD = 0
     FUNCTION = 1
 
-    def __init__(self, name, type_parameters, params, ret_type, body,
-                 func_type, is_final=True, override=False):
+    def __init__(self, name: str, type_parameters: List[types.TypeParameter],
+                 params: List[ParameterDeclaration], ret_type: types.Type,
+                 body: Block, func_type: int, is_final=True, override=False):
         super(ParameterizedFunctionDeclaration, self).__init__(name, params,
               ret_type, body, func_type, is_final, override)
         self.type_parameters = type_parameters
 
     def get_type(self):
         return types.ParameterizedFunction(
-            self.name, type_parameters,
+            self.name, self.type_parameters,
             [p.get_type() for p in self.params], self.ret_type)
 
     def __str__(self):
         keywords = ""
         if len(keywords) > 0:
-            keywords = " ".join(map(lambda x: x.name, self.keywords))
+            keywords = " ".join(map(lambda x: x.name, keywords))
         if self.ret_type is None:
             return "{}fun<{}> {}({}) =\n  {}".format(
                 keywords, ",".join(map(str, self.type_parameters)),
@@ -333,12 +343,8 @@ class ParameterizedFunctionDeclaration(FunctionDeclaration):
                 str(self.body))
 
 
-class Expr(Node):
-    pass
-
-
 class Constant(Expr):
-    def __init__(self, literal):
+    def __init__(self, literal: str):
         self.literal = literal
 
     def children(self):
@@ -353,7 +359,7 @@ class Constant(Expr):
 
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
-    def __init__(self, literal, integer_type):
+    def __init__(self, literal: str, integer_type):
         assert isinstance(literal, int) or isinstance(literal, long), (
             'Integer literal must either int or long')
         super(IntegerConstant, self).__init__(literal)
@@ -362,7 +368,7 @@ class IntegerConstant(Constant):
 
 class RealConstant(Constant):
 
-    def __init__(self, literal):
+    def __init__(self, literal: str):
         suffix = None
         if literal.endswith('f') or literal.endswith('F'):
             literal_nums = literal[:-1]
@@ -375,14 +381,14 @@ class RealConstant(Constant):
 
 
 class BooleanConstant(Constant):
-    def __init__(self, literal):
+    def __init__(self, literal: str):
         assert literal == 'true' or literal == 'false', (
             'Boolean literal is not "true" or "false"')
         super(BooleanConstant, self).__init__(literal)
 
 
 class CharConstant(Constant):
-    def __init__(self, literal):
+    def __init__(self, literal: str):
         assert len(literal) == 1, (
             'Character literal must be a single character')
         super(CharConstant, self).__init__(literal)
@@ -398,7 +404,7 @@ class StringConstant(Constant):
 
 
 class Variable(Expr):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def children(self):
@@ -412,7 +418,7 @@ class Variable(Expr):
 
 
 class Conditional(Expr):
-    def __init__(self, cond, true_branch, false_branch):
+    def __init__(self, cond: Expr, true_branch: Block, false_branch: Block):
         self.cond = cond
         self.true_branch = true_branch
         self.false_branch = false_branch
@@ -432,7 +438,7 @@ class Conditional(Expr):
 
 
 class Operator(Node):
-    def __init__(self, name, is_not=False):
+    def __init__(self, name: str, is_not=False):
         self.name = name
         self.is_not = is_not
 
@@ -459,7 +465,7 @@ class Operator(Node):
 class BinaryOp(Expr):
     VALID_OPERATORS = None
 
-    def __init__(self, lexpr, rexpr, operator: Operator):
+    def __init__(self, lexpr: Expr, rexpr: Expr, operator: Operator):
         if self.VALID_OPERATORS is not None:
             assert operator in self.VALID_OPERATORS, (
                 'Binary operator ' + operator + ' is not valid')
@@ -528,7 +534,7 @@ class Is(BinaryOp):
 
 
 class New(Expr):
-    def __init__(self, class_type: types.Type, args):
+    def __init__(self, class_type: types.Type, args: List[Expr]):
         self.class_type = class_type
         self.args = args
 
@@ -552,7 +558,7 @@ class New(Expr):
 
 
 class FieldAccess(Expr):
-    def __init__(self, expr, field):
+    def __init__(self, expr: Expr, field: str):
         self.expr = expr
         self.field = field
 
@@ -568,7 +574,7 @@ class FieldAccess(Expr):
 
 
 class FunctionCall(Expr):
-    def __init__(self, func, args, receiver=None):
+    def __init__(self, func: str, args: Expr, receiver: str=None):
         self.func = func
         self.args = args
         self.receiver = receiver
@@ -594,7 +600,7 @@ class FunctionCall(Expr):
                 ", ".join(map(str, self.args)) + ")"
 
 class Assignment(Expr):
-    def __init__(self, var_name, expr):
+    def __init__(self, var_name: str, expr: Expr):
         self.var_name = var_name
         self.expr = expr
 
