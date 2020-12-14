@@ -50,7 +50,7 @@ foo_func = FunctionDeclaration(
     is_final=False,
     inferred_type=b_cls.get_type(),
     body=Block([
-        FunctionCall("bar", [Variable(xA_field.name), StringConstant("foo")])
+        FunctionCall("bar", [Variable("y"), StringConstant("foo")])
     ])
 )
 
@@ -70,8 +70,8 @@ bar_func = FunctionDeclaration(
     ])
 )
 
-baz_func = FunctionDeclaration(
-    "baz",
+buz_func = FunctionDeclaration(
+    "buz",
     params=[],
     ret_type=StringType(),
     func_type=FunctionDeclaration.CLASS_METHOD,
@@ -87,7 +87,7 @@ a_cls = ClassDeclaration(
     class_type=ClassDeclaration.REGULAR,
     is_final=False,
     fields=[xA_field],
-    functions=[foo_func, bar_func, baz_func]
+    functions=[foo_func, bar_func, buz_func]
 )
 
 main_body = Block(
