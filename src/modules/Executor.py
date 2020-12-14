@@ -2,6 +2,7 @@ import os
 import time
 import tempfile
 import pickle
+import traceback
 import subprocess as sp
 from copy import deepcopy
 from collections import defaultdict
@@ -170,6 +171,8 @@ class Executor:
                     break
         except Exception as e:
             # This means that we have programming error in transformations
+            if self.args.print_stacktrace:
+                print(traceback.format_exc())
             print(e)
 
     def run(self):

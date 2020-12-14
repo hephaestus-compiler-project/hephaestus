@@ -67,6 +67,11 @@ parser.add_argument(
     default=7,
     help="Max depth of generated programs"
 )
+parser.add_argument(
+    "-S", "--print-stacktrace",
+    action="store_true",
+    help="When an error occurs print stack trace"
+)
 
 
 args = parser.parse_args()
