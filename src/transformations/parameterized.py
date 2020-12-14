@@ -5,7 +5,7 @@ from src import utils
 from src.ir import ast
 from src.ir import types
 from src.ir import kotlin_types as kt
-from src.transformations.base import Transformation
+from src.transformations.base import Transformation, change_namespace
 
 
 INVARIANT = types.TypeParameter.INVARIANT
@@ -67,14 +67,23 @@ class ParameterizedSubstitution(Transformation):
     def __init__(self, max_type_params=3):
         super(ParameterizedSubstitution, self).__init__()
         self._max_type_params = max_type_params
+
         self._old_class = None
         self._old_class_decl = None
         self._type_constructor_decl = None
+
         self._type_params_constraints = {} # Name -> (Type, variance)
         self._type_params = []
+
         self._parameterized_type = None
+
         self._in_changed_type_decl = False
         self._in_override = False
+        self._in_analysis = False
+
+        #  self._use_graph = defaultdict(lambda: list())
+        self._use_graph = {}  # node ((namespace, name)) => [node]
+        self._func_calls = {}  # func_name => (namespace, params)
 
         self._namespace = ('global',)
         self.program = None
@@ -157,6 +166,7 @@ class ParameterizedSubstitution(Transformation):
             ## There are not user-defined simple classifier declarations.
             return
         index = utils.random.integer(0, len(classes) - 1)
+        index = 0
         class_decl = classes[index]
         self._old_class_decl = class_decl
         self._old_class = class_decl.get_type()
@@ -167,10 +177,19 @@ class ParameterizedSubstitution(Transformation):
         }
         return super(ParameterizedSubstitution, self).visit_program(self.program)
 
+    @change_namespace
     def visit_class_decl(self, node):
         if node == self._old_class_decl:
+            self._in_analysis = True
+            # Run analysis
+            _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
+            print("###Use graph###")
+            __import__('pprint').pprint(self._use_graph)
+            self._in_analysis = False
             self._in_changed_type_decl = True
+
         new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
+
         if self._in_changed_type_decl and node == self._old_class_decl:
             # Initialize unused type_params
             self._type_params.extend([
@@ -189,26 +208,58 @@ class ParameterizedSubstitution(Transformation):
         return new_node
 
     def visit_super_instantiation(self, node):
+        if self._in_analysis:
+            print("Visit (super): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_super_instantiation(node)
         new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
         return self.update_type(new_node, 'class_type')
 
     def visit_var_decl(self, node):
+        if self._in_analysis:
+            print("Visit(var_decl): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_var_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
         return self.update_type(new_node, 'var_type')
 
     def visit_new(self, node):
+        if self._in_analysis:
+            print("Visit(new): " + str(node))
+            return super(ParameterizedSubstitution, self).visit_new(node)
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
         return self.update_type(new_node, 'class_type')
 
     def visit_field_decl(self, node):
+        if self._in_analysis:
+            gnode = (self._namespace, node.name)
+            self._use_graph[gnode] = []
+            print("Visit(field_decl): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_field_decl(node)
         node.field_type = self._use_type_parameter(node.field_type, True)
         return self.update_type(node, 'field_type')
 
     def visit_param_decl(self, node):
+        if self._in_analysis:
+            gnode = (self._namespace, node.name)
+            self._use_graph[gnode] = []
+            print("Visit(param_decl): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_param_decl(node)
         node.param_type = self._use_type_parameter(node.param_type)
         return self.update_type(node, 'param_type')
 
+    @change_namespace
     def visit_func_decl(self, node):
+        if self._in_analysis:
+            # TODO check types
+            # FIXME if the declaration is after the use, then we will not
+            # detect the use.
+            if (node.name in self._func_calls and
+                len(self._func_calls[node.name]) == len(node.params)):
+                args = self._func_calls[node.name]
+                for arg, param in zip(args, node.params):
+                    if arg in self._use_graph:
+                        self._use_graph[arg].append((self._namespace, param.name))
+            print("Visit(func_decl): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_func_decl(node)
         if node.override:
             self._in_override = True
         # TODO return statement must return a value of TypeParameter.
@@ -223,3 +274,24 @@ class ParameterizedSubstitution(Transformation):
         new_node = self.update_type(new_node, 'inferred_type')
         self._in_override = False
         return new_node
+
+    def visit_func_call(self, node):
+        if self._in_analysis:
+            self._func_calls[node.func] = [
+                (self._namespace, getattr(x, 'name', None)) for x in node.args
+            ]
+            print("Visit(func_call): " + node.func)
+            return super(ParameterizedSubstitution, self).visit_func_call(node)
+        return super(ParameterizedSubstitution, self).visit_func_call(node)
+
+    def visit_variable(self, node):
+        if self._in_analysis:
+            print("Visit(variable): " + node.name)
+            return super(ParameterizedSubstitution, self).visit_variable(node)
+        return super(ParameterizedSubstitution, self).visit_variable(node)
+
+    def visit_string_constant(self, node):
+        if self._in_analysis:
+            print("Visit(string_const): " + str(node))
+            return super(ParameterizedSubstitution, self).visit_string_constant(node)
+        return super(ParameterizedSubstitution, self).visit_string_constant(node)
