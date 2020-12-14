@@ -10,8 +10,8 @@ from src.transformations.base import Transformation
 
 def create_non_final_fields(fields):
     return [
-        ast.FieldDeclaration(f.name, f.field_type, is_final=False,
-                             override=f.override)
+        ast.FieldDeclaration(f.name, f.field_type, can_override=False,
+                             override=f.override, is_final=f.is_final)
         for f in fields
     ]
 
@@ -28,8 +28,8 @@ def create_non_final_functions(functions):
 
 def create_override_fields(fields):
     return [
-        ast.FieldDeclaration(f.name, f.field_type, is_final=f.is_final,
-                             override=True)
+        ast.FieldDeclaration(f.name, f.field_type, can_override=f.can_override,
+                             override=True, is_final=f.is_final)
         for f in fields
     ]
 
@@ -219,7 +219,8 @@ class SubtypeCreation(TypeCreation):
         fields = []
         for f in overriden_fields:
             fields.append(ast.FieldDeclaration(
-                f.name, f.field_type, is_final=True, override=True))
+                f.name, f.field_type, can_override=True, override=True,
+                is_final=f.is_final))
         for i in range(utils.random.integer(0, new_fields_nu)):
             etype = utils.random.choice([t for t in self.types
                                          if not class_decl.get_type().is_subtype(t)])

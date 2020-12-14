@@ -120,10 +120,11 @@ class VariableDeclaration(Declaration):
 
 class FieldDeclaration(Declaration):
     def __init__(self, name: str, field_type: types.Type, is_final=True,
-                 override=False):
+                 can_override=True, override=False):
         self.name = name
         self.field_type = field_type
         self.is_final = is_final
+        self.can_override = can_override
         self.override = override
 
     def children(self):
@@ -602,16 +603,26 @@ class FunctionCall(Expr):
                 ", ".join(map(str, self.args)) + ")"
 
 class Assignment(Expr):
-    def __init__(self, var_name: str, expr: Expr):
+    def __init__(self, var_name: str, expr: Expr, receiver: Expr=None):
         self.var_name = var_name
         self.expr = expr
+        self.receiver = receiver
 
     def children(self):
+        if self.receiver is not None:
+            return [self.receiver, self.expr]
         return [self.expr]
 
     def update_children(self, children):
         super(Assignment, self).update_children(children)
-        self.expr = children[0]
+        if self.receiver is not None:
+            self.receiver = children[0]
+            self.expr = children[1]
+        else:
+            self.expr = children[0]
 
     def __str__(self):
-        return str(self.var_name) + " = " + str(self.expr)
+        if self.receiver:
+            return "{}.{} = {}".format(str(self.receiver), str(self.var_name),
+                                       str(self.expr))
+        return "{} = {}".format(str(self.var_name), str(self.expr))

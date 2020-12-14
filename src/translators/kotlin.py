@@ -139,9 +139,10 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_field_decl(self, node):
-        prefix = '' if node.is_final else 'open '
+        prefix = '' if node.can_override else 'open '
         prefix += '' if not node.override else 'override '
-        res = prefix + "val " + node.name + ": " + node.field_type.get_name()
+        prefix += 'val ' if node.is_final else 'var '
+        res = prefix + node.name + ": " + node.field_type.get_name()
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
@@ -324,7 +325,12 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
-        res = (" " * old_ident) + node.var_name + " = " + children_res[0]
+        if node.receiver:
+            res = "{}{}.{} = {}".format(" " * old_ident, children_res[0],
+                                        node.var_name, children_res[1])
+        else:
+            res = "{}{} = {}".format(" " * old_ident, node.var_name,
+                                     children_res[0])
         self.ident = old_ident
         self._cast_integers = prev
         self._children_res.append(res)
