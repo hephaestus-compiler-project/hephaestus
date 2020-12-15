@@ -90,7 +90,7 @@ class Executor:
             return not(bool(compiler_pass) ^ bool(status)), err
 
     def _report(self, program_str, program, initial_p=None):
-        mismatch = os.path.join(self.args.test_directory, str(self.mismatch))
+        mismatch = os.path.join(self.args.test_directory, str(self.exec_id))
         self.mismatch += 1
         mkdir(mismatch)
         # Save the program
