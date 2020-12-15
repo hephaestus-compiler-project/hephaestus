@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from src.utils import random, mkdir
+from src.utils import random, mkdir, fprint
 from src.modules.Executor import Executor
 
 
@@ -111,3 +111,4 @@ print("{} {}".format("transformations".ljust(21), args.transformations))
 print("{} {}".format("transformation_types".ljust(21), ",".join(args.transformation_types)))
 print("{} {}".format("bugs".ljust(21), args.bugs))
 print("{} {}".format("name".ljust(21), args.name))
+fprint("")

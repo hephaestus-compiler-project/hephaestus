@@ -17,7 +17,7 @@ from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.transformations.parameterized import ParameterizedSubstitution
 from src.translators.kotlin import KotlinTranslator
-from src.utils import mkdir, random, fprint
+from src.utils import mkdir, random
 
 
 def run_command(arguments):
@@ -35,14 +35,6 @@ def run_command(arguments):
     stderr = stderr.decode("utf-8") if stderr else ""
     status = True if cmd.returncode == 0 else False
     return status, stderr
-
-
-def test_passed(i):
-    print('Program ' + str(i) + u' passed \u2714')
-
-
-def test_failed(i):
-    print('Program ' + str(i) + u' failed \u2718')
 
 
 class Executor:
@@ -114,7 +106,6 @@ class Executor:
         with open(testfile, 'w') as out:
             out.write(' '.join(cmd_build) + '\n')
             out.write(' '.join(cmd_exec))
-        print("Mismatch found: {}".format(mismatch))
 
     def _translate_program(self, p):
         self.translator = KotlinTranslator()
@@ -203,9 +194,5 @@ class Executor:
         else:
             succeed, program = self._generate_program(self.exec_id)
             if not succeed:
-                return
-        failed = self._apply_trasnformations(program, self.exec_id)
-        if not failed:
-            test_passed(self.exec_id)
-        else:
-            test_failed(self.exec_id)
+                return True
+        return self._apply_trasnformations(program, self.exec_id)
