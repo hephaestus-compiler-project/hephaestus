@@ -136,14 +136,13 @@ class ParameterizedSubstitution(Transformation):
         self._in_override = False
         self._in_analysis = False
 
-        #  self._use_graph = defaultdict(lambda: list())
         # node = ((namespace, name))
         self._use_entries = set()  # set of nodes
         self._use_graph = defaultdict(lambda: list())  # node => [node]
-        self._use_boolean_dict = {}  # node => [node]
+        self._use_boolean_dict = {}  # node => bool
         self._func_calls = defaultdict(lambda: list())  # func_name => (namespace, params)
         self._type_params_nodes = {}  # node => TypeParameter
-        self._none_counter = 1  # Counter for None nodes
+        self._none_counter = 1  # Counter for None sink nodes
 
         self._namespace = ('global',)
         self.program = None
@@ -216,17 +215,6 @@ class ParameterizedSubstitution(Transformation):
             variable_node[1], variable_node[0])
         if parent_node is not None and parent_node != variable_node:
             self._use_graph[parent_node].append(variable_node)
-        #  parent_node = None
-        #  namespace_similarity = 0
-        #  for gnode in self._use_graph.keys():
-            #  if gnode[1] == variable_node[1] and gnode != variable_node:
-                #  *_, similarity = (i for i in range(0, len(variable_node))
-                                  #  if gnode[0][:i] == variable_node[0][:i])
-                #  if similarity > namespace_similarity:
-                    #  parent_node = gnode
-                    #  namespace_similarity = similarity
-        #  if parent_node is not None:
-            #  self._use_graph[parent_node].append(variable_node)
 
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
@@ -302,7 +290,7 @@ class ParameterizedSubstitution(Transformation):
     def visit_class_decl(self, node):
         if node == self._old_class_decl:
             self._in_analysis = True
-            # Run analysis
+            # Run analysis and select where to use Type Parameters
             _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
             #  print("###Use graph###")
             #  __import__('pprint').pprint(self._use_graph)
@@ -332,7 +320,6 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_super_instantiation(self, node):
         if self._in_analysis:
-            #  print("Visit (super): " + node.name)
             return super(ParameterizedSubstitution, self).visit_super_instantiation(node)
         new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
         return self.update_type(new_node, 'class_type')
@@ -347,7 +334,6 @@ class ParameterizedSubstitution(Transformation):
                     node.expr.name, self._namespace)
                 if var_node:
                     self._use_graph[var_node].append(gnode)
-            #  print("Visit(var_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_var_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
         return self.update_type(new_node, 'var_type')
@@ -363,7 +349,6 @@ class ParameterizedSubstitution(Transformation):
                     self._none_counter += 1
                     self._use_graph[matches[0]].append(gnode)
                     self._use_graph[gnode]
-            #  print("Visit(new): " + str(node))
             return super(ParameterizedSubstitution, self).visit_new(node)
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
         return self.update_type(new_node, 'class_type')
@@ -373,7 +358,6 @@ class ParameterizedSubstitution(Transformation):
             gnode = (self._namespace, node.name)
             self._use_graph[gnode]
             self._use_entries.add(gnode)
-            #  print("Visit(field_decl): " + node.name)
             node.field_type = self._use_type_parameter(node.name, node.field_type, True)
             return super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self.update_type(node, 'field_type')
@@ -383,7 +367,6 @@ class ParameterizedSubstitution(Transformation):
             gnode = (self._namespace, node.name)
             self._use_graph[gnode]  # initialize the node
             self._use_entries.add(gnode)
-            #  print("Visit(param_decl): " + node.name)
             node.param_type = self._use_type_parameter(node.name, node.param_type)
             return super(ParameterizedSubstitution, self).visit_param_decl(node)
         return self.update_type(node, 'param_type')
@@ -402,17 +385,9 @@ class ParameterizedSubstitution(Transformation):
                     if arg[1] is None:
                         print(arg)
                     self._use_graph[arg].append((self._namespace, param.name))
-            #  print("Visit(func_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_func_decl(node)
         if node.override:
             self._in_override = True
-        # TODO return statement must return a value of TypeParameter.
-        # Maybe if the return statement returns a function parameter or
-        # a field, then we can replace the types for both the return and
-        # the function parameter or the field to have the same TypeParameter
-        # a value
-        #  if node.ret_type != kt.Unit:
-            #  node.ret_type = self._use_type_parameter(node.ret_type, True)
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         new_node = self.update_type(new_node, 'ret_type')
         new_node = self.update_type(new_node, 'inferred_type')
@@ -427,7 +402,6 @@ class ParameterizedSubstitution(Transformation):
                     name = "None" + str(self._none_counter)
                     self._none_counter += 1
                 self._func_calls[node.func].append((self._namespace, name))
-            #  print("Visit(func_call): " + node.func)
             return super(ParameterizedSubstitution, self).visit_func_call(node)
         return super(ParameterizedSubstitution, self).visit_func_call(node)
 
@@ -436,12 +410,10 @@ class ParameterizedSubstitution(Transformation):
             gnode = (self._namespace, node.name)
             self._use_graph[gnode]
             self._add_flow_from_parent(gnode)
-            #  print("Visit(variable): " + node.name)
             return super(ParameterizedSubstitution, self).visit_variable(node)
         return super(ParameterizedSubstitution, self).visit_variable(node)
 
     def visit_string_constant(self, node):
         if self._in_analysis:
-            #  print("Visit(string_const): " + str(node))
             return super(ParameterizedSubstitution, self).visit_string_constant(node)
         return super(ParameterizedSubstitution, self).visit_string_constant(node)
