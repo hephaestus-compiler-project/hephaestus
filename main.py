@@ -23,7 +23,8 @@ def process_result(failed):
     else:
         n_passed += 1
     sys.stdout.write('\033[2K\033[1G')
-    msg = u"Test Programs Passed {} / {} \u2714\tTest Programs Failed {} / {} \u2718\r".format(
+    msg = (u"Test Programs Passed {} / {} \u2714\t\t"
+           "Test Programs Failed {} / {} \u2718\r").format(
         n_passed, args.iterations, n_failed, args.iterations)
     sys.stdout.write(msg)
 
