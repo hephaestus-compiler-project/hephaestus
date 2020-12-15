@@ -6,6 +6,9 @@ import traceback
 import subprocess as sp
 from copy import deepcopy
 from collections import defaultdict
+
+from tqdm import tqdm
+
 from src.generators.Generator import Generator
 from src.transformations.substitution import (
     ValueSubstitution, TypeSubstitution)
@@ -31,6 +34,14 @@ def run_command(arguments):
     stderr = stderr.decode("utf-8") if stderr else ""
     status = True if cmd.returncode == 0 else False
     return status, stderr
+
+
+def test_passed():
+    print(u'Compilation Passed: \u2714')
+
+
+def test_failed():
+    print(u'Compilation Failed: \u2714')
 
 
 class Executor:
@@ -124,14 +135,12 @@ class Executor:
         if not status:
             self._report(program_str, p)
             return False, p
+        test_passed()
         return True, p
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
         transformer = random.choice(self.transformations)()
         self.iterations[i][0].append(transformer.get_name())
-        print('Applying tranformation {}: {}'.format(
-            str(transformation_number + 1), transformer.get_name()
-        ))
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
@@ -162,7 +171,9 @@ class Executor:
 
     def _apply_trasnformations(self, program, i):
         try:
-            for j in range(self.args.transformations):
+            failed = False
+            for j in tqdm(range(self.args.transformations),
+                          desc=str('Mutating Program ' + str(i))):
                 comp = True
                 if self.args.only_last and j != self.args.transformations - 1:
                     comp = False
@@ -170,7 +181,11 @@ class Executor:
                 if status == "continue":
                     continue
                 if status == "break":
+                    failed = True
                     break
+            if not failed:
+                test_passed()
+
         except Exception as e:
             # This means that we have programming error in transformations
             if self.args.print_stacktrace:
@@ -181,7 +196,6 @@ class Executor:
         for i in range(self.args.iterations):
             print()
             if self.args.replay:
-                fprint('Processing program ' + self.args.replay)
                 with open(self.args.replay, 'rb') as initial_bin:
                     program = pickle.load(initial_bin)
                 program_str = self._translate_program(program)
@@ -189,8 +203,8 @@ class Executor:
                 if not status:
                     self._report(program_str, program)
                     break
+                test_passed()
             else:
-                fprint('Processing program ' + str(i + 1))
                 succeed, program = self._generate_program(i + 1)
                 if not succeed:
                     continue
