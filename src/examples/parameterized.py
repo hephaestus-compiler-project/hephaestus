@@ -24,8 +24,8 @@ getX_func = FunctionDeclaration(
     ])
 )
 
-b_cls = ClassDeclaration(
-    "B",
+bam_cls = ClassDeclaration(
+    "Bam",
     superclasses=[],
     class_type=ClassDeclaration.REGULAR,
     is_final=False,
@@ -43,14 +43,15 @@ xA_field = FieldDeclaration(
 foo_func = FunctionDeclaration(
     "foo",
     params=[
-        ParameterDeclaration("y", StringType())
+        ParameterDeclaration("y", StringType()),
+        ParameterDeclaration("z", StringType())
     ],
-    ret_type=Unit,
+    ret_type=bam_cls.get_type(),
     func_type=FunctionDeclaration.CLASS_METHOD,
     is_final=False,
-    inferred_type=b_cls.get_type(),
     body=Block([
-        FunctionCall("bar", [Variable("y"), StringConstant("foo")])
+        VariableDeclaration("q", Variable("z"), var_type=StringType()),
+        FunctionCall("bar", [Variable("y"), StringConstant("foo"), Variable("q")])
     ])
 )
 
@@ -58,14 +59,14 @@ bar_func = FunctionDeclaration(
     "bar",
     params=[
         ParameterDeclaration("arg", StringType()),
-        ParameterDeclaration("y", StringType())
+        ParameterDeclaration("y", StringType()),
+        ParameterDeclaration("z", StringType())
     ],
-    ret_type=Unit,
+    ret_type=bam_cls.get_type(),
     func_type=FunctionDeclaration.CLASS_METHOD,
     is_final=False,
-    inferred_type=b_cls.get_type(),
     body=Block([
-        New(b_cls.get_type(), [Variable("arg")])
+        New(bam_cls.get_type(), [Variable("arg")])
 
     ])
 )
@@ -105,6 +106,6 @@ main_func = FunctionDeclaration(
 
 ctx = Context()
 ctx.add_class(GLOBAL_NAMESPACE, a_cls.name, a_cls)
-ctx.add_func(GLOBAL_NAMESPACE, b_cls.name, b_cls)
+ctx.add_func(GLOBAL_NAMESPACE, bam_cls.name, bam_cls)
 ctx.add_func(GLOBAL_NAMESPACE, main_func.name, main_func)
 program = Program(ctx)

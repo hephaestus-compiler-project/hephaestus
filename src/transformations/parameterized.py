@@ -198,18 +198,35 @@ class ParameterizedSubstitution(Transformation):
                     return type_param
         return t
 
-    def _add_flow_from_parent(self, variable_node):
+    def find_variable_namespace(self, variable_name, current_namespace):
         parent_node = None
         namespace_similarity = 0
         for gnode in self._use_graph.keys():
-            if gnode[1] == variable_node[1] and gnode != variable_node:
-                *_, similarity = (i for i in range(0, len(variable_node))
-                                  if gnode[0][:i] == variable_node[0][:i])
+            if gnode[1] == variable_name:
+                *_, similarity = (i for i in range(0, len(current_namespace)-1)
+                                  if gnode[0][:i] == current_namespace[:i])
                 if similarity > namespace_similarity:
                     parent_node = gnode
                     namespace_similarity = similarity
-        if parent_node is not None:
+        return parent_node
+
+    def _add_flow_from_parent(self, variable_node):
+        """Add flow for variables that are declared in outer scope"""
+        parent_node = self.find_variable_namespace(
+            variable_node[1], variable_node[0])
+        if parent_node is not None and parent_node != variable_node:
             self._use_graph[parent_node].append(variable_node)
+        #  parent_node = None
+        #  namespace_similarity = 0
+        #  for gnode in self._use_graph.keys():
+            #  if gnode[1] == variable_node[1] and gnode != variable_node:
+                #  *_, similarity = (i for i in range(0, len(variable_node))
+                                  #  if gnode[0][:i] == variable_node[0][:i])
+                #  if similarity > namespace_similarity:
+                    #  parent_node = gnode
+                    #  namespace_similarity = similarity
+        #  if parent_node is not None:
+            #  self._use_graph[parent_node].append(variable_node)
 
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
@@ -251,7 +268,8 @@ class ParameterizedSubstitution(Transformation):
                     # There can be only one result
                     # TODO make sure that there cannot be two results
                     match = [tp for v, tp in self._type_params_nodes.items()
-                             if reachable(self._use_graph, v, gnode)]
+                             if reachable(self._use_graph, v, gnode) or
+                             reachable(self._use_graph, gnode, v)]
                     if match:
                         # TODO probably we have to do that check earlier
                         self._use_boolean_dict[gnode] = False
@@ -321,6 +339,14 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_var_decl(self, node):
         if self._in_analysis:
+            gnode = (self._namespace, node.name)
+            self._use_graph[gnode]  # initialize the node
+            # FIXME
+            if type(node.expr) == ast.Variable:
+                var_node = self.find_variable_namespace(
+                    node.expr.name, self._namespace)
+                if var_node:
+                    self._use_graph[var_node].append(gnode)
             print("Visit(var_decl): " + node.name)
             return super(ParameterizedSubstitution, self).visit_var_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
