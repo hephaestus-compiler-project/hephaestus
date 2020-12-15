@@ -4,6 +4,7 @@ import tempfile
 import pickle
 import traceback
 import subprocess as sp
+import sys
 from copy import deepcopy
 from collections import defaultdict
 
@@ -36,12 +37,12 @@ def run_command(arguments):
     return status, stderr
 
 
-def test_passed():
-    print(u'Compilation Passed: \u2714')
+def test_passed(i):
+    print('Program ' + str(i) + u' passed \u2714')
 
 
-def test_failed():
-    print(u'Compilation Failed: \u2714')
+def test_failed(i):
+    print('Program ' + str(i) + u' failed \u2714')
 
 
 class Executor:
@@ -51,10 +52,11 @@ class Executor:
         'SubtypeCreation': SubtypeCreation,
         'ValueSubstitution': ValueSubstitution,
         'TypeSubstitution': TypeSubstitution,
-        'ParameterizedSubstitution': ParameterizedSubstitution
+        #'ParameterizedSubstitution': ParameterizedSubstitution
     }
 
-    def __init__(self, args):
+    def __init__(self, exec_id, args):
+        self.exec_id = exec_id
         self.args = args
         self.mismatch = 1  # mismatch counter
         self.transformations = [
@@ -135,7 +137,6 @@ class Executor:
         if not status:
             self._report(program_str, p)
             return False, p
-        test_passed()
         return True, p
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
@@ -172,8 +173,7 @@ class Executor:
     def _apply_trasnformations(self, program, i):
         try:
             failed = False
-            for j in tqdm(range(self.args.transformations),
-                          desc=str('Mutating Program ' + str(i))):
+            for j in range(self.args.transformations + 1):
                 comp = True
                 if self.args.only_last and j != self.args.transformations - 1:
                     comp = False
@@ -183,35 +183,29 @@ class Executor:
                 if status == "break":
                     failed = True
                     break
-            if not failed:
-                test_passed()
-
+            return failed
         except Exception as e:
             # This means that we have programming error in transformations
             if self.args.print_stacktrace:
                 print(traceback.format_exc())
             print(e)
+            return True
 
-    def run(self):
-        for i in range(self.args.iterations):
-            print()
-            if self.args.replay:
-                with open(self.args.replay, 'rb') as initial_bin:
-                    program = pickle.load(initial_bin)
-                program_str = self._translate_program(program)
-                status, _ = self._compile(program_str, compiler_pass=True)
-                if not status:
-                    self._report(program_str, program)
-                    break
-                test_passed()
-            else:
-                succeed, program = self._generate_program(i + 1)
-                if not succeed:
-                    continue
-            self._apply_trasnformations(program, i + 1)
-
-            random.reset_word_pool()
-        print("\nTotal mismatches: {}".format(str(self.mismatch - 1)))
-        for k, v in self.iterations.items():
-            if v[1]:
-                print("Iteration {}: {}".format(k, ", ".join(v[0])))
+    def process_program(self):
+        if self.args.replay:
+            with open(self.args.replay, 'rb') as initial_bin:
+                program = pickle.load(initial_bin)
+            program_str = self._translate_program(program)
+            status, _ = self._compile(program_str, compiler_pass=True)
+            if not status:
+                self._report(program_str, program)
+                return
+        else:
+            succeed, program = self._generate_program(self.exec_id)
+            if not succeed:
+                return
+        failed = self._apply_trasnformations(program, self.exec_id)
+        if not failed:
+            test_passed(self.exec_id)
+        else:
+            test_failed(self.exec_id)

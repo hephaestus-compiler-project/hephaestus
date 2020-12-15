@@ -72,6 +72,12 @@ parser.add_argument(
     action="store_true",
     help="When an error occurs print stack trace"
 )
+parser.add_argument(
+    "-w", "--workers",
+    type=int,
+    default=1,
+    help="Number of workers for processing test programs"
+)
 
 
 args = parser.parse_args()
