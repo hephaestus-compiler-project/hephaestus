@@ -42,7 +42,7 @@ def test_passed(i):
 
 
 def test_failed(i):
-    print('Program ' + str(i) + u' failed \u2714')
+    print('Program ' + str(i) + u' failed \u2718')
 
 
 class Executor:

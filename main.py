@@ -7,6 +7,7 @@ from src.modules.Executor import Executor
 
 
 def run(i):
+    random.r.seed()
     executor = Executor(i, args)
     return executor.process_program()
 
