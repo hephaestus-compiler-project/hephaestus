@@ -202,8 +202,9 @@ class FunctionDeclaration(Declaration):
     CLASS_METHOD = 0
     FUNCTION = 1
 
+    # body can be Block or Expr
     def __init__(self, name: str, params: List[ParameterDeclaration],
-                 ret_type: types.Type, body: Block, func_type: int,
+                 ret_type: types.Type, body: Node, func_type: int,
                  inferred_type: types.Type=None, is_final=True, override=False):
         self.name = name
         self.params = params
