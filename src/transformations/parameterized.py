@@ -53,7 +53,7 @@ def get_function_decl(context, namespace, name):
     # check if arguments match with parameters
     # if many matches get the correct one
     for ns in namespaces:
-        if context[ns]['funcs'][name]:
+        if context[ns]['funcs'].get(name, None):
             return ns, context[ns]['funcs'][name]
     return None, None
 
@@ -163,6 +163,7 @@ class ParameterizedSubstitution(Transformation):
         if self._in_changed_type_decl:
             if self._in_override:
                 return t
+            self._use_graph[(self._namespace, name)] # Safely initialize node
             self._use_boolean_dict = ug.check_vertices(
                 self._use_entries, self._use_graph)
             if not self._use_boolean_dict[(self._namespace, name)]:
@@ -219,6 +220,7 @@ class ParameterizedSubstitution(Transformation):
                     except AttributeError:  # FunctionCall
                         name = return_expr.func
                     gnode = (self._namespace, name)
+                    self._use_graph[gnode] # Safely initialize node
                     match = [tp for v, tp in self._type_params_nodes.items()
                              if ug.reachable(self._use_graph, v, gnode)]
                     # TODO make sure that there cannot be two results
@@ -231,6 +233,7 @@ class ParameterizedSubstitution(Transformation):
                 gnode = (self._namespace, node.name)
                 # There can be only one result
                 # TODO make sure that there cannot be two results
+                self._use_graph[gnode] # Safely initialize node
                 match = [tp for v, tp in self._type_params_nodes.items()
                          if ug.reachable(self._use_graph, v, gnode) or
                          ug.reachable(self._use_graph, gnode, v)]
@@ -254,12 +257,10 @@ class ParameterizedSubstitution(Transformation):
             ## There are not user-defined simple classifier declarations.
             return
         index = utils.random.integer(0, len(classes) - 1)
-        index = 0  # TODO
         class_decl = classes[index]
         self._selected_class_decl = class_decl
         self._selected_class = class_decl.get_type()
         total_type_params = utils.random.integer(1, self._max_type_params)
-        total_type_params = 1  # TODO
         # Initialize constraints to None
         self._type_params_constraints = {
             name: None for name in get_type_params_names(total_type_params)
@@ -280,12 +281,14 @@ class ParameterizedSubstitution(Transformation):
             self._selected_namespace = self._namespace
             # Run analysis and select where to use Type Parameters
             _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
-            print("###Use graph###")
-            __import__('pprint').pprint(self._use_graph)
+            # Initialize all nodes in use_graph
+            uninitialized = set()
+            for _, nodes in self._use_graph.items():
+                uninitialized.update(n for n in nodes if n not in self._use_graph)
+            for node in uninitialized:
+                self._use_graph[node]
             self._use_boolean_dict = ug.check_vertices(
                 self._use_entries, self._use_graph)
-            print("###Boolean graph###")
-            __import__('pprint').pprint(self._use_boolean_dict)
             self._in_analysis = False
             self._in_changed_type_decl = True
 
@@ -355,6 +358,7 @@ class ParameterizedSubstitution(Transformation):
         # self.parent_node in stack graph[variable] => None
         if self._in_analysis:
             gnode = (self._namespace, node.name)
+            self._use_graph[gnode] # Safely initialize node
             if type(lst_get(self._pn_stack, -1)) == ast.FunctionDeclaration:
                 add_flow_from_parent(gnode)
             elif (type(lst_get(self._pn_stack, -1)) == ast.Block and
@@ -416,7 +420,7 @@ class ParameterizedSubstitution(Transformation):
                 type(lst_get(self._pn_stack, -1)) == ast.Block and
                 type(lst_get(self._pn_stack, -2)) == ast.FunctionDeclaration):
                 # We can only reason about variable arguments
-                for arg, param in zip(node.args, node.params):
+                for arg, param in zip(node.args, func_decl.params):
                     param_node = (namespace, param.name)
                     if type(arg) == ast.Variable:
                         gnode = (self._namespace, arg.name)
