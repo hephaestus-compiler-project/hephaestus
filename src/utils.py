@@ -12,6 +12,14 @@ def is_number(string):
         return False
 
 
+def lst_get(lst, index=0, default=None):
+    """Safely get an element from a list"""
+    try:
+        return lst[index]
+    except IndexError:
+        return default
+
+
 def read_lines(path):
     lines = []
     with open(path, 'r') as f:
