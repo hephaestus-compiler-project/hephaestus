@@ -207,15 +207,18 @@ class ParameterizedSubstitution(Transformation):
                 setattr(node, attr, attr_type)
             # 2
             elif isinstance(node, ast.FunctionDeclaration):
-                if len(node.body.body) > 0:
-                    return_stmt = node.body.body[-1]
-                    # FIXME
-                    if hasattr(return_stmt, 'name'):
-                        gnode = (self._namespace, return_stmt.name)
-                        match = [tp for v, tp in self._type_params_nodes.items()
-                                 if ug.reachable(self._use_graph, v, gnode)]
-                        if match:
-                            setattr(node, attr, match[0])
+                return_expr = None
+                if isinstance(node.body, ast.Expr):
+                    return_expr = node.body
+                elif len(node.body.body) > 0:
+                    return_expr = node.body.body[-1]
+                if type(return_expr) in (ast.Variable, ast.FunctionCall):
+                    gnode = (self._namespace, return_expr.name)
+                    match = [tp for v, tp in self._type_params_nodes.items()
+                             if ug.reachable(self._use_graph, v, gnode)]
+                    # TODO make sure that there cannot be two results
+                    if match:
+                        setattr(node, attr, match[0])
             # 3
             elif (type(node) == ast.VariableDeclaration or
                   type(node) == ast.ParameterDeclaration or
