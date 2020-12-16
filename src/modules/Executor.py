@@ -8,8 +8,6 @@ import sys
 from copy import deepcopy
 from collections import defaultdict
 
-from tqdm import tqdm
-
 from src.generators.Generator import Generator
 from src.transformations.substitution import (
     ValueSubstitution, TypeSubstitution)
