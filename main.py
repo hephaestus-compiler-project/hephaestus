@@ -36,3 +36,4 @@ for i in range(1, args.iterations + 1):
     pool.apply_async(run, args=(i,), callback=process_result)
 pool.close()
 pool.join()
+print()
