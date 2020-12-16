@@ -82,13 +82,27 @@ buz_func = FunctionDeclaration(
     ])
 )
 
+spam_func = FunctionDeclaration(
+    "spam",
+    params=[],
+    ret_type=StringType(),
+    func_type=FunctionDeclaration.CLASS_METHOD,
+    is_final=False,
+    body=Block([
+        Conditional(BooleanConstant("true"),
+                    Block([Variable(xA_field.name)]),
+                    Block([StringConstant("foo")]))
+    ])
+)
+
 a_cls = ClassDeclaration(
     "A",
     superclasses=[],
     class_type=ClassDeclaration.REGULAR,
     is_final=False,
     fields=[xA_field],
-    functions=[foo_func, bar_func, buz_func]
+    #  functions=[foo_func, bar_func, buz_func]
+    functions=[foo_func, bar_func, buz_func, spam_func]
 )
 
 main_body = Block(
