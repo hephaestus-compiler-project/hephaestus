@@ -118,13 +118,19 @@ class ParameterizedSubstitution(Transformation):
         self._none_counter += 1
         return gnode
 
-    def _visit_node(self, node):
-        self._pn_stack.append(node)
-        node = super(ParameterizedSubstitution, self)._visit_node(node)
-        self._pn_stack.pop()
-        return node
+    def get_candidates_classes(self):
+        """Get all simple classifier declarations."""
+        return [d for d in self.program.declarations
+                if (isinstance(d, ast.ClassDeclaration) and
+                type(d.get_type()) == types.SimpleClassifier)]
+
+    def result(self):
+        return self.program
 
     def _create_parameterized_type(self):
+        """Create parameterized type based on type_params, constraints, and
+        constructor.
+        """
         type_args = []
         for tp in self._type_params:
             constraint = self._type_params_constraints[tp.name]
@@ -157,6 +163,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_changed_type_decl:
             if self._in_override:
                 return t
+            self._use_boolean_dict = ug.check_vertices(
+                self._use_entries, self._use_graph)
             if not self._use_boolean_dict[(self._namespace, name)]:
                 return t
             # We can increase the probability based on already used type_params
@@ -169,24 +177,26 @@ class ParameterizedSubstitution(Transformation):
                     self._type_params_constraints[tp_name] = (t, variance)
                     type_param = create_type_parameter(tp_name, t, variance)
                     self._type_params.append(type_param)
+                    # TODO update to False all nodes that are reachable to/from it
                     self._use_boolean_dict[(self._namespace, name)] = False
                     self._type_params_nodes[(self._namespace, name)] = type_param
                     return type_param
         return t
 
-    def get_candidates_classes(self):
-        """Get all simple classifier declarations."""
-        return [d for d in self.program.declarations
-                if (isinstance(d, ast.ClassDeclaration) and
-                type(d.get_type()) == types.SimpleClassifier)]
+    def _update_type(self, node, attr):
+        """Update types in the program.
 
-    def result(self):
-        return self.program
+        This method does the following conversions.
 
-    def update_type(self, node, attr):
+        1. Change _selected_class to _parameterized_type
+        2. Update return type for affected functions in _selected_class_decl
+        3. Update the type for VariableDeclaration, ParameterDeclaration,
+         and FieldDeclaration if there is a flow from a changed type to it
+
+        """
         attr_type = getattr(node, attr, None)
         if attr_type:
-            # Change old_class types to new parameterized type
+            # 1
             if attr_type == self._selected_class:
                 setattr(node, attr, self._parameterized_type)
             elif isinstance(attr_type, types.ParameterizedType):
@@ -195,31 +205,35 @@ class ParameterizedSubstitution(Transformation):
                     for t in attr_type.type_args
                 ]
                 setattr(node, attr, attr_type)
-            # Handle return type for intra-procedural functions
+            # 2
             elif isinstance(node, ast.FunctionDeclaration):
-                # TODO Refactor
                 if len(node.body.body) > 0:
                     return_stmt = node.body.body[-1]
+                    # FIXME
                     if hasattr(return_stmt, 'name'):
                         gnode = (self._namespace, return_stmt.name)
                         match = [tp for v, tp in self._type_params_nodes.items()
                                  if ug.reachable(self._use_graph, v, gnode)]
                         if match:
-                            self._use_boolean_dict[gnode] = False
                             setattr(node, attr, match[0])
-            # Check if there is a flow from a changed type to node
-            else:
-                if hasattr(node, 'name'):
-                    gnode = (self._namespace, node.name)
-                    # There can be only one result
-                    # TODO make sure that there cannot be two results
-                    match = [tp for v, tp in self._type_params_nodes.items()
-                             if ug.reachable(self._use_graph, v, gnode) or
-                             ug.reachable(self._use_graph, gnode, v)]
-                    if match:
-                        # TODO probably we have to do that check earlier
-                        self._use_boolean_dict[gnode] = False
-                        setattr(node, attr, match[0])
+            # 3
+            elif (type(node) == ast.VariableDeclaration or
+                  type(node) == ast.ParameterDeclaration or
+                  type(node) == ast.FieldDeclaration):
+                gnode = (self._namespace, node.name)
+                # There can be only one result
+                # TODO make sure that there cannot be two results
+                match = [tp for v, tp in self._type_params_nodes.items()
+                         if ug.reachable(self._use_graph, v, gnode) or
+                         ug.reachable(self._use_graph, gnode, v)]
+                if match:
+                    setattr(node, attr, match[0])
+        return node
+
+    def _visit_node(self, node):
+        self._pn_stack.append(node)
+        node = super(ParameterizedSubstitution, self)._visit_node(node)
+        self._pn_stack.pop()
         return node
 
     def visit_program(self, node):
@@ -294,7 +308,7 @@ class ParameterizedSubstitution(Transformation):
             node.field_type = self._use_type_parameter(node.name, node.field_type, True)
             return super(ParameterizedSubstitution, self).visit_field_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
-        return self.update_type(new_node, 'field_type')
+        return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):
         """ParameterDeclaration nodes can be used to get a TypeParameter type.
@@ -306,7 +320,7 @@ class ParameterizedSubstitution(Transformation):
             node.param_type = self._use_type_parameter(node.name, node.param_type)
             return super(ParameterizedSubstitution, self).visit_param_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
-        return self.update_type(new_node, 'param_type')
+        return self._update_type(new_node, 'param_type')
 
     def visit_variable(self, node):
         """For every other case except of the following four, add an edge from
@@ -371,15 +385,15 @@ class ParameterizedSubstitution(Transformation):
             self._var_decl_stack.pop()
             return node
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
-        return self.update_type(new_node, 'var_type')
+        return self._update_type(new_node, 'var_type')
 
     @change_namespace
     def visit_func_decl(self, node):
         if node.override:
             self._in_override = True
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
-        new_node = self.update_type(new_node, 'ret_type')
-        new_node = self.update_type(new_node, 'inferred_type')
+        new_node = self._update_type(new_node, 'ret_type')
+        new_node = self._update_type(new_node, 'inferred_type')
         self._in_override = False
         return new_node
 
@@ -406,8 +420,8 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_new(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
-        return self.update_type(new_node, 'class_type')
+        return self._update_type(new_node, 'class_type')
 
     def visit_super_instantiation(self, node):
         new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
-        return self.update_type(new_node, 'class_type')
+        return self._update_type(new_node, 'class_type')

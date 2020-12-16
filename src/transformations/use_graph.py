@@ -37,6 +37,8 @@ def reachable(graph, start_vertex, dest_vertex):
     return False
 
 
+# TODO Add option for boolean_dict and if there is a flow from a false then
+# make the node false
 def check_vertices(vertices, graph):
     """Check if the given vertices can reach a None node or if a None node
     can reach the vertices.
