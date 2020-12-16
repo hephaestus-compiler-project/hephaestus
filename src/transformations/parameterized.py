@@ -285,8 +285,8 @@ class ParameterizedSubstitution(Transformation):
             uninitialized = set()
             for _, nodes in self._use_graph.items():
                 uninitialized.update(n for n in nodes if n not in self._use_graph)
-            for node in uninitialized:
-                self._use_graph[node]
+            for n in uninitialized:
+                self._use_graph[n]
             self._use_boolean_dict = ug.check_vertices(
                 self._use_entries, self._use_graph)
             self._in_analysis = False
