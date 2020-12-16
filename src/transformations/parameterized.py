@@ -213,7 +213,12 @@ class ParameterizedSubstitution(Transformation):
                 elif len(node.body.body) > 0:
                     return_expr = node.body.body[-1]
                 if type(return_expr) in (ast.Variable, ast.FunctionCall):
-                    gnode = (self._namespace, return_expr.name)
+                    name = None
+                    try:  # Variable
+                        name = return_expr.name
+                    except AttributeError:  # FunctionCall
+                        name = return_expr.func
+                    gnode = (self._namespace, name)
                     match = [tp for v, tp in self._type_params_nodes.items()
                              if ug.reachable(self._use_graph, v, gnode)]
                     # TODO make sure that there cannot be two results
