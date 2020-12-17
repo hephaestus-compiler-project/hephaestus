@@ -1,5 +1,5 @@
 import random
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from src import utils
 from src.ir import ast
@@ -73,27 +73,22 @@ class ParameterizedSubstitution(Transformation):
 
         self._selected_class_decl = None
         self._type_constructor_decl = None
-        self._selected_namespace = None
-
-        self._type_params_constraints = {}  # Name -> (Type, variance)
-        self._type_params = []
-
         self._parameterized_type = None
 
-        self._in_override = False
+        # TypeParameter Name -> (node, TypeParameter, Type covariant, variance)
+        self._type_params_constraints = OrderedDict()
+        self._type_params = []
+        self._type_params_nodes = {}  # node => TypeParameter
 
         # phases
         self._in_first_pass = False
         self._in_select_type_params = False
-
-        # node = ((namespace, Declaration))
+        self._use_entries = set()  # set of nodes we can use as type params
 
         self._use_graph = None
 
-        # in_select_type_params
-        self._use_entries = set()  # set of nodes we can use as type params
-        self._type_params_nodes = {}  # node => TypeParameter
 
+        #  self._in_override = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self.program = None
 
@@ -112,7 +107,7 @@ class ParameterizedSubstitution(Transformation):
         """
         type_args = []
         for tp in self._type_params:
-            constraint = self._type_params_constraints[tp.name]
+            constraint = self._type_params_constraints[tp]
             if constraint is None:
                 possible_types = kt.NonNothingTypes
             else:
@@ -139,8 +134,8 @@ class ParameterizedSubstitution(Transformation):
         """Change concrete type with type parameter and add the corresponding
         constraints to type parameters.
         """
-        if self._in_override:
-            return t
+        #  if self._in_override:
+            #  return t
         gnode = (self._namespace, node.name)
         #  assert gnode in self._use_graph
         # Check if gnode is bi_reachable to a none node
@@ -308,12 +303,12 @@ class ParameterizedSubstitution(Transformation):
 
     @change_namespace
     def visit_func_decl(self, node):
-        if node.override:
-            self._in_override = True
+        #  if node.override:
+            #  self._in_override = True
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
-        self._in_override = False
+        #  self._in_override = False
         return new_node
 
     def visit_new(self, node):
