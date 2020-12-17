@@ -2,18 +2,6 @@ import pytest
 from src.graph_utils import *
 
 
-GRAPH = {((), None): {(('global', 'A', 'bar'), 'y')},
-         (('global', 'A'), 'x'): {((), None)},
-         (('global', 'A', 'bar'), 'arg'): {((), None)},
-         (('global', 'A', 'bar'), 'y'): {(('global', 'A', 'buz'), 'k')},
-         (('global', 'A', 'bar'), 'z'): set(),
-         (('global', 'A', 'foo'), 'q'): {(('global', 'A', 'bar'), 'z'),
-                                         (('global', 'A', 'foo'), 'x')},
-         (('global', 'A', 'foo'), 'x'): set(),
-         (('global', 'A', 'foo'), 'y'): {(('global', 'A', 'bar'), 'arg')},
-         (('global', 'A', 'foo'), 'z'): {(('global', 'A', 'foo'), 'q')},
-         (('global', 'A', 'buz'), 'k'): set()
-}
 NONE = ((), None)
 X = (('global', 'A'), 'x')
 BAR_Y = (('global', 'A', 'bar'), 'y')
@@ -24,6 +12,17 @@ FOO_X = (('global', 'A', 'foo'), 'x')
 FOO_Y = (('global', 'A', 'foo'), 'y')
 FOO_Z = (('global', 'A', 'foo'), 'z')
 BUZ_K = (('global', 'A', 'buz'), 'k')
+GRAPH = {NONE: {(('global', 'A', 'bar'), 'y')},
+         X: {NONE},
+         BAR_ARG: {NONE},
+         BAR_Y: {BUZ_K},
+         BAR_Z: set(),
+         FOO_Q: {BAR_Z, FOO_X},
+         FOO_X: set(),
+         FOO_Y: {BAR_ARG},
+         FOO_Z: {FOO_Q},
+         BUZ_K: set()
+}
 
 N0 = "N0"
 N1 = "N1"
