@@ -47,7 +47,7 @@ def create_type_constructor_decl(class_decl, type_parameters):
 
 @dataclass
 class TP:
-    """A structure to save Type Parameters and their constraints"""
+    """Data class to save Type Parameters and their constraints"""
     name: str
     type_param: types.TypeParameter
     node: Tuple[Tuple[str, ...], str]
@@ -81,24 +81,23 @@ class ParameterizedSubstitution(Transformation):
 
     def __init__(self, max_type_params=3):
         super(ParameterizedSubstitution, self).__init__()
-        self._max_type_params = max_type_params
+        self._max_type_params: int = max_type_params
 
-        self._selected_class_decl = None
-        self._type_constructor_decl = None
-        self._parameterized_type = None
+        self._selected_class_decl: ast.ClassDeclaration = None
+        self._type_constructor_decl: ast.ClassDeclaration = None
+        self._parameterized_type: types.ParameterizedType = None
 
         self._type_params: TP = []
 
         # phases
-        self._in_first_pass = False
-        self._in_select_type_params = False
-        self._use_entries = set()  # set of nodes we can use as type params
+        self._in_first_pass: bool = False
+        self._in_select_type_params: bool = False
+        self._use_entries: set = set()  # set of nodes we can use as type params
 
-        self._use_graph = None
-
+        self._use_graph: dict = None
 
         #  self._in_override = False
-        self._namespace = ast.GLOBAL_NAMESPACE
+        self._namespace: tuple = ast.GLOBAL_NAMESPACE
         self.program = None
 
     def get_candidates_classes(self):
@@ -110,7 +109,7 @@ class ParameterizedSubstitution(Transformation):
     def result(self):
         return self.program
 
-    def _create_parameterized_type(self):
+    def _create_parameterized_type(self) -> types.ParameterizedType:
         """Create parameterized type based on type_params, constraints, and
         constructor.
         """
