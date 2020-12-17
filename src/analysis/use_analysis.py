@@ -2,7 +2,7 @@ from typing import Tuple
 from collections import defaultdict
 
 from src.ir import ast
-from src.visitors import DefaultVisitor
+from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
 
@@ -13,7 +13,7 @@ def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.D
         return (len(ns)
                 if limit is None
                 else any(limit == ns[:i]
-                         for i in range(1, len(limit) + 1))
+                         for i in range(1, len(limit) + 1)))
 
     while stop_cond(namespace):
         decls = context.get_declarations(namespace, True)
@@ -25,13 +25,15 @@ def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.D
 
 
 class UseAnalysis(DefaultVisitor):
-    def __init__(self):
+    def __init__(self, program):
         # The type of each node is: Tuple[String, ast.Declaration]
-        self._use_graph = defaultdict(lambda: list())  # node => [node]
+        self._use_graph = defaultdict(lambda: set())  # node => [node]
         self._namespace = ast.GLOBAL_NAMESPACE
+        self.program = program
 
     def get_none_node(self):
-        gnode = (self._namespace, "None")
+        gnode = ((), None)
+        self._use_graph[gnode]
         return gnode
 
     def result(self):
@@ -43,18 +45,20 @@ class UseAnalysis(DefaultVisitor):
         super(UseAnalysis, self).visit_class_decl(node)
 
     def visit_field_decl(self, node):
-        gnode = (self._namespace, node)
+        gnode = (self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
 
     def visit_param_decl(self, node):
-        gnode = (self._namespace, node)
+        gnode = (self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
 
     def visit_variable(self, node):
-        # self.parent_node in stack graph[variable] => None
-        gnode = (self._namespace, node)
-        self._use_graph[gnode]  # Safely initialize node
-        self._use_graph[gnode].append(self.get_none_node())
+        gnode = get_decl(self.program.context,
+                         self._namespace, node.name,
+                         limit=self._selected_namespace)
+        if gnode:
+            gnode = (gnode[0], gnode[1].name)
+            self._use_graph[gnode].add(self.get_none_node())
 
     def visit_var_decl(self, node):
         """Add variable to _var_decl_stack to add flows from it to other
@@ -71,14 +75,15 @@ class UseAnalysis(DefaultVisitor):
             # If node is None, this means that we referring to a variable
             # outside the context of class.
             if var_node:
-                self._use_graph[var_node].append(gnode)
+                var_node = (var_node[0], var_node[1].name)
+                self._use_graph[var_node].add(gnode)
         else:
             super(UseAnalysis, self).visit_var_decl(node)
 
     @change_namespace
     def visit_func_decl(self, node):
         # TODO handle return types.
-        pass
+        super(UseAnalysis, self).visit_func_decl(node)
 
     def visit_func_call(self, node):
         """Add flows from function call arguments to function declaration
@@ -97,6 +102,11 @@ class UseAnalysis(DefaultVisitor):
 
         for i, arg in enumerate(node.args):
             if type(arg) is not ast.Variable:
+                if not add_none:
+                    namespace, func_decl = fun_nsdecl
+                    param_namespace = namespace + (func_decl.name,)
+                    self._use_graph[self.get_none_node()].add(
+                        (param_namespace, func_decl.params[i].name))
                 self.visit(arg)
                 continue
             var_node = get_decl(self.program.context, self._namespace,
@@ -106,8 +116,13 @@ class UseAnalysis(DefaultVisitor):
             # So, we add an edge from 'x' to the parameter of the function.
             if var_node and not add_none:
                 namespace, func_decl = fun_nsdecl
-                param_namespace = namespace + (func_decl.node,)
-                self._use_graph[var_node].append((param_namespace,
-                                                  func_decl.params[i]))
+                param_namespace = namespace + (func_decl.name,)
+                var_node = (var_node[0], var_node[1].name)
+                self._use_graph[var_node].add((param_namespace,
+                                               func_decl.params[i].name))
             if var_node and add_none:
-                self._use_graph[var_node].append(self.get_none_node())
+                var_node = (var_node[0], var_node[1].name)
+                self._use_graph[var_node].add(self.get_none_node())
+
+        if node.receiver:
+            self.visit(node.receiver)
