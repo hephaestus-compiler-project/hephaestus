@@ -10,10 +10,11 @@ xB_field = FieldDeclaration(
     override=False
 )
 
+z_get_param = ParameterDeclaration("z", StringType())
 getX_func = FunctionDeclaration(
     "getX",
     params=[
-        ParameterDeclaration("z", StringType())
+        z_get_param
     ],
     func_type=FunctionDeclaration.CLASS_METHOD,
     is_final=False,
@@ -40,22 +41,26 @@ xA_field = FieldDeclaration(
     override=False
 )
 
+foo_y = ParameterDeclaration("y", StringType())
+foo_z = ParameterDeclaration("z", StringType())
+foo_q = VariableDeclaration("q", Variable("z"), var_type=StringType())
+foo_x = VariableDeclaration("x", Variable("q"), var_type=StringType())
 foo_func = FunctionDeclaration(
     "foo",
-    params=[
-        ParameterDeclaration("y", StringType()),
-        ParameterDeclaration("z", StringType())
-    ],
+    params=[foo_y, foo_z],
     ret_type=bam_cls.get_type(),
     func_type=FunctionDeclaration.CLASS_METHOD,
     is_final=False,
     body=Block([
-        VariableDeclaration("q", Variable("z"), var_type=StringType()),
-        VariableDeclaration("x", Variable("q"), var_type=StringType()),
+        foo_q,
+        foo_x,
         FunctionCall("bar", [Variable("y"), StringConstant("foo"), Variable("q")])
     ])
 )
 
+bar_arg = ParameterDeclaration("arg", StringType())
+bar_y = ParameterDeclaration("y", StringType())
+bar_z = ParameterDeclaration("z", StringType())
 bar_func = FunctionDeclaration(
     "bar",
     params=[
@@ -121,6 +126,21 @@ main_func = FunctionDeclaration(
 
 ctx = Context()
 ctx.add_class(GLOBAL_NAMESPACE, a_cls.name, a_cls)
-ctx.add_func(GLOBAL_NAMESPACE, bam_cls.name, bam_cls)
+ctx.add_var(GLOBAL_NAMESPACE + ('A',), 'x', xA_field)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'foo'), 'y', foo_y)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'foo'), 'z', foo_z)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'foo'), 'q', foo_q)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'foo'), 'z', foo_z)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'bar'), 'arg', bar_arg)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'bar'), 'y', bar_y)
+ctx.add_var(GLOBAL_NAMESPACE + ('A', 'bar'), 'z', bar_z)
+ctx.add_func(GLOBAL_NAMESPACE + ('A',), bar_func.name, bar_func)
+ctx.add_func(GLOBAL_NAMESPACE + ('A',), foo_func.name, foo_func)
+ctx.add_func(GLOBAL_NAMESPACE + ('A',), buz_func.name, buz_func)
+ctx.add_func(GLOBAL_NAMESPACE + ('A',), spam_func.name, spam_func)
+ctx.add_class(GLOBAL_NAMESPACE, bam_cls.name, bam_cls)
+ctx.add_var(GLOBAL_NAMESPACE + ('Bam',), 'x', xB_field)
+ctx.add_var(GLOBAL_NAMESPACE + ('Bam', 'getX'), 'z', z_get_param)
+ctx.add_func(GLOBAL_NAMESPACE + ('Bam',), getX_func.name, getX_func)
 ctx.add_func(GLOBAL_NAMESPACE, main_func.name, main_func)
 program = Program(ctx)
