@@ -37,6 +37,23 @@ def reachable(graph, start_vertex, dest_vertex):
     return False
 
 
+def bi_reachable(graph, start_vertex, dest_vertex):
+    """Bidirectional reachable"""
+    return (reachable(graph, start_vertex, dest_vertex) or
+            reachable(graph, dest_vertex, start_vertex))
+
+
+def none_reachable(graph, vertex):
+    """Check if vertex is bi_reachable from/to a none vertex
+    """
+    none_vertices = [v for v in graph.keys() if "None" in v[1]]
+    for nv in none_vertices:
+        if bi_reachable(graph, vertex, nv):
+            return True
+    return False
+
+
+
 # TODO Add option for boolean_dict and if there is a flow from a false then
 # make the node false
 def check_vertices(vertices, graph):
@@ -50,7 +67,7 @@ def check_vertices(vertices, graph):
     res = {v: True for v in vertices}
     for v in vertices:
         for vn in none_vertices:
-            if bool(reachable(graph, v, vn) or reachable(graph, vn, v)):
+            if bi_reachable(graph, v, vn):
                 res[v] = False
     return res
 
