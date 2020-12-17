@@ -1,5 +1,7 @@
 import random
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import Tuple
 
 from src import utils
 from src.ir import ast
@@ -43,6 +45,16 @@ def create_type_constructor_decl(class_decl, type_parameters):
     )
 
 
+@dataclass
+class TP:
+    """A structure to save Type Parameters and their constraints"""
+    name: str
+    type_param: types.TypeParameter
+    node: Tuple[Tuple[str, ...], str]
+    constraint: types.Type
+    variance: int  # INVARIANT, COVARIANT, CONTRAVARIANT
+
+
 class ParameterizedSubstitution(Transformation):
     """To create a ParameterizedType, we do the following steps:
         1. Select a SimpleClassifier ClassDeclaration (visit_program)
@@ -75,10 +87,7 @@ class ParameterizedSubstitution(Transformation):
         self._type_constructor_decl = None
         self._parameterized_type = None
 
-        # TypeParameter Name -> (node, TypeParameter, Type covariant, variance)
-        self._type_params_constraints = OrderedDict()
-        self._type_params = []
-        self._type_params_nodes = {}  # node => TypeParameter
+        self._type_params: TP = []
 
         # phases
         self._in_first_pass = False
@@ -107,25 +116,23 @@ class ParameterizedSubstitution(Transformation):
         """
         type_args = []
         for tp in self._type_params:
-            constraint = self._type_params_constraints[tp]
-            if constraint is None:
+            if tp.constraint is None:
                 possible_types = kt.NonNothingTypes
             else:
-                constraint = constraint[0]
                 # TODO check the code about variance
                 if tp.variance == INVARIANT:
-                    type_args.append(constraint)
+                    type_args.append(tp.constraint)
                     continue
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
-                    possible_types = list(constraint.get_supertypes())
+                    possible_types = list(tp.constraint.get_supertypes())
                 if tp.variance == COVARIANT:
-                    possible_types = self.find_subtypes(constraint, True)
+                    possible_types = self.find_subtypes(tp.constraint, True)
                     possible_types += [bt for bt in kt.NonNothingTypes
-                                       if bt.is_subtype(constraint)]
-                if tp.bound:
+                                       if bt.is_subtype(tp.constraint)]
+                if tp.type_param.bound:
                     possible_types = [t for t in possible_types
-                                      if t.is_subtype(tp.bound)]
+                                      if t.is_subtype(tp.type_param.bound)]
             type_args.append(random.choice(possible_types))
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
@@ -142,21 +149,22 @@ class ParameterizedSubstitution(Transformation):
         if gutils.none_reachable(self._use_graph, gnode):
             return t
         # Check if there is a reachable type parameter
-        for n in self._type_params_nodes:
-            if gutils.bi_reachable(self._use_graph, gnode, n):
+        for tp in self._type_params:
+            if (tp.node is not None and
+                gutils.connected(self._use_graph, gnode, tp.node)):
                 return t
         # Use random
         if utils.random.bool():
             return t
-        for tp_name, constraints in self._type_params_constraints.items():
-            if constraints is None:
+        for tp in self._type_params:
+            if tp.constraint is None:
                 # TODO handle variance
                 variance = INVARIANT
-                self._type_params_constraints[tp_name] = (t, variance)
-                type_param = create_type_parameter(tp_name, t, variance)
-                self._type_params.append(type_param)
-                self._type_params_nodes[(self._namespace, node.name)] = type_param
-                return type_param
+                tp.constraint = t
+                tp.variance = variance
+                tp.type_param = create_type_parameter(tp.name, t, variance)
+                tp.node = (self._namespace, node.name)
+                return tp.type_param
         return t
 
     def _update_type(self, node, attr):
@@ -190,15 +198,16 @@ class ParameterizedSubstitution(Transformation):
                 elif len(node.body.body) > 0:
                     return_expr = node.body.body[-1]
                 if type(return_expr) in (ast.Variable, ast.FunctionCall):
-                    name = None
                     try:  # Variable
                         name = return_expr.name
                     except AttributeError:  # FunctionCall
                         name = return_expr.func
-                    gnode = (self._namespace, node.name)
+                    gnode = (self._namespace, name)
                     self._use_graph[gnode] # Safely initialize node
-                    match = [tp for v, tp in self._type_params_nodes.items()
-                             if gutils.reachable(self._use_graph, v, gnode)]
+                    match = [tp.type_param
+                             for tp in self._type_params
+                             if tp.node is not None and
+                             gutils.connected(self._use_graph, tp.node, gnode)]
                     # TODO make sure that there cannot be two results
                     if match:
                         setattr(node, attr, match[0])
@@ -209,8 +218,10 @@ class ParameterizedSubstitution(Transformation):
                 gnode = (self._namespace, node.name)
                 # There can be only one result
                 # TODO make sure that there cannot be two results
-                match = [tp for v, tp in self._type_params_nodes.items()
-                         if gutils.bi_reachable(self._use_graph, gnode, v)]
+                match = [tp.type_param
+                         for tp in self._type_params
+                         if tp.node is not None and
+                         gutils.connected(self._use_graph, tp.node, gnode)]
                 if match:
                     setattr(node, attr, match[0])
         return node
@@ -228,9 +239,10 @@ class ParameterizedSubstitution(Transformation):
         self._selected_class_decl = class_decl
         total_type_params = utils.random.integer(1, self._max_type_params)
         # Initialize constraints to None
-        self._type_params_constraints = {
-            name: None for name in get_type_params_names(total_type_params)
-        }
+        self._type_params = [
+            TP(name, None, None, None, None)
+            for name in get_type_params_names(total_type_params)
+        ]
         self._in_first_pass = True
         self.program = super(ParameterizedSubstitution, self).visit_program(
                              self.program)
@@ -259,13 +271,12 @@ class ParameterizedSubstitution(Transformation):
             new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
             self._in_select_type_params = False
             # Initialize unused type_params
-            self._type_params.extend([
-                create_type_parameter(tp_name, None, INVARIANT)
-                for tp_name, constraint in self._type_params_constraints.items()
-                if constraint is None
-            ])
+            for tp in self._type_params:
+                if tp.type_param is None:
+                    tp.type_param = create_type_parameter(
+                        tp.name, None, INVARIANT)
             self._type_constructor_decl = create_type_constructor_decl(
-                new_node, self._type_params
+                new_node, [tp.type_param for tp in self._type_params]
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
