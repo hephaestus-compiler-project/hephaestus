@@ -91,7 +91,7 @@ class ParameterizedSubstitution(Transformation):
         self._type_constructor_decl = None
         self._selected_namespace = None
 
-        self._type_params_constraints = {} # Name -> (Type, variance)
+        self._type_params_constraints = {}  # Name -> (Type, variance)
         self._type_params = []
 
         self._parameterized_type = None
@@ -110,7 +110,7 @@ class ParameterizedSubstitution(Transformation):
         self._pn_stack = []
         self._var_decl_stack = []
 
-        self._namespace = ('global',)
+        self._namespace = ast.GLOBAL_NAMESPACE
         self.program = None
 
     def get_none_node(self):
@@ -122,7 +122,7 @@ class ParameterizedSubstitution(Transformation):
         """Get all simple classifier declarations."""
         return [d for d in self.program.declarations
                 if (isinstance(d, ast.ClassDeclaration) and
-                type(d.get_type()) == types.SimpleClassifier)]
+                type(d.get_type()) is types.SimpleClassifier)]
 
     def result(self):
         return self.program
@@ -254,10 +254,9 @@ class ParameterizedSubstitution(Transformation):
         self.program = node
         classes = self.get_candidates_classes()
         if not classes:
-            ## There are not user-defined simple classifier declarations.
+            # There are not user-defined simple classifier declarations.
             return
-        index = utils.random.integer(0, len(classes) - 1)
-        class_decl = classes[index]
+        class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
         self._selected_class = class_decl.get_type()
         total_type_params = utils.random.integer(1, self._max_type_params)
@@ -265,7 +264,8 @@ class ParameterizedSubstitution(Transformation):
         self._type_params_constraints = {
             name: None for name in get_type_params_names(total_type_params)
         }
-        return super(ParameterizedSubstitution, self).visit_program(self.program)
+        return super(ParameterizedSubstitution, self).visit_program(
+            self.program)
 
     @change_namespace
     def visit_class_decl(self, node):

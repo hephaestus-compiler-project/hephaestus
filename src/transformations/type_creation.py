@@ -117,10 +117,9 @@ class TypeCreation(Transformation):
         # Get all class declarations
         classes = self.get_candidates_classes()
         if not classes:
-            ## There are not user-defined types.
+            # There are not user-defined types.
             return
-        index = utils.random.integer(0, len(classes) - 1)
-        class_decl = classes[index]
+        class_decl = utils.random.choice(classes)
         self._new_class = self.create_new_class(class_decl)
         self._old_class = self.adapt_old_class(class_decl)
         # Add the newly created class to the program's context.
