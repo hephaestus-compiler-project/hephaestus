@@ -30,8 +30,6 @@ def bi_reachable(graph, start_vertex, dest_vertex):
 
 
 def none_reachable(graph, vertex):
-    """Check if vertex is bi_reachable from/to a none vertex
-    """
     none_vertices = [v for v in graph.keys() if v[1] is None]
     for nv in none_vertices:
         if bi_reachable(graph, vertex, nv):
@@ -40,7 +38,7 @@ def none_reachable(graph, vertex):
 
 
 def find_all_paths(graph, start, path=[]):
-    """Find all the paths of graph."""
+    """Find all the paths of graph from start."""
     path = path + [start]
     if start not in graph:
         return [path]
@@ -61,3 +59,15 @@ def find_longest_paths(graph, vertex):
     if len(paths) == 1:
         return paths
     return [x for x in paths if not any(exist(x, p) for p in paths)]
+
+
+def find_all_reachable(graph, vertex):
+    res = set()
+    for path in find_longest_paths(graph, vertex):
+        res.update(path)
+    return res
+
+
+# TODO optimize
+def find_all_bi_reachable(graph, vertex):
+    return {n for n in graph if bi_reachable(graph, vertex, n)}
