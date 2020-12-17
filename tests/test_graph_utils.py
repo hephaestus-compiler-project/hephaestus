@@ -107,6 +107,33 @@ def test_none_reachable():
     assert not none_reachable(GRAPH, BAR_Z)
 
 
+def test_connected():
+    assert connected(GRAPH, X, X)
+    assert connected(GRAPH, X, NONE)
+    assert connected(GRAPH, X, BAR_Y)
+    assert connected(GRAPH, BAR_ARG, NONE)
+    assert connected(GRAPH, FOO_Q, FOO_X)
+    assert connected(GRAPH, FOO_Q, BAR_Z)
+    assert connected(GRAPH, FOO_Y, BAR_ARG)
+    assert connected(GRAPH, FOO_Y, NONE)
+    assert connected(GRAPH, FOO_Z, FOO_Q)
+    assert connected(GRAPH, FOO_Q, BAR_Z)
+    assert connected(GRAPH, BAR_Y, NONE)
+    assert connected(GRAPH, BAR_Y, X)
+    assert connected(GRAPH, BUZ_K, NONE)
+    assert connected(GRAPH, BAR_Z, FOO_Q)
+    assert connected(GRAPH, BAR_Z, FOO_Z)
+    assert connected(GRAPH, BAR_Z, FOO_X)
+    assert not connected(GRAPH, BAR_ARG, FOO_Z)
+    assert connected(GRAPH2, N0, N1)
+    assert connected(GRAPH2, N0, N3)
+    assert connected(GRAPH2, N3, N0)
+    assert connected(GRAPH2, N3, N2)
+    assert connected(GRAPH2, N3, N4)
+    assert connected(GRAPH2, N4, N2)
+    assert connected(GRAPH2, N0, N4)
+
+
 def compare_lists(a, b):
     return sorted(a) == sorted(b)
 
@@ -152,3 +179,10 @@ def test_find_all_bi_reachable():
     assert find_all_bi_reachable(GRAPH, BAR_Z) == {BAR_Z, FOO_Q, FOO_Z}
     assert find_all_bi_reachable(GRAPH, FOO_Q) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
     assert find_all_bi_reachable(GRAPH, FOO_Z) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
+
+
+def test_find_all_connected():
+    assert find_all_connected(GRAPH, BAR_Z) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
+    assert find_all_connected(GRAPH, FOO_Q) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
+    assert find_all_connected(GRAPH, FOO_Z) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
+    assert find_all_connected(GRAPH2, N0) == {N0, N1, N2, N3, N4}
