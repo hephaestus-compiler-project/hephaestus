@@ -5,7 +5,7 @@ from src import utils
 from src.ir import ast
 from src.ir import types
 from src.ir import kotlin_types as kt
-import src.transformations.use_graph as ug
+import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis
 from src.utils import lst_get
@@ -145,11 +145,11 @@ class ParameterizedSubstitution(Transformation):
         gnode = (self._namespace, node.name)
         #  assert gnode in self._use_graph
         # Check if gnode is bi_reachable to a none node
-        if ug.none_reachable(self._use_graph, gnode):
+        if gutils.none_reachable(self._use_graph, gnode):
             return t
         # Check if there is a reachable type parameter
         for n in self._type_params_nodes:
-            if ug.bi_reachable(self._use_graph, gnode, n):
+            if gutils.bi_reachable(self._use_graph, gnode, n):
                 return t
         # Use random
         if utils.random.bool():
@@ -203,7 +203,7 @@ class ParameterizedSubstitution(Transformation):
                     gnode = (self._namespace, node.name)
                     self._use_graph[gnode] # Safely initialize node
                     match = [tp for v, tp in self._type_params_nodes.items()
-                             if ug.reachable(self._use_graph, v, gnode)]
+                             if gutils.reachable(self._use_graph, v, gnode)]
                     # TODO make sure that there cannot be two results
                     if match:
                         setattr(node, attr, match[0])
@@ -211,13 +211,11 @@ class ParameterizedSubstitution(Transformation):
             elif (type(node) == ast.VariableDeclaration or
                   type(node) == ast.ParameterDeclaration or
                   type(node) == ast.FieldDeclaration):
-                if node.name == 'x':
-                    __import__('ipdb').set_trace()
                 gnode = (self._namespace, node.name)
                 # There can be only one result
                 # TODO make sure that there cannot be two results
                 match = [tp for v, tp in self._type_params_nodes.items()
-                         if ug.bi_reachable(self._use_graph, gnode, v)]
+                         if gutils.bi_reachable(self._use_graph, gnode, v)]
                 if match:
                     setattr(node, attr, match[0])
         return node
@@ -260,6 +258,7 @@ class ParameterizedSubstitution(Transformation):
             analysis = UseAnalysis(self.program)
             analysis.visit(node)
             self._use_graph = analysis.result()
+            __import__('pprint').pprint(self._use_graph)
             # Use type parameters
             self._in_select_type_params = True
             # select where to use Type Parameters
