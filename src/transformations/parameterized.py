@@ -85,7 +85,6 @@ class ParameterizedSubstitution(Transformation):
     def __init__(self, max_type_params=3):
         super(ParameterizedSubstitution, self).__init__()
         self._max_type_params = max_type_params
-        self._in_first_pass = False
 
         self._selected_class = None
         self._selected_class_decl = None
@@ -100,16 +99,20 @@ class ParameterizedSubstitution(Transformation):
         self._in_override = False
 
         # phases
+        self._in_first_pass = False
         self._in_analysis = False
         self._in_select_type_params = False
-        self._in_changed_type_decl = False
 
         # node = ((namespace, name))
-        self._use_entries = set()  # set of nodes
+
+        # in_analysis
+        self._none_counter = 1  # Counter for None sink nodes
         self._use_graph = defaultdict(lambda: list())  # node => [node]
+
+        # in_select_type_params
+        self._use_entries = set()  # set of nodes we can use as type params
         self._use_boolean_dict = {}  # node => bool
         self._type_params_nodes = {}  # node => TypeParameter
-        self._none_counter = 1  # Counter for None sink nodes
 
         self._pn_stack = []
         self._var_decl_stack = []
@@ -164,28 +167,27 @@ class ParameterizedSubstitution(Transformation):
         """Change concrete type with type parameter and add the corresponding
         constraints to type parameters.
         """
-        if self._in_changed_type_decl:
-            if self._in_override:
-                return t
-            self._use_graph[(self._namespace, name)] # Safely initialize node
-            self._use_boolean_dict = ug.check_vertices(
-                self._use_entries, self._use_graph)
-            if not self._use_boolean_dict[(self._namespace, name)]:
-                return t
-            # We can increase the probability based on already used type_params
-            if random.random() < .5:
-                return t
-            for tp_name, constraints in self._type_params_constraints.items():
-                if constraints is None:
-                    # TODO handle variance
-                    variance = INVARIANT
-                    self._type_params_constraints[tp_name] = (t, variance)
-                    type_param = create_type_parameter(tp_name, t, variance)
-                    self._type_params.append(type_param)
-                    # TODO update to False all nodes that are reachable to/from it
-                    self._use_boolean_dict[(self._namespace, name)] = False
-                    self._type_params_nodes[(self._namespace, name)] = type_param
-                    return type_param
+        if self._in_override:
+            return t
+        self._use_graph[(self._namespace, name)] # Safely initialize node
+        self._use_boolean_dict = ug.check_vertices(
+            self._use_entries, self._use_graph)
+        if not self._use_boolean_dict[(self._namespace, name)]:
+            return t
+        # We can increase the probability based on already used type_params
+        if random.random() < .5:
+            return t
+        for tp_name, constraints in self._type_params_constraints.items():
+            if constraints is None:
+                # TODO handle variance
+                variance = INVARIANT
+                self._type_params_constraints[tp_name] = (t, variance)
+                type_param = create_type_parameter(tp_name, t, variance)
+                self._type_params.append(type_param)
+                # TODO update to False all nodes that are reachable to/from it
+                self._use_boolean_dict[(self._namespace, name)] = False
+                self._type_params_nodes[(self._namespace, name)] = type_param
+                return type_param
         return t
 
     def _update_type(self, node, attr):
@@ -299,12 +301,10 @@ class ParameterizedSubstitution(Transformation):
 
             self._in_select_type_params = True
             # select where to use Type Parameters
-            _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
+            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
             self._in_select_type_params = False
             self._use_boolean_dict = ug.check_vertices(
                 self._use_entries, self._use_graph)
-            self._in_changed_type_decl = True
-            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
             # Initialize unused type_params
             self._type_params.extend([
                 create_type_parameter(tp_name, None, INVARIANT)
@@ -316,7 +316,7 @@ class ParameterizedSubstitution(Transformation):
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
-            self._in_changed_type_decl = False
+            __import__('pprint').pprint(self._use_graph)
         elif self._in_first_pass:
             return node
         else:
