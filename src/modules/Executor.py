@@ -42,7 +42,7 @@ class Executor:
         'SubtypeCreation': SubtypeCreation,
         'ValueSubstitution': ValueSubstitution,
         'TypeSubstitution': TypeSubstitution,
-        #'ParameterizedSubstitution': ParameterizedSubstitution
+        'ParameterizedSubstitution': ParameterizedSubstitution
     }
 
     def __init__(self, exec_id, args):
@@ -172,7 +172,7 @@ class Executor:
     def _apply_trasnformations(self, program, i):
         try:
             failed = False
-            for j in range(self.args.transformations + 1):
+            for j in range(self.args.transformations):
                 comp = True
                 if self.args.only_last and j != self.args.transformations - 1:
                     comp = False
@@ -192,6 +192,7 @@ class Executor:
 
     def process_program(self):
         if self.args.replay:
+            print("\nIteration: " + str(self.exec_id))
             with open(self.args.replay, 'rb') as initial_bin:
                 program = pickle.load(initial_bin)
             program_str = self._translate_program(program)
