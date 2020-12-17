@@ -136,24 +136,25 @@ class ParameterizedSubstitution(Transformation):
                                        type_args)
 
     def _use_type_parameter(self, node, t, covariant=False):
-        """Change concrete type with type parameter and add the corresponding
+        """Replace concrete type with type parameter and add the corresponding
         constraints to type parameters.
         """
         #  if self._in_override:
             #  return t
         gnode = (self._namespace, node.name)
-        #  assert gnode in self._use_graph
-        # Check if gnode is bi_reachable to a none node
-        if gutils.none_reachable(self._use_graph, gnode):
+
+        if gutils.none_connected(self._use_graph, gnode):
             return t
-        # Check if there is a reachable type parameter
+
+        # Check if there is a connected (reachable++) type parameter
         for tp in self._type_params:
             if (tp.node is not None and
                 gutils.connected(self._use_graph, gnode, tp.node)):
                 return t
-        # Use random
+
         if utils.random.bool():
             return t
+
         for tp in self._type_params:
             if tp.constraint is None:
                 # TODO handle variance
