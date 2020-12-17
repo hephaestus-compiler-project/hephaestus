@@ -111,7 +111,6 @@ class ParameterizedSubstitution(Transformation):
 
         # in_select_type_params
         self._use_entries = set()  # set of nodes we can use as type params
-        self._use_boolean_dict = {}  # node => bool
         self._type_params_nodes = {}  # node => TypeParameter
 
         self._pn_stack = []
@@ -169,13 +168,17 @@ class ParameterizedSubstitution(Transformation):
         """
         if self._in_override:
             return t
-        self._use_graph[(self._namespace, name)] # Safely initialize node
-        self._use_boolean_dict = ug.check_vertices(
-            self._use_entries, self._use_graph)
-        if not self._use_boolean_dict[(self._namespace, name)]:
+        gnode = (self._namespace, name)
+        # Check if gnode is bi_reachable to a none node
+        if ug.none_reachable(self._use_graph, gnode):
             return t
+        # Check if there is a reachable type parameter variable
+        for node in self._type_params_nodes:
+            if ug.bi_reachable(self._use_graph, gnode, node):
+                return t
         # We can increase the probability based on already used type_params
-        if random.random() < .5:
+        # DEBUG
+        if random.random() < .01:
             return t
         for tp_name, constraints in self._type_params_constraints.items():
             if constraints is None:
@@ -184,8 +187,6 @@ class ParameterizedSubstitution(Transformation):
                 self._type_params_constraints[tp_name] = (t, variance)
                 type_param = create_type_parameter(tp_name, t, variance)
                 self._type_params.append(type_param)
-                # TODO update to False all nodes that are reachable to/from it
-                self._use_boolean_dict[(self._namespace, name)] = False
                 self._type_params_nodes[(self._namespace, name)] = type_param
                 return type_param
         return t
@@ -265,7 +266,9 @@ class ParameterizedSubstitution(Transformation):
         class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
         self._selected_class = class_decl.get_type()
-        total_type_params = utils.random.integer(1, self._max_type_params)
+        # DEBUG
+        total_type_params = utils.random.integer(3, self._max_type_params)
+        #  total_type_params = utils.random.integer(1, self._max_type_params)
         # Initialize constraints to None
         self._type_params_constraints = {
             name: None for name in get_type_params_names(total_type_params)
@@ -303,8 +306,6 @@ class ParameterizedSubstitution(Transformation):
             # select where to use Type Parameters
             new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
             self._in_select_type_params = False
-            self._use_boolean_dict = ug.check_vertices(
-                self._use_entries, self._use_graph)
             # Initialize unused type_params
             self._type_params.extend([
                 create_type_parameter(tp_name, None, INVARIANT)
@@ -316,7 +317,7 @@ class ParameterizedSubstitution(Transformation):
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
-            __import__('pprint').pprint(self._use_graph)
+            __import__('pprint').pprint(self._use_graph)  # DEBUG
         elif self._in_first_pass:
             return node
         else:
@@ -388,6 +389,7 @@ class ParameterizedSubstitution(Transformation):
             elif (type(lst_get(self._pn_stack, -1)) == ast.VariableDeclaration and
                   type(lst_get(self._pn_stack, -2)) == ast.Block and
                   type(lst_get(self._pn_stack, -3)) == ast.FunctionDeclaration):
+                print(self._var_decl_stack)
                 for var_decl in self._var_decl_stack:
                     self._use_graph[var_decl].append(gnode)
             elif (type(lst_get(self._pn_stack, -1)) == ast.FunctionCall and
