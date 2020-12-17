@@ -1,7 +1,7 @@
 import random
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, List
 
 from src import utils
 from src.ir import ast
@@ -87,7 +87,7 @@ class ParameterizedSubstitution(Transformation):
         self._type_constructor_decl: ast.ClassDeclaration = None
         self._parameterized_type: types.ParameterizedType = None
 
-        self._type_params: TP = []
+        self._type_params: List[TP] = []
 
         # phases
         self._in_first_pass: bool = False
