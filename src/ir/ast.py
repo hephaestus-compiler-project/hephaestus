@@ -87,6 +87,12 @@ class Declaration(Node):
     def get_type(self):
         raise NotImplementedError('get_type() must be implemented')
 
+    def __repr__(self):
+        if hasattr(self, 'name'):
+            return self.name
+        return super(Declaration, self).__repr__()
+
+
 
 class VariableDeclaration(Declaration):
     def __init__(self, name: str, expr: Expr, is_final: bool=True,
@@ -116,7 +122,6 @@ class VariableDeclaration(Declaration):
         else:
             return prefix + self.name + ": " + str(self.var_type) + \
                 " = " + str(self.expr)
-
 
 class FieldDeclaration(Declaration):
     def __init__(self, name: str, field_type: types.Type, is_final=True,
@@ -420,6 +425,8 @@ class Variable(Expr):
     def __str__(self):
         return str(self.name)
 
+    def __repr__(self):
+        return str(self.name)
 
 class Conditional(Expr):
     def __init__(self, cond: Expr, true_branch: Block, false_branch: Block):
