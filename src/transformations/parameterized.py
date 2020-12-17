@@ -71,7 +71,6 @@ class ParameterizedSubstitution(Transformation):
         super(ParameterizedSubstitution, self).__init__()
         self._max_type_params = max_type_params
 
-        self._selected_class = None
         self._selected_class_decl = None
         self._type_constructor_decl = None
         self._selected_namespace = None
@@ -179,11 +178,12 @@ class ParameterizedSubstitution(Transformation):
         attr_type = getattr(node, attr, None)
         if attr_type:
             # 1
-            if attr_type == self._selected_class:
+            if attr_type == self._selected_class_decl.get_type():
                 setattr(node, attr, self._parameterized_type)
             elif isinstance(attr_type, types.ParameterizedType):
                 attr_type.type_args = [
-                    self._parameterized_type if t == self._selected_class else t
+                    self._parameterized_type
+                    if t == self._selected_class_decl.get_type() else t
                     for t in attr_type.type_args
                 ]
                 setattr(node, attr, attr_type)
@@ -231,7 +231,6 @@ class ParameterizedSubstitution(Transformation):
             return
         class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
-        self._selected_class = class_decl.get_type()
         total_type_params = utils.random.integer(1, self._max_type_params)
         # Initialize constraints to None
         self._type_params_constraints = {
@@ -304,9 +303,6 @@ class ParameterizedSubstitution(Transformation):
         return self._update_type(new_node, 'param_type')
 
     def visit_var_decl(self, node):
-        """Add variable to _var_decl_stack to add flows from it to other
-        variables in visit_variable.
-        """
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
         return self._update_type(new_node, 'var_type')
 
