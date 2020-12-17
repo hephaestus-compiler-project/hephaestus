@@ -85,6 +85,7 @@ class ParameterizedSubstitution(Transformation):
     def __init__(self, max_type_params=3):
         super(ParameterizedSubstitution, self).__init__()
         self._max_type_params = max_type_params
+        self._in_first_pass = False
 
         self._selected_class = None
         self._selected_class_decl = None
@@ -96,9 +97,12 @@ class ParameterizedSubstitution(Transformation):
 
         self._parameterized_type = None
 
-        self._in_changed_type_decl = False
         self._in_override = False
+
+        # phases
         self._in_analysis = False
+        self._in_select_type_params = False
+        self._in_changed_type_decl = False
 
         # node = ((namespace, name))
         self._use_entries = set()  # set of nodes
@@ -264,6 +268,10 @@ class ParameterizedSubstitution(Transformation):
         self._type_params_constraints = {
             name: None for name in get_type_params_names(total_type_params)
         }
+        self._in_first_pass = True
+        self.program = super(ParameterizedSubstitution, self).visit_program(
+                             self.program)
+        self._in_first_pass = False
         return super(ParameterizedSubstitution, self).visit_program(
             self.program)
 
@@ -276,10 +284,10 @@ class ParameterizedSubstitution(Transformation):
         * Create the type constructor
         * Create the parameterized type
         """
-        if node == self._selected_class_decl:
+        if node == self._selected_class_decl and self._in_first_pass:
             self._in_analysis = True
             self._selected_namespace = self._namespace
-            # Run analysis and select where to use Type Parameters
+            # Run analysis
             _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
             # Initialize all nodes in use_graph
             uninitialized = set()
@@ -287,14 +295,16 @@ class ParameterizedSubstitution(Transformation):
                 uninitialized.update(n for n in nodes if n not in self._use_graph)
             for n in uninitialized:
                 self._use_graph[n]
+            self._in_analysis = False
+
+            self._in_select_type_params = True
+            # select where to use Type Parameters
+            _ = super(ParameterizedSubstitution, self).visit_class_decl(node)
+            self._in_select_type_params = False
             self._use_boolean_dict = ug.check_vertices(
                 self._use_entries, self._use_graph)
-            self._in_analysis = False
             self._in_changed_type_decl = True
-
-        new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
-
-        if self._in_changed_type_decl and node == self._selected_class_decl:
+            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
             # Initialize unused type_params
             self._type_params.extend([
                 create_type_parameter(tp_name, None, INVARIANT)
@@ -306,7 +316,11 @@ class ParameterizedSubstitution(Transformation):
             )
             new_node = self._type_constructor_decl
             self._parameterized_type = self._create_parameterized_type()
-        self._in_changed_type_decl = False
+            self._in_changed_type_decl = False
+        elif self._in_first_pass:
+            return node
+        else:
+            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
         return new_node
 
     def visit_field_decl(self, node):
@@ -314,7 +328,10 @@ class ParameterizedSubstitution(Transformation):
         """
         if self._in_analysis:
             gnode = (self._namespace, node.name)
-            self._use_graph[gnode] # initialize the node
+            self._use_graph[gnode]  # initialize the node
+            return super(ParameterizedSubstitution, self).visit_field_decl(node)
+        if self._in_select_type_params:
+            gnode = (self._namespace, node.name)
             self._use_entries.add(gnode)
             node.field_type = self._use_type_parameter(node.name, node.field_type, True)
             return super(ParameterizedSubstitution, self).visit_field_decl(node)
@@ -327,6 +344,9 @@ class ParameterizedSubstitution(Transformation):
         if self._in_analysis:
             gnode = (self._namespace, node.name)
             self._use_graph[gnode]  # initialize the node
+            return super(ParameterizedSubstitution, self).visit_param_decl(node)
+        if self._in_select_type_params:
+            gnode = (self._namespace, node.name)
             self._use_entries.add(gnode)
             node.param_type = self._use_type_parameter(node.name, node.param_type)
             return super(ParameterizedSubstitution, self).visit_param_decl(node)
