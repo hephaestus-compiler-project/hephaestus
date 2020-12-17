@@ -85,6 +85,8 @@ class Executor:
         mkdir(mismatch)
         # Save the program
         dst_filename = os.path.join(mismatch, self.translator.get_filename())
+        if self.args.debug:
+            print("Program: " + dst_filename)
         with open(dst_filename, 'w') as out:
             out.write(program_str)
         with open(dst_filename + ".bin", 'wb') as out:
@@ -111,6 +113,8 @@ class Executor:
         return self.translator.result()
 
     def _generate_program(self, i):
+        if self.args.debug:
+            print("\nIteration: " + str(i))
         generator = Generator(max_depth=self.args.max_depth)
         p = generator.generate()
         program_str = self._translate_program(p)
@@ -130,6 +134,8 @@ class Executor:
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
         transformer = random.choice(self.transformations)()
+        if self.args.debug:
+            print("Transformation: " + transformer.get_name())
         self.iterations[i][0].append(transformer.get_name())
         prev_p = deepcopy(program)
         transformer.visit(program)
@@ -154,6 +160,10 @@ class Executor:
             compiler_pass=transformer.preserve_correctness()
         )
         if not status:
+            if self.args.debug:
+                print("Mismatch found: {}(iter) {}(trans)".format(
+                    str(i), str(transformation_number)
+                ))
             self._report(program_str, p, prev_p)
             self.iterations[i][1] = True
             return "break", p
@@ -188,7 +198,7 @@ class Executor:
             status, _ = self._compile(program_str, compiler_pass=True)
             if not status:
                 self._report(program_str, program)
-                return
+                return True
         else:
             succeed, program = self._generate_program(self.exec_id)
             if not succeed:

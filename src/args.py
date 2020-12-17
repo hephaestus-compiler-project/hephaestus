@@ -78,6 +78,11 @@ parser.add_argument(
     default=1,
     help="Number of workers for processing test programs"
 )
+parser.add_argument(
+    "-d", "--debug",
+    action="store_true"
+)
+
 
 
 args = parser.parse_args()

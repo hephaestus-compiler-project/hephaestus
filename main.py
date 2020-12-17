@@ -7,14 +7,26 @@ from src.utils import random
 from src.modules.Executor import Executor
 
 
+n_failed = 0
+n_passed = 0
+
+
 def run(i):
     random.r.seed()
     executor = Executor(i, args)
     return executor.process_program()
 
 
-n_failed = 0
-n_passed = 0
+if args.debug:
+    for i in range(1, args.iterations + 1):
+        failed = run(i)
+        if failed:
+            n_failed += 1
+        else:
+            n_passed += 1
+    sys.exit()
+    print("Total faults: " + str(n_failed))
+
 template_msg = (u"Test Programs Passed {} / {} \u2714\t\t"
                 "Test Programs Failed {} / {} \u2718\r")
 def process_result(failed):
