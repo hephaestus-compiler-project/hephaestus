@@ -46,7 +46,7 @@ def bi_reachable(graph, start_vertex, dest_vertex):
 def none_reachable(graph, vertex):
     """Check if vertex is bi_reachable from/to a none vertex
     """
-    none_vertices = [v for v in graph.keys() if "None" in v[1]]
+    none_vertices = [v for v in graph.keys() if v[1] is None]
     for nv in none_vertices:
         if bi_reachable(graph, vertex, nv):
             return True
