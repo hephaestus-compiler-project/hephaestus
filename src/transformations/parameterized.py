@@ -379,11 +379,12 @@ class ParameterizedSubstitution(Transformation):
         if self._in_analysis:
             gnode = (self._namespace, node.name)
             self._use_graph[gnode] # Safely initialize node
+            add_flow_from_parent(gnode)
             if type(lst_get(self._pn_stack, -1)) == ast.FunctionDeclaration:
-                add_flow_from_parent(gnode)
+                pass
             elif (type(lst_get(self._pn_stack, -1)) == ast.Block and
                   type(lst_get(self._pn_stack, -2)) == ast.FunctionDeclaration):
-                add_flow_from_parent(gnode)
+                pass
             elif (type(lst_get(self._pn_stack, -1)) == ast.VariableDeclaration and
                   type(lst_get(self._pn_stack, -2)) == ast.Block and
                   type(lst_get(self._pn_stack, -3)) == ast.FunctionDeclaration):
