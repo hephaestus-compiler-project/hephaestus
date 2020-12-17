@@ -90,7 +90,6 @@ class ParameterizedSubstitution(Transformation):
         self._type_params: List[TP] = []
 
         # phases
-        self._in_first_pass: bool = False
         self._in_select_type_params: bool = False
         self._use_entries: set = set()  # set of nodes we can use as type params
 
@@ -225,6 +224,37 @@ class ParameterizedSubstitution(Transformation):
                     setattr(node, attr, match[0])
         return node
 
+    def _initialize_uninitialize_type_params(self):
+        for tp in self._type_params:
+            if tp.type_param is None:
+                tp.type_param = create_type_parameter(
+                    tp.name, None, INVARIANT)
+
+    def _analyse_selected_class(self, node) -> ast.ClassDeclaration:
+        """Analyse selected class by following the next steps:
+
+        * Run def-use analysis
+        * Select where to use type parameters
+        * Initialize the uninitialized type parameters
+        * Create the type constructor
+        * Create the parameterized type
+        """
+        analysis = UseAnalysis(self.program)
+        analysis.visit(node)
+        self._use_graph = analysis.result()
+        __import__('pprint').pprint(self._use_graph)  # DEBUG
+
+        self._in_select_type_params = True
+        new_node = self.visit_class_decl(node)
+        self._in_select_type_params = False
+
+        self._initialize_uninitialize_type_params()
+        self._type_constructor_decl = create_type_constructor_decl(
+            new_node, [tp.type_param for tp in self._type_params]
+        )
+        self._parameterized_type = self._create_parameterized_type()
+        return self._type_constructor_decl
+
     def visit_program(self, node):
         """Select which class declaration to replace and select how many
         type parameters to use.
@@ -236,54 +266,22 @@ class ParameterizedSubstitution(Transformation):
             return
         class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
+
         total_type_params = utils.random.integer(1, self._max_type_params)
-        # Initialize constraints to None
         self._type_params = [
             TP(name, None, None, None, None)
             for name in get_type_params_names(total_type_params)
         ]
-        self._in_first_pass = True
-        self.program = super(ParameterizedSubstitution, self).visit_program(
-                             self.program)
-        self._in_first_pass = False
+
+        node = self._analyse_selected_class(self._selected_class_decl)
+        self.program.context.add_class(self._namespace, node.name, node)
+
         return super(ParameterizedSubstitution, self).visit_program(
             self.program)
 
     @change_namespace
     def visit_class_decl(self, node):
-        """Do the next steps if the class is the one to replace:
-
-        * Run def-use analysis
-        * Initialize the uninitialized type parameters
-        * Create the type constructor
-        * Create the parameterized type
-        """
-        if node == self._selected_class_decl and self._in_first_pass:
-            # Use Analysis
-            analysis = UseAnalysis(self.program)
-            analysis.visit(node)
-            self._use_graph = analysis.result()
-            __import__('pprint').pprint(self._use_graph)
-            # Use type parameters
-            self._in_select_type_params = True
-            # select where to use Type Parameters
-            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
-            self._in_select_type_params = False
-            # Initialize unused type_params
-            for tp in self._type_params:
-                if tp.type_param is None:
-                    tp.type_param = create_type_parameter(
-                        tp.name, None, INVARIANT)
-            self._type_constructor_decl = create_type_constructor_decl(
-                new_node, [tp.type_param for tp in self._type_params]
-            )
-            new_node = self._type_constructor_decl
-            self._parameterized_type = self._create_parameterized_type()
-        elif self._in_first_pass:
-            return node
-        else:
-            new_node = super(ParameterizedSubstitution, self).visit_class_decl(node)
-        return new_node
+        return super(ParameterizedSubstitution, self).visit_class_decl(node)
 
     def visit_field_decl(self, node):
         """FieldDeclaration nodes can be used to get a TypeParameter type.
