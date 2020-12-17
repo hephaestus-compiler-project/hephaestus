@@ -51,6 +51,7 @@ foo_func = FunctionDeclaration(
     is_final=False,
     body=Block([
         VariableDeclaration("q", Variable("z"), var_type=StringType()),
+        VariableDeclaration("x", Variable("q"), var_type=StringType()),
         FunctionCall("bar", [Variable("y"), StringConstant("foo"), Variable("q")])
     ])
 )
