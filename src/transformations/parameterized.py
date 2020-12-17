@@ -389,9 +389,8 @@ class ParameterizedSubstitution(Transformation):
             elif (type(lst_get(self._pn_stack, -1)) == ast.VariableDeclaration and
                   type(lst_get(self._pn_stack, -2)) == ast.Block and
                   type(lst_get(self._pn_stack, -3)) == ast.FunctionDeclaration):
-                print(self._var_decl_stack)
                 for var_decl in self._var_decl_stack:
-                    self._use_graph[var_decl].append(gnode)
+                    self._use_graph[gnode].append(var_decl)
             elif (type(lst_get(self._pn_stack, -1)) == ast.FunctionCall and
                   get_function_decl(
                       self.program.context, self._selected_namespace,
@@ -404,7 +403,7 @@ class ParameterizedSubstitution(Transformation):
             else:
                 self._use_graph[gnode].append(self.get_none_node())
                 for var_decl in self._var_decl_stack:
-                    self._use_graph[var_decl].append(gnode)
+                    self._use_graph[gnode].append(var_decl)
             return super(ParameterizedSubstitution, self).visit_variable(node)
         return super(ParameterizedSubstitution, self).visit_variable(node)
 
@@ -439,6 +438,7 @@ class ParameterizedSubstitution(Transformation):
         if self._in_analysis:
             namespace, func_decl = get_function_decl(
                 self.program.context, self._selected_namespace, node.func)
+            print(func_decl)
             if (func_decl is not None and
                 type(lst_get(self._pn_stack, -1)) == ast.Block and
                 type(lst_get(self._pn_stack, -2)) == ast.FunctionDeclaration):
