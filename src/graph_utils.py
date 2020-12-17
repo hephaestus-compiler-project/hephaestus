@@ -72,6 +72,14 @@ def none_reachable(graph, vertex):
     return False
 
 
+def none_connected(graph, vertex):
+    none_vertices = [v for v in graph.keys() if v[1] is None]
+    for nv in none_vertices:
+        if connected(graph, vertex, nv):
+            return True
+    return False
+
+
 def find_all_paths(graph, start, path=[]):
     """Find all the paths of graph from start."""
     path = path + [start]

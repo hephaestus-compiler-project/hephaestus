@@ -133,6 +133,16 @@ def test_connected():
     assert connected(GRAPH2, N0, N4)
 
 
+def test_none_connected():
+    assert none_connected(GRAPH, X)
+    assert none_connected(GRAPH, FOO_Y)
+    assert none_connected(GRAPH, BAR_Y)
+    assert none_connected(GRAPH, BUZ_K)
+    assert none_connected(GRAPH, BUZ_K)
+    assert not none_connected(GRAPH, FOO_Q)
+    assert not none_connected(GRAPH, BAR_Z)
+
+
 def compare_lists(a, b):
     return sorted(a) == sorted(b)
 
