@@ -45,6 +45,21 @@ def create_type_constructor_decl(class_decl, type_parameters):
     )
 
 
+def get_field_param_decls(context, namespace, decls):
+    """Get all the field and parameter declaration in a namespace
+    and in namespace's children, etc.
+    """
+    # TODO move some logic from here to context
+    for dname, dnode in context.get_declarations(namespace, True).items():
+        new_namespace = namespace + (dname,)
+        if type(dnode) in (ast.FieldDeclaration, ast.ParameterDeclaration):
+            decls.add((namespace, dnode))
+        if type(dnode) == ast.FunctionDeclaration:
+            decls.update(get_field_param_decls(context, new_namespace, decls))
+        namespace = namespace
+    return decls
+
+
 @dataclass
 class TP:
     """Data class to save Type Parameters and their constraints"""
@@ -136,7 +151,7 @@ class ParameterizedSubstitution(Transformation):
                                        type_args)
 
     def _propagate_type_parameter(self, gnode: GNode, tp: types.TypeParameter):
-        """Replace concrete type of gnode's connected nodes with tp
+        """Replace concrete types of gnode's connected nodes with tp
         """
         types_lookup = {ast.VariableDeclaration: 'var_type',
                         ast.ParameterDeclaration: 'param_type',
@@ -149,7 +164,7 @@ class ParameterizedSubstitution(Transformation):
                 attr = types_lookup.get(type(decl))
                 setattr(decl, attr, tp)
 
-    def _use_type_parameter(self, node, t, covariant=False) -> types.Type:
+    def _use_type_parameter(self, namespace, node, t, covariant=False):
         """Select node to replace concrete type with type parameter.
 
         * Check if node can be used
@@ -158,7 +173,7 @@ class ParameterizedSubstitution(Transformation):
         """
         #  if self._in_override:
             #  return t
-        gnode = GNode(self._namespace, node.name)
+        gnode = GNode(namespace, node.name)
 
         if gutils.none_connected(self._use_graph, gnode):
             return t
@@ -248,12 +263,24 @@ class ParameterizedSubstitution(Transformation):
         __import__('pprint').pprint(self._use_graph)  # DEBUG
 
         self._in_select_type_params = True
-        new_node = self.visit_class_decl(node)
+        #  namespace = self._namespace + (node.name,)
+        #  decls = get_field_param_decls(self.program.context, namespace, set())
+        #  for ns, ndecl in decls:
+            #  if type(ndecl) == ast.FieldDeclaration:
+                #  ndecl.field_type = self._use_type_parameter(
+                    #  ns, ndecl, ndecl.field_type, True)
+            #  else:  # ParameterDeclaration
+                #  ndecl.param_type = self._use_type_parameter(
+                    #  ns, ndecl, ndecl.param_type)
+            #  self.program.context.add_var(ns, ndecl.name, ndecl)
+        # Get the updated node
+        #  node = self.program.context.get_decl(self._namespace, node.name)
+        node = self.visit_class_decl(node)
         self._in_select_type_params = False
 
         self._initialize_uninitialize_type_params()
         self._type_constructor_decl = create_type_constructor_decl(
-            new_node, [tp.type_param for tp in self._type_params]
+            node, [tp.type_param for tp in self._type_params]
         )
         self._parameterized_type = self._create_parameterized_type()
         return self._type_constructor_decl
@@ -288,14 +315,16 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_field_decl(self, node):
         if self._in_select_type_params:
-            node.field_type = self._use_type_parameter(node, node.field_type, True)
+            node.field_type = self._use_type_parameter(
+                self._namespace, node, node.field_type, True)
             return node
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):
         if self._in_select_type_params:
-            node.param_type = self._use_type_parameter(node, node.param_type)
+            node.param_type = self._use_type_parameter(
+                self._namespace, node, node.param_type)
             return node
         new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
         return self._update_type(new_node, 'param_type')
