@@ -24,8 +24,8 @@ if args.debug:
             n_failed += 1
         else:
             n_passed += 1
-    sys.exit()
     print("Total faults: " + str(n_failed))
+    sys.exit()
 
 template_msg = (u"Test Programs Passed {} / {} \u2714\t\t"
                 "Test Programs Failed {} / {} \u2718\r")
