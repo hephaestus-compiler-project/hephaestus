@@ -82,9 +82,6 @@ class UseAnalysis(DefaultVisitor):
             # outside the context of class.
             return
         var_node = GNode(var_node[0], var_node[1].name)
-        # OK, so remove the edge of the variable to NONE, and add an
-        # edge from this variable to the return node of the function.
-        self._use_graph[var_node].discard(NONE_NODE)
         if target_node:
             self._use_graph[var_node].add(target_node)
 
@@ -105,8 +102,18 @@ class UseAnalysis(DefaultVisitor):
         gnode = get_decl(self.program.context,
                          self._namespace, node.name,
                          limit=self._selected_namespace)
-        if gnode:
-            gnode = GNode(gnode[0], gnode[1].name)
+        if not gnode:
+            return
+        # If this variable reference is not in the return of the
+        # current function, we add an edge from this variable to NONE.
+        #
+        # For example:
+        #  * return x == "foo" => We add the edge x -> NONE
+        #  * return x => We don't add any edge.
+        ret_node = GNode(self._namespace, FUNC_RET)
+        gnode = GNode(gnode[0], gnode[1].name)
+        nodes = self._use_graph[gnode]
+        if ret_node not in nodes:
             self._use_graph[gnode].add(NONE_NODE)
 
     def visit_var_decl(self, node):
@@ -129,7 +136,6 @@ class UseAnalysis(DefaultVisitor):
             # We add a special node for representing the return of a function.
             ret_node = GNode(self._namespace, FUNC_RET)
             self._use_graph[ret_node]
-        super(UseAnalysis, self).visit_func_decl(node)
         expr = None
         if isinstance(node.body, ast.Block):
             expr = node.body.body[-1] if node.body.body else None
@@ -141,6 +147,7 @@ class UseAnalysis(DefaultVisitor):
             self._flow_var_to_ref(expr, ret_node)
         if isinstance(expr, ast.FunctionCall):
             self._flow_ret_to_callee(expr, ret_node)
+        super(UseAnalysis, self).visit_func_decl(node)
 
     def visit_func_call(self, node):
         """Add flows from function call arguments to function declaration
@@ -181,5 +188,20 @@ class UseAnalysis(DefaultVisitor):
                 # function's parameter.
                 self._use_graph[NONE_NODE].add(param_node)
             self.visit(arg)
+        if fun_nsdecl:
+            # If this function call is part of an expression other than the
+            # return expression of the current function, then we add an edge
+            # from the callee's ret node to NONE.
+            # For example:
+            # * return if (cond) calee(x) else y =>
+            #       We add the edge callee_ret -> NONE
+            # * return callee(x) => We don't add any edge.
+            namespace, fun_decl = fun_nsdecl
+            gnode = GNode(namespace + (fun_decl.name,), FUNC_RET)
+            ret_node = GNode(self._namespace, FUNC_RET)
+            nodes = self._use_graph[gnode]
+            if ret_node not in nodes:
+                self._use_graph[gnode].add(NONE_NODE)
+
         if node.receiver:
             self.visit(node.receiver)
