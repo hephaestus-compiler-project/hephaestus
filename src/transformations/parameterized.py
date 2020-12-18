@@ -60,6 +60,15 @@ def get_field_param_decls(context, namespace, decls):
     return decls
 
 
+def get_connected_type_param(use_graph, type_params, gnode):
+    if gnode in use_graph:
+        for tp in type_params:
+            if (tp.node is not None and
+                gutils.connected(use_graph, gnode, tp.node)):
+                return tp.type_param
+    return None
+
+
 @dataclass
 class TP:
     """Data class to save Type Parameters and their constraints"""
@@ -122,6 +131,9 @@ class ParameterizedSubstitution(Transformation):
         return self.program
 
     def _create_parameterized_type(self) -> types.ParameterizedType:
+        """Create ParameterizedType from _type_constructor_decl based on
+        type_params constraints
+        """
         type_args = []
         for tp in self._type_params:
             if tp.constraint is None:
@@ -175,10 +187,10 @@ class ParameterizedSubstitution(Transformation):
             return t
 
         # Check if there is a connected (reachable++) type parameter
-        for tp in self._type_params:
-            if (tp.node is not None and
-                gutils.connected(self._use_graph, gnode, tp.node)):
-                return tp.type_param
+        connected_type_param = get_connected_type_param(
+            self._use_graph, self._type_params, gnode)
+        if connected_type_param:
+            return connected_type_param
 
         if utils.random.bool():
             return t
@@ -198,7 +210,7 @@ class ParameterizedSubstitution(Transformation):
     def _update_type(self, node, attr):
         """Update types in the program.
 
-        Change _selected_class to _parameterized_type
+        Replace _selected_class type with _parameterized_type
         """
         attr_type = getattr(node, attr, None)
         if attr_type:
@@ -313,12 +325,8 @@ class ParameterizedSubstitution(Transformation):
             #  self._in_override = True
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         return_gnode = GNode(self._namespace, FUNC_RET)
-        ret_type = None
-        if return_gnode in self._use_graph:
-            for tp in self._type_params:
-                if (tp.node is not None and
-                    gutils.connected(self._use_graph, return_gnode, tp.node)):
-                    ret_type = tp.type_param
+        ret_type = get_connected_type_param(
+            self._use_graph, self._type_params, return_gnode)
         if ret_type:
             new_node.ret_type = ret_type
             new_node.inferred_type = ret_type
