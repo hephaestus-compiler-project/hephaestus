@@ -1,7 +1,6 @@
 import random
-from collections import defaultdict
 from dataclasses import dataclass
-from typing import Tuple, List, NamedTuple, Set
+from typing import List
 
 from src import utils
 from src.ir import ast
@@ -10,7 +9,6 @@ from src.ir import kotlin_types as kt
 import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis, GNode, FUNC_RET
-from src.utils import lst_get
 
 
 INVARIANT = types.TypeParameter.INVARIANT
@@ -47,7 +45,7 @@ def create_type_constructor_decl(class_decl, type_parameters):
 
 def get_field_param_decls(context, namespace, decls):
     """Get all the field and parameter declaration in a namespace
-    and in namespace's children, etc.
+    and namespace's children, etc.
     """
     # TODO move some logic from here to context
     for dname, dnode in context.get_declarations(namespace, True).items():
@@ -58,6 +56,23 @@ def get_field_param_decls(context, namespace, decls):
             decls.update(get_field_param_decls(context, new_namespace, decls))
         namespace = namespace
     return decls
+
+
+# TODO This functionality must be provided by context.
+# This function is *incomplete*
+def hard_update_context_variable(context, namespace, decl):
+    context.add_var(namespace, decl.name, decl)
+    parent = namespace[-1]
+    namespace = namespace[:-1]
+    parent_decl = context.get_decl(namespace, parent)
+    if type(parent_decl) == ast.ClassDeclaration:
+        if type(decl) == ast.FieldDeclaration:
+            d = next(d for d in parent_decl.fields if decl.name == d.name)
+            d.field_type = decl.field_type
+    elif type(parent_decl) == ast.FunctionDeclaration:
+        if type(decl) == ast.ParameterDeclaration:
+            d = next(d for d in parent_decl.params if decl.name == d.name)
+            d.param_type = decl.param_type
 
 
 def get_connected_type_param(use_graph, type_params, gnode):
@@ -81,24 +96,14 @@ class TP:
 
 class ParameterizedSubstitution(Transformation):
     """To create a ParameterizedType, we do the following steps:
+
         1. Select a SimpleClassifier ClassDeclaration (visit_program)
-        2. Select how many TypeParameters we'll use (visit_program)
-        3. We choose where we will use the TypeParameters in the body of the
-           selected SimpleClassifier. Currently, we select only
-           FieldDeclarations, and FunctionDeclarations. Every time we choose
-           to replace a concrete type with a TypeParameter, we add the
-           corresponding constraints for the specific TypeParameter.
-           For example, suppose we replace the return type of a function.
-           In that case, the type argument for the specific TypeParameter must
-           have the same type as the return type we replaced, or we can specify
-           the TypeParameter to be covariant and the type argument to be a
-           supertype of the replaced return type.
-           (_use_type_parameter)
-        4. Create the TypeParameters based on the restrictions from step 3.
-           (_use_type_parameter)
-        5. Create the ParameterizedType with type arguments that respect the
-           constraints of TypeParameters.
-           (visit_class_decl)
+        2. Select how many TypeParameters to use (visit_program)
+        3. Run _analyse_selected_class to: (a) select which variables to
+           convert to TypeParameters, (b) propagate TypeParameters inside class
+           (c) create TypeConstructor, and (d) create ParameterizedType
+        4. Visit program to update occurrences of selected_class type to
+           the new ParameterizedType
     """
     CORRECTNESS_PRESERVING = True
     NAME = 'Parameterized Substitution'
@@ -113,22 +118,24 @@ class ParameterizedSubstitution(Transformation):
 
         self._type_params: List[TP] = []
 
-        self._in_select_type_params: bool = False
-
         self._use_graph: dict = None
 
-        #  self._in_override = False
+        # Use it as a flag to do specific operations when visiting nodes to
+        # select which variables to replace their types with TypeParameters
+        self._in_select_type_params: bool = False
+        #  self._in_override: bool = False
+
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         self.program = None
+
+    def result(self):
+        return self.program
 
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
         return [d for d in self.program.declarations
                 if (isinstance(d, ast.ClassDeclaration) and
                 type(d.get_type()) is types.SimpleClassifier)]
-
-    def result(self):
-        return self.program
 
     def _create_parameterized_type(self) -> types.ParameterizedType:
         """Create ParameterizedType from _type_constructor_decl based on
@@ -173,7 +180,7 @@ class ParameterizedSubstitution(Transformation):
                 setattr(decl, attr, tp)
 
     def _use_type_parameter(self, namespace, node, t, covariant=False):
-        """Select node to replace concrete type with type parameter.
+        """Select a node to replace its concrete type with a type parameter.
 
         * Check if node can be used
         * Initialize type parameter
@@ -202,15 +209,13 @@ class ParameterizedSubstitution(Transformation):
                 tp.constraint = t
                 tp.variance = variance
                 tp.type_param = create_type_parameter(tp.name, t, variance)
-                tp.node = (self._namespace, node.name)
+                tp.node = (namespace, node.name)
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return t
 
     def _update_type(self, node, attr):
-        """Update types in the program.
-
-        Replace _selected_class type with _parameterized_type
+        """Replace _selected_class type occurrences with _parameterized_type
         """
         attr_type = getattr(node, attr, None)
         if attr_type:
@@ -236,7 +241,9 @@ class ParameterizedSubstitution(Transformation):
                     tp.name, None, INVARIANT)
 
     def _select_type_params(self, node) -> ast.Node:
-        self._in_select_type_params = True
+        # To use this instead of visiting the whole program to select for which
+        # variables to change their types to type parameters we must be able
+        # to do complete updates in the context.
         #  namespace = self._namespace + (node.name,)
         #  decls = get_field_param_decls(self.program.context, namespace, set())
         #  for ns, ndecl in decls:
@@ -246,10 +253,13 @@ class ParameterizedSubstitution(Transformation):
             #  else:  # ParameterDeclaration
                 #  ndecl.param_type = self._use_type_parameter(
                     #  ns, ndecl, ndecl.param_type)
-            #  self.program.context.add_var(ns, ndecl.name, ndecl)
+            #  hard_update_context_variable(self.program.context, ns, ndecl)
         #  node = self.program.context.get_decl(self._namespace, node.name)
+
+        self._in_select_type_params = True
         node = self.visit_class_decl(node)
         self._in_select_type_params = False
+
         return node
 
 
@@ -265,7 +275,6 @@ class ParameterizedSubstitution(Transformation):
         analysis = UseAnalysis(self.program)
         analysis.visit(node)
         self._use_graph = analysis.result()
-        __import__('pprint').pprint(self._use_graph)  # DEBUG
 
         node = self._select_type_params(node)
 
@@ -333,11 +342,14 @@ class ParameterizedSubstitution(Transformation):
             #  self._in_override = True
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         return_gnode = GNode(self._namespace, FUNC_RET)
+
+        # Check if return is connected to a type parameter
         ret_type = get_connected_type_param(
             self._use_graph, self._type_params, return_gnode)
         if ret_type:
             new_node.ret_type = ret_type
             new_node.inferred_type = ret_type
+
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
         #  self._in_override = False
@@ -348,5 +360,6 @@ class ParameterizedSubstitution(Transformation):
         return self._update_type(new_node, 'class_type')
 
     def visit_super_instantiation(self, node):
-        new_node = super(ParameterizedSubstitution, self).visit_super_instantiation(node)
+        new_node = super(ParameterizedSubstitution,
+                         self).visit_super_instantiation(node)
         return self._update_type(new_node, 'class_type')
