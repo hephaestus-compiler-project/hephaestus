@@ -202,9 +202,12 @@ class ParameterizedSubstitution(Transformation):
         """
         attr_type = getattr(node, attr, None)
         if attr_type:
-            # 1
+            # Node is a SimpleClassifier
+            # A -> A<String>
             if attr_type == self._selected_class_decl.get_type():
                 setattr(node, attr, self._parameterized_type)
+            # Node is a ParameterizedType
+            # Foo<A> -> Foo<A<String>>
             elif isinstance(attr_type, types.ParameterizedType):
                 attr_type.type_args = [
                     self._parameterized_type
