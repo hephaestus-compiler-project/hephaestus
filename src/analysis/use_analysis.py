@@ -120,7 +120,7 @@ class UseAnalysis(DefaultVisitor):
         if ret_node not in nodes or node.name not in self._ret_vars:
             self._use_graph[gnode].add(NONE_NODE)
         else:
-            self._ret_vars.remove(node.name)
+            self._ret_vars.discard(node.name)
 
     def visit_var_decl(self, node):
         """Add variable to _var_decl_stack to add flows from it to other
