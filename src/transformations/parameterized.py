@@ -248,7 +248,6 @@ class ParameterizedSubstitution(Transformation):
                 #  ndecl.param_type = self._use_type_parameter(
                     #  ns, ndecl, ndecl.param_type)
             #  self.program.context.add_var(ns, ndecl.name, ndecl)
-        # Get the updated node
         #  node = self.program.context.get_decl(self._namespace, node.name)
         node = self.visit_class_decl(node)
         self._in_select_type_params = False
