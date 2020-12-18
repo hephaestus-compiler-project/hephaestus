@@ -1,7 +1,7 @@
 import random
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import Tuple, List, NamedTuple, Set
 
 from src import utils
 from src.ir import ast
@@ -55,6 +55,11 @@ class TP:
     variance: int  # INVARIANT, COVARIANT, CONTRAVARIANT
 
 
+class GNode(NamedTuple):
+    namespace: Tuple[str, ...]
+    name: str
+
+
 class ParameterizedSubstitution(Transformation):
     """To create a ParameterizedType, we do the following steps:
         1. Select a SimpleClassifier ClassDeclaration (visit_program)
@@ -89,9 +94,8 @@ class ParameterizedSubstitution(Transformation):
 
         self._type_params: List[TP] = []
 
-        # phases
         self._in_select_type_params: bool = False
-        self._use_entries: set = set()  # set of nodes we can use as type params
+        self._possible_type_params: Set[GNode] = set()
 
         self._use_graph: dict = None
 
@@ -109,9 +113,6 @@ class ParameterizedSubstitution(Transformation):
         return self.program
 
     def _create_parameterized_type(self) -> types.ParameterizedType:
-        """Create parameterized type based on type_params, constraints, and
-        constructor.
-        """
         type_args = []
         for tp in self._type_params:
             if tp.constraint is None:
@@ -141,7 +142,7 @@ class ParameterizedSubstitution(Transformation):
         """
         #  if self._in_override:
             #  return t
-        gnode = (self._namespace, node.name)
+        gnode = GNode(self._namespace, node.name)
 
         if gutils.none_connected(self._use_graph, gnode):
             return t
@@ -201,7 +202,7 @@ class ParameterizedSubstitution(Transformation):
                         name = return_expr.name
                     except AttributeError:  # FunctionCall
                         name = return_expr.func
-                    gnode = (self._namespace, name)
+                    gnode = GNode(self._namespace, name)
                     self._use_graph[gnode] # Safely initialize node
                     match = [tp.type_param
                              for tp in self._type_params
@@ -214,7 +215,7 @@ class ParameterizedSubstitution(Transformation):
             elif (type(node) == ast.VariableDeclaration or
                   type(node) == ast.ParameterDeclaration or
                   type(node) == ast.FieldDeclaration):
-                gnode = (self._namespace, node.name)
+                gnode = GNode(self._namespace, node.name)
                 # There can be only one result
                 # TODO make sure that there cannot be two results
                 match = [tp.type_param
@@ -285,22 +286,18 @@ class ParameterizedSubstitution(Transformation):
         return super(ParameterizedSubstitution, self).visit_class_decl(node)
 
     def visit_field_decl(self, node):
-        """FieldDeclaration nodes can be used to get a TypeParameter type.
-        """
         if self._in_select_type_params:
-            gnode = (self._namespace, node.name)
-            self._use_entries.add(gnode)
+            gnode = GNode(self._namespace, node.name)
+            self._possible_type_params.add(gnode)
             node.field_type = self._use_type_parameter(node, node.field_type, True)
             return super(ParameterizedSubstitution, self).visit_field_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):
-        """ParameterDeclaration nodes can be used to get a TypeParameter type.
-        """
         if self._in_select_type_params:
-            gnode = (self._namespace, node.name)
-            self._use_entries.add(gnode)
+            gnode = GNode(self._namespace, node.name)
+            self._possible_type_params.add(gnode)
             node.param_type = self._use_type_parameter(node, node.param_type)
             return super(ParameterizedSubstitution, self).visit_param_decl(node)
         new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
