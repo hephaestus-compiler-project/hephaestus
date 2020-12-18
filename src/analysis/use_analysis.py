@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, NamedTuple
 from collections import defaultdict
 
 from src import graph_utils as gu
@@ -32,29 +32,14 @@ def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.D
     return None
 
 
-class GNode(gu.Node):
-
-    def __init__(self, namespace, name):
-        self.namespace: Tuple[str, ...] = namespace
-        self.name: str = name
-        if not self.name:
-            assert self.namespace is None
-
-    def __eq__(self, other):
-        return (self.__class__ == other.__class__ and
-                self.namespace == other.namespace and
-                self.name == other.name)
-
-    def __hash__(self):
-        return hash(str(self.namespace) + str(self.name))
+class GNode(NamedTuple, gu.Node):
+    namespace: Tuple[str, ...]
+    name: str
 
     def __str__(self):
         if self.name is None:
             return "NONE"
         return "/".join(self.namespace + (self.name,))
-
-    def __lt__(self, other):
-        return self.namespace < other.namespace and self.name < other.name
 
     def is_none(self):
         return self.name is None
