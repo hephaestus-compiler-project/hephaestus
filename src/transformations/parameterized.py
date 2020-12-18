@@ -241,7 +241,7 @@ class ParameterizedSubstitution(Transformation):
                     tp.name, None, INVARIANT)
 
     def _select_type_params(self, node) -> ast.Node:
-        # To use this instead of visiting the whole program to select for which
+        # To use this instead of visiting the whole program to select which
         # variables to change their types to type parameters we must be able
         # to do complete updates in the context.
         #  namespace = self._namespace + (node.name,)
