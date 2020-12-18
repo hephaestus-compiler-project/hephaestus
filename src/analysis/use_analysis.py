@@ -132,8 +132,16 @@ class UseAnalysis(DefaultVisitor):
             self._flow_var_to_ref(node.expr, gnode)
         elif isinstance(node.expr, ast.FunctionCall):
             self._flow_ret_to_callee(node.expr, gnode)
+            prev = self.add_none_to_call
+            self.add_none_to_call = False
+            self.visit(node.expr)
+            self.add_none_to_call = prev
         else:
             super(UseAnalysis, self).visit_var_decl(node)
+
+    def visit_assign(self, node):
+        self._flow_var_to_ref(node, NONE_NODE)
+        super(UseAnalysis, self).visit_assign(node)
 
     @change_namespace
     def visit_func_decl(self, node):
