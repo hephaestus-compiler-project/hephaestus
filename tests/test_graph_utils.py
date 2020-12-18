@@ -41,6 +41,7 @@ GRAPH2 = {N0: {N1},
 #                -> N3
 #               /
 # N0 -> N1 -> N2
+GRAPH3 = {X: {NONE}}
 
 
 def test_reachable():
@@ -68,6 +69,7 @@ def test_reachable():
     assert not reachable(GRAPH2, N3, N4)
     assert not reachable(GRAPH2, N4, N2)
     assert not reachable(GRAPH2, N0, N4)
+    assert not reachable(GRAPH3, X, BAR_ARG)
 
 
 def test_bi_reachable():
@@ -95,6 +97,7 @@ def test_bi_reachable():
     assert bi_reachable(GRAPH2, N3, N4)
     assert not bi_reachable(GRAPH2, N4, N2)
     assert not bi_reachable(GRAPH2, N0, N4)
+    assert not bi_reachable(GRAPH3, X, BAR_ARG)
 
 
 def test_none_reachable():
@@ -132,6 +135,7 @@ def test_connected():
     assert connected(GRAPH2, N3, N4)
     assert connected(GRAPH2, N4, N2)
     assert connected(GRAPH2, N0, N4)
+    assert not connected(GRAPH3, X, BAR_ARG)
 
 
 def test_none_connected():

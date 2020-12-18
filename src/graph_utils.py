@@ -9,6 +9,8 @@ def reachable(graph, start_vertex, dest_vertex):
 
     queue = []
     queue.append(start_vertex)
+    if start_vertex not in visited:
+        return False
     visited[start_vertex] = True
 
     while queue:
@@ -18,7 +20,7 @@ def reachable(graph, start_vertex, dest_vertex):
              return True
 
         for v in graph[next_v]:
-            if visited[v] == False:
+            if v in visited and visited[v] == False:
                 queue.append(v)
                 visited[v] = True
     return False
@@ -44,6 +46,8 @@ def connected(graph, start_vertex, dest_vertex):
 
     queue = []
     queue.append(start_vertex)
+    if start_vertex not in visited:
+        return False
     visited[start_vertex] = True
 
     while queue:
@@ -55,7 +59,7 @@ def connected(graph, start_vertex, dest_vertex):
         for node, adjs in graph.items():
             if next_v == node:
                 for v in adjs:
-                    if visited[v] == False:
+                    if v in visited and visited[v] == False:
                         queue.append(v)
                         visited[v] = True
             if next_v in adjs and visited[node] == False:
