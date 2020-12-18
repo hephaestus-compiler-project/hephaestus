@@ -137,6 +137,7 @@ class UseAnalysis(DefaultVisitor):
             self.visit(node.expr)
             self.add_none_to_call = prev
         else:
+            self._use_graph[gnode].add(NONE_NODE)
             super(UseAnalysis, self).visit_var_decl(node)
 
     def visit_assign(self, node):

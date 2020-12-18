@@ -78,10 +78,10 @@ def test_program3():
 
     assert_nodes(ug[foo_x], {foo_z})
     assert_nodes(ug[foo_z], {NONE_NODE})
-    assert_nodes(ug[foo_y], set())
+    assert_nodes(ug[foo_y], {NONE_NODE})
     assert_nodes(ug[bar_x], {bar_z})
     assert_nodes(ug[bar_z], set())
-    assert_nodes(ug[bar_y], set())
+    assert_nodes(ug[bar_y], {NONE_NODE})
 
 
 def test_program4():
