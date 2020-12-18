@@ -1,3 +1,6 @@
+from src.analysis.use_analysis import NONE_NODE
+
+
 class Node(object):
     def is_none(self):
         raise NotImplementedError("is_none must be implemented")
@@ -69,19 +72,17 @@ def connected(graph, start_vertex, dest_vertex):
     return False
 
 
-def none_reachable(graph, vertex):
-    none_vertices = [v for v in graph.keys() if v.is_none()]
-    for nv in none_vertices:
-        if bi_reachable(graph, vertex, nv):
-            return True
+def none_reachable(graph, vertex, none_node=NONE_NODE):
+    reachable_nodes = find_all_bi_reachable(graph, vertex)
+    if any(bi_reachable(graph, v, none_node) for v in reachable_nodes):
+        return True
     return False
 
 
-def none_connected(graph, vertex):
-    none_vertices = [v for v in graph.keys() if v.is_none()]
-    for nv in none_vertices:
-        if connected(graph, vertex, nv):
-            return True
+def none_connected(graph, vertex, none_node=NONE_NODE):
+    connected_nodes = find_all_connected(graph, vertex)
+    if any(connected(graph, v, none_node) for v in connected_nodes):
+        return True
     return False
 
 
