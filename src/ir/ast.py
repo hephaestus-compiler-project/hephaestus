@@ -2,7 +2,7 @@ from collections import OrderedDict
 from typing import List, Set
 
 from src import utils
-from src.ir import types, context as ctx
+from src.ir import types
 
 
 GLOBAL_NAMESPACE = ('global',)
@@ -27,7 +27,7 @@ class Expr(Node):
 
 
 class Program(Node):
-    def __init__(self, context: ctx.Context):
+    def __init__(self, context):
         self.context = context
 
     def children(self):

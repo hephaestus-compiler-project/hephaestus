@@ -1,7 +1,15 @@
 from collections import OrderedDict
 
+from src.ir import ast
+
 
 class Context(object):
+    TYPES = {ast.ClassDeclaration: 'classes',
+             ast.FunctionDeclaration: 'funcs',
+             ast.VariableDeclaration: 'vars',
+             ast.ParameterDeclaration: 'vars',
+             ast.FieldDeclaration: 'vars'}
+
     def __init__(self):
         self._context = {}
 
@@ -60,6 +68,9 @@ class Context(object):
             if decl is not None:
                 decls.update(decl)
         return decls
+
+    def get_decl(self, namespace, name):
+        return self._context.get(namespace, {}).get('decls', {}).get(name, None)
 
     def get_funcs(self, namespace, only_current=False):
         return self._get_declarations(namespace, 'funcs', only_current)
