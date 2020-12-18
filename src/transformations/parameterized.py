@@ -198,10 +198,7 @@ class ParameterizedSubstitution(Transformation):
     def _update_type(self, node, attr):
         """Update types in the program.
 
-        This method does the following conversions.
-
-        1. Change _selected_class to _parameterized_type
-        2. Update return type for affected functions in _selected_class_decl
+        Change _selected_class to _parameterized_type
         """
         attr_type = getattr(node, attr, None)
         if attr_type:
@@ -215,27 +212,6 @@ class ParameterizedSubstitution(Transformation):
                     for t in attr_type.type_args
                 ]
                 setattr(node, attr, attr_type)
-            # 2
-            #  elif isinstance(node, ast.FunctionDeclaration):
-                #  return_expr = None
-                #  if isinstance(node.body, ast.Expr):
-                    #  return_expr = node.body
-                #  elif len(node.body.body) > 0:
-                    #  return_expr = node.body.body[-1]
-                #  if type(return_expr) in (ast.Variable, ast.FunctionCall):
-                    #  try:  # Variable
-                        #  name = return_expr.name
-                    #  except AttributeError:  # FunctionCall
-                        #  name = return_expr.func
-                    #  gnode = GNode(self._namespace, name)
-                    #  self._use_graph[gnode] # Safely initialize node
-                    #  match = [tp.type_param
-                             #  for tp in self._type_params
-                             #  if tp.node is not None and
-                             #  gutils.connected(self._use_graph, tp.node, gnode)]
-                    #  # TODO make sure that there cannot be two results
-                    #  if match:
-                        #  setattr(node, attr, match[0])
         return node
 
     def _initialize_uninitialize_type_params(self):
@@ -291,7 +267,6 @@ class ParameterizedSubstitution(Transformation):
             # There are not user-defined simple classifier declarations.
             return
         class_decl = utils.random.choice(classes)
-        class_decl = classes[1]
         self._selected_class_decl = class_decl
 
         total_type_params = utils.random.integer(1, self._max_type_params)
@@ -346,6 +321,8 @@ class ParameterizedSubstitution(Transformation):
             new_node.ret_type = ret_type
             new_node.inferred_type = ret_type
         #  self._in_override = False
+        new_node = self._update_type(new_node, 'ret_type')
+        new_node = self._update_type(new_node, 'inferred_type')
         return new_node
 
     def visit_new(self, node):
