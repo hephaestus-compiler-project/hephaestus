@@ -2,7 +2,8 @@ from copy import deepcopy
 
 from src.ir import ast
 from src.analysis.use_analysis import UseAnalysis, NONE_NODE, GNode
-from tests.resources import program1, program2, program3, program4, program5
+from tests.resources import (
+    program1, program2, program3, program4, program5, program6)
 
 
 def str2node(string):
@@ -192,3 +193,20 @@ def test_program5_if2():
     assert_nodes(ug[quz_ret], {bar_ret, NONE_NODE})
     assert_nodes(ug[quz_y], set())
     assert_nodes(ug[NONE_NODE], {foo_y})
+
+
+def test_program6():
+    ua = UseAnalysis(program6.program)
+    ua.visit(program6.cls)
+    ug = ua.result()
+
+    field_x = str2node("global/A/x")
+    bar_y = str2node("global/A/bar/y")
+    bar_ret = str2node("global/A/bar/__RET__")
+    baz_ret = str2node("global/A/baz/__RET__")
+
+    assert_nodes(ug[field_x], {bar_y})
+    assert_nodes(ug[bar_y], {NONE_NODE})
+    assert_nodes(ug[bar_ret], {NONE_NODE})
+    assert_nodes(ug[baz_ret], {NONE_NODE})
+    assert_nodes(ug[NONE_NODE], set())

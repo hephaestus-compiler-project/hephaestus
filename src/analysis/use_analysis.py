@@ -68,6 +68,7 @@ class UseAnalysis(DefaultVisitor):
             self.program.context, self._namespace, expr.func,
             limit=self._selected_namespace)
         if not fun_nsdecl:
+            self._use_graph[target_node].add(NONE_NODE)
             return
         callee_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
                             FUNC_RET)
@@ -81,6 +82,7 @@ class UseAnalysis(DefaultVisitor):
         if not var_node:
             # If node is None, this means that we referring to a variable
             # outside the context of class.
+            self._use_graph[target_node].add(NONE_NODE)
             return
         var_node = GNode(var_node[0], var_node[1].name)
         if target_node:
