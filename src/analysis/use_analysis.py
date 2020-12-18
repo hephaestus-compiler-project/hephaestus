@@ -145,8 +145,10 @@ class UseAnalysis(DefaultVisitor):
             return
         if isinstance(expr, ast.Variable):
             self._flow_var_to_ref(expr, ret_node)
-        if isinstance(expr, ast.FunctionCall):
+        elif isinstance(expr, ast.FunctionCall):
             self._flow_ret_to_callee(expr, ret_node)
+        else:
+            self._use_graph[ret_node].add(NONE_NODE)
         super(UseAnalysis, self).visit_func_decl(node)
 
     def visit_func_call(self, node):
