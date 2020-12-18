@@ -611,8 +611,8 @@ class FunctionCall(Expr):
                 ", ".join(map(str, self.args)) + ")"
 
 class Assignment(Expr):
-    def __init__(self, var_name: str, expr: Expr, receiver: Expr=None):
-        self.var_name = var_name
+    def __init__(self, name: str, expr: Expr, receiver: Expr=None):
+        self.name = name
         self.expr = expr
         self.receiver = receiver
 
@@ -631,6 +631,6 @@ class Assignment(Expr):
 
     def __str__(self):
         if self.receiver:
-            return "{}.{} = {}".format(str(self.receiver), str(self.var_name),
+            return "{}.{} = {}".format(str(self.receiver), str(self.name),
                                        str(self.expr))
-        return "{} = {}".format(str(self.var_name), str(self.expr))
+        return "{} = {}".format(str(self.name), str(self.expr))
