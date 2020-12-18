@@ -59,6 +59,7 @@ class UseAnalysis(DefaultVisitor):
         self._namespace = ast.GLOBAL_NAMESPACE
         self.program = program
         self.add_none_to_call = True
+        self._ret_vars = set()
 
     def result(self):
         return self._use_graph
@@ -116,8 +117,10 @@ class UseAnalysis(DefaultVisitor):
         ret_node = GNode(self._namespace, FUNC_RET)
         gnode = GNode(gnode[0], gnode[1].name)
         nodes = self._use_graph[gnode]
-        if ret_node not in nodes:
+        if ret_node not in nodes or node.name not in self._ret_vars:
             self._use_graph[gnode].add(NONE_NODE)
+        else:
+            self._ret_vars.remove(node.name)
 
     def visit_var_decl(self, node):
         """Add variable to _var_decl_stack to add flows from it to other
@@ -147,6 +150,7 @@ class UseAnalysis(DefaultVisitor):
         if not expr:
             return
         if isinstance(expr, ast.Variable):
+            self._ret_vars.add(expr.name)
             self._flow_var_to_ref(expr, ret_node)
         elif isinstance(expr, ast.FunctionCall):
             self._flow_ret_to_callee(expr, ret_node)
