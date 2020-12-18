@@ -56,6 +56,7 @@ class UseAnalysis(DefaultVisitor):
     def __init__(self, program):
         # The type of each node is: GNode
         self._use_graph = defaultdict(set)  # node => [node]
+        self._use_graph[NONE_NODE]
         self._namespace = ast.GLOBAL_NAMESPACE
         self.program = program
         self.add_none_to_call = True
