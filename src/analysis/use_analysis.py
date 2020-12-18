@@ -174,8 +174,6 @@ class UseAnalysis(DefaultVisitor):
             # we must add an edge from this variable to the None node.
             add_none = True
 
-        import sys
-        __import__('pprint').pprint("===DEBUG FUNC Call===", stream=sys.stderr)
         for i, arg in enumerate(node.args):
             param_node = (
                 NONE_NODE
@@ -183,15 +181,12 @@ class UseAnalysis(DefaultVisitor):
                 else GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
                            fun_nsdecl[1].params[i].name)
             )
-            __import__('pprint').pprint(param_node, stream=sys.stderr)
             if isinstance(arg, ast.Variable):
-                __import__('pprint').pprint("Var", stream=sys.stderr)
                 # The argument is a variable reference. So add edge from the
                 # variable to the corresponding functions's parameter.
                 self._flow_var_to_ref(arg, param_node)
                 continue
             if isinstance(arg, ast.FunctionCall):
-                __import__('pprint').pprint("FuncCall", stream=sys.stderr)
                 # The argument is a function call. So depending on the callee
                 # function, we might add an edge from the callee's function
                 # return node ot the corresponding function's parameter.
@@ -203,7 +198,6 @@ class UseAnalysis(DefaultVisitor):
                 self.add_none_to_call = prev
                 continue
             if param_node is not NONE_NODE:
-                __import__('pprint').pprint("NONE_NODE", stream=sys.stderr)
                 # The argument is other than a variable reference or function
                 # call. So we add an edge from NONE to the corresponding
                 # function's parameter.
