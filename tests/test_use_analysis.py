@@ -119,3 +119,39 @@ def test_program5():
     assert_nodes(ug[quz_ret], {bar_ret, NONE_NODE})
     assert_nodes(ug[quz_y], set())
     assert_nodes(ug[NONE_NODE], set())
+
+
+def test_program5_if():
+    # In program 5 we perform the following modification:
+    # return quz(foo(z)) => quz(if (true) foo(z) else "bar")
+
+    bar_fun = program5.program.context.get_decl(ast.GLOBAL_NAMESPACE + ("A",),
+                                                "bar")
+    bar_fun.body.body[-1].args[0] = ast.Conditional(
+        ast.BooleanConstant("true"),
+        ast.FunctionCall("foo", [ast.Variable("z")]),
+        ast.StringConstant("bar")
+    )
+    ua = UseAnalysis(program5.program)
+    ua.visit(program5.cls)
+    ug = ua.result()
+
+    field_x = str2node("global/A/x")
+    foo_y = str2node("global/A/foo/y")
+    foo_ret = str2node("global/A/foo/__RET__")
+    bar_y = str2node("global/A/bar/y")
+    bar_z = str2node("global/A/bar/z")
+    baz_ret = str2node("global/A/bar/baz/__RET__")
+    bar_ret = str2node("global/A/bar/__RET__")
+    quz_y = str2node("global/A/quz/y")
+    quz_ret = str2node("global/A/quz/__RET__")
+
+    assert_nodes(ug[field_x], {baz_ret})
+    assert_nodes(ug[foo_y], {foo_ret})
+    assert_nodes(ug[bar_y], set())
+    assert_nodes(ug[baz_ret], {bar_z})
+    assert_nodes(ug[bar_z], {foo_y})
+    assert_nodes(ug[foo_ret], {NONE_NODE})
+    assert_nodes(ug[quz_ret], {bar_ret, NONE_NODE})
+    assert_nodes(ug[quz_y], set())
+    assert_nodes(ug[NONE_NODE], {quz_y})
