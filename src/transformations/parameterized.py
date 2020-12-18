@@ -95,7 +95,6 @@ class ParameterizedSubstitution(Transformation):
         self._type_params: List[TP] = []
 
         self._in_select_type_params: bool = False
-        self._possible_type_params: Set[GNode] = set()
 
         self._use_graph: dict = None
 
@@ -136,9 +135,26 @@ class ParameterizedSubstitution(Transformation):
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
-    def _use_type_parameter(self, node, t, covariant=False):
-        """Replace concrete type with type parameter and add the corresponding
-        constraints to type parameters.
+    def _propagate_type_parameter(self, gnode: GNode, tp: types.TypeParameter):
+        """Replace concrete type of gnode's connected nodes with tp
+        """
+        types_lookup = {ast.VariableDeclaration: 'var_type',
+                        ast.ParameterDeclaration: 'param_type',
+                        ast.FieldDeclaration: 'field_type'}
+        for node in gutils.find_all_connected(self._use_graph, gnode):
+            if node[1] is None:
+                continue
+            decl = self.program.context.get_decl(node[0], node[1])
+            if decl:
+                attr = types_lookup.get(type(decl))
+                setattr(decl, attr, tp)
+
+    def _use_type_parameter(self, node, t, covariant=False) -> types.Type:
+        """Select node to replace concrete type with type parameter.
+
+        * Check if node can be used
+        * Initialize type parameter
+        * Propagate type parameter to connected nodes
         """
         #  if self._in_override:
             #  return t
@@ -151,7 +167,7 @@ class ParameterizedSubstitution(Transformation):
         for tp in self._type_params:
             if (tp.node is not None and
                 gutils.connected(self._use_graph, gnode, tp.node)):
-                return t
+                return tp.type_param
 
         if utils.random.bool():
             return t
@@ -164,6 +180,7 @@ class ParameterizedSubstitution(Transformation):
                 tp.variance = variance
                 tp.type_param = create_type_parameter(tp.name, t, variance)
                 tp.node = (self._namespace, node.name)
+                self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return t
 
@@ -174,9 +191,6 @@ class ParameterizedSubstitution(Transformation):
 
         1. Change _selected_class to _parameterized_type
         2. Update return type for affected functions in _selected_class_decl
-        3. Update the type for VariableDeclaration, ParameterDeclaration,
-         and FieldDeclaration if there is a flow from a changed type to it
-
         """
         attr_type = getattr(node, attr, None)
         if attr_type:
@@ -211,19 +225,6 @@ class ParameterizedSubstitution(Transformation):
                     # TODO make sure that there cannot be two results
                     if match:
                         setattr(node, attr, match[0])
-            # 3
-            elif (type(node) == ast.VariableDeclaration or
-                  type(node) == ast.ParameterDeclaration or
-                  type(node) == ast.FieldDeclaration):
-                gnode = GNode(self._namespace, node.name)
-                # There can be only one result
-                # TODO make sure that there cannot be two results
-                match = [tp.type_param
-                         for tp in self._type_params
-                         if tp.node is not None and
-                         gutils.connected(self._use_graph, tp.node, gnode)]
-                if match:
-                    setattr(node, attr, match[0])
         return node
 
     def _initialize_uninitialize_type_params(self):
@@ -287,19 +288,15 @@ class ParameterizedSubstitution(Transformation):
 
     def visit_field_decl(self, node):
         if self._in_select_type_params:
-            gnode = GNode(self._namespace, node.name)
-            self._possible_type_params.add(gnode)
             node.field_type = self._use_type_parameter(node, node.field_type, True)
-            return super(ParameterizedSubstitution, self).visit_field_decl(node)
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):
         if self._in_select_type_params:
-            gnode = GNode(self._namespace, node.name)
-            self._possible_type_params.add(gnode)
             node.param_type = self._use_type_parameter(node, node.param_type)
-            return super(ParameterizedSubstitution, self).visit_param_decl(node)
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
         return self._update_type(new_node, 'param_type')
 
