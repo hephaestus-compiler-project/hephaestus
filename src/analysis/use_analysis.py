@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from src import graph_utils as gu
 from src.ir import ast
+from src.ir import kotlin_types as kt
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
@@ -63,6 +64,7 @@ class GNode(gu.Node):
 
 
 NONE_NODE = GNode(None, None)
+FUNC_RET = '__RET__'
 
 
 class UseAnalysis(DefaultVisitor):
@@ -74,6 +76,32 @@ class UseAnalysis(DefaultVisitor):
 
     def result(self):
         return self._use_graph
+
+    def _flow_ret_to_callee(self, expr: ast.FunctionCall, target_node: GNode):
+        fun_nsdecl = get_decl(
+            self.program.context, self._namespace, expr.func,
+            limit=self._selected_namespace)
+        if not fun_nsdecl:
+            return
+        callee_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
+                            FUNC_RET)
+        if target_node:
+            self._use_graph[callee_node].add(target_node)
+
+    def _flow_var_to_ref(self, expr: ast.Variable, target_node: GNode):
+        var_node = get_decl(self.program.context,
+                            self._namespace, expr.name,
+                            limit=self._selected_namespace)
+        if not var_node:
+            # If node is None, this means that we referring to a variable
+            # outside the context of class.
+            return
+        var_node = GNode(var_node[0], var_node[1].name)
+        # OK, so remove the edge of the variable to NONE, and add an
+        # edge from this variable to the return node of the function.
+        self._use_graph[var_node].discard(NONE_NODE)
+        if target_node:
+            self._use_graph[var_node].add(target_node)
 
     @change_namespace
     def visit_class_decl(self, node):
@@ -102,24 +130,32 @@ class UseAnalysis(DefaultVisitor):
         """
         gnode = GNode(self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
-        if type(node.expr) is ast.Variable:
-            # Find the node corresponding to the variable of the right-hand
-            # side.
-            var_node = get_decl(self.program.context,
-                                self._namespace, node.expr.name,
-                                limit=self._selected_namespace)
-            # If node is None, this means that we referring to a variable
-            # outside the context of class.
-            if var_node:
-                var_node = GNode(var_node[0], var_node[1].name)
-                self._use_graph[var_node].add(gnode)
+        if isinstance(node.expr, ast.Variable):
+            self._flow_var_to_ref(node.expr, gnode)
+        elif isinstance(node.expr, ast.FunctionCall):
+            self._flow_ret_to_callee(node.expr, gnode)
         else:
             super(UseAnalysis, self).visit_var_decl(node)
 
     @change_namespace
     def visit_func_decl(self, node):
-        # TODO handle return types.
+        ret_node = None
+        if node.get_type() != kt.Unit:
+            # We add a special node for representing the return of a function.
+            ret_node = GNode(self._namespace, FUNC_RET)
+            self._use_graph[ret_node]
         super(UseAnalysis, self).visit_func_decl(node)
+        expr = None
+        if isinstance(node.body, ast.Block):
+            expr = node.body.body[-1] if node.body.body else None
+        else:
+            expr = node.body
+        if not expr:
+            return
+        if isinstance(expr, ast.Variable):
+            self._flow_var_to_ref(expr, ret_node)
+        if isinstance(expr, ast.FunctionCall):
+            self._flow_ret_to_callee(expr, ret_node)
 
     def visit_func_call(self, node):
         """Add flows from function call arguments to function declaration
@@ -137,28 +173,28 @@ class UseAnalysis(DefaultVisitor):
             add_none = True
 
         for i, arg in enumerate(node.args):
-            if type(arg) is not ast.Variable:
-                if not add_none:
-                    namespace, func_decl = fun_nsdecl
-                    param_namespace = namespace + (func_decl.name,)
-                    self._use_graph[NONE_NODE].add(GNode(
-                        param_namespace, func_decl.params[i].name))
-                self.visit(arg)
+            param_node = (
+                NONE_NODE
+                if add_none
+                else GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
+                           fun_nsdecl[1].params[i].name)
+            )
+            if isinstance(arg, ast.Variable):
+                # The argument is a variable reference. So add edge from the
+                # variable to the corresponding functions's parameter.
+                self._flow_var_to_ref(arg, param_node)
                 continue
-            var_node = get_decl(self.program.context, self._namespace,
-                                arg.name, limit=self._selected_namespace)
-            # Case 1: we have a variable reference 'x' in a function declared
-            # in the current class.
-            # So, we add an edge from 'x' to the parameter of the function.
-            if var_node and not add_none:
-                namespace, func_decl = fun_nsdecl
-                param_namespace = namespace + (func_decl.name,)
-                var_node = (var_node[0], var_node[1].name)
-                self._use_graph[var_node].add(
-                    GNode(param_namespace, func_decl.params[i].name))
-            if var_node and add_none:
-                var_node = GNode(var_node[0], var_node[1].name)
-                self._use_graph[var_node].add(NONE_NODE)
-
+            if isinstance(arg, ast.FunctionCall):
+                # The argument is a function call. So depending on the callee
+                # function, we might add an edge from the callee's function
+                # return node ot the corresponding function's parameter.
+                self._flow_ret_to_callee(arg, param_node)
+                continue
+            if param_node is not NONE_NODE:
+                # The argument is other than a variable reference or function
+                # call. So we add an edge from NONE to the corresponding
+                # function's parameter.
+                self._use_graph[NONE_NODE].add(param_node)
+            self.visit(arg)
         if node.receiver:
             self.visit(node.receiver)
