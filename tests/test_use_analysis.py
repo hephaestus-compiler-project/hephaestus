@@ -1,6 +1,6 @@
 from src.ir import ast
 from src.analysis.use_analysis import UseAnalysis, NONE_NODE, GNode
-from tests.resources import program1
+from tests.resources import program1, program2
 
 
 def str2node(string):
@@ -43,3 +43,17 @@ def test_class_a():
     assert_nodes(ug[foo_z], {foo_q})
     assert_nodes(ug[spam_ret], {NONE_NODE})
     assert_nodes(ug[NONE_NODE], {bar_y})
+
+
+def test_class_bam():
+    ua = UseAnalysis(program2.program)
+    ua.visit(program2.bam_cls)
+    ug = ua.result()
+
+    x_field = str2node("global/Bam/x")
+    getx_ret = str2node("global/Bam/getX/__RET__")
+    getx_z = str2node("global/Bam/getX/z")
+
+    assert_nodes(ug[x_field], {getx_ret})
+    assert_nodes(ug[getx_ret], set())
+    assert_nodes(ug[getx_z], set())
