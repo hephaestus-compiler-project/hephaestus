@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from src.ir import ast
 from src.analysis.use_analysis import UseAnalysis, NONE_NODE, GNode
 from tests.resources import program1, program2, program3, program4, program5
@@ -124,16 +126,15 @@ def test_program5():
 def test_program5_if():
     # In program 5 we perform the following modification:
     # return quz(foo(z)) => quz(if (true) foo(z) else "bar")
-
-    bar_fun = program5.program.context.get_decl(ast.GLOBAL_NAMESPACE + ("A",),
-                                                "bar")
+    program = deepcopy(program5.program)
+    bar_fun = program.context.get_decl(ast.GLOBAL_NAMESPACE + ("A",), "bar")
     bar_fun.body.body[-1].args[0] = ast.Conditional(
         ast.BooleanConstant("true"),
         ast.FunctionCall("foo", [ast.Variable("z")]),
         ast.StringConstant("bar")
     )
-    ua = UseAnalysis(program5.program)
-    ua.visit(program5.cls)
+    ua = UseAnalysis(program)
+    ua.visit(program.context.get_decl(ast.GLOBAL_NAMESPACE, "A"))
     ug = ua.result()
 
     field_x = str2node("global/A/x")
@@ -155,3 +156,39 @@ def test_program5_if():
     assert_nodes(ug[quz_ret], {bar_ret, NONE_NODE})
     assert_nodes(ug[quz_y], set())
     assert_nodes(ug[NONE_NODE], {quz_y})
+
+
+def test_program5_if2():
+    # In program 5 we perform the following modification:
+    # return quz(foo(z)) => quz(foo(if (true) z else z))
+    program = deepcopy(program5.program)
+
+    bar_fun = program.context.get_decl(ast.GLOBAL_NAMESPACE + ("A",), "bar")
+    bar_fun.body.body[-1].args[0].args[0] = ast.Conditional(
+        ast.BooleanConstant("true"),
+        ast.Variable("z"),
+        ast.Variable("z")
+    )
+    ua = UseAnalysis(program)
+    ua.visit(program.context.get_decl(ast.GLOBAL_NAMESPACE, "A"))
+    ug = ua.result()
+
+    field_x = str2node("global/A/x")
+    foo_y = str2node("global/A/foo/y")
+    foo_ret = str2node("global/A/foo/__RET__")
+    bar_y = str2node("global/A/bar/y")
+    bar_z = str2node("global/A/bar/z")
+    baz_ret = str2node("global/A/bar/baz/__RET__")
+    bar_ret = str2node("global/A/bar/__RET__")
+    quz_y = str2node("global/A/quz/y")
+    quz_ret = str2node("global/A/quz/__RET__")
+
+    assert_nodes(ug[field_x], {baz_ret})
+    assert_nodes(ug[foo_y], {foo_ret})
+    assert_nodes(ug[bar_y], set())
+    assert_nodes(ug[baz_ret], {bar_z})
+    assert_nodes(ug[bar_z], {NONE_NODE})
+    assert_nodes(ug[foo_ret], {quz_y})
+    assert_nodes(ug[quz_ret], {bar_ret, NONE_NODE})
+    assert_nodes(ug[quz_y], set())
+    assert_nodes(ug[NONE_NODE], {foo_y})
