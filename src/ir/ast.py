@@ -368,7 +368,7 @@ class Constant(Expr):
 
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
-    def __init__(self, literal: str, integer_type):
+    def __init__(self, literal: int, integer_type):
         assert isinstance(literal, int) or isinstance(literal, long), (
             'Integer literal must either int or long')
         super(IntegerConstant, self).__init__(literal)

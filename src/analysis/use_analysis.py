@@ -58,6 +58,7 @@ class UseAnalysis(DefaultVisitor):
         self._use_graph = defaultdict(set)  # node => [node]
         self._namespace = ast.GLOBAL_NAMESPACE
         self.program = program
+        self.add_none_to_call = True
 
     def result(self):
         return self._use_graph
@@ -148,7 +149,8 @@ class UseAnalysis(DefaultVisitor):
         elif isinstance(expr, ast.FunctionCall):
             self._flow_ret_to_callee(expr, ret_node)
         else:
-            self._use_graph[ret_node].add(NONE_NODE)
+            if ret_node:
+                self._use_graph[ret_node].add(NONE_NODE)
         super(UseAnalysis, self).visit_func_decl(node)
 
     def visit_func_call(self, node):
@@ -183,6 +185,11 @@ class UseAnalysis(DefaultVisitor):
                 # function, we might add an edge from the callee's function
                 # return node ot the corresponding function's parameter.
                 self._flow_ret_to_callee(arg, param_node)
+                # The ret variable of this function should not point to None.
+                prev = self.add_none_to_call
+                self.add_none_to_call = False
+                self.visit(arg)
+                self.add_none_to_call = prev
                 continue
             if param_node is not NONE_NODE:
                 # The argument is other than a variable reference or function
@@ -202,7 +209,7 @@ class UseAnalysis(DefaultVisitor):
             gnode = GNode(namespace + (fun_decl.name,), FUNC_RET)
             ret_node = GNode(self._namespace, FUNC_RET)
             nodes = self._use_graph[gnode]
-            if ret_node not in nodes:
+            if ret_node not in nodes and self.add_none_to_call:
                 self._use_graph[gnode].add(NONE_NODE)
 
         if node.receiver:
