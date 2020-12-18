@@ -3,7 +3,7 @@ from copy import deepcopy
 from src.ir import ast
 from src.analysis.use_analysis import UseAnalysis, NONE_NODE, GNode
 from tests.resources import (
-    program1, program2, program3, program4, program5, program6)
+    program1, program2, program3, program4, program5, program6, program7)
 
 
 def str2node(string):
@@ -209,4 +209,20 @@ def test_program6():
     assert_nodes(ug[bar_y], {NONE_NODE})
     assert_nodes(ug[bar_ret], {NONE_NODE})
     assert_nodes(ug[baz_ret], {NONE_NODE})
+    assert_nodes(ug[NONE_NODE], set())
+
+
+def test_program7():
+    ua = UseAnalysis(program7.program)
+    ua.visit(program7.cls)
+    ug = ua.result()
+
+    foo_x = str2node("global/A/foo/x")
+    foo_ret = str2node("global/A/foo/__RET__")
+    bar_ret = str2node("global/A/bar/__RET__")
+
+    print(ug)
+    assert_nodes(ug[foo_x], {foo_ret, NONE_NODE})
+    assert_nodes(ug[foo_ret], {bar_ret})
+    assert_nodes(ug[bar_ret], set())
     assert_nodes(ug[NONE_NODE], set())
