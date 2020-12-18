@@ -235,20 +235,7 @@ class ParameterizedSubstitution(Transformation):
                 tp.type_param = create_type_parameter(
                     tp.name, None, INVARIANT)
 
-    def _analyse_selected_class(self, node) -> ast.ClassDeclaration:
-        """Analyse selected class by following the next steps:
-
-        * Run def-use analysis
-        * Select where to use type parameters
-        * Initialize the uninitialized type parameters
-        * Create the type constructor
-        * Create the parameterized type
-        """
-        analysis = UseAnalysis(self.program)
-        analysis.visit(node)
-        self._use_graph = analysis.result()
-        __import__('pprint').pprint(self._use_graph)  # DEBUG
-
+    def _select_type_params(self, node) -> ast.Node:
         self._in_select_type_params = True
         #  namespace = self._namespace + (node.name,)
         #  decls = get_field_param_decls(self.program.context, namespace, set())
@@ -263,12 +250,33 @@ class ParameterizedSubstitution(Transformation):
         #  node = self.program.context.get_decl(self._namespace, node.name)
         node = self.visit_class_decl(node)
         self._in_select_type_params = False
+        return node
+
+
+    def _analyse_selected_class(self, node) -> ast.ClassDeclaration:
+        """Analyse selected class by following the next steps:
+
+        * Run def-use analysis
+        * Select where to use type parameters
+        * Initialize the uninitialized type parameters
+        * Create the type constructor
+        * Create the parameterized type
+        """
+        analysis = UseAnalysis(self.program)
+        analysis.visit(node)
+        self._use_graph = analysis.result()
+        __import__('pprint').pprint(self._use_graph)  # DEBUG
+
+        node = self._select_type_params(node)
 
         self._initialize_uninitialize_type_params()
+
         self._type_constructor_decl = create_type_constructor_decl(
             node, [tp.type_param for tp in self._type_params]
         )
+
         self._parameterized_type = self._create_parameterized_type()
+
         return self._type_constructor_decl
 
     def visit_program(self, node):
@@ -330,9 +338,9 @@ class ParameterizedSubstitution(Transformation):
         if ret_type:
             new_node.ret_type = ret_type
             new_node.inferred_type = ret_type
-        #  self._in_override = False
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
+        #  self._in_override = False
         return new_node
 
     def visit_new(self, node):
