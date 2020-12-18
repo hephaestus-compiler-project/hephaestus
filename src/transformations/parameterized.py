@@ -9,7 +9,7 @@ from src.ir import types
 from src.ir import kotlin_types as kt
 import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
-from src.analysis.use_analysis import UseAnalysis
+from src.analysis.use_analysis import UseAnalysis, GNode
 from src.utils import lst_get
 
 
@@ -68,11 +68,6 @@ class TP:
     node: Tuple[Tuple[str, ...], str]
     constraint: types.Type
     variance: int  # INVARIANT, COVARIANT, CONTRAVARIANT
-
-
-class GNode(NamedTuple):
-    namespace: Tuple[str, ...]
-    name: str
 
 
 class ParameterizedSubstitution(Transformation):
@@ -157,9 +152,10 @@ class ParameterizedSubstitution(Transformation):
                         ast.ParameterDeclaration: 'param_type',
                         ast.FieldDeclaration: 'field_type'}
         for node in gutils.find_all_connected(self._use_graph, gnode):
-            if node[1] is None:
+            if node.is_none():
                 continue
-            decl = self.program.context.get_decl(node[0], node[1])
+            decl = self.program.context.get_decl(
+                node.namespace, node.name)
             if decl:
                 attr = types_lookup.get(type(decl))
                 setattr(decl, attr, tp)

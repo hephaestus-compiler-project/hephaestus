@@ -1,12 +1,19 @@
 from typing import Tuple
 from collections import defaultdict
 
+from src import graph_utils as gu
 from src.ir import ast
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
 
 def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.Declaration]:
+    """
+    We search the context for a declaration with the given name (`decl_name`).
+
+    The search begins from the given namespace `namespace` up to the namespace
+    given by `limit`.
+    """
     def stop_cond(ns):
         # If 'limit' is provided, we search the given declaration 'node'
         # up to a certain namespace.
@@ -24,17 +31,46 @@ def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.D
     return None
 
 
+class GNode(gu.Node):
+
+    def __init__(self, namespace, name):
+        self.namespace: Tuple[str, ...] = namespace
+        self.name: str = name
+        if not self.name:
+            assert self.namespace is None
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                self.namespace == other.namespace and
+                self.name == other.name)
+
+    def __hash__(self):
+        return hash(str(self.namespace) + str(self.name))
+
+    def __str__(self):
+        if self.name is None:
+            return "NONE"
+        return "/".join(self.namespace + (self.name,))
+
+    def __lt__(self, other):
+        return self.namespace < other.namespace and self.name < other.name
+
+    def is_none(self):
+        return self.name is None
+
+    def __repr__(self):
+        return self.__str__()
+
+
+NONE_NODE = GNode(None, None)
+
+
 class UseAnalysis(DefaultVisitor):
     def __init__(self, program):
-        # The type of each node is: Tuple[String, ast.Declaration]
-        self._use_graph = defaultdict(lambda: set())  # node => [node]
+        # The type of each node is: GNode
+        self._use_graph = defaultdict(set)  # node => [node]
         self._namespace = ast.GLOBAL_NAMESPACE
         self.program = program
-
-    def get_none_node(self):
-        gnode = ((), None)
-        self._use_graph[gnode]
-        return gnode
 
     def result(self):
         return self._use_graph
@@ -45,11 +81,11 @@ class UseAnalysis(DefaultVisitor):
         super(UseAnalysis, self).visit_class_decl(node)
 
     def visit_field_decl(self, node):
-        gnode = (self._namespace, node.name)
+        gnode = GNode(self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
 
     def visit_param_decl(self, node):
-        gnode = (self._namespace, node.name)
+        gnode = GNode(self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
 
     def visit_variable(self, node):
@@ -57,14 +93,14 @@ class UseAnalysis(DefaultVisitor):
                          self._namespace, node.name,
                          limit=self._selected_namespace)
         if gnode:
-            gnode = (gnode[0], gnode[1].name)
-            self._use_graph[gnode].add(self.get_none_node())
+            gnode = GNode(gnode[0], gnode[1].name)
+            self._use_graph[gnode].add(NONE_NODE)
 
     def visit_var_decl(self, node):
         """Add variable to _var_decl_stack to add flows from it to other
         variables in visit_variable.
         """
-        gnode = (self._namespace, node.name)
+        gnode = GNode(self._namespace, node.name)
         self._use_graph[gnode]  # initialize the node
         if type(node.expr) is ast.Variable:
             # Find the node corresponding to the variable of the right-hand
@@ -75,7 +111,7 @@ class UseAnalysis(DefaultVisitor):
             # If node is None, this means that we referring to a variable
             # outside the context of class.
             if var_node:
-                var_node = (var_node[0], var_node[1].name)
+                var_node = GNode(var_node[0], var_node[1].name)
                 self._use_graph[var_node].add(gnode)
         else:
             super(UseAnalysis, self).visit_var_decl(node)
@@ -105,8 +141,8 @@ class UseAnalysis(DefaultVisitor):
                 if not add_none:
                     namespace, func_decl = fun_nsdecl
                     param_namespace = namespace + (func_decl.name,)
-                    self._use_graph[self.get_none_node()].add(
-                        (param_namespace, func_decl.params[i].name))
+                    self._use_graph[NONE_NODE].add(GNode(
+                        param_namespace, func_decl.params[i].name))
                 self.visit(arg)
                 continue
             var_node = get_decl(self.program.context, self._namespace,
@@ -118,11 +154,11 @@ class UseAnalysis(DefaultVisitor):
                 namespace, func_decl = fun_nsdecl
                 param_namespace = namespace + (func_decl.name,)
                 var_node = (var_node[0], var_node[1].name)
-                self._use_graph[var_node].add((param_namespace,
-                                               func_decl.params[i].name))
+                self._use_graph[var_node].add(
+                    GNode(param_namespace, func_decl.params[i].name))
             if var_node and add_none:
-                var_node = (var_node[0], var_node[1].name)
-                self._use_graph[var_node].add(self.get_none_node())
+                var_node = GNode(var_node[0], var_node[1].name)
+                self._use_graph[var_node].add(NONE_NODE)
 
         if node.receiver:
             self.visit(node.receiver)

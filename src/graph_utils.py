@@ -1,5 +1,6 @@
-"""node format: (namespace: tuple, name: str)
-"""
+class Node(object):
+    def is_none(self):
+        raise NotImplementedError("is_none must be implemented")
 
 
 def reachable(graph, start_vertex, dest_vertex):
@@ -65,7 +66,7 @@ def connected(graph, start_vertex, dest_vertex):
 
 
 def none_reachable(graph, vertex):
-    none_vertices = [v for v in graph.keys() if v[1] is None]
+    none_vertices = [v for v in graph.keys() if v.is_none()]
     for nv in none_vertices:
         if bi_reachable(graph, vertex, nv):
             return True
@@ -73,7 +74,7 @@ def none_reachable(graph, vertex):
 
 
 def none_connected(graph, vertex):
-    none_vertices = [v for v in graph.keys() if v[1] is None]
+    none_vertices = [v for v in graph.keys() if v.is_none()]
     for nv in none_vertices:
         if connected(graph, vertex, nv):
             return True

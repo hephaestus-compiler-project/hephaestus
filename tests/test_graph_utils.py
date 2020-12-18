@@ -1,18 +1,19 @@
 import pytest
+from src.analysis.use_analysis import GNode, NONE_NODE
 from src.graph_utils import *
 
 
-NONE = ((), None)
-X = (('global', 'A'), 'x')
-BAR_Y = (('global', 'A', 'bar'), 'y')
-BAR_Z = (('global', 'A', 'bar'), 'z')
-BAR_ARG = (('global', 'A', 'bar'), 'arg')
-FOO_Q = (('global', 'A', 'foo'), 'q')
-FOO_X = (('global', 'A', 'foo'), 'x')
-FOO_Y = (('global', 'A', 'foo'), 'y')
-FOO_Z = (('global', 'A', 'foo'), 'z')
-BUZ_K = (('global', 'A', 'buz'), 'k')
-GRAPH = {NONE: {(('global', 'A', 'bar'), 'y')},
+NONE = NONE_NODE
+X = GNode(('global', 'A'), 'x')
+BAR_Y = GNode(('global', 'A', 'bar'), 'y')
+BAR_Z = GNode(('global', 'A', 'bar'), 'z')
+BAR_ARG = GNode(('global', 'A', 'bar'), 'arg')
+FOO_Q = GNode(('global', 'A', 'foo'), 'q')
+FOO_X = GNode(('global', 'A', 'foo'), 'x')
+FOO_Y = GNode(('global', 'A', 'foo'), 'y')
+FOO_Z = GNode(('global', 'A', 'foo'), 'z')
+BUZ_K = GNode(('global', 'A', 'buz'), 'k')
+GRAPH = {NONE: {GNode(('global', 'A', 'bar'), 'y')},
          X: {NONE},
          BAR_ARG: {NONE},
          BAR_Y: {BUZ_K},
