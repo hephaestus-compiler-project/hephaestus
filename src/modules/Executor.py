@@ -18,6 +18,10 @@ from src.translators.kotlin import KotlinTranslator
 from src.utils import mkdir, random
 
 
+def get_key(key):
+    return "Iteration_{}".format(str(key))
+
+
 def run_command(arguments):
     """Run a command
     Args:
@@ -53,7 +57,10 @@ class Executor:
             Executor.TRANSFORMATIONS[t]
             for t in self.args.transformation_types
         ]
-        self.iterations = defaultdict(lambda: [list(), False])
+        self.stats = defaultdict(lambda: {
+            "transformations": list(),
+            "error": "",
+            "failed": False})
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -113,6 +120,7 @@ class Executor:
         return self.translator.result()
 
     def _generate_program(self, i):
+        # TODO return program_str
         if self.args.debug:
             print("\nIteration: " + str(i))
         generator = Generator(max_depth=self.args.max_depth)
@@ -129,14 +137,14 @@ class Executor:
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
             self._report(program_str, p)
-            return False, p
-        return True, p
+            return False, p, program_str
+        return True, p, program_str
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
         transformer = random.choice(self.transformations)()
         if self.args.debug:
             print("Transformation: " + transformer.get_name())
-        self.iterations[i][0].append(transformer.get_name())
+        self.stats[get_key(i)]['transformations'].append(transformer.get_name())
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
@@ -165,13 +173,12 @@ class Executor:
                     str(i), str(transformation_number)
                 ))
             self._report(program_str, p, prev_p)
-            self.iterations[i][1] = True
             return "break", p
         return "succeed", p
 
     def _apply_trasnformations(self, program, i):
+        failed = False
         try:
-            failed = False
             for j in range(self.args.transformations):
                 comp = True
                 if self.args.only_last and j != self.args.transformations - 1:
@@ -182,13 +189,20 @@ class Executor:
                 if status == "break":
                     failed = True
                     break
-            return failed
         except Exception as e:
             # This means that we have programming error in transformations
+            err = ''
             if self.args.print_stacktrace:
-                print(traceback.format_exc())
-            print(e)
-            return True
+                err = str(traceback.format_exc())
+            else:
+                err = str(e)
+            if self.args.debug:
+                print(err)
+            failed = True
+            self.stats[get_key(i)]['error'] = err
+        if failed:
+            self.stats[get_key(i)]['failed'] = True
+        return failed
 
     def process_program(self):
         if self.args.replay:
@@ -199,9 +213,10 @@ class Executor:
             status, _ = self._compile(program_str, compiler_pass=True)
             if not status:
                 self._report(program_str, program)
-                return True
+                return True, dict(self.stats)
         else:
-            succeed, program = self._generate_program(self.exec_id)
+            succeed, program, program_str = self._generate_program(self.exec_id)
             if not succeed:
-                return True
-        return self._apply_trasnformations(program, self.exec_id)
+                self._report(program_str, program)
+                return True, dict(self.stats)
+        return self._apply_trasnformations(program, self.exec_id), dict(self.stats)
