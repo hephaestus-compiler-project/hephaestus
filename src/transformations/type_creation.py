@@ -1,5 +1,5 @@
 from copy import deepcopy
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from typing import List
 
 from src import utils
@@ -44,7 +44,17 @@ def create_override_functions(functions):
     ]
 
 
-def create_interface(class_decl):
+def create_empty_supertype(class_type):
+    return ast.ClassDeclaration(
+        utils.random.word().capitalize(), superclasses=[], fields=[],
+        class_type=class_type, functions=[], type_parameters=[],
+        is_final=False
+    )
+
+
+def create_interface(class_decl, empty):
+    if empty:
+        return create_empty_supertype(ast.ClassDeclaration.INTERFACE)
     functions = [
         ast.FunctionDeclaration(f.name, deepcopy(f.params), f.get_type(), None,
                                 f.func_type, inferred_type=None,
@@ -54,10 +64,13 @@ def create_interface(class_decl):
     return ast.ClassDeclaration(utils.random.word().capitalize(),
                                 superclasses=[], fields=[],
                                 class_type=ast.ClassDeclaration.INTERFACE,
-                                functions=functions)
+                                functions=functions,
+                                type_parameters=class_decl.type_parameters)
 
 
-def create_abstract_class(class_decl):
+def create_abstract_class(class_decl, empty):
+    if empty:
+        return create_empty_supertype(ast.ClassDeclaration.INTERFACE)
     functions = []
     for f in class_decl.functions:
         # Some functions are randomly made abstract.
@@ -71,15 +84,19 @@ def create_abstract_class(class_decl):
                                 superclasses=[],
                                 fields=create_non_final_fields(class_decl.fields),
                                 class_type=ast.ClassDeclaration.ABSTRACT,
-                                functions=functions, is_final=False)
+                                functions=functions, is_final=False,
+                                type_parameters=class_decl.type_parameters)
 
 
-def create_regular_class(class_decl):
+def create_regular_class(class_decl, empty):
+    if empty:
+        return create_empty_supertype(ast.ClassDeclaration.REGULAR)
     return ast.ClassDeclaration(
         utils.random.word().capitalize(), superclasses=[],
         fields=create_non_final_fields(class_decl.fields),
         functions=create_non_final_functions(class_decl.functions),
-        is_final=False)
+        is_final=False,
+        type_parameters=class_decl.type_parameters)
 
 
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
@@ -123,12 +140,31 @@ class TypeCreation(Transformation):
         self._new_class = None
         self._old_class = None
 
-    def add_class_context(self, new_class):
+    def add_class_context(self, new_class, old_class):
         namespace = ast.GLOBAL_NAMESPACE + (new_class.name,)
         for f in new_class.fields:
             self.program.context.add_var(namespace, f.name, f)
         for f in new_class.functions:
-            self.program.context.add_var(namespace, f.name, f)
+            self.program.context.add_func(namespace, f.name, f)
+            func_namespace = namespace + (f.name,)
+            for p in f.params:
+                self.program.context.add_var(func_namespace, p.name, p)
+            if not f.body:
+                continue
+            if isinstance(self, SupertypeCreation):
+                old_namespace = ast.GLOBAL_NAMESPACE + (old_class.name, f.name)
+                n_decls = self.program.context.get_declarations_in(
+                    old_namespace)
+                for n, decls in n_decls.items():
+                    rel = n[len(func_namespace):]
+                    new_namespace = func_namespace + rel
+                    for decl_name, decl in decls.items():
+                        if isinstance(decl, ast.FunctionDeclaration):
+                            self.program.context.add_func(new_namespace,
+                                                          decl_name, decl)
+                        else:
+                            self.program.context.add_var(new_namespace,
+                                                         decl_name, decl)
         self.program.add_declaration(new_class)
 
     def create_new_class(self, class_decl):
@@ -157,7 +193,7 @@ class TypeCreation(Transformation):
         self._old_class = self.adapt_old_class(class_decl)
         # Add the newly created class to the program's context.
         new_node = super(TypeCreation, self).visit_program(self.program)
-        self.add_class_context(self._new_class)
+        self.add_class_context(self._new_class, self._old_class)
         # Update the old class.
         node.add_declaration(self._old_class)
         return new_node
@@ -314,7 +350,7 @@ class SubtypeCreation(TypeCreation):
             params = [
                 ast.ParameterDeclaration(
                     p.name,
-                    self._type_params_map.get(p.get_type()), p.get_type()
+                    self._type_params_map.get(p.get_type(), p.get_type())
                 ) for p in f.params]
             functions.append(
                 ast.FunctionDeclaration(f.name, params, None,
@@ -342,14 +378,16 @@ class SupertypeCreation(TypeCreation):
         super(SupertypeCreation, self).__init__()
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
+        self.empty_supertype = False
 
     def create_new_class(self, class_decl):
+        self.empty_supertype = utils.random.bool()
         if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
             # An interface cannot inherit from a class.
-            return create_interface(class_decl)
+            return create_interface(class_decl, self.empty_supertype)
 
         if class_decl.class_type == ast.ClassDeclaration.ABSTRACT:
-            return create_abstract_class(class_decl)
+            return create_abstract_class(class_decl, self.empty_supertype)
 
         class_types = [
             create_regular_class,
@@ -359,7 +397,8 @@ class SupertypeCreation(TypeCreation):
             # If the subclass does not contain any fields, then
             # we can safely create a superclass which is an interface.
             class_types.append(create_interface)
-        return utils.random.choice(class_types)(class_decl)
+        return utils.random.choice(class_types)(class_decl,
+                                                self.empty_supertype)
 
     def _get_subtype_functions(self, class_decl):
         functions = []
@@ -381,18 +420,34 @@ class SupertypeCreation(TypeCreation):
         return functions
 
     def adapt_old_class(self, class_decl):
-        args = (
-            None
-            if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
-            else [ast.Variable(f.name) for f in self._new_class.fields]
-        )
-        superInstantiation = ast.SuperClassInstantiation(
-            self._new_class.get_type(), args)
-        functions = self._get_subtype_functions(class_decl)
+        if self.empty_supertype:
+            superInstantiation = ast.SuperClassInstantiation(
+                self._new_class.get_type(),
+                args=(None
+                      if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
+                      else []))
+        else:
+            args = (
+                None
+                if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
+                else [ast.Variable(f.name) for f in self._new_class.fields]
+            )
+            # If we create a supertype which is a type constructor, then
+            # instantiate child class as follows:
+            # B<T1, T2>: A<T1, T2>()
+            #
+            # In this, we can safely override fields and methods from the
+            # parent class.
+            new_class_type = self._new_class.get_type()
+            if isinstance(new_class_type, tp.TypeConstructor):
+                new_class_type = new_class_type.new(class_decl.type_parameters)
+            superInstantiation = ast.SuperClassInstantiation(
+                new_class_type, args)
         class_decl.superclasses.append(superInstantiation)
         class_decl.supertypes.append(superInstantiation.class_type)
-        class_decl.fields = create_override_fields(class_decl.fields)
-        class_decl.functions = functions
+        if not self.empty_supertype:
+            class_decl.fields = create_override_fields(class_decl.fields)
+            class_decl.functions = self._get_subtype_functions(class_decl)
         return class_decl
 
     def get_candidates_classes(self):
