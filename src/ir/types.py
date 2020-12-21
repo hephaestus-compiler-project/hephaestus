@@ -145,6 +145,15 @@ class TypeParameter(AbstractType):
         if self.variance == 2:
             return 'in'
 
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.variance == other.variance and
+                self.bound == other.bound)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.variance) + str(self.bound))
+
     def __str__(self):
         return "{}{}{}".format(
             self.variance_to_string() + ' ' if self.variance != self.INVARIANT else '',
