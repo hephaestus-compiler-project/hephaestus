@@ -187,6 +187,11 @@ class TypeConstructor(AbstractType):
         return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
                     + str(self.type_parameters))
 
+    def is_subtype(self, other_type):
+        # TODO revisit
+        return (isinstance(other_type, ParameterizedType) and
+                other_type.t_constructor == self)
+
     def new(self, type_args: List[Type]):
         return ParameterizedType(self, type_args)
 

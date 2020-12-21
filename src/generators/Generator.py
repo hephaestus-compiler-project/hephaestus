@@ -247,7 +247,15 @@ class Generator(object):
             self.context.add_class(self.namespace, decl.name, decl)
             self.namespace = initial_namespace
             return decl.get_type()
-        return utils.random.choice(list(class_decls.values())).get_type()
+        cls_type = utils.random.choice(list(class_decls.values())).get_type()
+        if not isinstance(cls_type, types.TypeConstructor):
+            return cls_type
+        # We have to instantiate type constructor with random type arguments.
+        t_args = []
+        for _ in cls_type.type_parameters:
+            # FIXME: use user-defined types too.
+            t_args.append(utils.random.choice(self.RET_BUILTIN_TYPES))
+        return cls_type.new(t_args)
 
     def gen_variable_decl(self, etype=None, only_leaves=False):
         var_type = etype if etype else self.gen_type()
