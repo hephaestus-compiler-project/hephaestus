@@ -2,24 +2,11 @@ from collections import OrderedDict
 from typing import List, Set
 
 from src import utils
+from src.ir.node import Node
 from src.ir import types
 
 
 GLOBAL_NAMESPACE = ('global',)
-
-
-class Node(object):
-
-    def accept(self, visitor):
-        return visitor.visit(self)
-
-    def children(self):
-        raise NotImplementedError('children() must be implemented')
-
-    def update_children(self, children):
-        assert len(children) == len(self.children()), (
-            'The number of the given children is not compatible'
-            ' with the number of the node\'s children.')
 
 
 class Expr(Node):
@@ -273,19 +260,32 @@ class ClassDeclaration(Declaration):
         return self.fields + self.functions
 
     def children(self):
-        return self.fields + self.superclasses + self.functions
+        return self.fields + self.superclasses + self.functions + \
+            self.type_parameters
 
     def update_children(self, children):
+        def get_lst(start, end):
+            return children[start:end]
         super(ClassDeclaration, self).update_children(children)
         len_fields = len(self.fields)
         len_supercls = len(self.superclasses)
-        for i, c in enumerate(children[:len_fields]):
+        len_functions = len(self.functions)
+        len_tp = len(self.type_parameters)
+        fields = get_lst(0, len_fields)
+        for i, c in enumerate(fields):
             self.fields[i] = c
-        for i, c in enumerate(children[len_fields:len_fields + len_supercls]):
+        supercls = get_lst(len_fields, len_fields + len_supercls)
+        for i, c in enumerate(supercls):
             self.superclasses[i] = c
             self.supertypes[i] = c.class_type
-        for i, c in enumerate(children[len_fields + len_supercls:]):
+        functions = get_lst(len_fields + len_supercls,
+                            len_fields + len_supercls + len_functions)
+        for i, c in enumerate(functions):
             self.functions[i] = c
+        type_params = get_lst(len_fields + len_supercls + len_functions,
+                              len_fields + len_supercls + len_functions + len_tp)
+        for i, c in enumerate(type_params):
+            self.type_parameters[i] = c
 
     def get_type(self):
         if self.type_parameters:

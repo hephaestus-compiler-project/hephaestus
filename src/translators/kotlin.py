@@ -96,8 +96,12 @@ class KotlinTranslator(ASTVisitor):
         len_fields = len(field_res)
         superclasses_res = [children_res[i + len_fields]
                             for i, _ in enumerate(node.superclasses)]
-        type_parameters_res = ", ".join(map(str, node.type_parameters))
-        function_res = children_res[len_fields + len(superclasses_res):]
+        len_supercls = len(superclasses_res)
+        function_res = [children_res[i + len_fields + len_supercls]
+                        for i, _ in enumerate(node.functions)]
+        len_functions = len(function_res)
+        type_parameters_res = ", ".join(
+            children_res[len_fields + len_supercls + len_functions:])
         prefix = " " * old_ident
         prefix += (
             "open "
@@ -117,6 +121,9 @@ class KotlinTranslator(ASTVisitor):
                 function_res) + "\n" + " " * old_ident + "}"
         self.ident = old_ident
         self._children_res.append(res)
+
+    def visit_type_param(self, node):
+        self._children_res.append(str(node))
 
     def visit_var_decl(self, node):
         old_ident = self.ident

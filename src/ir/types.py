@@ -2,8 +2,10 @@ from copy import deepcopy
 from collections import defaultdict
 from typing import List, Set
 
+from src.ir.node import Node
 
-class Type(object):
+
+class Type(Node):
     def __init__(self, name):
         self.name = name
         self.supertypes = []
@@ -144,6 +146,9 @@ class TypeParameter(AbstractType):
             return 'out'
         if self.variance == 2:
             return 'in'
+
+    def children(self):
+        return []
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and

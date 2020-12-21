@@ -1,4 +1,5 @@
 from src.ir import ast
+from src.ir import types
 
 
 class ASTVisitor(object):
@@ -10,6 +11,7 @@ class ASTVisitor(object):
         visitors = {
             ast.SuperClassInstantiation: self.visit_super_instantiation,
             ast.ClassDeclaration: self.visit_class_decl,
+            types.TypeParameter: self.visit_type_param,
             ast.FieldDeclaration: self.visit_field_decl,
             ast.VariableDeclaration: self.visit_var_decl,
             ast.ParameterDeclaration: self.visit_param_decl,
@@ -51,6 +53,9 @@ class ASTVisitor(object):
 
     def visit_class_decl(self, node):
         raise NotImplementedError('visit_class_decl() must be implemented')
+
+    def visit_type_param(self, node):
+        raise NotImplementedError('visit_type_param() must be implemented')
 
     def visit_var_decl(self, node):
         raise NotImplementedError('visit_var_decl() must be implemented')
@@ -133,6 +138,9 @@ class DefaultVisitor(ASTVisitor):
         return self._visit_node(node)
 
     def visit_class_decl(self, node):
+        return self._visit_node(node)
+
+    def visit_type_param(self, node):
         return self._visit_node(node)
 
     def visit_var_decl(self, node):

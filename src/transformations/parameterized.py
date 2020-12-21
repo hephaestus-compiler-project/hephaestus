@@ -25,10 +25,8 @@ def get_type_params_names(total):
 
 def create_type_parameter(name: str, type_constraint: types.Type, variance):
     bound = None
-    # TODO: add bounds
-    # Bounds were SimpleClassifier when it should be ParameterizedType
-    #  if type_constraint is not None and random.random() < .5:
-        #  bound = random.choice(list(type_constraint.get_supertypes()))
+    if type_constraint is not None and random.random() < .5:
+        bound = random.choice(list(type_constraint.get_supertypes()))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -327,6 +325,10 @@ class ParameterizedSubstitution(Transformation):
     @change_namespace
     def visit_class_decl(self, node):
         return super(ParameterizedSubstitution, self).visit_class_decl(node)
+
+    def visit_type_param(self, node):
+        new_node = super(ParameterizedSubstitution, self).visit_type_param(node)
+        return self._update_type(new_node, 'bound')
 
     def visit_field_decl(self, node):
         # Note that we cannot parameterize a field having the keyword
