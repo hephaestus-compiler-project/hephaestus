@@ -302,6 +302,9 @@ class ClassDeclaration(Declaration):
             return "interface"
         return "abstract class"
 
+    def is_parameterized(self):
+        return bool(self.type_parameters)
+
     def __str__(self):
         superclasses = " : " + ", ".join(map(str, self.superclasses)) \
             if len(self.superclasses) > 0 else ""

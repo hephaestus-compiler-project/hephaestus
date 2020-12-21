@@ -1,11 +1,10 @@
 from copy import deepcopy
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from src import utils
-from src.ir import ast, kotlin_types as kt
+from src.ir import ast, types as tp, kotlin_types as kt
 from src.generators import Generator
 from src.transformations.base import Transformation
-
 
 
 def create_non_final_fields(fields):
@@ -63,8 +62,9 @@ def create_abstract_class(class_decl):
         # Some functions are randomly made abstract.
         body_f = None if utils.random.bool() else deepcopy(f.body)
         functions.append(
-            ast.FunctionDeclaration(f.name, deepcopy(f.params), f.get_type(), body_f,
-                                    f.func_type, inferred_type=f.inferred_type,
+            ast.FunctionDeclaration(f.name, deepcopy(f.params), f.get_type(),
+                                    body_f, f.func_type,
+                                    inferred_type=f.inferred_type,
                                     is_final=False, override=f.override))
     return ast.ClassDeclaration(utils.random.word().capitalize(),
                                 superclasses=[],
@@ -195,7 +195,7 @@ class SubtypeCreation(TypeCreation):
                 class_decl.get_type(), args=None)
         args = []
         for f in class_decl.fields:
-            subtypes = self.find_subtypes(f.get_type())
+            subtypes = tp.find_subtypes(f.get_type(), self.types)
             subtypes = [c for c in subtypes
                         if not (isinstance(c, ast.ClassDeclaration) and
                               c.class_type != ast.ClassDeclaration.REGULAR)]
