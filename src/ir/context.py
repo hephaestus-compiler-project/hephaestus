@@ -1,5 +1,7 @@
+from copy import deepcopy
 from collections import OrderedDict
 
+from src import utils
 from src.ir import ast
 
 
@@ -88,3 +90,9 @@ class Context(object):
         if namespace in self._context:
             self._context.pop(namespace)
 
+    def get_declarations_in(self, namespace):
+        decls = {}
+        for k, v in self._context.items():
+            if utils.prefix_lst(namespace, k):
+                decls[k] = deepcopy(v['decls'])
+        return decls
