@@ -327,7 +327,10 @@ class ParameterizedSubstitution(Transformation):
         return super(ParameterizedSubstitution, self).visit_class_decl(node)
 
     def visit_field_decl(self, node):
-        if self._in_select_type_params:
+        # Note that we cannot parameterize a field having the keyword
+        # 'override', because this would require the modification of the
+        # parent class.
+        if self._in_select_type_params and not node.override:
             node.field_type = self._use_type_parameter(
                 self._namespace, node, node.field_type, True)
             return node
@@ -348,8 +351,11 @@ class ParameterizedSubstitution(Transformation):
 
     @change_namespace
     def visit_func_decl(self, node):
-        #  if node.override:
-            #  self._in_override = True
+        # Again, we do not update the parameters and return types of
+        # override functions, because this would require the mofication of
+        # the parent class.
+        if self._in_select_type_params and node.override:
+            return
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         return_gnode = GNode(self._namespace, FUNC_RET)
 
