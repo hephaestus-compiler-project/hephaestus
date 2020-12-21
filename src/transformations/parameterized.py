@@ -218,6 +218,16 @@ class ParameterizedSubstitution(Transformation):
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
+        def _update_type_arg(t_arg):
+            if t_arg == self._selected_class_decl.get_type():
+                return self._parameterized_type
+            is_parameterized = isinstance(t_arg, types.ParameterizedType)
+            if not is_parameterized:
+                return t_arg
+            args = [_update_type_arg(ta) for ta in t_arg.type_args]
+            t_arg.type_args = args
+            return t_arg
+
         attr_type = getattr(node, attr, None)
         if attr_type:
             # Node is a SimpleClassifier
@@ -228,8 +238,7 @@ class ParameterizedSubstitution(Transformation):
             # Foo<A> -> Foo<A<String>>
             elif isinstance(attr_type, types.ParameterizedType):
                 attr_type.type_args = [
-                    self._parameterized_type
-                    if t == self._selected_class_decl.get_type() else t
+                    _update_type_arg(t)
                     for t in attr_type.type_args
                 ]
                 setattr(node, attr, attr_type)
