@@ -63,7 +63,7 @@ class DoubleType(NumberType):
 class CharType(AnyType):
     def __init__(self, name="Char"):
         super(CharType, self).__init__(name)
-        self.supertypes.append(NumberType())
+        self.supertypes.append(AnyType())
 
 class StringType(AnyType):
     def __init__(self, name="String"):
