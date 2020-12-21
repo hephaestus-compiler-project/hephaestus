@@ -170,12 +170,6 @@ class TypeConstructor(AbstractType):
         self.supertypes = supertypes
         super(TypeConstructor, self).__init__(name)
 
-    def instantiate_type(self, type_arguments: List[Type]):
-        assert len(self.type_parameters) == len(self.type_parameters), (
-            'The number of type arguments does not match with the number of '
-            'type parameters')
-        return ParameterizedType(self, type_arguments)
-
     def __str__(self):
         return "{}<{}> {} {}".format(
             self.name,
