@@ -430,13 +430,22 @@ class Generator(object):
         class_decl = (
             from_class
             if etype2 == etype else self._get_subclass(etype))
+        # If the matching class is a parameterized one, we need to create
+        # a map mapping the class's type parameters with the corresponding
+        # type arguments as given by the `etype` variable.
+        type_param_map = (
+            {} if not class_decl.is_parameterized()
+            else {t_p: etype.type_args[i]
+                  for i, t_p in enumerate(class_decl.type_parameters)}
+        )
         initial_depth = self.depth
         self.depth += 1
         args = []
         prev = self._new_from_class
         self._new_from_class = None
         for f in class_decl.fields:
-            args.append(self.generate_expr(f.get_type(), only_leaves))
+            args.append(self.generate_expr(
+                type_param_map.get(f.get_type()) or f.get_type(), only_leaves))
         self._new_from_class = prev
         self.depth = initial_depth
         return ast.New(class_decl.get_type(), args)
