@@ -1,5 +1,6 @@
 from copy import deepcopy
 from collections import defaultdict, OrderedDict
+from typing import List
 
 from src import utils
 from src.ir import ast, types as tp, kotlin_types as kt
@@ -81,6 +82,38 @@ def create_regular_class(class_decl):
         is_final=False)
 
 
+def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
+                                 types: List[tp.Type]):
+    t_args = []
+    for t_param in type_constructor.type_parameters:
+        if t_param.bound:
+            a_types = tp.find_subtypes(t_param.bound, types, True)
+        else:
+            a_types = types
+        c = utils.random.choice(a_types)
+        if isinstance(c, ast.ClassDeclaration):
+            t = c.get_type()
+        else:
+            t = c
+        if isinstance(t, tp.TypeConstructor):
+            types = [t for t in types if t != c]
+            t = instantiate_type_constructor(t, types)
+        t_args.append(t)
+    return type_constructor.new(t_args)
+
+
+def choose_type(types: List[tp.Type]):
+    c = utils.random.choice(types)
+    if isinstance(c, ast.ClassDeclaration):
+        t = c.get_type()
+    else:
+        t = c
+    if isinstance(t, tp.TypeConstructor):
+        types = [t for t in types if t != c]
+        t = instantiate_type_constructor(t, types)
+    return t
+
+
 class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
@@ -137,19 +170,45 @@ class TypeCreation(Transformation):
                 if st.name == new_type.name and st == new_type:
                     return
                 if st.name == new_type.name:
-                    source.supertypes[i] = new_type
+                    if isinstance(new_type, tp.TypeConstructor):
+                        source.supertypes[i].t_constructor = new_type
+                    else:
+                        source.supertypes[i] = new_type
                     return
                 if st not in visited:
                     visited.append(st)
             visited = visited[1:]
 
     def update_type(self, node, attr):
+        def _update_type(t, new_type):
+            if t.name != new_type.name:
+                return t
+            # Check if the new type corresponds to a type constructor.
+            # If this is the case, then update the type constructor of the
+            # encountered concrete type. The type arguments of the type
+            # are not updated.
+            #
+            # If the new type is not a type constructor, then simply update
+            # the encountered type with the new type.
+            if isinstance(new_type, tp.TypeConstructor):
+                t.t_constructor = new_type
+            else:
+                t = new_type
+            return t
+
         new_type = self._old_class.get_type()
         attr_value = getattr(node, attr)
-        if attr_value is not None:
-            self.update_supertypes(attr_value, new_type)
-        if attr_value and attr_value.name == new_type.name:
-            setattr(node, attr, new_type)
+        if not attr_value:
+            # Nothing to update.
+            return
+        self.update_supertypes(attr_value, new_type)
+        if isinstance(attr_value, tp.ParameterizedType):
+            # Inspect type arguments for updates, if the type is parameterized.
+            new_args = [_update_type(ta, new_type)
+                        for ta in attr_value.type_args]
+            attr_value.type_args = new_args
+        new_attr_value = _update_type(attr_value, new_type)
+        setattr(node, attr, new_attr_value)
         return node
 
     def visit_super_instantiation(self, node):
@@ -188,61 +247,84 @@ class SubtypeCreation(TypeCreation):
     def __init__(self):
         super(SubtypeCreation, self).__init__()
         self.generator = None
+        self._type_params_map = {}
 
-    def _create_super_instantiation(self, class_decl):
+    def _create_super_instantiation(self, class_decl, class_type):
         if class_decl.class_type == ast.ClassDeclaration.INTERFACE:
             return ast.SuperClassInstantiation(
-                class_decl.get_type(), args=None)
+                class_type, args=None)
         args = []
         for f in class_decl.fields:
-            subtypes = tp.find_subtypes(f.get_type(), self.types)
+            subtypes = tp.find_subtypes(
+                self._type_params_map.get(f.get_type(), f.get_type()),
+                self.types)
             subtypes = [c for c in subtypes
                         if not (isinstance(c, ast.ClassDeclaration) and
                               c.class_type != ast.ClassDeclaration.REGULAR)]
-            t = utils.random.choice(subtypes) if subtypes else f.get_type()
+            t = (
+                utils.random.choice(subtypes)
+                if subtypes
+                else self._type_params_map.get(f.get_type(), f.get_type())
+            )
             if isinstance(t, ast.ClassDeclaration):
                 t = t.get_type()
             args.append(self.generator.generate_expr(t, only_leaves=True))
-        return ast.SuperClassInstantiation(class_decl.get_type(), args)
+        return ast.SuperClassInstantiation(class_type, args)
+
+    def _get_class_type(self, class_decl, types):
+        if class_decl.is_parameterized():
+            class_type = instantiate_type_constructor(class_decl.get_type(),
+                                                      types)
+            self._type_params_map = {
+                t_param: class_type.type_args[i]
+                for i, t_param in enumerate(class_decl.type_parameters)
+            }
+            return class_type
+        return class_decl.get_type()
 
     def create_new_class(self, class_decl):
         # Here the new class corresponds to a subtype from the given
         # `class_decl`.
         self.generator = Generator(context=self.program.context)
         decls = [d for d in self.program.declarations
-                 if (d != class_decl and isinstance(d, ast.ClassDeclaration) and
-                     d.class_type == ast.ClassDeclaration.REGULAR)]
-        self.types = decls + self.generator.RET_BUILTIN_TYPES
+                 if (d != class_decl and isinstance(d, ast.ClassDeclaration)
+                     and d.class_type == ast.ClassDeclaration.REGULAR)]
+        types = decls + self.generator.RET_BUILTIN_TYPES
+        class_type = self._get_class_type(class_decl, types)
         overriden_fields = utils.random.sample(class_decl.fields)
         new_fields_nu = self.generator.max_fields - len(overriden_fields)
         fields = []
         for f in overriden_fields:
             fields.append(ast.FieldDeclaration(
-                f.name, f.field_type, can_override=True, override=True,
+                f.name, self._type_params_map.get(f.field_type, f.field_type),
+                can_override=True, override=True,
                 is_final=f.is_final))
         for i in range(utils.random.integer(0, new_fields_nu)):
-            etype = utils.random.choice([t for t in self.types
-                                         if not class_decl.get_type().is_subtype(t)])
-            if isinstance(etype, ast.ClassDeclaration):
-                etype = etype.get_type()
-            fields.append(self.generator.gen_field_decl(etype))
+            fields.append(self.generator.gen_field_decl(choose_type(types)))
         abstract_functions = [f for f in class_decl.functions
                               if f.body is None]
         functions = []
         for f in abstract_functions:
-            expr = self.generator.generate_expr(f.get_type(), only_leaves=True)
+            expr = self.generator.generate_expr(
+                self._type_params_map.get(f.get_type(), f.get_type()),
+                only_leaves=True)
             if f.get_type() == kt.Unit:
                 # We must create a block, if functions returns Unit.
                 expr = ast.Block([expr])
+            params = [
+                ast.ParameterDeclaration(
+                    p.name,
+                    self._type_params_map.get(p.get_type()), p.get_type()
+                ) for p in f.params]
             functions.append(
-                ast.FunctionDeclaration(f.name, deepcopy(f.params), None,
+                ast.FunctionDeclaration(f.name, params, None,
                                         body=expr,
                                         func_type=f.func_type,
                                         inferred_type=f.get_type(),
                                         is_final=True, override=True))
         return ast.ClassDeclaration(
             utils.random.word().capitalize(),
-            [self._create_super_instantiation(class_decl)],
+            [self._create_super_instantiation(class_decl, class_type)],
             class_type=ast.ClassDeclaration.REGULAR, fields=fields,
             functions=functions, is_final=True)
 
