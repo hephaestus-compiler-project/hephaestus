@@ -230,9 +230,11 @@ class ParameterizedSubstitution(Transformation):
 
         attr_type = getattr(node, attr, None)
         if attr_type:
+            if self._parameterized_type is None:
+                import pdb; pdb.set_trace()
             # Node is a SimpleClassifier
             # A -> A<String>
-            if attr_type == self._selected_class_decl.get_type():
+            if attr_type.name == self._selected_class_decl.get_type().name:
                 setattr(node, attr, self._parameterized_type)
             # Node is a ParameterizedType
             # Foo<A> -> Foo<A<String>>
@@ -330,9 +332,10 @@ class ParameterizedSubstitution(Transformation):
         # Note that we cannot parameterize a field having the keyword
         # 'override', because this would require the modification of the
         # parent class.
-        if self._in_select_type_params and not node.override:
-            node.field_type = self._use_type_parameter(
-                self._namespace, node, node.field_type, True)
+        if self._in_select_type_params:
+            if not node.override:
+                node.field_type = self._use_type_parameter(
+                    self._namespace, node, node.field_type, True)
             return node
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
@@ -346,6 +349,8 @@ class ParameterizedSubstitution(Transformation):
         return self._update_type(new_node, 'param_type')
 
     def visit_var_decl(self, node):
+        if self._in_select_type_params:
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
         return self._update_type(new_node, 'var_type')
 
@@ -357,6 +362,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params and node.override:
             return node
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
+        if self._in_select_type_params:
+            return new_node
         return_gnode = GNode(self._namespace, FUNC_RET)
 
         # Check if return is connected to a type parameter
@@ -372,10 +379,14 @@ class ParameterizedSubstitution(Transformation):
         return new_node
 
     def visit_new(self, node):
+        if self._in_select_type_params:
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
         return self._update_type(new_node, 'class_type')
 
     def visit_super_instantiation(self, node):
+        if self._in_select_type_params:
+            return node
         new_node = super(ParameterizedSubstitution,
                          self).visit_super_instantiation(node)
         return self._update_type(new_node, 'class_type')
