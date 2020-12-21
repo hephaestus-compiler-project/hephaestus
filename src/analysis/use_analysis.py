@@ -1,6 +1,7 @@
 from typing import Tuple, NamedTuple
 from collections import defaultdict
 
+from src import utils
 from src.ir import ast
 from src.ir import kotlin_types as kt
 from src.ir.visitors import DefaultVisitor
@@ -19,8 +20,7 @@ def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.D
         # up to a certain namespace.
         return (len(ns)
                 if limit is None
-                else any(limit == ns[:i]
-                         for i in range(1, len(limit) + 1)))
+                else utils.prefix_lst(limit, ns))
 
     while stop_cond(namespace):
         decls = context.get_declarations(namespace, True)

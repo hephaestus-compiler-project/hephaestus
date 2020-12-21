@@ -4,6 +4,11 @@ import os
 import sys
 
 
+def prefix_lst(prefix, lst):
+    return any(prefix == lst[:i]
+               for i in range(1, len(prefix) + 1))
+
+
 def is_number(string):
     try:
         float(string)
