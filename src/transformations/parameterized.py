@@ -355,7 +355,7 @@ class ParameterizedSubstitution(Transformation):
         # override functions, because this would require the mofication of
         # the parent class.
         if self._in_select_type_params and node.override:
-            return
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
         return_gnode = GNode(self._namespace, FUNC_RET)
 
