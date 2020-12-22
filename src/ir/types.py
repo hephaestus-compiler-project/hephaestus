@@ -203,14 +203,14 @@ class TypeConstructor(AbstractType):
 
 class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor, type_args: List[Type]):
-        super(ParameterizedType, self).__init__(self.t_constructor.name,
-                                                self.t_constructor.supertypes)
         self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
         self.type_args = type_args
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
+        super(ParameterizedType, self).__init__(self.t_constructor.name,
+                                                self.t_constructor.supertypes)
 
     def __eq__(self, other: Type):
         if not isinstance(other, ParameterizedType):
