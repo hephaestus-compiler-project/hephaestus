@@ -272,7 +272,7 @@ def _find_types(t, types, find_subtypes, include_self):
             t2 = c.get_type()
         else:
             t2 = c
-        if isinstance(t2, types.AbstractType):
+        if isinstance(t2, AbstractType):
             # TODO: revisit
             continue
         if t == t2:
