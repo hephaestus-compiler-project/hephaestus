@@ -83,3 +83,40 @@ def test_update_type_type_arg():
     assert new_type.type_args[0].name == "Bar"
     assert len(new_type.type_args[0].type_args) == 1
     assert new_type.type_args[0].type_args[0] == new_foo
+
+
+def test_update_supertypes_type_arg():
+    foo = tp.SimpleClassifier("Foo", [])
+    bar_con = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
+    bar = tp.ParameterizedType(bar_con, [foo])
+
+    baz_con = tp.TypeConstructor("Baz", [tp.TypeParameter("T")])
+    baz = tp.ParameterizedType(baz_con, [bar])
+
+    new_foo = tp.SimpleClassifier("Foo", [tp.SimpleClassifier("New")])
+
+    new_type = tutils.update_type(baz, new_foo)
+    assert isinstance(new_type, tp.ParameterizedType)
+    assert len(new_type.type_args) == 1
+
+    assert isinstance(new_type.type_args[0], tp.ParameterizedType)
+    assert new_type.type_args[0].name == "Bar"
+    assert len(new_type.type_args[0].type_args) == 1
+    assert new_type.type_args[0].type_args[0] == new_foo
+
+
+def test_update_bound():
+    foo = tp.SimpleClassifier("Foo", [])
+    bar_con = tp.TypeConstructor("Bar", [tp.TypeParameter("T", bound=foo)])
+    bar = tp.ParameterizedType(bar_con, [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+
+    new_foo = tp.SimpleClassifier("Foo", [tp.SimpleClassifier("New")])
+    new_type = tutils.update_type(baz, new_foo)
+    supertypes = new_type.supertypes
+    assert len(supertypes) == 1
+    assert supertypes[0].name == 'Bar'
+    assert supertypes[0].type_args == [new_foo]
+
+    assert len(supertypes[0].t_constructor.type_parameters) == 1
+    assert supertypes[0].t_constructor.type_parameters[0].bound == new_foo
