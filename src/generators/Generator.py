@@ -455,7 +455,10 @@ class Generator(object):
                 type_param_map.get(f.get_type()) or f.get_type(), only_leaves))
         self._new_from_class = prev
         self.depth = initial_depth
-        return ast.New(class_decl.get_type(), args)
+        new_type = class_decl.get_type()
+        if class_decl.is_parameterized():
+            new_type = types.ParameterizedType(new_type, etype.type_args)
+        return ast.New(new_type, args)
 
     def gen_variable(self, etype, only_leaves=False, subtype=True):
         # Get all variables declared in the current namespace or
