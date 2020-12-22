@@ -10,6 +10,7 @@ class Generator(object):
 
     RET_BUILTIN_TYPES = [
         kt.Any,
+        kt.Number,
         kt.Integer,
         kt.Short,
         kt.Long,
@@ -571,6 +572,7 @@ class Generator(object):
             lambda x: self.gen_new(x, only_leaves, subtype),
         ]
         constant_candidates = {
+            kt.Number: self.gen_integer_constant,
             kt.Integer: self.gen_integer_constant,
             kt.Short: self.gen_integer_constant,
             kt.Long: self.gen_integer_constant,
