@@ -111,7 +111,6 @@ args.temp_directory = os.path.join(cwd, "temp")
 # LOGGING
 print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
                           args.seconds if args.stop_cond == "timeout" else args.iterations))
-print("{} {}".format("rounds".ljust(21), args.rounds))
 print("{} {}".format("transformations".ljust(21), args.transformations))
 print("{} {}".format("transformation_types".ljust(21), ",".join(args.transformation_types)))
 print("{} {}".format("bugs".ljust(21), args.bugs))
