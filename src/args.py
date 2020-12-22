@@ -19,12 +19,6 @@ parser.add_argument(
     help="Iterations to run (default: 3)"
 )
 parser.add_argument(
-    "-r", "--rounds",
-    type=int,
-    default=10,
-    help="Number of rounds in each iteration"
-)
-parser.add_argument(
     "-t", "--transformations",
     type=int,
     default=5,
@@ -52,11 +46,6 @@ parser.add_argument(
     help="Give a program to use instead of a randomly generated (pickled)"
 )
 parser.add_argument(
-    "-l", "--only-last",
-    action="store_true",
-    help="Test only the last transformation"
-)
-parser.add_argument(
     "-k", "--keep-all",
     action="store_true",
     help="Save all programs"
@@ -79,10 +68,20 @@ parser.add_argument(
     help="Number of workers for processing test programs"
 )
 parser.add_argument(
+    "-l", "--only-last",
+    action="store_true",
+    help="Test only the last transformation"
+)
+parser.add_argument(
     "-d", "--debug",
     action="store_true"
 )
-
+parser.add_argument(
+    "-r", "--rerun",
+    action="store_true",
+    help=("Run only the last transformation. If failed, start from the last "
+          "and goes back until the transformation introduces the error")
+)
 
 
 args = parser.parse_args()
@@ -97,6 +96,9 @@ if args.seconds and args.iterations:
 
 if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
     sys.exit("Error: --name {} already exists".format(args.name))
+
+if sum(1 for i in (args.rerun, args.debug, args.only_last) if i is True) > 1:
+    sys.exit("Error: You can use only one of -r, -d, and -l.")
 
 # PRE-PROCESSING
 
