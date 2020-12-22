@@ -57,6 +57,8 @@ def update_supertypes(t, new_type, test_pred=lambda x, y: x.name == y.name):
 
 
 def update_type(t, new_type, test_pred=lambda x, y: x.name == y.name):
+    if t is None:
+        return t
     if isinstance(t, tp.Builtin) or isinstance(new_type, tp.Builtin):
         return t
     # Case 1: The test_pred func of the two types match.

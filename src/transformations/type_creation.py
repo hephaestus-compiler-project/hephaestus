@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import List
 
 from src import utils
-from src.ir import ast, types as tp, kotlin_types as kt
+from src.ir import ast, types as tp, kotlin_types as kt, type_utils as tu
 from src.generators import Generator
 from src.transformations.base import Transformation
 
@@ -198,61 +198,14 @@ class TypeCreation(Transformation):
         node.add_declaration(self._old_class)
         return new_node
 
-    def update_supertypes(self, t, new_type):
-        visited = [t]
-        while visited:
-            source = visited[-1]
-            for i, st in enumerate(source.supertypes):
-                if st.name == new_type.name and st == new_type:
-                    return
-                if st.name == new_type.name:
-                    if isinstance(new_type, tp.TypeConstructor):
-                        source.supertypes[i].t_constructor = new_type
-                    else:
-                        source.supertypes[i] = new_type
-                    return
-                if st not in visited:
-                    visited.append(st)
-            visited = visited[1:]
-
     def update_type(self, node, attr):
-        def _update_type(t, new_type):
-            if t.name != new_type.name:
-                return t
-            # Check if the new type corresponds to a type constructor.
-            # If this is the case, then update the type constructor of the
-            # encountered concrete type. The type arguments of the type
-            # are not updated.
-            #
-            # If the new type is not a type constructor, then simply update
-            # the encountered type with the new type.
-            if isinstance(new_type, tp.TypeConstructor):
-                t.t_constructor = new_type
-            else:
-                t = new_type
-            return t
-
         new_type = self._old_class.get_type()
         attr_value = getattr(node, attr)
         if not attr_value:
             # Nothing to update.
             return
-        self.update_supertypes(attr_value, new_type)
-        if isinstance(attr_value, tp.ParameterizedType):
-            # Inspect type arguments for updates, if the type is parameterized.
-            new_args = [_update_type(ta, new_type)
-                        for ta in attr_value.type_args]
-            attr_value.type_args = new_args
-            attr_value = self.update_type(attr_value, 't_constructor')
-        elif isinstance(attr_value, tp.TypeConstructor):
-            params = []
-            for ta in list(attr_value.type_parameters):
-                if ta.bound:
-                    ta.bound = _update_type(ta.bound, new_type)
-                params.append(ta)
-            attr_value.type_parameters = params
-        new_attr_value = _update_type(attr_value, new_type)
-        setattr(node, attr, new_attr_value)
+        new_type = tu.update_type(attr_value, new_type)
+        setattr(node, attr, new_type)
         return node
 
     def visit_super_instantiation(self, node):

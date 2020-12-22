@@ -4,7 +4,7 @@ from typing import List
 
 from src import utils
 from src.ir import ast
-from src.ir import types
+from src.ir import types, type_utils as tu
 from src.ir import kotlin_types as kt
 import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
@@ -216,40 +216,11 @@ class ParameterizedSubstitution(Transformation):
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
-        def _update_type_arg(t_arg):
-            if t_arg.name == self._selected_class_decl.get_type().name:
-                return self._parameterized_type
-            is_parameterized = isinstance(t_arg, types.ParameterizedType)
-            if not is_parameterized:
-                return t_arg
-            args = [_update_type_arg(ta) for ta in t_arg.type_args]
-            t_arg.type_args = args
-            return t_arg
-
         attr_type = getattr(node, attr, None)
-        if attr_type:
-            # Node is a SimpleClassifier
-            # A -> A<String>
-            if attr_type.name == self._selected_class_decl.get_type().name:
-                setattr(node, attr, self._parameterized_type)
-            # Node is a ParameterizedType
-            # Foo<A> -> Foo<A<String>>
-            elif isinstance(attr_type, types.ParameterizedType):
-                attr_type.type_args = [
-                    _update_type_arg(t)
-                    for t in attr_type.type_args
-                ]
-                attr_type = self._update_type(attr_type, 't_constructor')
-                setattr(node, attr, attr_type)
-            elif isinstance(attr_type, types.TypeConstructor):
-                # FIXME: make it cleaner
-                type_params = []
-                for tp in attr_type.type_parameters:
-                    if tp.bound:
-                        tp = self._update_type(tp, 'bound')
-                    type_params.append(tp)
-                attr_type.type_parameters = type_params
-                setattr(node, attr, attr_type)
+        if not attr_type:
+            return node
+        new_type = tu.update_type(attr_type, self._parameterized_type)
+        setattr(node, attr, new_type)
         return node
 
     def _initialize_uninitialize_type_params(self):
