@@ -27,6 +27,7 @@ def save_stats():
 
 def run(i):
     random.r.seed()
+    random.reset_word_pool()
     executor = Executor(i, args)
     f, s = executor.process_program()
     return ProcessRes(failed=f, stats=s)
