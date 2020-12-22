@@ -175,7 +175,9 @@ class Generator(object):
             # type is not Unit. So, we can create an expression-based function.
             inferred_type = ret_type
             body = expr
-            ret_type = None
+            # If the return type is Number, then this must be explicit.
+            if ret_type != kt.Number:
+                ret_type = None
         else:
             inferred_type = None
             # Generate a number of expressions with side-effects.
@@ -266,7 +268,11 @@ class Generator(object):
         self.depth = initial_depth
         is_final = utils.random.bool()
         # We never omit type in non-final variables.
-        vtype = var_type if utils.random.bool() or not is_final else None
+        vtype = (
+            var_type
+            if utils.random.bool() or
+            not is_final or etype == kt.Number
+            else None)
         return ast.VariableDeclaration(
             self.gen_identifier('lower'),
             expr=expr,
