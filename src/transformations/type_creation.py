@@ -243,6 +243,14 @@ class TypeCreation(Transformation):
             new_args = [_update_type(ta, new_type)
                         for ta in attr_value.type_args]
             attr_value.type_args = new_args
+            attr_value = self.update_type(attr_value, 't_constructor')
+        elif isinstance(attr_value, tp.TypeConstructor):
+            params = []
+            for ta in list(attr_value.type_parameters):
+                if ta.bound:
+                    ta.bound = _update_type(ta.bound, new_type)
+                params.append(ta)
+            attr_value.type_parameters = params
         new_attr_value = _update_type(attr_value, new_type)
         setattr(node, attr, new_attr_value)
         return node
@@ -274,6 +282,7 @@ class TypeCreation(Transformation):
     def visit_var_decl(self, node):
         new_node = super(TypeCreation, self).visit_var_decl(node)
         self.update_type(new_node, 'var_type')
+        self.update_type(new_node, 'inferred_type')
         return new_node
 
 

@@ -217,7 +217,7 @@ class ParameterizedSubstitution(Transformation):
         """Replace _selected_class type occurrences with _parameterized_type
         """
         def _update_type_arg(t_arg):
-            if t_arg == self._selected_class_decl.get_type():
+            if t_arg.name == self._selected_class_decl.get_type().name:
                 return self._parameterized_type
             is_parameterized = isinstance(t_arg, types.ParameterizedType)
             if not is_parameterized:
@@ -228,8 +228,6 @@ class ParameterizedSubstitution(Transformation):
 
         attr_type = getattr(node, attr, None)
         if attr_type:
-            if self._parameterized_type is None:
-                import pdb; pdb.set_trace()
             # Node is a SimpleClassifier
             # A -> A<String>
             if attr_type.name == self._selected_class_decl.get_type().name:
@@ -241,6 +239,16 @@ class ParameterizedSubstitution(Transformation):
                     _update_type_arg(t)
                     for t in attr_type.type_args
                 ]
+                attr_type = self._update_type(attr_type, 't_constructor')
+                setattr(node, attr, attr_type)
+            elif isinstance(attr_type, types.TypeConstructor):
+                # FIXME: make it cleaner
+                type_params = []
+                for tp in attr_type.type_parameters:
+                    if tp.bound:
+                        tp = self._update_type(tp, 'bound')
+                    type_params.append(tp)
+                attr_type.type_parameters = type_params
                 setattr(node, attr, attr_type)
         return node
 
@@ -285,6 +293,7 @@ class ParameterizedSubstitution(Transformation):
         analysis = UseAnalysis(self.program)
         analysis.visit(node)
         self._use_graph = analysis.result()
+        #import pprint; pprint.pprint(self._use_graph)
 
         node = self._select_type_params(node)
 
@@ -327,6 +336,8 @@ class ParameterizedSubstitution(Transformation):
         return super(ParameterizedSubstitution, self).visit_class_decl(node)
 
     def visit_type_param(self, node):
+        if self._in_select_type_params:
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_type_param(node)
         return self._update_type(new_node, 'bound')
 
@@ -354,7 +365,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params:
             return node
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
-        return self._update_type(new_node, 'var_type')
+        new_node = self._update_type(new_node, 'var_type')
+        return self._update_type(new_node, 'inferred_type')
 
     @change_namespace
     def visit_func_decl(self, node):
