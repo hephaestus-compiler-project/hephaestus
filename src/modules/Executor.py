@@ -61,6 +61,7 @@ class Executor:
             "transformations": list(),
             "error": "",
             "failed": False})
+        self.tstack = []  # Transformation programs stack
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -85,6 +86,35 @@ class Executor:
                 out.write(program_str)
             status, err = run_command(command_args)
             return not(bool(compiler_pass) ^ bool(status)), err
+
+    def _report_failed(self):
+        """Find which program introduce the error and then report it.
+        """
+        prev_str = ""
+        prev_p = None
+        while True:
+            program, transformer = self.tstack.pop()
+            if program is None:
+                continue
+            program_str = self._translate_program(program)
+            if program == prev_p:
+                continue
+            preserve_correctness = True if isinstance(
+                transformer, str) else transformer.preserve_correctness()
+            status, _ = self._compile(
+                self.translator.result(),
+                compiler_pass=preserve_correctness
+            )
+            if status:
+                self._report(prev_str, prev_p, program)
+                # Update stats
+                key = get_key(self.exec_id)
+                transformations = self.stats[key]['transformations'][:len(
+                    self.tstack) + 1]
+                self.stats[key]['transformations'] = transformations
+                break
+            prev_p = deepcopy(program)
+            prev_str = program_str
 
     def _report(self, program_str, program, initial_p=None):
         mismatch = os.path.join(self.args.test_directory, str(self.exec_id))
@@ -148,6 +178,7 @@ class Executor:
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
+        self.tstack.append((deepcopy(p), transformer))
         if p is None:
             return "continue", prev_p
         program_str = self._translate_program(p)
@@ -172,7 +203,10 @@ class Executor:
                 print("Mismatch found: {}(iter) {}(trans)".format(
                     str(i), str(transformation_number)
                 ))
-            self._report(program_str, p, prev_p)
+            if self.args.rerun:
+                self._report_failed()
+            else:
+                self._report(program_str, p, prev_p)
             return "break", p
         return "succeed", p
 
@@ -181,7 +215,8 @@ class Executor:
         try:
             for j in range(self.args.transformations):
                 comp = True
-                if self.args.only_last and j != self.args.transformations - 1:
+                if ((self.args.only_last or self.args.rerun) and
+                    j != self.args.transformations - 1):
                     comp = False
                 status, program = self._apply_trasnformation(j, program, comp, i)
                 if status == "continue":
@@ -219,4 +254,5 @@ class Executor:
             if not succeed:
                 self._report(program_str, program)
                 return True, dict(self.stats)
+        self.tstack.append((deepcopy(program), "InputProgram"))
         return self._apply_trasnformations(program, self.exec_id), dict(self.stats)
