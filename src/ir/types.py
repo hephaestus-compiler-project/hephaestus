@@ -292,4 +292,5 @@ def find_subtypes(t, types, include_self=False):
 
 
 def find_supertypes(t, types, include_self=False):
-    return _find_types(t, find_subtypes=False, include_self=include_self)
+    return _find_types(t, types, find_subtypes=False,
+                       include_self=include_self)
