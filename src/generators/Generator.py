@@ -417,11 +417,19 @@ class Generator(object):
         class_decls = self.context.get_classes(self.namespace).values()
         # Get all classes that are subtype of the given type, and there
         # are regular classes (no interfaces or abstract classes).
-        class_decls = [c for c in class_decls
-                       if (c.get_type().is_subtype(etype) and
-                           c.class_type == ast.ClassDeclaration.REGULAR)]
+        subclasses = []
+        for c in class_decls:
+            if c.class_type != ast.ClassDeclaration.REGULAR:
+                continue
+            if c.is_parameterized():
+                t_con = getattr(etype, 't_constructor', None)
+                if c.get_type() == t_con:
+                    subclasses.append(c)
+            else:
+                if c.get_type().is_subtype(etype):
+                    subclasses.append(c)
         return utils.random.choice(
-            [s for s in class_decls if s.name == etype.name] or class_decls)
+            [s for s in subclasses if s.name == etype.name] or subclasses)
 
     def gen_new(self, etype, only_leaves=False, subtype=True):
         news = {

@@ -31,9 +31,17 @@ class ValueSubstitution(Transformation):
         return new_node
 
     def generate_new(self, class_decl):
+        if class_decl.is_parameterized():
+            # We selected a class that is parameterized. So before its use,
+            # we need to instantiate it.
+            class_type, params_map = tu.instantiate_type_constructor(
+                class_decl.get_type(), self.types)
+        else:
+            class_type, params_map = class_decl.get_type(), {}
         return ast.New(
-            class_decl.get_type(),
-            args=[self.generator.generate_expr(f.field_type, only_leaves=True)
+            class_type,
+            args=[self.generator.generate_expr(
+                params_map.get(f.field_type, f.field_type), only_leaves=True)
                   for f in class_decl.fields])
 
     def visit_equality_expr(self, node):
