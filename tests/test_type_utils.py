@@ -230,3 +230,33 @@ def test_find_subtypes_param_type_mul_args():
     subtypes = tutils.find_subtypes(qux, [foo, bar, baz, unrel, qux_con,
                                           fox, po, new])
     assert subtypes == {fox, po}.union(expected_subs)
+
+
+def test_find_subtypes_param_nested():
+    new = tp.SimpleClassifier("New", [])
+    foo = tp.SimpleClassifier("Foo", [new])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+
+    qux_con = tp.TypeConstructor(
+        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)])
+    qux = tp.ParameterizedType(qux_con, [bar])
+
+    fox = tp.SimpleClassifier("Fox", [qux])
+    po = tp.SimpleClassifier("Po", [fox])
+
+    quux_con = tp.TypeConstructor(
+        "Quux", [tp.TypeParameter("T", tp.TypeParameter.COVARIANT)])
+    quux = tp.ParameterizedType(quux_con, [qux])
+
+    subtypes = tutils.find_subtypes(quux, [foo, bar, baz, unrel, qux_con, new,
+                                           po, fox, quux_con])
+
+    expected_subs = {
+        tp.ParameterizedType(quux_con, [po]),
+        tp.ParameterizedType(quux_con, [fox]),
+        tp.ParameterizedType(quux_con, [tp.ParameterizedType(qux_con, [foo])]),
+        tp.ParameterizedType(quux_con, [tp.ParameterizedType(qux_con, [new])]),
+    }
+    assert subtypes == expected_subs
