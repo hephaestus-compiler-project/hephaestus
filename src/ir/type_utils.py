@@ -1,26 +1,51 @@
+import itertools
+
 from src.ir import types as tp
 
 
+def _construct_related_types(t, types, find_subtypes):
+    valid_args = []
+    for i, t_param in enumerate(t.t_constructor.type_parameters):
+        if t_param.is_invariant():
+            t_args = [t.type_args[i]]
+        elif t_param.is_covariant():
+            t_args = _find_types(t.type_args[i], types,
+                                 find_subtypes, True)
+        else:
+            t_args = _find_types(t.type_args[i], types,
+                                 not find_subtypes, True)
+        valid_args.append(t_args)
+
+    return [
+        tp.ParameterizedType(t.t_constructor, type_args)
+        for type_args in itertools.product(*valid_args)
+        if type_args != tuple(t.type_args)
+    ]
+
+
 def _find_types(t, types, find_subtypes, include_self):
-    lst = []
+    t_set = set()
     for c in types:
         if hasattr(c, 'get_type'):
             t2 = c.get_type()
         else:
             t2 = c
-        if isinstance(t2, tp.AbstractType):
+        if isinstance(t2, tp.AbstractType) and (
+                not isinstance(t2, tp.TypeConstructor)):
             # TODO: revisit
             continue
         if t == t2:
             continue
         if find_subtypes and t2.is_subtype(t):
-            lst.append(c)
+            t_set.add(c)
             continue
         if not find_subtypes and t.is_subtype(t2):
-            lst.append(c)
+            t_set.add(c)
+        if isinstance(t, tp.ParameterizedType):
+            t_set.update(_construct_related_types(t, types, find_subtypes))
     if include_self:
-        lst.append(t)
-    return lst
+        t_set.add(t)
+    return t_set
 
 
 def find_subtypes(t, types, include_self=False):
@@ -76,8 +101,6 @@ def update_type(t, new_type, test_pred=lambda x, y: x.name == y.name):
     # arguments and type constructor for updates.
     if isinstance(t, tp.ParameterizedType):
         t.type_args = [update_type(ta, new_type) for ta in t.type_args]
-        if t.t_constructor is None:
-            import pdb; pdb.set_trace()
         t.t_constructor = update_type(t.t_constructor, new_type, test_pred)
         return t
     # Case 3: If t is a type constructor recursively inspect is type

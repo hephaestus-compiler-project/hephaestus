@@ -43,7 +43,9 @@ class AbstractType(Type):
         raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
 
     def get_supertypes(self):
-        raise TypeError("You cannot call 'get_supertypes()' in an AbstractType")
+        # raise TypeError("You cannot call 'get_supertypes()' in an AbstractType")
+        # TODO: revisit
+        return super(AbstractType, self).get_supertypes()
 
     def not_related(self, t):
         raise TypeError("You cannot call 'not_related()' in an AbstractType")
@@ -147,6 +149,15 @@ class TypeParameter(AbstractType):
         if self.variance == 2:
             return 'in'
 
+    def is_covariant(self):
+        return self.variance == 1
+
+    def is_contravariant(self):
+        return self.variance == 2
+
+    def is_invariant(self):
+        return self.variance == 0
+
     def children(self):
         return []
 
@@ -172,7 +183,7 @@ class TypeConstructor(AbstractType):
                  supertypes: List[Type] = []):
         super(TypeConstructor, self).__init__(name)
         assert len(type_parameters) != 0, "type_parameters is empty"
-        self.type_parameters = type_parameters
+        self.type_parameters = list(type_parameters)
         self.supertypes = supertypes
 
     def __str__(self):
@@ -192,10 +203,11 @@ class TypeConstructor(AbstractType):
         return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
                     + str(self.type_parameters))
 
-    def is_subtype(self, other_type):
+    def is_subtype(self, t):
         # TODO revisit
-        return (isinstance(other_type, ParameterizedType) and
-                other_type.t_constructor == self)
+        # from_constructor = isinstance(t, ParameterizedType) and \
+        #    t.t_constructor == self
+        return t in self.get_supertypes()
 
     def new(self, type_args: List[Type]):
         return ParameterizedType(self, type_args)
@@ -205,7 +217,7 @@ class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor, type_args: List[Type]):
         self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
-        self.type_args = type_args
+        self.type_args = list(type_args)
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
