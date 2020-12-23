@@ -24,7 +24,7 @@ def _construct_related_types(t, types, find_subtypes):
 
 
 def _find_types(t, types, find_subtypes, include_self):
-    t_set = set()
+    t_lst = []
     for c in types:
         if hasattr(c, 'get_type'):
             t2 = c.get_type()
@@ -37,15 +37,15 @@ def _find_types(t, types, find_subtypes, include_self):
         if t == t2:
             continue
         if find_subtypes and t2.is_subtype(t):
-            t_set.add(c)
+            t_lst.append(c)
             continue
         if not find_subtypes and t.is_subtype(t2):
-            t_set.add(c)
+            t_lst.append(c)
         if isinstance(t, tp.ParameterizedType):
-            t_set.update(_construct_related_types(t, types, find_subtypes))
+            t_lst.extend(_construct_related_types(t, types, find_subtypes))
     if include_self:
-        t_set.add(t)
-    return t_set
+        t_lst.append(t)
+    return t_lst
 
 
 def find_subtypes(t, types, include_self=False):
