@@ -14,6 +14,7 @@ from src.analysis.use_analysis import UseAnalysis, GNode, FUNC_RET
 INVARIANT = types.TypeParameter.INVARIANT
 COVARIANT = types.TypeParameter.COVARIANT
 CONTRAVARIANT = types.TypeParameter.CONTRAVARIANT
+VARIANCE = (INVARIANT, COVARIANT, CONTRAVARIANT)
 
 
 def get_type_params_names(total):
@@ -80,6 +81,23 @@ def get_connected_type_param(use_graph, type_params, gnode):
                 gutils.connected(use_graph, gnode, tp.node)):
                 return tp.type_param
     return None
+
+
+def get_variance(context, use_graph, node: GNode):
+    variance = INVARIANT
+    sn = gutils.find_sources(use_graph, node)  # source_nodes
+    cn = gutils.find_all_connected(use_graph, node)  # connected_nodes
+    sn_types = [context.get_decl_type(n.namespace, n.name) for n in sn]
+    cn_types = [context.get_decl_type(n.namespace, n.name) for n in cn]
+    if (all(s is ast.FieldDeclaration for s in sn_types) and
+        not any(c is ast.ParameterDeclaration for c in cn_types) and
+        utils.random.bool()):
+        variance = COVARIANT
+    elif (all(s is ast.ParameterDeclaration for s in sn_types) and
+          not any(n.name == FUNC_RET for n in cn) and
+          utils.random.bool()):
+        variance = CONTRAVARIANT
+    return variance
 
 
 @dataclass
@@ -203,10 +221,10 @@ class ParameterizedSubstitution(Transformation):
 
         for tp in self._type_params:
             if tp.constraint is None:
-                # TODO handle variance
                 variance = INVARIANT
                 tp.constraint = t
-                tp.variance = variance
+                tp.variance = get_variance(
+                    self.program.context, self._use_graph, tp.node)
                 tp.type_param = create_type_parameter(tp.name, t, variance)
                 tp.node = (namespace, node.name)
                 self._propagate_type_parameter(gnode, tp.type_param)
@@ -227,7 +245,7 @@ class ParameterizedSubstitution(Transformation):
         for tp in self._type_params:
             if tp.type_param is None:
                 tp.type_param = create_type_parameter(
-                    tp.name, None, INVARIANT)
+                    tp.name, None, utils.random.choice(VARIANCE))
 
     def _select_type_params(self, node) -> ast.Node:
         # To use this instead of visiting the whole program to select which
