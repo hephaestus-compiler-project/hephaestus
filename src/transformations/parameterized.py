@@ -375,3 +375,10 @@ class ParameterizedSubstitution(Transformation):
         new_node = super(ParameterizedSubstitution,
                          self).visit_super_instantiation(node)
         return self._update_type(new_node, 'class_type')
+
+    def visit_is(self, node):
+        if self._in_select_type_params:
+            return node
+        new_node = super(ParameterizedSubstitution,
+                         self).visit_is(node)
+        return self._update_type(new_node, 'etype')
