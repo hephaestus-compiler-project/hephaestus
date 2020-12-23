@@ -125,3 +125,22 @@ def find_all_bi_reachable(graph, vertex):
 # TODO optimize
 def find_all_connected(graph, vertex):
     return {n for n in graph if connected(graph, vertex, n)}
+
+
+def find_sources(graph, vertex):
+    sources = []
+    visited = {v: False for v in graph.keys()}
+
+    stack = [vertex]
+
+    while (len(stack)):
+        s = stack.pop()
+
+        if not visited[s]:
+            visited[s] = True
+            s_sources = [n for n in graph.keys() if s in graph[n]]
+            if not s_sources:
+                sources.append(s)
+                continue
+            stack.extend(s_sources)
+    return sources

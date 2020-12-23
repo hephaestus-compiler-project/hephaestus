@@ -200,3 +200,11 @@ def test_find_all_connected():
     assert find_all_connected(GRAPH, FOO_Q) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
     assert find_all_connected(GRAPH, FOO_Z) == {BAR_Z, FOO_Q, FOO_Z, FOO_X}
     assert find_all_connected(GRAPH2, N0) == {N0, N1, N2, N3, N4}
+
+
+def test_find_sources():
+    assert find_sources(GRAPH2, N0) == [N0]
+    assert find_sources(GRAPH2, N1) == [N0]
+    assert find_sources(GRAPH2, N2) == [N0]
+    assert find_sources(GRAPH2, N3) == [N4, N0]
+    assert find_sources(GRAPH2, N4) == [N4]
