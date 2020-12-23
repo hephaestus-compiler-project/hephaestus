@@ -97,8 +97,8 @@ if args.seconds and args.iterations:
 if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
     sys.exit("Error: --name {} already exists".format(args.name))
 
-if sum(1 for i in (args.rerun, args.debug, args.only_last) if i is True) > 1:
-    sys.exit("Error: You can use only one of -r, -d, and -l.")
+if sum(1 for i in (args.rerun, args.debug) if i is True) > 1:
+    sys.exit("Error: You can use only one of -r, -d.")
 
 # PRE-PROCESSING
 
