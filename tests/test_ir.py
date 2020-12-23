@@ -53,6 +53,51 @@ def test_simple_classifier():
     assert not cls4.is_subtype(IntegerType())
 
 
+def test_parameterized_type():
+    number_subtypes = [
+        NumberType(), IntegerType(), ShortType(),
+        LongType(), ByteType(), FloatType(), DoubleType()]
+
+    # Invariant
+    cls1 = SimpleClassifier("Cls1", [])
+    tp1 = [TypeParameter("T", TypeParameter.INVARIANT)]
+    tc1 = TypeConstructor("Tp1", tp1, [cls1])
+    ta1 = [NumberType()]
+    pt1 = ParameterizedType(tc1, ta1)
+    assert pt1.name == "Tp1"
+    assert pt1.get_supertypes() == {cls1, pt1}
+    assert pt1.is_subtype(cls1)
+    assert pt1.is_subtype(pt1)
+    assert not pt1.is_subtype(NumberType())
+    assert not pt1.is_subtype(ParameterizedType(tc1, [AnyType()]))
+    assert not pt1.is_subtype(ParameterizedType(tc1, [IntegerType()]))
+
+    # Covariant
+    tp2 = [TypeParameter("T", TypeParameter.COVARIANT)]
+    tc2 = TypeConstructor("Tp2", tp2, [cls1])
+    ta2 = [NumberType()]
+    pt2 = ParameterizedType(tc2, ta2)
+    assert pt2.get_supertypes() == {cls1}.union(
+        [ParameterizedType(tc2, [s]) for s in number_subtypes])
+    assert pt2.is_subtype(cls1)
+    assert pt2.is_subtype(pt2)
+    assert pt2.is_subtype(ParameterizedType(tc2, [IntegerType()]))
+    assert pt2.is_subtype(ParameterizedType(tc2, [FloatType()]))
+    assert not pt2.is_subtype(ParameterizedType(tc2, [AnyType()]))
+
+    # Contravariant
+    tp3 = [TypeParameter("T", TypeParameter.CONTRAVARIANT)]
+    tc3 = TypeConstructor("Tp3", tp3, [cls1])
+    ta3 = [NumberType()]
+    pt3 = ParameterizedType(tc3, ta3)
+    assert pt3.get_supertypes() == {cls1}.union(
+        [ParameterizedType(tc2, [s]) for s in NumberType().get_supertypes()])
+    assert pt3.is_subtype(cls1)
+    assert pt3.is_subtype(pt3)
+    assert pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
+    assert not pt3.is_subtype(ParameterizedType(tc3, [FloatType()]))
+
+
 def test_classifier_check_supertypes():
     type_param_a = TypeParameter("A")
     t_constructor = TypeConstructor("Pcls", [type_param_a], [IntegerType()])
