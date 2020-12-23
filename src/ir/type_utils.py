@@ -1,6 +1,8 @@
 import itertools
+from typing import List
 
-from src.ir import types as tp
+from src import utils
+from src.ir import ast, types as tp
 
 
 def _construct_related_types(t, types, find_subtypes):
@@ -113,4 +115,48 @@ def update_type(t, new_type, test_pred=lambda x, y: x.name == y.name):
             t_params.append(t_param)
         t.type_parameters = t_params
         return t
+    return t
+
+
+def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
+                                 types: List[tp.Type]):
+    # Instantiate a type constructor with random type arguments.
+    t_args = []
+    for t_param in type_constructor.type_parameters:
+        if t_param.bound:
+            # If the type parameter has a bound, then find types that
+            # are subtypes to this bound.
+            a_types = find_subtypes(t_param.bound, types, True)
+        else:
+            a_types = types
+        c = utils.random.choice(a_types)
+        if isinstance(c, ast.ClassDeclaration):
+            t = c.get_type()
+        else:
+            t = c
+        if isinstance(t, tp.TypeConstructor):
+            # We just selected a parameterized class, so we need to instantiate
+            # this too. Remove this class from available types to avoid
+            # depthy instantiations.
+            types = [t for t in types if t != c]
+            t, _ = instantiate_type_constructor(t, types)
+        t_args.append(t)
+    # Also return a map of type parameters and their instantiations.
+    params_map = {t_param: t_args[i]
+                  for i, t_param in enumerate(type_constructor.type_parameters)}
+    return type_constructor.new(t_args), params_map
+
+
+def choose_type(types: List[tp.Type]):
+    # Randomly choose a type from the list of available types.
+    c = utils.random.choice(types)
+    if isinstance(c, ast.ClassDeclaration):
+        t = c.get_type()
+    else:
+        t = c
+    if isinstance(t, tp.TypeConstructor):
+        # We just selected a parameterized class, so we need to instantiate
+        # it.
+        types = [t for t in types if t != c]
+        t, _ = instantiate_type_constructor(t, types)
     return t

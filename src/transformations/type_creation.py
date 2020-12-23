@@ -1,6 +1,5 @@
 from copy import deepcopy
 from collections import defaultdict
-from typing import List
 
 from src import utils
 from src.ir import ast, types as tp, kotlin_types as kt, type_utils as tu
@@ -105,47 +104,6 @@ def create_regular_class(class_decl, empty):
         functions=create_non_final_functions(class_decl.functions),
         is_final=False,
         type_parameters=class_decl.type_parameters)
-
-
-def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
-                                 types: List[tp.Type]):
-    # Instantiate a type constructor with random type arguments.
-    t_args = []
-    for t_param in type_constructor.type_parameters:
-        if t_param.bound:
-            # If the type parameter has a bound, then find types that
-            # are subtypes to this bound.
-            a_types = tu.find_subtypes(t_param.bound, types, True)
-        else:
-            a_types = types
-        c = utils.random.choice(a_types)
-        if isinstance(c, ast.ClassDeclaration):
-            t = c.get_type()
-        else:
-            t = c
-        if isinstance(t, tp.TypeConstructor):
-            # We just selected a parameterized class, so we need to instantiate
-            # this too. Remove this class from available types to avoid
-            # depthy instantiations.
-            types = [t for t in types if t != c]
-            t = instantiate_type_constructor(t, types)
-        t_args.append(t)
-    return type_constructor.new(t_args)
-
-
-def choose_type(types: List[tp.Type]):
-    # Randomly choose a type from the list of available types.
-    c = utils.random.choice(types)
-    if isinstance(c, ast.ClassDeclaration):
-        t = c.get_type()
-    else:
-        t = c
-    if isinstance(t, tp.TypeConstructor):
-        # We just selected a parameterized class, so we need to instantiate
-        # it.
-        types = [t for t in types if t != c]
-        t = instantiate_type_constructor(t, types)
-    return t
 
 
 class TypeCreation(Transformation):
@@ -310,12 +268,9 @@ class SubtypeCreation(TypeCreation):
         if class_decl.is_parameterized():
             # We instantiate type constructor with random type arguments.
             # and then we inherit from the instantiated type.
-            class_type = instantiate_type_constructor(class_decl.get_type(),
-                                                      types)
-            self._type_params_map = {
-                t_param: class_type.type_args[i]
-                for i, t_param in enumerate(class_decl.type_parameters)
-            }
+            class_type, self._type_params_map = (
+                tu.instantiate_type_constructor(class_decl.get_type(),
+                                                types))
             return class_type
         return class_decl.get_type()
 
@@ -338,7 +293,7 @@ class SubtypeCreation(TypeCreation):
                 can_override=True, override=True,
                 is_final=f.is_final))
         for i in range(utils.random.integer(0, new_fields_nu)):
-            fields.append(self.generator.gen_field_decl(choose_type(types)))
+            fields.append(self.generator.gen_field_decl(tu.choose_type(types)))
         abstract_functions = [f for f in class_decl.functions
                               if f.body is None]
         functions = []
