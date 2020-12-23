@@ -96,3 +96,6 @@ class Context(object):
             if utils.prefix_lst(namespace, k):
                 decls[k] = deepcopy(v['decls'])
         return decls
+
+    def get_decl_type(self, namespace, name):
+        return type(self.get_decl(namespace, name))
