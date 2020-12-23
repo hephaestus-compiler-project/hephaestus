@@ -24,10 +24,12 @@ def get_type_params_names(total):
     return random_caps
 
 
-def create_type_parameter(name: str, type_constraint: types.Type, variance):
+def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
+        variance):
     bound = None
     if type_constraint is not None and random.random() < .5:
-        bound = random.choice(list(type_constraint.get_supertypes()))
+        bound = random.choice(tu.find_supertypes(
+            type_constraint, ptypes, include_self=True))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -83,7 +85,7 @@ def get_connected_type_param(use_graph, type_params, gnode):
     return None
 
 
-def get_variance(context, use_graph, node: GNode):
+def get_variance(context, use_graph, node):
     variance = INVARIANT
     sn = gutils.find_sources(use_graph, node)  # source_nodes
     cn = gutils.find_all_connected(use_graph, node)  # connected_nodes
@@ -168,13 +170,13 @@ class ParameterizedSubstitution(Transformation):
                     continue
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
-                    possible_types = list(tp.constraint.get_supertypes())
+                    possible_types = tu.find_supertypes(
+                        tp.constraint, self.types, include_self=True)
                 if tp.variance == COVARIANT:
-                    possible_types = tu.find_subtypes(tp.constraint,
-                                                      self.types, True)
-                    possible_types += [bt for bt in kt.NonNothingTypes
-                                       if bt.is_subtype(tp.constraint)]
+                    possible_types = tu.find_subtypes(
+                        tp.constraint, self.types, True)
                 if tp.type_param.bound:
+                    # TODO Fix is_subtype for parameterized types
                     possible_types = [t for t in possible_types
                                       if t.is_subtype(tp.type_param.bound)]
             type_args.append(random.choice(possible_types))
@@ -223,10 +225,11 @@ class ParameterizedSubstitution(Transformation):
             if tp.constraint is None:
                 variance = INVARIANT
                 tp.constraint = t
+                tp.node = GNode(namespace, node.name)
                 tp.variance = get_variance(
                     self.program.context, self._use_graph, tp.node)
-                tp.type_param = create_type_parameter(tp.name, t, variance)
-                tp.node = (namespace, node.name)
+                tp.type_param = create_type_parameter(
+                    tp.name, t, self.types, variance)
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return t
@@ -245,7 +248,7 @@ class ParameterizedSubstitution(Transformation):
         for tp in self._type_params:
             if tp.type_param is None:
                 tp.type_param = create_type_parameter(
-                    tp.name, None, utils.random.choice(VARIANCE))
+                    tp.name, None, self.types, utils.random.choice(VARIANCE))
 
     def _select_type_params(self, node) -> ast.Node:
         # To use this instead of visiting the whole program to select which
@@ -297,8 +300,8 @@ class ParameterizedSubstitution(Transformation):
         return self._type_constructor_decl
 
     def visit_program(self, node):
-        """Select which class declaration to replace, select how many
-        type parameters to use, and initialize self.types.
+        """Select which class declaration to replace, and select how many
+        type parameters to use.
         """
         self.program = node
         classes = self.get_candidates_classes()
@@ -314,12 +317,13 @@ class ParameterizedSubstitution(Transformation):
             for name in get_type_params_names(total_type_params)
         ]
 
-        node = self._analyse_selected_class(self._selected_class_decl)
-        self.program.context.add_class(self._namespace, node.name, node)
-
+        # Find types declared in program
         usr_types = [d for d in self.program.declarations
                      if isinstance(d, ast.ClassDeclaration)]
         self.types = usr_types + kt.NonNothingTypes
+
+        node = self._analyse_selected_class(self._selected_class_decl)
+        self.program.context.add_class(self._namespace, node.name, node)
 
         return super(ParameterizedSubstitution, self).visit_program(
             self.program)
