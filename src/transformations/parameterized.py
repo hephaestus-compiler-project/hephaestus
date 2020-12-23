@@ -297,8 +297,8 @@ class ParameterizedSubstitution(Transformation):
         return self._type_constructor_decl
 
     def visit_program(self, node):
-        """Select which class declaration to replace and select how many
-        type parameters to use.
+        """Select which class declaration to replace, select how many
+        type parameters to use, and initialize self.types.
         """
         self.program = node
         classes = self.get_candidates_classes()
@@ -316,6 +316,10 @@ class ParameterizedSubstitution(Transformation):
 
         node = self._analyse_selected_class(self._selected_class_decl)
         self.program.context.add_class(self._namespace, node.name, node)
+
+        usr_types = [d for d in self.program.declarations
+                     if isinstance(d, ast.ClassDeclaration)]
+        self.types = usr_types + kt.NonNothingTypes
 
         return super(ParameterizedSubstitution, self).visit_program(
             self.program)
