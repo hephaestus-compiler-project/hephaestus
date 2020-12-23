@@ -262,3 +262,88 @@ def test_find_subtypes_param_nested():
         tp.ParameterizedType(quux_con, [tp.ParameterizedType(qux_con, [new])]),
     }
     assert subtypes == expected_subs
+
+
+def test_find_subtypes_param_types():
+    foo_con = tp.TypeConstructor(
+        "Foo", [tp.TypeParameter("T")], [])
+    foo = tp.ParameterizedType(foo_con, [kt.String])
+
+    bar_con = tp.TypeConstructor(
+        "Bar", [tp.TypeParameter("T")], supertypes=[foo])
+
+    subtypes = set(tutils.find_subtypes(foo, {foo_con, foo, bar_con}))
+    assert subtypes == {bar_con}
+
+
+def test_find_supertypes():
+    foo = tp.SimpleClassifier("Foo", [])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+
+    supertypes = set(tutils.find_supertypes(baz, {unrel, baz, bar, foo}))
+    assert supertypes == {bar, foo}
+
+    qux_con = tp.TypeConstructor("Qux", [tp.TypeParameter("T")], [])
+    qux = tp.ParameterizedType(qux_con, [kt.String])
+    foo.supertypes.append(qux)
+
+    supertypes = set(tutils.find_supertypes(
+        baz, {unrel, baz, bar, foo, qux_con}))
+    assert supertypes == {bar, foo, qux}
+
+
+def test_find_supertypes_param_type():
+    new = tp.SimpleClassifier("New", [])
+    foo = tp.SimpleClassifier("Foo", [new])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+
+    type_parameters = [
+        tp.TypeParameter("T1", tp.TypeParameter.INVARIANT),
+        tp.TypeParameter("T2", tp.TypeParameter.CONTRAVARIANT),
+        tp.TypeParameter("T3", tp.TypeParameter.COVARIANT)
+    ]
+    qux_con = tp.TypeConstructor("Qux", type_parameters, supertypes=[])
+    qux = tp.ParameterizedType(qux_con, [bar, bar, bar])
+    supertypes = set(tutils.find_supertypes(
+        qux, [foo, bar, baz, unrel, qux_con, new]))
+
+    expected_supers = {
+        tp.ParameterizedType(qux_con, [bar, baz, bar]),
+        tp.ParameterizedType(qux_con, [bar, baz, foo]),
+        tp.ParameterizedType(qux_con, [bar, baz, new]),
+        tp.ParameterizedType(qux_con, [bar, bar, foo]),
+        tp.ParameterizedType(qux_con, [bar, bar, new]),
+    }
+    assert supertypes == expected_supers
+
+
+def test_find_supertypes_nested():
+    new = tp.SimpleClassifier("New", [])
+    foo = tp.SimpleClassifier("Foo", [new])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+
+    qux_con = tp.TypeConstructor(
+        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)])
+    qux = tp.ParameterizedType(qux_con, [bar])
+
+    fox = tp.SimpleClassifier("Fox", [qux])
+    po = tp.SimpleClassifier("Po", [fox])
+
+    quux_con = tp.TypeConstructor(
+        "Quux", [tp.TypeParameter("T", tp.TypeParameter.COVARIANT)], [qux])
+    quux = tp.ParameterizedType(quux_con, [qux])
+
+    supertypes = set(tutils.find_supertypes(
+        quux, [foo, bar, baz, unrel, qux_con, new, po, fox, quux_con]))
+
+    expected_supers = {
+        qux,
+        tp.ParameterizedType(quux_con, [tp.ParameterizedType(qux_con, [baz])]),
+    }
+    assert supertypes == expected_supers

@@ -26,28 +26,34 @@ def _construct_related_types(t, types, find_subtypes):
 
 
 def _find_types(t, types, find_subtypes, include_self):
-    t_lst = []
-    for c in types:
-        if hasattr(c, 'get_type'):
-            t2 = c.get_type()
-        else:
-            t2 = c
-        if isinstance(t2, tp.AbstractType) and (
-                not isinstance(t2, tp.TypeConstructor)):
-            # TODO: revisit
-            continue
-        if t == t2:
-            continue
-        if find_subtypes and t2.is_subtype(t):
-            t_lst.append(c)
-            continue
-        if not find_subtypes and t.is_subtype(t2):
-            t_lst.append(c)
-        if isinstance(t, tp.ParameterizedType):
-            t_lst.extend(_construct_related_types(t, types, find_subtypes))
+    if not find_subtypes:
+        # Find supertypes
+        t_set = t.get_supertypes()
+    else:
+        # Find subtypes
+        t_set = set()
+        for c in types:
+            if hasattr(c, 'get_type'):
+                t2 = c.get_type()
+            else:
+                t2 = c
+            if isinstance(t2, tp.AbstractType) and (
+                    not isinstance(t2, tp.TypeConstructor)):
+                # TODO: revisit
+                continue
+            if t == t2:
+                continue
+            if t2.is_subtype(t):
+                t_set.add(c)
+                continue
+
+    if isinstance(t, tp.ParameterizedType):
+        t_set.update(_construct_related_types(t, types, find_subtypes))
     if include_self:
-        t_lst.append(t)
-    return t_lst
+        t_set.add(t)
+    else:
+        t_set.discard(t)
+    return list(t_set)
 
 
 def find_subtypes(t, types, include_self=False):
@@ -55,7 +61,8 @@ def find_subtypes(t, types, include_self=False):
 
 
 def find_supertypes(t, types, include_self=False):
-    return _find_types(t, find_subtypes=False, include_self=include_self)
+    return _find_types(t, types, find_subtypes=False,
+                       include_self=include_self)
 
 
 def _update_type_constructor(t, new_type):
