@@ -125,8 +125,21 @@ def update_type(t, new_type, test_pred=lambda x, y: x.name == y.name):
     return t
 
 
+def _get_available_types(types, only_regular):
+    # TODO revisit
+    available_types = []
+    for t in types:
+        if isinstance(t, ast.ClassDeclaration) and (
+                t.class_type != ast.ClassDeclaration.REGULAR):
+            continue
+        available_types.append(t)
+    return available_types if only_regular else types
+
+
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
-                                 types: List[tp.Type]):
+                                 types: List[tp.Type],
+                                 only_regular=True):
+    types = _get_available_types(types, only_regular)
     # Instantiate a type constructor with random type arguments.
     t_args = []
     for t_param in type_constructor.type_parameters:
@@ -146,7 +159,7 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             # this too. Remove this class from available types to avoid
             # depthy instantiations.
             types = [t for t in types if t != c]
-            t, _ = instantiate_type_constructor(t, types)
+            t, _ = instantiate_type_constructor(t, types, only_regular)
         t_args.append(t)
     # Also return a map of type parameters and their instantiations.
     params_map = {t_param: t_args[i]
@@ -154,8 +167,9 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
     return type_constructor.new(t_args), params_map
 
 
-def choose_type(types: List[tp.Type]):
+def choose_type(types: List[tp.Type], only_regular=True):
     # Randomly choose a type from the list of available types.
+    types = _get_available_types(types, only_regular)
     c = utils.random.choice(types)
     if isinstance(c, ast.ClassDeclaration):
         t = c.get_type()
@@ -165,5 +179,5 @@ def choose_type(types: List[tp.Type]):
         # We just selected a parameterized class, so we need to instantiate
         # it.
         types = [t for t in types if t != c]
-        t, _ = instantiate_type_constructor(t, types)
+        t, _ = instantiate_type_constructor(t, types, only_regular)
     return t

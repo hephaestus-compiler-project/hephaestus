@@ -222,6 +222,9 @@ class TypeSubstitution(Transformation):
             var_decl = None
         use_var = False
         for p in new_node.params:
+            # We cannot perform type widening in abstract types.
+            if isinstance(p.param_type, tp.AbstractType):
+                continue
             # Perform type widening on this function's parameters.
             old_type = p.param_type
             transform = self._type_widening(
