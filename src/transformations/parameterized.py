@@ -381,4 +381,4 @@ class ParameterizedSubstitution(Transformation):
             return node
         new_node = super(ParameterizedSubstitution,
                          self).visit_is(node)
-        return self._update_type(new_node, 'etype')
+        return self._update_type(new_node, 'rexpr')
