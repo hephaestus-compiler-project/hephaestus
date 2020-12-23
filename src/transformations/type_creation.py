@@ -115,7 +115,7 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
         if t_param.bound:
             # If the type parameter has a bound, then find types that
             # are subtypes to this bound.
-            a_types = tp.find_subtypes(t_param.bound, types, True)
+            a_types = tu.find_subtypes(t_param.bound, types, True)
         else:
             a_types = types
         c = utils.random.choice(a_types)
@@ -290,7 +290,7 @@ class SubtypeCreation(TypeCreation):
                 class_type, args=None)
         args = []
         for f in class_decl.fields:
-            subtypes = tp.find_subtypes(
+            subtypes = tu.find_subtypes(
                 self._type_params_map.get(f.get_type(), f.get_type()),
                 self.types)
             subtypes = [c for c in subtypes

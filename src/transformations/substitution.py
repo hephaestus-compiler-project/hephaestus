@@ -2,7 +2,7 @@ from copy import deepcopy
 from collections import defaultdict
 
 from src import utils
-from src.ir import ast, types as tp
+from src.ir import ast, types as tp, type_utils as tu
 from src.ir import kotlin_types as kt
 from src.generators import Generator
 from src.transformations.base import Transformation
@@ -50,7 +50,7 @@ class ValueSubstitution(Transformation):
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super(ValueSubstitution, self).visit_new(node)
-        subclasses = tp.find_subtypes(node.class_type, self.types)
+        subclasses = tu.find_subtypes(node.class_type, self.types)
         subclasses = [c for c in subclasses
                       if not (isinstance(c, ast.ClassDeclaration) and
                               c.class_type != ast.ClassDeclaration.REGULAR)]
@@ -62,6 +62,7 @@ class ValueSubstitution(Transformation):
             kt.Boolean: self.generator.gen_bool_constant,
             kt.Char: self.generator.gen_char_constant,
             kt.String: self.generator.gen_string_constant,
+            kt.Number: self.generator.gen_integer_constant,
             kt.Integer: self.generator.gen_integer_constant,
             kt.Short: self.generator.gen_integer_constant,
             kt.Long: self.generator.gen_integer_constant,
@@ -76,7 +77,6 @@ class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Type Substitution (Widening/Narrowing)'
 
-
     def __init__(self):
         super(TypeSubstitution, self).__init__()
         self.program = None
@@ -86,7 +86,7 @@ class TypeSubstitution(Transformation):
         self._cached_type_widenings = {}
 
     def _type_widening(self, decl, setter):
-        superclasses = tp.find_supertypes(decl.get_type(), self.types)
+        superclasses = tu.find_supertypes(decl.get_type(), self.types)
         if not superclasses:
             return False
         sup_t = self._cached_type_widenings.get(

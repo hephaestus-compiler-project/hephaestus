@@ -263,34 +263,3 @@ class ParameterizedFunction(Function):
     def is_subtype(self, t):
         # TODO
         return False
-
-
-def _find_types(t, types, find_subtypes, include_self):
-    lst = []
-    for c in types:
-        if hasattr(c, 'get_type'):
-            t2 = c.get_type()
-        else:
-            t2 = c
-        if isinstance(t2, AbstractType):
-            # TODO: revisit
-            continue
-        if t == t2:
-            continue
-        if find_subtypes and t2.is_subtype(t):
-            lst.append(c)
-            continue
-        if not find_subtypes and t.is_subtype(t2):
-            lst.append(c)
-    if include_self:
-        lst.append(t)
-    return lst
-
-
-def find_subtypes(t, types, include_self=False):
-    return _find_types(t, types, find_subtypes=True, include_self=include_self)
-
-
-def find_supertypes(t, types, include_self=False):
-    return _find_types(t, types, find_subtypes=False,
-                       include_self=include_self)
