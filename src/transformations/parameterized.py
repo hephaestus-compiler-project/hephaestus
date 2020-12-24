@@ -126,7 +126,7 @@ class ParameterizedSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Parameterized Substitution'
 
-    def __init__(self, max_type_params=3):
+    def __init__(self, max_type_params=3, find_classes_blacklist=True):
         super(ParameterizedSubstitution, self).__init__()
         self._max_type_params: int = max_type_params
 
@@ -141,6 +141,9 @@ class ParameterizedSubstitution(Transformation):
         # Use it as a flag to do specific operations when visiting nodes to
         # select which variables to replace their types with TypeParameters
         self._in_select_type_params: bool = False
+        self._in_find_classes_blacklist: bool = False
+        self.find_classes_blacklist = find_classes_blacklist
+        self._blacklist_classes = set()
         #  self._in_override: bool = False
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
@@ -149,16 +152,28 @@ class ParameterizedSubstitution(Transformation):
     def result(self):
         return self.program
 
+    def _discard_node(self):
+        return self._in_select_type_params or self._in_find_classes_blacklist
+
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
-        return [d for d in self.program.declarations
-                if (isinstance(d, ast.ClassDeclaration) and
-                type(d.get_type()) is types.SimpleClassifier)]
+        classes = {d for d in self.program.declarations
+                   if (isinstance(d, ast.ClassDeclaration) and
+                   type(d.get_type()) is types.SimpleClassifier)}
+        return list(classes.difference(self._blacklist_classes))
 
     def _create_parameterized_type(self) -> types.ParameterizedType:
         """Create ParameterizedType from _type_constructor_decl based on
         type_params constraints
         """
+        def to_type(t):
+            if isinstance(t, ast.ClassDeclaration):
+                t = t.get_type()
+            if isinstance(t, types.TypeConstructor):
+                t, _ = tu.instantiate_type_constructor(t, self.types)
+                return t
+            return t
+
         type_args = []
         for tp in self._type_params:
             if tp.constraint is None:
@@ -170,16 +185,22 @@ class ParameterizedSubstitution(Transformation):
                     continue
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
-                    possible_types = tu.find_supertypes(
-                        tp.constraint, self.types, include_self=True)
+                    # We need to map the result of find_supertypes()
+                    # to concrete types. Recall that the result of
+                    # find_supertypes() may contain a type constructor.
+                    # So we need to instantiate it to a concrete type, before
+                    # use.
+                    possible_types = map(to_type, tu.find_supertypes(
+                        tp.constraint, self.types, include_self=True))
                 if tp.variance == COVARIANT:
-                    possible_types = tu.find_subtypes(
-                        tp.constraint, self.types, True)
+                    # Same as above.
+                    possible_types = map(to_type, tu.find_subtypes(
+                        tp.constraint, self.types, True))
                 if tp.type_param.bound:
                     # TODO Fix is_subtype for parameterized types
                     possible_types = [t for t in possible_types
                                       if t.is_subtype(tp.type_param.bound)]
-            type_args.append(random.choice(possible_types))
+            type_args.append(random.choice(list(possible_types)))
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
@@ -304,6 +325,17 @@ class ParameterizedSubstitution(Transformation):
         type parameters to use.
         """
         self.program = node
+        if self.find_classes_blacklist:
+            # If find_classes_blacklist is True, we need to perform one
+            # pass to the AST, to find blacklisted classes, i.e., classes
+            # that cannot be parameterized.
+            # These classes are those included in an Is expression
+            # e.g., if (x is Foo). In this example, Foo cannot be parameterized
+            # because we cannot convert the Is expression as
+            # if (x is Foo<TypeArg>) due to type erasure.
+            self._in_find_classes_blacklist = True
+            super(ParameterizedSubstitution, self).visit_program(node)
+            self._in_find_classes_blacklist = False
         classes = self.get_candidates_classes()
         if not classes:
             # There are not user-defined simple classifier declarations.
@@ -333,7 +365,7 @@ class ParameterizedSubstitution(Transformation):
         return super(ParameterizedSubstitution, self).visit_class_decl(node)
 
     def visit_type_param(self, node):
-        if self._in_select_type_params:
+        if self._discard_node():
             return node
         new_node = super(ParameterizedSubstitution, self).visit_type_param(node)
         return self._update_type(new_node, 'bound')
@@ -347,6 +379,8 @@ class ParameterizedSubstitution(Transformation):
                 node.field_type = self._use_type_parameter(
                     self._namespace, node, node.field_type, True)
             return node
+        if self._in_find_classes_blacklist:
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
 
@@ -355,6 +389,8 @@ class ParameterizedSubstitution(Transformation):
             node.param_type = self._use_type_parameter(
                 self._namespace, node, node.param_type)
             return node
+        if self._in_find_classes_blacklist:
+            return node
         new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
         return self._update_type(new_node, 'param_type')
 
@@ -362,6 +398,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params:
             return node
         new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
+        if self._in_find_classes_blacklist:
+            return new_node
         new_node = self._update_type(new_node, 'var_type')
         return self._update_type(new_node, 'inferred_type')
 
@@ -373,7 +411,7 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params and node.override:
             return node
         new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
-        if self._in_select_type_params:
+        if self._discard_node():
             return new_node
         return_gnode = GNode(self._namespace, FUNC_RET)
 
@@ -393,6 +431,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params:
             return node
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
+        if self._in_find_classes_blacklist:
+            return new_node
         return self._update_type(new_node, 'class_type')
 
     def visit_super_instantiation(self, node):
@@ -400,11 +440,16 @@ class ParameterizedSubstitution(Transformation):
             return node
         new_node = super(ParameterizedSubstitution,
                          self).visit_super_instantiation(node)
+        if self._in_find_classes_blacklist:
+            return new_node
         return self._update_type(new_node, 'class_type')
 
     def visit_is(self, node):
         if self._in_select_type_params:
             return node
-        new_node = super(ParameterizedSubstitution,
-                         self).visit_is(node)
-        return self._update_type(new_node, 'rexpr')
+        if self._in_find_classes_blacklist:
+            etype = node.rexpr
+            class_decl = self.program.context.get_decl(
+                ast.GLOBAL_NAMESPACE, etype.name)
+            self._blacklist_classes.add(class_decl)
+        return super(ParameterizedSubstitution, self).visit_is(node)
