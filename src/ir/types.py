@@ -250,7 +250,6 @@ class ParameterizedType(SimpleClassifier):
             return True
         if isinstance(t, ParameterizedType):
             if self.t_constructor == t.t_constructor:
-                print("OK")
                 for tp, sarg, targ in zip(self.t_constructor.type_parameters,
                                           self.type_args, t.type_args):
                     if tp.is_invariant() and sarg != targ:
