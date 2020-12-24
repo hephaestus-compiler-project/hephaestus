@@ -77,25 +77,22 @@ def test_parameterized_type():
     tc2 = TypeConstructor("Tp2", tp2, [cls1])
     ta2 = [NumberType()]
     pt2 = ParameterizedType(tc2, ta2)
-    assert pt2.get_supertypes() == {cls1}.union(
-        [ParameterizedType(tc2, [s]) for s in number_subtypes])
+    assert pt2.get_supertypes() == {cls1, pt2}
     assert pt2.is_subtype(cls1)
     assert pt2.is_subtype(pt2)
-    assert pt2.is_subtype(ParameterizedType(tc2, [IntegerType()]))
-    assert pt2.is_subtype(ParameterizedType(tc2, [FloatType()]))
-    assert not pt2.is_subtype(ParameterizedType(tc2, [AnyType()]))
+    assert pt2.is_subtype(ParameterizedType(tc2, [AnyType()]))
+    assert not pt2.is_subtype(ParameterizedType(tc2, [IntegerType()]))
 
     # Contravariant
     tp3 = [TypeParameter("T", TypeParameter.CONTRAVARIANT)]
     tc3 = TypeConstructor("Tp3", tp3, [cls1])
     ta3 = [NumberType()]
     pt3 = ParameterizedType(tc3, ta3)
-    assert pt3.get_supertypes() == {cls1}.union(
-        [ParameterizedType(tc2, [s]) for s in NumberType().get_supertypes()])
+    assert pt3.get_supertypes() == {cls1, pt3}
     assert pt3.is_subtype(cls1)
     assert pt3.is_subtype(pt3)
-    assert pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
-    assert not pt3.is_subtype(ParameterizedType(tc3, [FloatType()]))
+    assert pt3.is_subtype(ParameterizedType(tc3, [IntegerType()]))
+    assert not pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
 
 
 def test_classifier_check_supertypes():
