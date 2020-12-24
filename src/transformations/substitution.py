@@ -30,7 +30,28 @@ class ValueSubstitution(Transformation):
             self.program = new_node
         return new_node
 
-    def generate_new(self, class_decl):
+    def _generate_new(self, class_decl, class_type, params_map):
+        return ast.New(
+            class_type,
+            args=[self.generator.generate_expr(
+                params_map.get(f.field_type, f.field_type), only_leaves=True)
+                  for f in class_decl.fields])
+
+    def generate_new(self, etype):
+        if isinstance(etype, tp.ParameterizedType):
+            # The etype is a parameterized type, so this case comes from
+            # variance. Therefore, we first need to get the class_declaration
+            # of this type, and initialize the map of type parameters.
+            class_decl = self.generator.context.get_decl(
+                ast.GLOBAL_NAMESPACE, etype.name)
+            params_map = {
+                t_p: etype.type_args[i]
+                for i, t_p in enumerate(etype.t_constructor.type_parameters)
+            }
+            return self._generate_new(class_decl, etype, params_map)
+
+        assert isinstance(etype, ast.ClassDeclaration)
+        class_decl = etype
         if class_decl.is_parameterized():
             # We selected a class that is parameterized. So before its use,
             # we need to instantiate it.
@@ -38,11 +59,7 @@ class ValueSubstitution(Transformation):
                 class_decl.get_type(), self.types)
         else:
             class_type, params_map = class_decl.get_type(), {}
-        return ast.New(
-            class_type,
-            args=[self.generator.generate_expr(
-                params_map.get(f.field_type, f.field_type), only_leaves=True)
-                  for f in class_decl.fields])
+        return self._generate_new(class_decl, class_type, params_map)
 
     def visit_equality_expr(self, node):
         # We are conservative here, because value subtitution may in the
@@ -93,17 +110,35 @@ class TypeSubstitution(Transformation):
         self._namespace = ('global',)
         self._cached_type_widenings = {}
 
+    def is_decl_used(self, decl):
+        """Check if the given declaration is used in the current namespace. """
+        return self._defs[(self._namespace, decl.name)]
+
     def _type_widening(self, decl, setter):
         superclasses = tu.find_supertypes(decl.get_type(), self.types)
         if not superclasses:
             return False
+        # Inspect cached type widenings for this particular declaration.
         sup_t = self._cached_type_widenings.get(
             (decl.name, decl.get_type().name))
+
         if sup_t is None:
             sup_t = utils.random.choice(superclasses)
             if isinstance(sup_t, ast.ClassDeclaration):
                 sup_t = sup_t.get_type()
             self._cached_type_widenings[(decl.name, decl.get_type().name)] = sup_t
+
+        if isinstance(decl.get_type(), tp.ParameterizedType):
+            # The current type of the declaration is parameterized type.
+
+            # This comes with some restrictions. If this declaration is used
+            # in the current namespace, unfortunately, we cannot perform
+            # a smart cast, due to type erasure e.g.,
+            #     if (decl is X<String>)
+            #
+            # Therefore, we don't perform type widening in this case.
+            if self.is_decl_used(decl):
+                return False
         self.transform = True
         setter(decl, sup_t)
         return True
@@ -197,6 +232,19 @@ class TypeSubstitution(Transformation):
             node.body = if_cond
         return use_var
 
+    def no_smart_cast(self, node, decl, transform, old_type):
+        old_tc = getattr(old_type, 't_constructor', None)
+        new_tc = getattr(decl.get_type(), 't_constructor', None)
+        if old_tc and old_tc == new_tc:
+            # We are in a case like the following:
+            # old_type (subtype)   = A<String>
+            # new_type (supertype) = A<Any>
+            # No need for smart cast.
+            return True
+
+        return not self.is_decl_used(decl) or not transform or (
+            node.body is None)
+
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
@@ -229,8 +277,7 @@ class TypeSubstitution(Transformation):
             old_type = p.param_type
             transform = self._type_widening(
                 p, lambda x, y: setattr(x, 'param_type', y))
-            if (not self._defs[(self._namespace, p.name)] or
-                    not transform or new_node.body is None):
+            if self.no_smart_cast(new_node, p, transform, old_type):
                 # We are done, if one of the following applies:
                 #
                 # * The parameter is not used in the function.
