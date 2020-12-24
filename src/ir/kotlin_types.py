@@ -89,5 +89,5 @@ Double = DoubleType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
-NonNothingTypes = [Any, Unit, Number, Integer, Short, Long, Byte, Float,
-    Double, Char, String, Boolean]
+NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
+                   Double, Char, String, Boolean]
