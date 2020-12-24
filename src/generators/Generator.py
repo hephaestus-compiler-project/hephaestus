@@ -410,7 +410,11 @@ class Generator(object):
         class_decls = self.context.get_classes(self.namespace).values()
         for c in class_decls:
             t = c.get_type()
-            if t.is_subtype(etype) and t.name == etype.name:
+            t_con = getattr(etype, 't_constructor', None)
+            # or t == t_con: If etype is a parameterized type (i.e.,
+            # getattr(etype, 't_constructor', None) != None), we need to
+            # get the class corresponding to its type constructor.
+            if (t.is_subtype(etype) and t.name == etype.name) or t == t_con:
                 return c
 
     def _get_subclass(self, etype: types.Type):
@@ -423,7 +427,7 @@ class Generator(object):
                 continue
             if c.is_parameterized():
                 t_con = getattr(etype, 't_constructor', None)
-                if c.get_type() == t_con:
+                if c.get_type() == t_con or c.get_type().is_subtype(etype):
                     subclasses.append(c)
             else:
                 if c.get_type().is_subtype(etype):
