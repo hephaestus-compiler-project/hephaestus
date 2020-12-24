@@ -197,9 +197,15 @@ class ParameterizedSubstitution(Transformation):
                     possible_types = map(to_type, tu.find_subtypes(
                         tp.constraint, self.types, True))
                 if tp.type_param.bound:
-                    # TODO Fix is_subtype for parameterized types
-                    possible_types = [t for t in possible_types
-                                      if t.is_subtype(tp.type_param.bound)]
+                    # To preserve correctness, the only possible type is
+                    # tp.type_param.bound. For example,
+                    #
+                    # class A<T : Number>
+                    # val x: Number = 1
+                    # val y: A<Int> = A<Int>(x)
+                    #
+                    # does not compile.
+                    possible_types = [tp.constraint]
             type_args.append(random.choice(list(possible_types)))
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
