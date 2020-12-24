@@ -198,7 +198,7 @@ class ParameterizedSubstitution(Transformation):
                         tp.constraint, self.types, True))
                 if tp.type_param.bound:
                     # To preserve correctness, the only possible type is
-                    # tp.type_param.bound. For example,
+                    # tp.constraint. For example,
                     #
                     # class A<T : Number>
                     # val x: Number = 1
