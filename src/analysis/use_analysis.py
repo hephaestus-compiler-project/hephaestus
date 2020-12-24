@@ -74,6 +74,7 @@ class UseAnalysis(DefaultVisitor):
         callee_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
                             FUNC_RET)
         if target_node:
+            self._use_graph[target_node]
             self._use_graph[callee_node].add(target_node)
 
     def _flow_var_to_ref(self, expr: ast.Variable, target_node: GNode):
@@ -87,6 +88,7 @@ class UseAnalysis(DefaultVisitor):
             return
         var_node = GNode(var_node[0], var_node[1].name)
         if target_node:
+            self._use_graph[target_node]
             self._use_graph[var_node].add(target_node)
 
     @change_namespace
@@ -210,6 +212,7 @@ class UseAnalysis(DefaultVisitor):
                 # The argument is other than a variable reference or function
                 # call. So we add an edge from NONE to the corresponding
                 # function's parameter.
+                self._use_graph[param_node]
                 self._use_graph[NONE_NODE].add(param_node)
             self.visit(arg)
         if fun_nsdecl:
