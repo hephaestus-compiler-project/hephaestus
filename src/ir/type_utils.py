@@ -6,17 +6,25 @@ from src.ir import ast, types as tp
 
 
 def _construct_related_types(t, types, find_subtypes):
+    def to_type(t):
+        if isinstance(t, ast.ClassDeclaration):
+            t = t.get_type()
+        if isinstance(t, tp.TypeConstructor):
+            t, _ = instantiate_type_constructor(t, types)
+            return t
+        return t
+
     valid_args = []
     for i, t_param in enumerate(t.t_constructor.type_parameters):
         if t_param.is_invariant():
             t_args = [t.type_args[i]]
         elif t_param.is_covariant():
-            t_args = _find_types(t.type_args[i], types,
-                                 find_subtypes, True)
+            t_args = map(to_type, _find_types(t.type_args[i], types,
+                                              find_subtypes, True))
         else:
-            t_args = _find_types(t.type_args[i], types,
-                                 not find_subtypes, True)
-        valid_args.append(t_args)
+            t_args = map(to_type, _find_types(t.type_args[i], types,
+                                              not find_subtypes, True))
+        valid_args.append(list(t_args))
 
     return [
         tp.ParameterizedType(t.t_constructor, type_args)
