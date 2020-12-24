@@ -94,6 +94,18 @@ def test_parameterized_type():
     assert pt3.is_subtype(ParameterizedType(tc3, [IntegerType()]))
     assert not pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
 
+    # Recursive
+    tp4 = [TypeParameter("T", TypeParameter.COVARIANT)]
+    tc4 = TypeConstructor("Tp4", tp4, [cls1])
+    temp_tp = [TypeParameter("T", TypeParameter.COVARIANT)]
+    temp_tc = TypeConstructor("Temp", temp_tp, [cls1])
+    ta1 = [ParameterizedType(temp_tc, [NumberType()])]
+    ta2 = [ParameterizedType(temp_tc, [AnyType()])]
+    ta3 = [ParameterizedType(temp_tc, [IntegerType()])]
+    pt4 = ParameterizedType(tc4, ta1)
+    assert pt4.is_subtype(pt4)
+    assert pt4.is_subtype(ParameterizedType(tc4, ta2))
+    assert not pt4.is_subtype(ParameterizedType(tc4, ta3))
 
 def test_classifier_check_supertypes():
     type_param_a = TypeParameter("A")
