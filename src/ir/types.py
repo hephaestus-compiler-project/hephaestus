@@ -245,6 +245,23 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
+    def is_subtype(self, t: Type) -> bool:
+        if super(ParameterizedType, self).is_subtype(t):
+            return True
+        if isinstance(t, ParameterizedType):
+            if self.t_constructor == t.t_constructor:
+                print("OK")
+                for tp, sarg, targ in zip(self.t_constructor.type_parameters,
+                                          self.type_args, t.type_args):
+                    if tp.is_invariant() and sarg != targ:
+                        return False
+                    elif tp.is_covariant() and not sarg.is_subtype(targ):
+                        return False
+                    elif tp.is_contravariant() and not targ.is_subtype(sarg):
+                        return False
+                return True
+        return False
+
 
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
