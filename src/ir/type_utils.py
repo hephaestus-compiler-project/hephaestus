@@ -6,6 +6,7 @@ from src.ir import ast, types as tp
 
 
 def _construct_related_types(t, types, find_subtypes):
+    # FIXME: Make _find_types to always return concrete types.
     def to_type(t):
         if isinstance(t, ast.ClassDeclaration):
             t = t.get_type()
