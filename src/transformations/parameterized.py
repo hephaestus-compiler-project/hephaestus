@@ -26,10 +26,27 @@ def get_type_params_names(total):
 
 def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
         variance):
+    def bounds_filter(bound):
+        # In case the constraint is a parameterized type, then we should check
+        # that the bound confronts to the constraints of type_constraint's
+        # type constructor.
+        if isinstance(bound, types.ParameterizedType):
+            type_params = bound.t_constructor.type_parameters
+            for targ, tparam in zip(bound.type_args, type_params):
+                # Handle case where targ is ParameterizedType recursively.
+                if (isinstance(targ, types.ParameterizedType) and
+                        not bounds_filter(targ)):
+                    return False
+                if tparam.bound and not targ.is_subtype(tparam.bound):
+                    return False
+        return True
     bound = None
-    if type_constraint is not None and random.random() < .5:
-        bound = random.choice(tu.find_supertypes(
-            type_constraint, ptypes, include_self=True))
+    if random.random() < .5:
+        if type_constraint is None:
+            bound = random.choice(kt.NonNothingTypes)
+        else:
+            bound = random.choice(list(filter(bounds_filter, tu.find_supertypes(
+                type_constraint, ptypes, include_self=True))))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -87,17 +104,29 @@ def get_connected_type_param(use_graph, type_params, gnode):
 
 def get_variance(context, use_graph, node):
     variance = INVARIANT
+    # Find all source nodes of the node, i.e., top level-nodes that have a flow
+    # to the node.
     sn = gutils.find_sources(use_graph, node)  # source_nodes
+    # Find all nodes that are connected with the node.
     cn = gutils.find_all_connected(use_graph, node)  # connected_nodes
-    sn_types = [context.get_decl_type(n.namespace, n.name) for n in sn]
-    cn_types = [context.get_decl_type(n.namespace, n.name) for n in cn]
-    if (all(s is ast.FieldDeclaration for s in sn_types) and
-        not any(c is ast.ParameterDeclaration for c in cn_types) and
-        utils.random.bool()):
+    sn_decl = [context.get_decl(n.namespace, n.name) for n in sn]
+    cn_decl = [context.get_decl(n.namespace, n.name) for n in cn]
+    # Final FieldDeclaration (val) is an 'out' position (covariant)
+    # FieldDeclaration (var) is an 'invariant' position (covariant)
+    # ParameterDeclaration is an 'in' position (contravariant)
+    # Return is an 'out' position (covariant)
+    # If all source nodes of the node are final FieldDeclarations and none of
+    # its connected nodes is ParameterDeclaration, then the type parameter can
+    # be covariant.
+    if (all(isinstance(s, ast.FieldDeclaration) and s.is_final for s in sn_decl)
+            and not any(isinstance(c, ast.ParameterDeclaration) for c in cn_decl)
+            and utils.random.bool()):
         variance = COVARIANT
-    elif (all(s is ast.ParameterDeclaration for s in sn_types) and
-          not any(n.name == FUNC_RET for n in cn) and
-          utils.random.bool()):
+    # if all source nodes are ParameterDeclaration and none of its connected
+    # nodes is a RETURN node, then the type parameter can be contravariant.
+    elif (all(isinstance(s, ast.ParameterDeclaration) for s in sn_decl)
+          and not any(n.name == FUNC_RET for n in cn)
+          and utils.random.bool()):
         variance = CONTRAVARIANT
     return variance
 
@@ -176,13 +205,15 @@ class ParameterizedSubstitution(Transformation):
 
         type_args = []
         for tp in self._type_params:
+            type_arg = None
+            if tp.variance == INVARIANT:
+                type_arg = tp.constraint if tp.constraint else \
+                    random.choice(kt.NonNothingTypes)
+                type_args.append(type_arg)
+                continue
             if tp.constraint is None:
                 possible_types = kt.NonNothingTypes
             else:
-                # TODO check the code about variance
-                if tp.variance == INVARIANT:
-                    type_args.append(tp.constraint)
-                    continue
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
                     # We need to map the result of find_supertypes()
@@ -196,16 +227,29 @@ class ParameterizedSubstitution(Transformation):
                     # Same as above.
                     possible_types = map(to_type, tu.find_subtypes(
                         tp.constraint, self.types, True))
-                if tp.type_param.bound:
-                    # To preserve correctness, the only possible type is
-                    # tp.constraint. For example,
-                    #
-                    # class A<T : Number>
-                    # val x: Number = 1
-                    # val y: A<Int> = A<Int>(x)
-                    #
-                    # does not compile.
-                    possible_types = [tp.constraint]
+                # To preserve correctness, the only possible type is
+                # tp.constraint. For example,
+                #
+                # class A<T : Number>
+                # val x: Number = 1
+                # val y: A<Int> = A<Int>(x)
+                #
+                # does not compile.
+                #
+                # To use any other type, we must be sure that any argument is of
+                # the newly selected type. For example, in the previous example,
+                # if we update val x to be Int, then it will work.
+                #
+                # class A<T : Number>
+                # val x: Int = 1
+                # val y: A<Int> = A<Int>(x)
+                #
+                # compiles successfully. Hence to use other types we must do
+                # more changes.
+                possible_types = [tp.constraint]
+            if tp.type_param.bound:
+                possible_types = [t for t in possible_types
+                                  if t.is_subtype(tp.type_param.bound)]
             type_args.append(random.choice(list(possible_types)))
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
@@ -250,13 +294,12 @@ class ParameterizedSubstitution(Transformation):
 
         for tp in self._type_params:
             if tp.constraint is None:
-                variance = INVARIANT
                 tp.constraint = t
                 tp.node = GNode(namespace, node.name)
                 tp.variance = get_variance(
                     self.program.context, self._use_graph, tp.node)
                 tp.type_param = create_type_parameter(
-                    tp.name, t, self.types, variance)
+                    tp.name, t, self.types, tp.variance)
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return t
@@ -312,7 +355,6 @@ class ParameterizedSubstitution(Transformation):
         analysis = UseAnalysis(self.program)
         analysis.visit(node)
         self._use_graph = analysis.result()
-        #import pprint; pprint.pprint(self._use_graph)
 
         node = self._select_type_params(node)
 
