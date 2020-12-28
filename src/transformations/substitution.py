@@ -109,10 +109,61 @@ class TypeSubstitution(Transformation):
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self._cached_type_widenings = {}
+        self._func_decls = defaultdict(set)
+
+    def get_current_class(self):
+        cls_name = self._namespace[-2]
+        return self.generator.context.get_decl(
+            ast.GLOBAL_NAMESPACE, cls_name)
 
     def is_decl_used(self, decl):
         """Check if the given declaration is used in the current namespace. """
         return self._defs[(self._namespace, decl.name)]
+
+    def _check_param_type(self, fun, param, param_index, old_type,
+                          current_cls):
+        # The signature of the function defined in the parent class must
+        # be the same with that defined in the child class. The following
+        # example demonstrates that sometimes, this is not the case
+        #
+        # class A<out T>
+        #
+        # interface B {
+        #  fun foo(x: A<Any>): Unit
+        # }
+        #
+        # class C: B {
+        #  override fun foo(x: A<String>) {}
+        # }
+
+        # This function ensures that the signature of the function is the
+        # same in both child and parent classes.
+        funcs = self._func_decls.get(fun.name)
+        if not funcs:
+            return True
+
+        for cls, p_fun in funcs:
+            if cls.inherits_from(current_cls):
+                parent_param = param
+                child_param = p_fun.params[param_index]
+            elif current_cls.inherits_from(cls):
+                parent_param = p_fun.params[param_index]
+                child_param = param
+            else:
+                continue
+
+            if child_param.get_type() == parent_param.get_type():
+                continue
+
+            if child_param.get_type() == old_type:
+                parent_param.param_type = deepcopy(old_type)
+                return False
+
+            if parent_param.get_type() == old_type:
+                child_param.param_type = deepcopy(old_type)
+                return False
+
+        return True
 
     def _type_widening(self, decl, setter):
         superclasses = tu.find_supertypes(decl.get_type(), self.types)
@@ -248,6 +299,7 @@ class TypeSubstitution(Transformation):
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
+        current_cls = self.get_current_class()
         new_node = super(TypeSubstitution, self).visit_func_decl(node)
         is_expression = (not isinstance(new_node.body, ast.Block) or
                          new_node.get_type() == kt.Unit)
@@ -269,7 +321,7 @@ class TypeSubstitution(Transformation):
         else:
             var_decl = None
         use_var = False
-        for p in new_node.params:
+        for i, p in enumerate(new_node.params):
             # We cannot perform type widening in abstract types.
             if isinstance(p.param_type, tp.AbstractType):
                 continue
@@ -277,6 +329,8 @@ class TypeSubstitution(Transformation):
             old_type = p.param_type
             transform = self._type_widening(
                 p, lambda x, y: setattr(x, 'param_type', y))
+            transform = self._check_param_type(new_node, p, i, old_type,
+                                               current_cls)
             if self.no_smart_cast(new_node, p, transform, old_type):
                 # We are done, if one of the following applies:
                 #
@@ -295,6 +349,7 @@ class TypeSubstitution(Transformation):
             use_var = self._add_is_expr(new_node, var_decl, p, old_type)
         if use_var:
             new_node.body = ast.Block([var_decl, new_node.body.body[0]])
+        self._func_decls[new_node.name].add((current_cls, new_node))
         self._namespace = initial_namespace
         return new_node
 
