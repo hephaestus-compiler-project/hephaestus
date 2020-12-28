@@ -42,9 +42,6 @@ def _find_types(t, types, find_subtypes, include_self, bound=None):
     if not find_subtypes:
         # Find supertypes
         t_set = t.get_supertypes()
-        # Find supertypes up to a certain bound.
-        if bound:
-            t_set = {st for st in t_set if st.is_subtype(bound)}
     else:
         # Find subtypes
         t_set = set()
@@ -69,6 +66,9 @@ def _find_types(t, types, find_subtypes, include_self, bound=None):
         t_set.add(t)
     else:
         t_set.discard(t)
+
+    if not find_subtypes and bound:
+        t_set = {st for st in t_set if st.is_subtype(bound)}
     return list(t_set)
 
 
