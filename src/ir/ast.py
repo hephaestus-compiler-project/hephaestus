@@ -305,6 +305,18 @@ class ClassDeclaration(Declaration):
     def is_parameterized(self):
         return bool(self.type_parameters)
 
+    def inherits_from(self, cls):
+        """
+        Check if the current class directly inherits from the given class.
+        """
+        t = cls.get_type()
+        if not self.is_parameterized():
+            return self.get_type() in t.supertypes
+        supertypes = t.supertypes
+        t = self.get_type()
+        return any(getattr(st, 't_constructor', None) == t
+                   for st in supertypes)
+
     def __str__(self):
         superclasses = " : " + ", ".join(map(str, self.superclasses)) \
             if len(self.superclasses) > 0 else ""
