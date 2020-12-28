@@ -159,7 +159,7 @@ class UseAnalysis(DefaultVisitor):
         else:
             expr = node.body
         if not expr:
-            return
+            return super(UseAnalysis, self).visit_func_decl(node)
         if isinstance(expr, ast.Variable):
             self._ret_vars.add(expr.name)
             self._flow_var_to_ref(expr, ret_node)
