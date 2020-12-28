@@ -61,38 +61,6 @@ def create_type_constructor_decl(class_decl, type_parameters):
     )
 
 
-def get_field_param_decls(context, namespace, decls):
-    """Get all the field and parameter declaration in a namespace
-    and namespace's children, etc.
-    """
-    # TODO move some logic from here to context
-    for dname, dnode in context.get_declarations(namespace, True).items():
-        new_namespace = namespace + (dname,)
-        if type(dnode) in (ast.FieldDeclaration, ast.ParameterDeclaration):
-            decls.add((namespace, dnode))
-        if type(dnode) == ast.FunctionDeclaration:
-            decls.update(get_field_param_decls(context, new_namespace, decls))
-        namespace = namespace
-    return decls
-
-
-# TODO This functionality must be provided by context.
-# This function is *incomplete*
-def hard_update_context_variable(context, namespace, decl):
-    context.add_var(namespace, decl.name, decl)
-    parent = namespace[-1]
-    namespace = namespace[:-1]
-    parent_decl = context.get_decl(namespace, parent)
-    if type(parent_decl) == ast.ClassDeclaration:
-        if type(decl) == ast.FieldDeclaration:
-            d = next(d for d in parent_decl.fields if decl.name == d.name)
-            d.field_type = decl.field_type
-    elif type(parent_decl) == ast.FunctionDeclaration:
-        if type(decl) == ast.ParameterDeclaration:
-            d = next(d for d in parent_decl.params if decl.name == d.name)
-            d.param_type = decl.param_type
-
-
 def get_connected_type_param(use_graph, type_params, gnode):
     if gnode in use_graph:
         for tp in type_params:
@@ -174,7 +142,6 @@ class ParameterizedSubstitution(Transformation):
         self._in_find_classes_blacklist: bool = False
         self.find_classes_blacklist = find_classes_blacklist
         self._blacklist_classes = set()
-        #  self._in_override: bool = False
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         self.program = None
@@ -277,8 +244,6 @@ class ParameterizedSubstitution(Transformation):
         * Initialize type parameter
         * Propagate type parameter to connected nodes
         """
-        #  if self._in_override:
-            #  return t
         gnode = GNode(namespace, node.name)
 
         if gutils.none_connected(self._use_graph, gnode):
@@ -322,25 +287,9 @@ class ParameterizedSubstitution(Transformation):
                     tp.name, None, self.types, utils.random.choice(VARIANCE))
 
     def _select_type_params(self, node) -> ast.Node:
-        # To use this instead of visiting the whole program to select which
-        # variables to change their types to type parameters we must be able
-        # to do complete updates in the context.
-        #  namespace = self._namespace + (node.name,)
-        #  decls = get_field_param_decls(self.program.context, namespace, set())
-        #  for ns, ndecl in decls:
-            #  if type(ndecl) == ast.FieldDeclaration:
-                #  ndecl.field_type = self._use_type_parameter(
-                    #  ns, ndecl, ndecl.field_type, True)
-            #  else:  # ParameterDeclaration
-                #  ndecl.param_type = self._use_type_parameter(
-                    #  ns, ndecl, ndecl.param_type)
-            #  hard_update_context_variable(self.program.context, ns, ndecl)
-        #  node = self.program.context.get_decl(self._namespace, node.name)
-
         self._in_select_type_params = True
         node = self.visit_class_decl(node)
         self._in_select_type_params = False
-
         return node
 
 
@@ -474,7 +423,6 @@ class ParameterizedSubstitution(Transformation):
 
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
-        #  self._in_override = False
         return new_node
 
     def visit_new(self, node):
