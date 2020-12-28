@@ -87,6 +87,11 @@ parser.add_argument(
     action="store_true",
     help="Keep logs for each transformation"
 )
+parser.add_argument(
+    "-N", "--dry-run",
+    action="store_true",
+    help="Do not compile the programs"
+)
 
 
 args = parser.parse_args()

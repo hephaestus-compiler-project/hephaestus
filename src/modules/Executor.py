@@ -81,6 +81,8 @@ class Executor:
                 returns an error.
 
         """
+        if self.args.dry_run:
+            return True, ""
         with tempfile.TemporaryDirectory() as tmpdirname:
             filename = os.path.join(tmpdirname, self.translator.get_filename())
             executable = os.path.join(tmpdirname, self.translator.get_executable())
