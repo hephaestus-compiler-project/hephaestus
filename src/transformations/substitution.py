@@ -349,7 +349,8 @@ class TypeSubstitution(Transformation):
             use_var = self._add_is_expr(new_node, var_decl, p, old_type)
         if use_var:
             new_node.body = ast.Block([var_decl, new_node.body.body[0]])
-        self._func_decls[new_node.name].add((current_cls, new_node))
+        if node.func_type == ast.FunctionDeclaration.CLASS_METHOD:
+            self._func_decls[new_node.name].add((current_cls, new_node))
         self._namespace = initial_namespace
         return new_node
 
