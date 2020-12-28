@@ -22,7 +22,7 @@ def get_key(key):
     return "Iteration_{}".format(str(key))
 
 
-def run_command(arguments):
+def run_command(arguments, get_stdout=True):
     """Run a command
     Args:
         A list with the arguments to execute. For example ['ls', 'foo']
@@ -31,12 +31,14 @@ def run_command(arguments):
     """
     try:
         cmd = sp.Popen(arguments, stdout=sp.PIPE, stderr=sp.STDOUT)
-        _, stderr = cmd.communicate()
+        stdout, stderr = cmd.communicate()
     except Exception as e:
         return False, e
     stderr = stderr.decode("utf-8") if stderr else ""
+    stdout = stdout.decode("utf-8") if stdout else ""
+    err = stdout if get_stdout else stderr
     status = True if cmd.returncode == 0 else False
-    return status, stderr
+    return status, err
 
 
 class Executor:
@@ -194,11 +196,12 @@ class Executor:
                 out.write(program_str)
         if not comp:
             return "succeed", p
-        status, _ = self._compile(
+        status, err = self._compile(
             self.translator.result(),
             compiler_pass=transformer.preserve_correctness()
         )
         if not status:
+            self.stats[get_key(i)]['error'] = err
             if self.args.debug:
                 print("Mismatch found: {}(iter) {}(trans)".format(
                     str(i), str(transformation_number)
