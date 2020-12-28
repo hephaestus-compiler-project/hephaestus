@@ -159,7 +159,8 @@ class TypeSubstitution(Transformation):
                 parent_param.param_type = deepcopy(old_type)
                 return False
 
-            if parent_param.get_type() == old_type:
+            if parent_param.get_type() == old_type or (
+                    isinstance(parent_param.get_type(), tp.AbstractType)):
                 child_param.param_type = deepcopy(old_type)
                 return False
 
@@ -322,15 +323,17 @@ class TypeSubstitution(Transformation):
             var_decl = None
         use_var = False
         for i, p in enumerate(new_node.params):
-            # We cannot perform type widening in abstract types.
+            old_type = p.param_type
             if isinstance(p.param_type, tp.AbstractType):
+                self._check_param_type(new_node, p, i, old_type,
+                                       current_cls)
                 continue
             # Perform type widening on this function's parameters.
-            old_type = p.param_type
             transform = self._type_widening(
                 p, lambda x, y: setattr(x, 'param_type', y))
             transform = self._check_param_type(new_node, p, i, old_type,
                                                current_cls)
+            # We cannot perform type widening in abstract types.
             if self.no_smart_cast(new_node, p, transform, old_type):
                 # We are done, if one of the following applies:
                 #
