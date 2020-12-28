@@ -29,7 +29,7 @@ class Transformation(DefaultVisitorUpdate):
 
     def log(self, msg):
         if self.logger is None:
-            print("Warning logger is None")
+            pass
         else:
             self.logger.log(msg)
 
