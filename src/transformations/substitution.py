@@ -161,8 +161,9 @@ class TypeSubstitution(Transformation):
 
             if parent_param.get_type() == old_type or (
                     isinstance(parent_param.get_type(), tp.AbstractType)):
-                child_param.param_type = deepcopy(old_type)
-                return False
+                if not isinstance(old_type, tp.AbstractType):
+                    child_param.param_type = deepcopy(old_type)
+                    return False
 
         return True
 
