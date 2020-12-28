@@ -180,9 +180,12 @@ class Executor:
         prev_p = deepcopy(program)
         transformer.visit(program)
         p = transformer.result()
-        self.tstack.append((deepcopy(p), transformer))
+        self.tstack.append((prev_p, transformer))
         if p is None:
-            return "continue", prev_p
+            if not self.args.only_last or not comp:
+                return "continue", prev_p
+            else:
+                p = prev_p
         program_str = self._translate_program(p)
         if self.args.keep_all:
             dst_dir = os.path.join(self.args.test_directory,
@@ -221,7 +224,8 @@ class Executor:
                 if ((self.args.only_last or self.args.rerun) and
                     j != self.args.transformations - 1):
                     comp = False
-                status, program = self._apply_trasnformation(j, program, comp, i)
+                status, program = self._apply_trasnformation(j, program, comp,
+                                                             i)
                 if status == "continue":
                     continue
                 if status == "break":
