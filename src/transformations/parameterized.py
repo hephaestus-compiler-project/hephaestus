@@ -425,7 +425,7 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params:
             if not node.override:
                 node.field_type = self._use_type_parameter(
-                    self._namespace, node, node.field_type, True)
+                    self._namespace, node, node.get_type(), True)
             return node
         if self._in_find_classes_blacklist:
             return node
@@ -435,7 +435,7 @@ class ParameterizedSubstitution(Transformation):
     def visit_param_decl(self, node):
         if self._in_select_type_params:
             node.param_type = self._use_type_parameter(
-                self._namespace, node, node.param_type)
+                self._namespace, node, node.get_type())
             return node
         if self._in_find_classes_blacklist:
             return node
