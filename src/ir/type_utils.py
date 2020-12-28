@@ -21,10 +21,12 @@ def _construct_related_types(t, types, find_subtypes):
             t_args = [t.type_args[i]]
         elif t_param.is_covariant():
             t_args = map(to_type, _find_types(t.type_args[i], types,
-                                              find_subtypes, True))
+                                              find_subtypes, True,
+                                              t_param.bound))
         else:
             t_args = map(to_type, _find_types(t.type_args[i], types,
-                                              not find_subtypes, True))
+                                              not find_subtypes, True,
+                                              t_param.bound))
         valid_args.append(list(t_args))
 
     return [
@@ -34,10 +36,15 @@ def _construct_related_types(t, types, find_subtypes):
     ]
 
 
-def _find_types(t, types, find_subtypes, include_self):
+def _find_types(t, types, find_subtypes, include_self, bound=None):
+    # Otherwise, if we want to find the supertypes of a given type, `bound`
+    # is interpreted a greatest bound.
     if not find_subtypes:
         # Find supertypes
         t_set = t.get_supertypes()
+        # Find supertypes up to a certain bound.
+        if bound:
+            t_set = {st for st in t_set if st.is_subtype(bound)}
     else:
         # Find subtypes
         t_set = set()
@@ -65,13 +72,14 @@ def _find_types(t, types, find_subtypes, include_self):
     return list(t_set)
 
 
-def find_subtypes(t, types, include_self=False):
-    return _find_types(t, types, find_subtypes=True, include_self=include_self)
-
-
-def find_supertypes(t, types, include_self=False):
-    return _find_types(t, types, find_subtypes=False,
+def find_subtypes(t, types, include_self=False, bound=None):
+    return _find_types(t, types, find_subtypes=True,
                        include_self=include_self)
+
+
+def find_supertypes(t, types, include_self=False, bound=None):
+    return _find_types(t, types, find_subtypes=False,
+                       include_self=include_self, bound=bound)
 
 
 def _update_type_constructor(t, new_type):

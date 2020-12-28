@@ -347,3 +347,33 @@ def test_find_supertypes_nested():
         tp.ParameterizedType(quux_con, [tp.ParameterizedType(qux_con, [baz])]),
     }
     assert supertypes == expected_supers
+
+
+def test_find_supertypes_bound():
+    new = tp.SimpleClassifier("New", [])
+    foo = tp.SimpleClassifier("Foo", [new])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+
+    supertypes = set(tutils.find_supertypes(
+        baz, {new, foo, bar, baz, unrel}, bound=foo))
+    assert supertypes == {bar, foo}
+
+
+def test_find_subtypes_with_bound():
+    new = tp.SimpleClassifier("New", [])
+    foo = tp.SimpleClassifier("Foo", [new])
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    unrel = tp.SimpleClassifier("Unrel", [])
+    qux_con = tp.TypeConstructor(
+        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT,
+                                 bound=foo)], [])
+    qux = tp.ParameterizedType(qux_con, [baz])
+    subtypes = set(tutils.find_subtypes(
+        qux, {new, foo, bar, baz, unrel, qux_con}))
+    assert subtypes == {
+        tp.ParameterizedType(qux_con, [bar]),
+        tp.ParameterizedType(qux_con, [foo])
+    }
