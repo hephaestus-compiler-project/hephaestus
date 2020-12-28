@@ -155,8 +155,9 @@ class ParameterizedSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Parameterized Substitution'
 
-    def __init__(self, max_type_params=3, find_classes_blacklist=True):
-        super(ParameterizedSubstitution, self).__init__()
+    def __init__(self, logger=None, max_type_params=3,
+                 find_classes_blacklist=True):
+        super(ParameterizedSubstitution, self).__init__(logger)
         self._max_type_params: int = max_type_params
 
         self._selected_class_decl: ast.ClassDeclaration = None
@@ -355,6 +356,7 @@ class ParameterizedSubstitution(Transformation):
         analysis = UseAnalysis(self.program)
         analysis.visit(node)
         self._use_graph = analysis.result()
+        self.log(self._use_graph)
 
         node = self._select_type_params(node)
 

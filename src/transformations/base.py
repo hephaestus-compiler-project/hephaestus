@@ -16,13 +16,22 @@ class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
     NAME = None
 
-    def __init__(self):
+    def __init__(self, logger=None):
         self.transform = False
         self.program = None
         self.types = []
+        self.logger = logger
+        if self.logger:
+            self.logger.log_info()
 
     def result(self):
         return self.program
+
+    def log(self, msg):
+        if self.logger is None:
+            print("Warning logger is None")
+        else:
+            self.logger.log(msg)
 
     @classmethod
     def get_name(cls):

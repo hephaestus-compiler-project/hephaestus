@@ -16,6 +16,7 @@ from src.transformations.type_creation import (
 from src.transformations.parameterized import ParameterizedSubstitution
 from src.translators.kotlin import KotlinTranslator
 from src.utils import mkdir, random
+from src.modules.logging import Logger
 
 
 def get_key(key):
@@ -173,7 +174,14 @@ class Executor:
         return True, p, program_str
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
-        transformer = random.choice(self.transformations)()
+        transformation_cls = random.choice(self.transformations)
+        if self.args.log:
+            logger = Logger(self.args.name, self.args.test_directory, i,
+                            transformation_cls.get_name(),
+                            transformation_number)
+        else:
+            logger = None
+        transformer = transformation_cls(logger)
         if self.args.debug:
             print("Transformation: " + transformer.get_name())
         self.stats[get_key(i)]['transformations'].append(transformer.get_name())

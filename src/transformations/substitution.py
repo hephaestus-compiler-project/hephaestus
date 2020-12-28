@@ -13,8 +13,8 @@ class ValueSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Value Substitution'
 
-    def __init__(self):
-        super(ValueSubstitution, self).__init__()
+    def __init__(self, logger=None):
+        super(ValueSubstitution, self).__init__(logger)
         self.program = None
         self.generator = None
 
@@ -102,8 +102,8 @@ class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Type Substitution (Widening/Narrowing)'
 
-    def __init__(self):
-        super(TypeSubstitution, self).__init__()
+    def __init__(self, logger=None):
+        super(TypeSubstitution, self).__init__(logger)
         self.program = None
         self.generator = None
         self._defs = defaultdict(bool)

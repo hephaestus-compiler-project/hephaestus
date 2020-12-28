@@ -82,6 +82,11 @@ parser.add_argument(
     help=("Run only the last transformation. If failed, start from the last "
           "and goes back until the transformation introduces the error")
 )
+parser.add_argument(
+    "-L", "--log",
+    action="store_true",
+    help="Keep logs for each transformation"
+)
 
 
 args = parser.parse_args()

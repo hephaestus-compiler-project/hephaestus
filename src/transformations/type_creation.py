@@ -110,8 +110,8 @@ class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self):
-        super(TypeCreation, self).__init__()
+    def __init__(self, logger=None):
+        super(TypeCreation, self).__init__(logger)
         self._new_class = None
         self._old_class = None
 
@@ -232,8 +232,8 @@ class TypeCreation(Transformation):
 class SubtypeCreation(TypeCreation):
     NAME = 'Subtype Creator'
 
-    def __init__(self):
-        super(SubtypeCreation, self).__init__()
+    def __init__(self, logger=None):
+        super(SubtypeCreation, self).__init__(logger)
         self.generator = None
         # This dictionary is used to map type parameters to their
         # type arguments.
@@ -333,8 +333,8 @@ class SubtypeCreation(TypeCreation):
 class SupertypeCreation(TypeCreation):
     NAME = 'Supertype Creator'
 
-    def __init__(self):
-        super(SupertypeCreation, self).__init__()
+    def __init__(self, logger=None):
+        super(SupertypeCreation, self).__init__(logger)
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self.empty_supertype = False
