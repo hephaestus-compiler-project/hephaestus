@@ -1,5 +1,5 @@
 from copy import deepcopy
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from src import utils
 from src.ir import ast, types as tp, kotlin_types as kt, type_utils as tu
@@ -156,6 +156,27 @@ class TypeCreation(Transformation):
                 # new class.
                 self._add_function_vars(new_class, old_class, f)
         self.program.add_declaration(new_class)
+        # At the following lines, we place new class at the right place.
+        # For example, if the new class inherits from the old class, we place
+        # the new class after the declaration of the old class.
+        #
+        # Otherwise, if the old class inherits from the new class, we place
+        # the new class before the declaration of the old class.
+        # This assumption regarding ordering of class declarations is useful
+        # for other transformations.
+        decls = OrderedDict()
+        after_old = new_class.inherits_from(old_class)
+        for k, v in self.program.get_declarations().items():
+            if k == old_class.name and after_old:
+                decls[k] = v
+                decls[new_class.name] = new_class
+            if k == old_class.name and not after_old:
+                decls[new_class.name] = new_class
+                decls[k] = v
+            if k == new_class.name:
+                continue
+            decls[k] = v
+        self.program.update_declarations(decls)
 
     def create_new_class(self, class_decl):
         raise NotImplementedError('create_new_class() must be implemented')
