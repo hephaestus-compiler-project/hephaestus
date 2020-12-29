@@ -22,7 +22,7 @@ def save_stats():
     dst_file = dst_dir + '/stats.json'
     mkdir(dst_dir)
     with open(dst_file, 'w') as out:
-        json.dump(STATS, out)
+        json.dump(STATS, out, indent=2)
 
 
 def run(i):
