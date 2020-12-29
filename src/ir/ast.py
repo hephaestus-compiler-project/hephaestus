@@ -35,6 +35,9 @@ class Program(Node):
         return self.context.get_declarations(GLOBAL_NAMESPACE,
                                              only_current=True)
 
+    def update_declarations(self, decls):
+        self.context._context[GLOBAL_NAMESPACE]['decls'] = decls
+
     def add_declaration(self, decl):
         decl_types = {
             FunctionDeclaration: self.context.add_func,
@@ -309,12 +312,11 @@ class ClassDeclaration(Declaration):
         """
         Check if the current class directly inherits from the given class.
         """
-        t = cls.get_type()
-        if not self.is_parameterized():
-            return self.get_type() in t.supertypes
-        supertypes = t.supertypes
-        t = self.get_type()
-        return any(getattr(st, 't_constructor', None) == t
+        other_t = cls.get_type()
+        supertypes = self.get_type().supertypes
+        if not cls.is_parameterized():
+            return other_t in supertypes
+        return any(getattr(st, 't_constructor', None) == other_t
                    for st in supertypes)
 
     def __str__(self):
