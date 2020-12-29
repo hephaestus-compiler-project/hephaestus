@@ -193,6 +193,7 @@ class KotlinTranslator(ASTVisitor):
         integer_types = {
             kt.Long: ".toLong()",
             kt.Short: ".toShort()",
+            kt.Byte: ".toByte()",
         }
         suffix = integer_types.get(node.integer_type, "")
         literal = str(node.literal)

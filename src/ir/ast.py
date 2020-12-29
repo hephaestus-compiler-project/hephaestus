@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from typing import List, Set
+from typing import List
 
 from src import utils
 from src.ir.node import Node

@@ -12,6 +12,7 @@ class Generator(object):
         kt.Any,
         kt.Number,
         kt.Integer,
+        kt.Byte,
         kt.Short,
         kt.Long,
         kt.Char,
@@ -103,10 +104,12 @@ class Generator(object):
             kt.Char,
             kt.Float,
             kt.Integer,
+            kt.Byte,
             kt.Short,
             kt.Long
         ]
         number_types = [
+            kt.Byte,
             kt.Short,
             kt.Integer,
             kt.Long,
@@ -120,6 +123,7 @@ class Generator(object):
             kt.Char: [kt.Char],
             kt.Float: number_types,
             kt.Integer: number_types,
+            kt.Byte: number_types,
             kt.Short: number_types,
             kt.Long: number_types
         }
@@ -600,6 +604,7 @@ class Generator(object):
         constant_candidates = {
             kt.Number: self.gen_integer_constant,
             kt.Integer: self.gen_integer_constant,
+            kt.Byte: self.gen_integer_constant,
             kt.Short: self.gen_integer_constant,
             kt.Long: self.gen_integer_constant,
             kt.Float: self.gen_real_constant,

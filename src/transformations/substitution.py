@@ -89,6 +89,7 @@ class ValueSubstitution(Transformation):
             kt.String: self.generator.gen_string_constant,
             kt.Number: self.generator.gen_integer_constant,
             kt.Integer: self.generator.gen_integer_constant,
+            kt.Byte: self.generator.gen_integer_constant,
             kt.Short: self.generator.gen_integer_constant,
             kt.Long: self.generator.gen_integer_constant,
             kt.Float: lambda: self.generator.gen_real_constant(kt.Float),
