@@ -333,8 +333,9 @@ class TypeSubstitution(Transformation):
             # Perform type widening on this function's parameters.
             transform = self._type_widening(
                 p, lambda x, y: setattr(x, 'param_type', y))
-            transform = transform and self._check_param_type(
+            transform2 = self._check_param_type(
                 new_node, p, i, old_type, current_cls)
+            transform = transform and transform2
             # We cannot perform type widening in abstract types.
             if self.no_smart_cast(new_node, p, transform, old_type):
                 # We are done, if one of the following applies:
