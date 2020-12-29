@@ -520,6 +520,11 @@ class Generator(object):
             for f in c.fields:
                 if not f.is_final:
                     classes.append((c, f))
+        # Instead of filter out TypeConstructors we can
+        # instantiate_type_constructor. To do so, we need to pass types as
+        # argument to Generator's constructor.
+        classes = [c for c in classes
+                   if not isinstance(c[0].get_type(), types.TypeConstructor)]
         if not classes:
             return None
         return utils.random.choice(classes)
