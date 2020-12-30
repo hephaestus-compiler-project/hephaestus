@@ -295,11 +295,7 @@ class SubtypeCreation(TypeCreation):
     def create_new_class(self, class_decl):
         # Here the new class corresponds to a subtype from the given
         # `class_decl`.
-        decls = [d for d in self.program.declarations
-                 if (d != class_decl and isinstance(d, ast.ClassDeclaration)
-                     and d.class_type == ast.ClassDeclaration.REGULAR)]
-        types = decls + self.generator.RET_BUILTIN_TYPES
-        class_type = self._get_class_type(class_decl, types)
+        class_type = self._get_class_type(class_decl, self.types)
         overriden_fields = utils.random.sample(class_decl.fields)
         new_fields_nu = self.generator.max_fields - len(overriden_fields)
         fields = []
@@ -310,7 +306,8 @@ class SubtypeCreation(TypeCreation):
                 can_override=True, override=True,
                 is_final=f.is_final))
         for i in range(utils.random.integer(0, new_fields_nu)):
-            fields.append(self.generator.gen_field_decl(tu.choose_type(types)))
+            fields.append(self.generator.gen_field_decl(
+                tu.choose_type(self.types)))
         abstract_functions = [f for f in class_decl.functions
                               if f.body is None]
         functions = []
