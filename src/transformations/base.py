@@ -1,4 +1,3 @@
-from src.ir import ast, types
 from src.ir.visitors import DefaultVisitorUpdate
 
 
@@ -16,13 +15,17 @@ class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
     NAME = None
 
-    def __init__(self, logger=None):
-        self.transform = False
-        self.program = None
-        self.types = []
+    def __init__(self, program, logger=None):
+        assert program is not None, 'The given program must not be None'
+        self.is_transformed = False
+        self.program = program
+        self.types = self.program.get_types()
         self.logger = logger
         if self.logger:
             self.logger.log_info()
+
+    def transform(self):
+        self.program = self.visit(self.program)
 
     def result(self):
         return self.program

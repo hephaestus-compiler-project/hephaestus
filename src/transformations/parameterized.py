@@ -24,7 +24,7 @@ def get_type_params_names(total):
 
 
 def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
-        variance):
+                          variance):
     def bounds_filter(bound):
         # In case the constraint is a parameterized type, then we should check
         # that the bound confronts to the constraints of type_constraint's
@@ -42,11 +42,12 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
     bound = None
     if utils.random.bool():
         if type_constraint is None:
-            bound = random.choice(kt.NonNothingTypes)
+            bound = utils.random.choice(kt.NonNothingTypes)
         else:
-            bound = random.choice(list(filter(bounds_filter, tu.find_supertypes(
-                type_constraint, ptypes, include_self=True,
-                concrete_only=True))))
+            bound = utils.random.choice(list(filter(
+                bounds_filter, tu.find_supertypes(
+                    type_constraint, ptypes, include_self=True,
+                    concrete_only=True))))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -65,7 +66,7 @@ def get_connected_type_param(use_graph, type_params, gnode):
     if gnode in use_graph:
         for tp in type_params:
             if (tp.node is not None and
-                gutils.connected(use_graph, gnode, tp.node)):
+                    gutils.connected(use_graph, gnode, tp.node)):
                 return tp.type_param
     return None
 
@@ -123,9 +124,9 @@ class ParameterizedSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Parameterized Substitution'
 
-    def __init__(self, logger=None, max_type_params=3,
+    def __init__(self, program, logger=None, max_type_params=3,
                  find_classes_blacklist=True):
-        super(ParameterizedSubstitution, self).__init__(logger)
+        super(ParameterizedSubstitution, self).__init__(program, logger)
         self._max_type_params: int = max_type_params
 
         self._selected_class_decl: ast.ClassDeclaration = None
@@ -144,10 +145,6 @@ class ParameterizedSubstitution(Transformation):
         self._blacklist_classes = set()
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
-        self.program = None
-
-    def result(self):
-        return self.program
 
     def _discard_node(self):
         return self._in_select_type_params or self._in_find_classes_blacklist
@@ -168,7 +165,7 @@ class ParameterizedSubstitution(Transformation):
             type_arg = None
             if tp.variance == INVARIANT:
                 type_arg = tp.constraint if tp.constraint else \
-                    random.choice(kt.NonNothingTypes)
+                    utils.random.choice(kt.NonNothingTypes)
                 type_args.append(type_arg)
                 continue
             if tp.constraint is None:
@@ -205,7 +202,7 @@ class ParameterizedSubstitution(Transformation):
             if tp.type_param.bound:
                 possible_types = [t for t in possible_types
                                   if t.is_subtype(tp.type_param.bound)]
-            type_args.append(random.choice(list(possible_types)))
+            type_args.append(utils.random.choice(list(possible_types)))
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
@@ -310,7 +307,6 @@ class ParameterizedSubstitution(Transformation):
         """Select which class declaration to replace, and select how many
         type parameters to use.
         """
-        self.program = node
         if self.find_classes_blacklist:
             # If find_classes_blacklist is True, we need to perform one
             # pass to the AST, to find blacklisted classes, i.e., classes
@@ -335,11 +331,6 @@ class ParameterizedSubstitution(Transformation):
             for name in get_type_params_names(total_type_params)
         ]
 
-        # Find types declared in program
-        usr_types = [d for d in self.program.declarations
-                     if isinstance(d, ast.ClassDeclaration)]
-        self.types = usr_types + kt.NonNothingTypes
-
         node = self._analyse_selected_class(self._selected_class_decl)
         self.program.context.add_class(self._namespace, node.name, node)
 
@@ -353,7 +344,8 @@ class ParameterizedSubstitution(Transformation):
     def visit_type_param(self, node):
         if self._discard_node():
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_type_param(node)
+        new_node = super(ParameterizedSubstitution, self).visit_type_param(
+            node)
         return self._update_type(new_node, 'bound')
 
     def visit_field_decl(self, node):
@@ -367,7 +359,8 @@ class ParameterizedSubstitution(Transformation):
             return node
         if self._in_find_classes_blacklist:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_field_decl(node)
+        new_node = super(ParameterizedSubstitution, self).visit_field_decl(
+            node)
         return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):

@@ -183,12 +183,12 @@ class Executor:
                             transformation_number)
         else:
             logger = None
-        transformer = transformation_cls(logger)
+        prev_p = deepcopy(program)
+        transformer = transformation_cls(program, logger)
         if self.args.debug:
             print("Transformation: " + transformer.get_name())
         self.stats[get_key(i)]['transformations'].append(transformer.get_name())
-        prev_p = deepcopy(program)
-        transformer.visit(program)
+        transformer.transform()
         p = transformer.result()
         self.tstack.append((prev_p, transformer))
         if p is None:

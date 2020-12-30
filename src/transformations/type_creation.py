@@ -110,8 +110,8 @@ class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, logger=None):
-        super(TypeCreation, self).__init__(logger)
+    def __init__(self, program, logger=None):
+        super(TypeCreation, self).__init__(program, logger)
         self._new_class = None
         self._old_class = None
 
@@ -193,7 +193,6 @@ class TypeCreation(Transformation):
         raise NotImplementedError('get_updated_classes() must be implemented')
 
     def visit_program(self, node):
-        self.program = node
         # Get all class declarations
         classes = self.get_candidates_classes()
         if not classes:
@@ -253,9 +252,9 @@ class TypeCreation(Transformation):
 class SubtypeCreation(TypeCreation):
     NAME = 'Subtype Creator'
 
-    def __init__(self, logger=None):
-        super(SubtypeCreation, self).__init__(logger)
-        self.generator = None
+    def __init__(self, program, logger=None):
+        super(SubtypeCreation, self).__init__(program, logger)
+        self.generator = Generator(context=self.program.context)
         # This dictionary is used to map type parameters to their
         # type arguments.
         # This used, if we chose to create subtype from a parameterized class.
@@ -273,7 +272,7 @@ class SubtypeCreation(TypeCreation):
         for f in class_decl.fields:
             subtypes = tu.find_subtypes(
                 self._type_params_map.get(f.get_type(), f.get_type()),
-                regular_types)
+                regular_types, concrete_only=True)
             t = (
                 utils.random.choice(subtypes)
                 if subtypes
@@ -295,7 +294,6 @@ class SubtypeCreation(TypeCreation):
     def create_new_class(self, class_decl):
         # Here the new class corresponds to a subtype from the given
         # `class_decl`.
-        self.generator = Generator(context=self.program.context)
         decls = [d for d in self.program.declarations
                  if (d != class_decl and isinstance(d, ast.ClassDeclaration)
                      and d.class_type == ast.ClassDeclaration.REGULAR)]
@@ -351,8 +349,8 @@ class SubtypeCreation(TypeCreation):
 class SupertypeCreation(TypeCreation):
     NAME = 'Supertype Creator'
 
-    def __init__(self, logger=None):
-        super(SupertypeCreation, self).__init__(logger)
+    def __init__(self, program, logger=None):
+        super(SupertypeCreation, self).__init__(program, logger)
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self.empty_supertype = False

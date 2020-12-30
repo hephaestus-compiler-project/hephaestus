@@ -13,22 +13,14 @@ class ValueSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Value Substitution'
 
-    def __init__(self, logger=None):
-        super(ValueSubstitution, self).__init__(logger)
-        self.program = None
-        self.generator = None
-
-    def visit_program(self, node):
-        self.generator = Generator(context=node.context)
-        usr_types = [d for d in node.declarations
-                     if isinstance(d, ast.ClassDeclaration)] + \
-            self.generator.RET_BUILTIN_TYPES
-        self.types = usr_types
-        usr_types.remove(kt.Any)
-        new_node = super(ValueSubstitution, self).visit_program(node)
-        if self.transform:
-            self.program = new_node
-        return new_node
+    def __init__(self, program, logger=None):
+        super(ValueSubstitution, self).__init__(program, logger)
+        self.types.remove(kt.Any)
+        self.generator = Generator(context=self.program.context)
+        # We are not interested in types associated with abstract classes or
+        # interfaces.
+        self.types = [c for c in self.types
+                      if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
 
     def _generate_new(self, class_decl, class_type, params_map):
         return ast.New(
@@ -73,12 +65,10 @@ class ValueSubstitution(Transformation):
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super(ValueSubstitution, self).visit_new(node)
-        regular_types = [c for c in self.types
-                         if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
-        subclasses = tu.find_subtypes(node.class_type, regular_types)
+        subclasses = tu.find_subtypes(node.class_type, self.types)
         if not subclasses:
             return node
-        self.transform = True
+        self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
         generators = {
             kt.Boolean: self.generator.gen_bool_constant,
@@ -100,10 +90,11 @@ class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
     NAME = 'Type Substitution (Widening/Narrowing)'
 
-    def __init__(self, logger=None):
-        super(TypeSubstitution, self).__init__(logger)
-        self.program = None
-        self.generator = None
+    def __init__(self, program, logger=None):
+        super(TypeSubstitution, self).__init__(program, logger)
+        self.generator = Generator(context=self.program.context)
+        # We are not interested in types associated with abstract classes or
+        # interfaces.
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self._cached_type_widenings = {}
@@ -189,20 +180,9 @@ class TypeSubstitution(Transformation):
             # Therefore, we don't perform type widening in this case.
             if self.is_decl_used(decl):
                 return False
-        self.transform = True
+        self.is_transformed = True
         setter(decl, sup_t)
         return True
-
-    def visit_program(self, node):
-        self.generator = Generator(context=node.context)
-        usr_types = [d for d in node.declarations
-                     if isinstance(d, ast.ClassDeclaration)] + \
-            self.generator.RET_BUILTIN_TYPES
-        self.types = usr_types
-        new_node = super(TypeSubstitution, self).visit_program(node)
-        if self.transform:
-            self.program = new_node
-        return new_node
 
     def _create_function_block(self, function, is_expr, var_decl,
                                declared=False):
