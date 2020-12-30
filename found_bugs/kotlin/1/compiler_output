@@ -1,6 +1,6 @@
-found_bugs/1/program.kt:20:7: error: type mismatch: inferred type is Int but Short was expected
-      -20
-      ^
-found_bugs/1/program.kt:22:7: error: type mismatch: inferred type is Int but Short was expected
-      -1
-      ^
+program.kt:8:19: error: type mismatch: inferred type is Int but Short was expected
+        if (true) -20 else -1
+                  ^
+program.kt:8:28: error: type mismatch: inferred type is Int but Short was expected
+        if (true) -20 else -1
+                           ^
