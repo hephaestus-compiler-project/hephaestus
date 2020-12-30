@@ -2,7 +2,7 @@ from typing import List
 
 from src import utils
 from src.ir.node import Node
-from src.ir import types
+from src.ir import types, kotlin_types as kt
 
 
 GLOBAL_NAMESPACE = ('global',)
@@ -33,6 +33,11 @@ class Program(Node):
     def get_declarations(self):
         return self.context.get_declarations(GLOBAL_NAMESPACE,
                                              only_current=True)
+
+    def get_types(self):
+        usr_types = [d for d in self.declarations
+                     if isinstance(d, ClassDeclaration)]
+        return usr_types + kt.NonNothingTypes
 
     def update_declarations(self, decls):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls
