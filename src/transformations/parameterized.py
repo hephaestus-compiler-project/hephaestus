@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 from typing import List
 
@@ -41,7 +40,7 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
                     return False
         return True
     bound = None
-    if random.random() < .5:
+    if utils.random.bool():
         if type_constraint is None:
             bound = random.choice(kt.NonNothingTypes)
         else:
