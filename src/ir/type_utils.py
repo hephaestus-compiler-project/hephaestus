@@ -6,27 +6,18 @@ from src.ir import ast, types as tp
 
 
 def _construct_related_types(t, types, find_subtypes):
-    # FIXME: Make _find_types to always return concrete types.
-    def to_type(t):
-        if isinstance(t, ast.ClassDeclaration):
-            t = t.get_type()
-        if isinstance(t, tp.TypeConstructor):
-            t, _ = instantiate_type_constructor(t, types)
-            return t
-        return t
-
     valid_args = []
     for i, t_param in enumerate(t.t_constructor.type_parameters):
         if t_param.is_invariant():
             t_args = [t.type_args[i]]
         elif t_param.is_covariant():
-            t_args = map(to_type, _find_types(t.type_args[i], types,
-                                              find_subtypes, True,
-                                              t_param.bound))
+            t_args = _find_types(t.type_args[i], types,
+                                 find_subtypes, True,
+                                 t_param.bound, concrete_only=True)
         else:
-            t_args = map(to_type, _find_types(t.type_args[i], types,
-                                              not find_subtypes, True,
-                                              t_param.bound))
+            t_args = _find_types(t.type_args[i], types,
+                                 not find_subtypes, True,
+                                 t_param.bound, concrete_only=True)
         valid_args.append(list(t_args))
 
     return [
@@ -36,7 +27,13 @@ def _construct_related_types(t, types, find_subtypes):
     ]
 
 
-def _find_types(t, types, find_subtypes, include_self, bound=None):
+def _find_types(t, types, find_subtypes, include_self, bound=None,
+                concrete_only=False):
+    def to_type(t):
+        if isinstance(t, tp.TypeConstructor):
+            t, _ = instantiate_type_constructor(t, types)
+        return t
+
     # Otherwise, if we want to find the supertypes of a given type, `bound`
     # is interpreted a greatest bound.
     if not find_subtypes:
@@ -46,10 +43,7 @@ def _find_types(t, types, find_subtypes, include_self, bound=None):
         # Find subtypes
         t_set = set()
         for c in types:
-            if hasattr(c, 'get_type'):
-                t2 = c.get_type()
-            else:
-                t2 = c
+            t2 = c.get_type() if hasattr(c, 'get_type') else c
             if isinstance(t2, tp.AbstractType) and (
                     not isinstance(t2, tp.TypeConstructor)):
                 # TODO: revisit
@@ -57,7 +51,7 @@ def _find_types(t, types, find_subtypes, include_self, bound=None):
             if t == t2:
                 continue
             if t2.is_subtype(t):
-                t_set.add(c)
+                t_set.add(t2)
                 continue
 
     if isinstance(t, tp.ParameterizedType):
@@ -69,17 +63,20 @@ def _find_types(t, types, find_subtypes, include_self, bound=None):
 
     if not find_subtypes and bound:
         t_set = {st for st in t_set if st.is_subtype(bound)}
-    return list(t_set)
+    return [to_type(t) for t in t_set] if concrete_only else list(t_set)
 
 
-def find_subtypes(t, types, include_self=False, bound=None):
+def find_subtypes(t, types, include_self=False, bound=None,
+                  concrete_only=False):
     return _find_types(t, types, find_subtypes=True,
-                       include_self=include_self)
+                       include_self=include_self, concrete_only=concrete_only)
 
 
-def find_supertypes(t, types, include_self=False, bound=None):
+def find_supertypes(t, types, include_self=False, bound=None,
+                    concrete_only=False):
     return _find_types(t, types, find_subtypes=False,
-                       include_self=include_self, bound=bound)
+                       include_self=include_self, bound=bound,
+                       concrete_only=concrete_only)
 
 
 def _update_type_constructor(t, new_type):

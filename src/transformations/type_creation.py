@@ -268,20 +268,17 @@ class SubtypeCreation(TypeCreation):
             return ast.SuperClassInstantiation(
                 class_type, args=None)
         args = []
+        regular_types = [c for c in self.types
+                         if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
         for f in class_decl.fields:
             subtypes = tu.find_subtypes(
                 self._type_params_map.get(f.get_type(), f.get_type()),
-                self.types)
-            subtypes = [c for c in subtypes
-                        if not (isinstance(c, ast.ClassDeclaration) and
-                              c.class_type != ast.ClassDeclaration.REGULAR)]
+                regular_types)
             t = (
                 utils.random.choice(subtypes)
                 if subtypes
                 else self._type_params_map.get(f.get_type(), f.get_type())
             )
-            if isinstance(t, ast.ClassDeclaration):
-                t = t.get_type()
             args.append(self.generator.generate_expr(t, only_leaves=True))
         return ast.SuperClassInstantiation(class_type, args)
 

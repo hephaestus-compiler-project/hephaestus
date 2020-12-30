@@ -46,7 +46,8 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
             bound = random.choice(kt.NonNothingTypes)
         else:
             bound = random.choice(list(filter(bounds_filter, tu.find_supertypes(
-                type_constraint, ptypes, include_self=True))))
+                type_constraint, ptypes, include_self=True,
+                concrete_only=True))))
     return types.TypeParameter(name, variance, bound)
 
 
@@ -163,14 +164,6 @@ class ParameterizedSubstitution(Transformation):
         """Create ParameterizedType from _type_constructor_decl based on
         type_params constraints
         """
-        def to_type(t):
-            if isinstance(t, ast.ClassDeclaration):
-                t = t.get_type()
-            if isinstance(t, types.TypeConstructor):
-                t, _ = tu.instantiate_type_constructor(t, self.types)
-                return t
-            return t
-
         type_args = []
         for tp in self._type_params:
             type_arg = None
@@ -184,17 +177,12 @@ class ParameterizedSubstitution(Transformation):
             else:
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
-                    # We need to map the result of find_supertypes()
-                    # to concrete types. Recall that the result of
-                    # find_supertypes() may contain a type constructor.
-                    # So we need to instantiate it to a concrete type, before
-                    # use.
-                    possible_types = map(to_type, tu.find_supertypes(
-                        tp.constraint, self.types, include_self=True))
+                    possible_types = tu.find_supertypes(
+                        tp.constraint, self.types, include_self=True,
+                        concrete_only=True)
                 if tp.variance == COVARIANT:
-                    # Same as above.
-                    possible_types = map(to_type, tu.find_subtypes(
-                        tp.constraint, self.types, True))
+                    possible_types = tu.find_subtypes(
+                        tp.constraint, self.types, True, concrete_only=True)
                 # To preserve correctness, the only possible type is
                 # tp.constraint. For example,
                 #

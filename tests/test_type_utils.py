@@ -1,5 +1,5 @@
 from src.ir import types as tp, kotlin_types as kt
-from src.ir import type_utils as tutils
+from src.ir import ast, type_utils as tutils
 
 
 def test_update_type_builtins():
@@ -377,3 +377,37 @@ def test_find_subtypes_with_bound():
         tp.ParameterizedType(qux_con, [bar]),
         tp.ParameterizedType(qux_con, [foo])
     }
+
+
+def test_find_types_with_classes():
+    foo = ast.ClassDeclaration("Foo", [], ast.ClassDeclaration.REGULAR,
+                               fields=[], functions=[])
+    bar = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(foo.get_type(), [])],
+        ast.ClassDeclaration.REGULAR, fields=[], functions=[])
+    baz = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(bar.get_type(), [])],
+        ast.ClassDeclaration.REGULAR, fields=[], functions=[])
+    unrel = ast.ClassDeclaration("Unrel", [], ast.ClassDeclaration.REGULAR,
+                                 fields=[], functions=[])
+    qux_cls = ast.ClassDeclaration(
+        "Qux", [], ast.ClassDeclaration.REGULAR, fields=[], functions=[],
+        type_parameters=[tp.TypeParameter("T", tp.TypeParameter.COVARIANT)])
+
+    classes = [foo, bar, baz, unrel, qux_cls]
+
+    qux = tp.ParameterizedType(qux_cls.get_type(), [foo.get_type()])
+    subtypes = set(tutils.find_subtypes(qux, classes))
+    assert subtypes == {
+        tp.ParameterizedType(qux_cls.get_type(), [bar.get_type()]),
+        tp.ParameterizedType(qux_cls.get_type(), [baz.get_type()])
+    }
+
+    subtypes = set(tutils.find_subtypes(foo.get_type(), classes))
+    assert subtypes == {bar.get_type(), baz.get_type()}
+
+    supertypes = set(tutils.find_supertypes(foo.get_type(), classes))
+    assert supertypes == set()
+
+    supertypes = set(tutils.find_supertypes(baz.get_type(), classes))
+    assert supertypes == {bar.get_type(), foo.get_type()}

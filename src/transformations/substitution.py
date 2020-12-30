@@ -38,27 +38,25 @@ class ValueSubstitution(Transformation):
                   for f in class_decl.fields])
 
     def generate_new(self, etype):
+        class_decl = self.generator.context.get_decl(
+            ast.GLOBAL_NAMESPACE, etype.name)
         if isinstance(etype, tp.ParameterizedType):
             # The etype is a parameterized type, so this case comes from
             # variance. Therefore, we first need to get the class_declaration
             # of this type, and initialize the map of type parameters.
-            class_decl = self.generator.context.get_decl(
-                ast.GLOBAL_NAMESPACE, etype.name)
             params_map = {
                 t_p: etype.type_args[i]
                 for i, t_p in enumerate(etype.t_constructor.type_parameters)
             }
             return self._generate_new(class_decl, etype, params_map)
 
-        assert isinstance(etype, ast.ClassDeclaration)
-        class_decl = etype
-        if class_decl.is_parameterized():
+        if isinstance(etype, tp.TypeConstructor):
             # We selected a class that is parameterized. So before its use,
             # we need to instantiate it.
             class_type, params_map = tu.instantiate_type_constructor(
-                class_decl.get_type(), self.types)
+                etype, self.types)
         else:
-            class_type, params_map = class_decl.get_type(), {}
+            class_type, params_map = etype, {}
         return self._generate_new(class_decl, class_type, params_map)
 
     def visit_equality_expr(self, node):
@@ -75,10 +73,9 @@ class ValueSubstitution(Transformation):
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super(ValueSubstitution, self).visit_new(node)
-        subclasses = tu.find_subtypes(node.class_type, self.types)
-        subclasses = [c for c in subclasses
-                      if not (isinstance(c, ast.ClassDeclaration) and
-                              c.class_type != ast.ClassDeclaration.REGULAR)]
+        regular_types = [c for c in self.types
+                         if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
+        subclasses = tu.find_subtypes(node.class_type, regular_types)
         if not subclasses:
             return node
         self.transform = True
@@ -169,7 +166,8 @@ class TypeSubstitution(Transformation):
         return True
 
     def _type_widening(self, decl, setter):
-        superclasses = tu.find_supertypes(decl.get_type(), self.types)
+        superclasses = tu.find_supertypes(decl.get_type(), self.types,
+                                          concrete_only=True)
         if not superclasses:
             return False
         # Inspect cached type widenings for this particular declaration.
@@ -178,8 +176,6 @@ class TypeSubstitution(Transformation):
 
         if sup_t is None:
             sup_t = utils.random.choice(superclasses)
-            if isinstance(sup_t, ast.ClassDeclaration):
-                sup_t = sup_t.get_type()
             self._cached_type_widenings[(decl.name, decl.get_type().name)] = sup_t
 
         if isinstance(decl.get_type(), tp.ParameterizedType):
