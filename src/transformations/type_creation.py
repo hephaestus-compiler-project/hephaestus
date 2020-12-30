@@ -198,6 +198,7 @@ class TypeCreation(Transformation):
         if not classes:
             # There are not user-defined types.
             return
+        self.is_transformed = True
         class_decl = utils.random.choice(classes)
         self._new_class = self.create_new_class(class_decl)
         self._old_class = self.adapt_old_class(class_decl)

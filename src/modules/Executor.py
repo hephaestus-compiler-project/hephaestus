@@ -191,7 +191,7 @@ class Executor:
         transformer.transform()
         p = transformer.result()
         self.tstack.append((prev_p, transformer))
-        if p is None:
+        if not transformer.is_transformed:
             if not self.args.only_last or not comp:
                 return "continue", prev_p
             else:

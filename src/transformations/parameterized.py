@@ -322,6 +322,7 @@ class ParameterizedSubstitution(Transformation):
         if not classes:
             # There are not user-defined simple classifier declarations.
             return
+        self.is_transformed = True
         class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
 
