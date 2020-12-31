@@ -44,6 +44,10 @@ def _find_types(t, types, find_subtypes, include_self, bound=None,
         t_set = set()
         for c in types:
             t2 = c.get_type() if hasattr(c, 'get_type') else c
+            if isinstance(t2, tp.AbstractType) and (
+                    not isinstance(t2, tp.TypeConstructor)):
+                # TODO: revisit
+                continue
             if t == t2:
                 continue
             if t2.is_subtype(t):
