@@ -44,10 +44,6 @@ def _find_types(t, types, find_subtypes, include_self, bound=None,
         t_set = set()
         for c in types:
             t2 = c.get_type() if hasattr(c, 'get_type') else c
-            if isinstance(t2, tp.AbstractType) and (
-                    not isinstance(t2, tp.TypeConstructor)):
-                # TODO: revisit
-                continue
             if t == t2:
                 continue
             if t2.is_subtype(t):
@@ -140,14 +136,15 @@ def update_type(t, new_type, test_pred=lambda x, y: x.name == y.name):
 
 
 def _get_available_types(types, only_regular):
-    # TODO revisit
+    if not only_regular:
+        return types
     available_types = []
     for t in types:
         if isinstance(t, ast.ClassDeclaration) and (
                 t.class_type != ast.ClassDeclaration.REGULAR):
             continue
         available_types.append(t)
-    return available_types if only_regular else types
+    return available_types
 
 
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
