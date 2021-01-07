@@ -291,8 +291,13 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        self._children_res.append(
-            " " * self.ident + node.class_type.get_name() + "(" + ", ".join(
+        # Remove type arguments from Parameterized Type
+        if getattr(node.class_type, 'can_infer_type_args', None) is True:
+            self._children_res.append(
+                node.class_type.name + "(" + ", ".join(children_res) + ")")
+        else:
+            self._children_res.append(
+                " " * self.ident + node.class_type.get_name() + "(" + ", ".join(
                 children_res) + ")")
 
     def visit_field_access(self, node):

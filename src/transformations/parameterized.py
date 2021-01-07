@@ -254,6 +254,22 @@ class ParameterizedSubstitution(Transformation):
                 return tp.type_param
         return t
 
+    def _check_infer_of_targs(self, ptype: types.ParameterizedType):
+        """Check if type arguments of a parameterized type can be inferred.
+        """
+        # Check if all type parameters of constructor are used in field
+        # declarations.
+        # For example, in this case we can infer the type of type arguments
+        #   class A<T, K> (val x: T, val y: K)
+        #   val a = A("a", if (true) -1 else "a")
+        # whereas in the following case we can't
+        #   class A<T, K> (val x: T)
+        #   val a = A("a") // not enough information to infer type variable K
+        # TODO Add randomness
+        if ptype.name == self._parameterized_type.name:
+            return self._type_constructor_decl.all_type_params_in_fields()
+        return False
+
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
@@ -412,7 +428,11 @@ class ParameterizedSubstitution(Transformation):
         new_node = super(ParameterizedSubstitution, self).visit_new(node)
         if self._in_find_classes_blacklist:
             return new_node
-        return self._update_type(new_node, 'class_type')
+        new_node = self._update_type(new_node, 'class_type')
+        if isinstance(new_node.class_type, types.ParameterizedType):
+            new_node.class_type.can_infer_type_args = \
+                self._check_infer_of_targs(new_node.class_type)
+        return new_node
 
     def visit_super_instantiation(self, node):
         if self._in_select_type_params:

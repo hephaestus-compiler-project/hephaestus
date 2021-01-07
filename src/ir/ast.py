@@ -323,6 +323,19 @@ class ClassDeclaration(Declaration):
         return any(getattr(st, 't_constructor', None) == other_t
                    for st in supertypes)
 
+    def all_type_params_in_fields(self):
+        """Check if all type parameters are used in fields
+        """
+        if not self.is_parameterized:
+            return False
+        for tparam in self.type_parameters:
+            used = False
+            for fdecl in self.fields:
+                used = True if fdecl.field_type == tparam else used
+            if not used:
+                return False
+        return True
+
     def __str__(self):
         superclasses = " : " + ", ".join(map(str, self.superclasses)) \
             if len(self.superclasses) > 0 else ""
