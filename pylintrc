@@ -13,7 +13,7 @@ ignore-patterns=
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.
-jobs=4
+jobs=1
 
 # Control the amount of potential inferred values when inferring a single
 # object. This can help the performance when dealing with large functions or
@@ -53,7 +53,8 @@ confidence=
 # --disable=W".
 disable=missing-function-docstring,
         missing-class-docstring,
-        missing-module-docstring
+        missing-module-docstring,
+        too-many-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -268,7 +269,7 @@ variable-naming-style=snake_case
 
 # Regular expression matching correct variable names. Overrides variable-
 # naming-style.
-variable-rgx=([a-z_][a-z0-9_]{2,30}$|c)
+variable-rgx=([a-z_][a-z0-9_]{2,30}$|c|ns|tp)
 
 
 [SPELLING]
