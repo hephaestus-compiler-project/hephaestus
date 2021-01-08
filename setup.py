@@ -2,6 +2,7 @@ import os
 import shutil
 import glob
 from setuptools import setup, find_packages, Command
+from pathlib import Path
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -40,8 +41,8 @@ setup(
     version='0.0.1',
     description='Check Type Systems',
     python_requires='>=3.4, <4',
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'mock'],
+    setup_requires=['pytest-runner', 'pytest-pylint'],
+    tests_require=['pytest', 'mock', 'pylint'],
     packages=['src'],
     packages_dir={'src': 'src'},
     #  entry_points={
