@@ -268,7 +268,7 @@ variable-naming-style=snake_case
 
 # Regular expression matching correct variable names. Overrides variable-
 # naming-style.
-#variable-rgx=
+variable-rgx=([a-z_][a-z0-9_]{2,30}$|c)
 
 
 [SPELLING]
