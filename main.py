@@ -8,7 +8,7 @@ from collections import namedtuple
 
 from src.args import args
 from src.utils import random, mkdir
-from src.modules.Executor import Executor
+from src.modules.executor import Executor
 
 
 N_FAILED = 0

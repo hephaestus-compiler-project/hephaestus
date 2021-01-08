@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 from src.utils import random, mkdir, fprint
-from src.modules.Executor import Executor
+from src.modules.executor import Executor
 
 
 cwd = os.getcwd()

@@ -1,4 +1,4 @@
-from src.ir import ast, types, kotlin_types as kt
+from src.ir import ast, kotlin_types as kt
 from src.ir.visitors import ASTVisitor
 
 
@@ -72,7 +72,6 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_super_instantiation(self, node):
-        old_ident = self.ident
         self.ident = 0
         children = node.children()
         for c in children:

@@ -1,10 +1,9 @@
+# pylint: disable=too-few-public-methods
 import os
-import time
 import tempfile
 import pickle
 import traceback
 import subprocess as sp
-import sys
 from copy import deepcopy
 from collections import defaultdict
 
@@ -33,12 +32,12 @@ def run_command(arguments, get_stdout=True):
     try:
         cmd = sp.Popen(arguments, stdout=sp.PIPE, stderr=sp.STDOUT)
         stdout, stderr = cmd.communicate()
-    except Exception as e:
-        return False, e
+    except sp.CalledProcessError as err:
+        return False, err
     stderr = stderr.decode("utf-8") if stderr else ""
     stdout = stdout.decode("utf-8") if stdout else ""
     err = stdout if get_stdout else stderr
-    status = True if cmd.returncode == 0 else False
+    status = cmd.returncode == 0
     return status, err
 
 
@@ -65,6 +64,7 @@ class Executor:
             "error": "",
             "failed": False})
         self.tstack = []  # Transformation programs stack
+        self.translator = None
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -149,18 +149,17 @@ class Executor:
             out.write(' '.join(cmd_build) + '\n')
             out.write(' '.join(cmd_exec))
 
-    def _translate_program(self, p):
+    def _translate_program(self, program):
         self.translator = KotlinTranslator()
-        self.translator.visit(p)
+        self.translator.visit(program)
         return self.translator.result()
 
     def _generate_program(self, i):
-        # TODO return program_str
         if self.args.debug:
             print("\nIteration: " + str(i))
         generator = Generator(max_depth=self.args.max_depth)
-        p = generator.generate()
-        program_str = self._translate_program(p)
+        program = generator.generate()
+        program_str = self._translate_program(program)
         if self.args.keep_all:
             dst_dir = os.path.join(self.args.test_directory, "generator",
                                    "iter_" + str(i))
@@ -171,9 +170,9 @@ class Executor:
                 out.write(program_str)
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
-            self._report(program_str, p)
-            return False, p, program_str
-        return True, p, program_str
+            self._report(program_str, program)
+            return False, program, program_str
+        return True, program, program_str
 
     def _apply_trasnformation(self, transformation_number, program, comp, i):
         transformation_cls = random.choice(self.transformations)
@@ -189,14 +188,13 @@ class Executor:
             print("Transformation: " + transformer.get_name())
         self.stats[get_key(i)]['transformations'].append(transformer.get_name())
         transformer.transform()
-        p = transformer.result()
+        program = transformer.result()
         self.tstack.append((prev_p, transformer))
         if not transformer.is_transformed:
             if not self.args.only_last or not comp:
                 return "continue", prev_p
-            else:
-                p = prev_p
-        program_str = self._translate_program(p)
+            program = prev_p
+        program_str = self._translate_program(program)
         if self.args.keep_all:
             dst_dir = os.path.join(self.args.test_directory,
                                    "transformations",
@@ -208,7 +206,7 @@ class Executor:
             with open(dst_filename, 'w') as out:
                 out.write(program_str)
         if not comp:
-            return "succeed", p
+            return "succeed", program
         status, err = self._compile(
             self.translator.result(),
             compiler_pass=transformer.preserve_correctness()
@@ -222,9 +220,9 @@ class Executor:
             if self.args.rerun:
                 self._report_failed()
             else:
-                self._report(program_str, p, prev_p)
-            return "break", p
-        return "succeed", p
+                self._report(program_str, program, prev_p)
+            return "break", program
+        return "succeed", program
 
     def _apply_trasnformations(self, program, i):
         failed = False
@@ -241,13 +239,14 @@ class Executor:
                 if status == "break":
                     failed = True
                     break
-        except Exception as e:
+        # pylint: disable=broad-except
+        except Exception as exc:
             # This means that we have programming error in transformations
             err = ''
             if self.args.print_stacktrace:
                 err = str(traceback.format_exc())
             else:
-                err = str(e)
+                err = str(exc)
             if self.args.debug:
                 print(err)
             failed = True
