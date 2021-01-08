@@ -1,1 +1,1 @@
-from src.generators.Generator import *
+from src.generators.generator import *

@@ -7,7 +7,7 @@ import subprocess as sp
 from copy import deepcopy
 from collections import defaultdict
 
-from src.generators.Generator import Generator
+from src.generators.generator import Generator
 from src.transformations.substitution import (
     ValueSubstitution, TypeSubstitution)
 from src.transformations.type_creation import (
