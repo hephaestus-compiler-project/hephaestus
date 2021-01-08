@@ -5,7 +5,7 @@ from src import utils
 from src.ir import ast
 
 
-class Context(object):
+class Context():
     TYPES = {ast.ClassDeclaration: 'classes',
              ast.FunctionDeclaration: 'funcs',
              ast.VariableDeclaration: 'vars',
@@ -64,8 +64,8 @@ class Context(object):
             return self._context.get(namespace, {}).get(decl_type, {})
         start = (namespace[0],)
         decls = OrderedDict(self._context.get(start, {}).get(decl_type) or {})
-        for n in namespace[1:]:
-            start = start + (n,)
+        for ns in namespace[1:]:
+            start = start + (ns,)
             decl = self._context.get(start, {}).get(decl_type)
             if decl is not None:
                 decls.update(decl)
@@ -92,9 +92,9 @@ class Context(object):
 
     def get_declarations_in(self, namespace):
         decls = {}
-        for k, v in self._context.items():
-            if utils.prefix_lst(namespace, k):
-                decls[k] = deepcopy(v['decls'])
+        for ns, entities in self._context.items():
+            if utils.prefix_lst(namespace, ns):
+                decls[ns] = deepcopy(entities['decls'])
         return decls
 
     def get_decl_type(self, namespace, name):

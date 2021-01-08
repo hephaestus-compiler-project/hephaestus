@@ -1,3 +1,4 @@
+# pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
 from typing import List
 
@@ -75,11 +76,11 @@ def get_variance(context, use_graph, node):
     variance = INVARIANT
     # Find all source nodes of the node, i.e., top level-nodes that have a flow
     # to the node.
-    sn = gutils.find_sources(use_graph, node)  # source_nodes
+    source_nodes = gutils.find_sources(use_graph, node)
     # Find all nodes that are connected with the node.
-    cn = gutils.find_all_connected(use_graph, node)  # connected_nodes
-    sn_decl = [context.get_decl(n.namespace, n.name) for n in sn]
-    cn_decl = [context.get_decl(n.namespace, n.name) for n in cn]
+    connected_nodes = gutils.find_all_connected(use_graph, node)
+    sn_decl = [context.get_decl(n.namespace, n.name) for n in source_nodes]
+    cn_decl = [context.get_decl(n.namespace, n.name) for n in connected_nodes]
     # Final FieldDeclaration (val) is an 'out' position (covariant)
     # FieldDeclaration (var) is an 'invariant' position (covariant)
     # ParameterDeclaration is an 'in' position (contravariant)
@@ -94,7 +95,7 @@ def get_variance(context, use_graph, node):
     # if all source nodes are ParameterDeclaration and none of its connected
     # nodes is a RETURN node, then the type parameter can be contravariant.
     elif (all(isinstance(s, ast.ParameterDeclaration) for s in sn_decl)
-          and not any(n.name == FUNC_RET for n in cn)
+          and not any(n.name == FUNC_RET for n in connected_nodes)
           and utils.random.bool()):
         variance = CONTRAVARIANT
     return variance
@@ -126,7 +127,7 @@ class ParameterizedSubstitution(Transformation):
 
     def __init__(self, program, logger=None, max_type_params=3,
                  find_classes_blacklist=True):
-        super(ParameterizedSubstitution, self).__init__(program, logger)
+        super().__init__(program, logger)
         self._max_type_params: int = max_type_params
 
         self._selected_class_decl: ast.ClassDeclaration = None
@@ -151,6 +152,7 @@ class ParameterizedSubstitution(Transformation):
 
     def get_candidates_classes(self):
         """Get all simple classifier declarations."""
+        # pylint: disable=unidiomatic-typecheck
         classes = {d for d in self.program.declarations
                    if (isinstance(d, ast.ClassDeclaration) and
                    type(d.get_type()) is types.SimpleClassifier)}
@@ -206,7 +208,8 @@ class ParameterizedSubstitution(Transformation):
         return types.ParameterizedType(self._type_constructor_decl.get_type(),
                                        type_args)
 
-    def _propagate_type_parameter(self, gnode: GNode, tp: types.TypeParameter):
+    def _propagate_type_parameter(self, gnode: GNode,
+                                  type_param: types.TypeParameter):
         """Replace concrete types of gnode's connected nodes with tp
         """
         types_lookup = {ast.VariableDeclaration: 'var_type',
@@ -219,9 +222,9 @@ class ParameterizedSubstitution(Transformation):
                 node.namespace, node.name)
             if decl:
                 attr = types_lookup.get(type(decl))
-                setattr(decl, attr, tp)
+                setattr(decl, attr, type_param)
 
-    def _use_type_parameter(self, namespace, node, t, covariant=False):
+    def _use_type_parameter(self, namespace, node, old_type):
         """Select a node to replace its concrete type with a type parameter.
 
         * Check if node can be used
@@ -231,7 +234,7 @@ class ParameterizedSubstitution(Transformation):
         gnode = GNode(namespace, node.name)
 
         if gutils.none_connected(self._use_graph, gnode):
-            return t
+            return old_type
 
         # Check if there is a connected (reachable++) type parameter
         connected_type_param = get_connected_type_param(
@@ -240,19 +243,19 @@ class ParameterizedSubstitution(Transformation):
             return connected_type_param
 
         if utils.random.bool():
-            return t
+            return old_type
 
         for tp in self._type_params:
             if tp.constraint is None:
-                tp.constraint = t
+                tp.constraint = old_type
                 tp.node = GNode(namespace, node.name)
                 tp.variance = get_variance(
                     self.program.context, self._use_graph, tp.node)
                 tp.type_param = create_type_parameter(
-                    tp.name, t, self.types, tp.variance)
+                    tp.name, old_type, self.types, tp.variance)
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
-        return t
+        return old_type
 
     def _check_infer_of_targs(self, ptype: types.ParameterizedType):
         """Check if type arguments of a parameterized type can be inferred.
@@ -332,12 +335,12 @@ class ParameterizedSubstitution(Transformation):
             # because we cannot convert the Is expression as
             # if (x is Foo<TypeArg>) due to type erasure.
             self._in_find_classes_blacklist = True
-            super(ParameterizedSubstitution, self).visit_program(node)
+            super().visit_program(node)
             self._in_find_classes_blacklist = False
         classes = self.get_candidates_classes()
         if not classes:
             # There are not user-defined simple classifier declarations.
-            return
+            return None
         self.is_transformed = True
         class_decl = utils.random.choice(classes)
         self._selected_class_decl = class_decl
@@ -351,18 +354,16 @@ class ParameterizedSubstitution(Transformation):
         node = self._analyse_selected_class(self._selected_class_decl)
         self.program.context.add_class(self._namespace, node.name, node)
 
-        return super(ParameterizedSubstitution, self).visit_program(
-            self.program)
+        return super().visit_program(self.program)
 
     @change_namespace
     def visit_class_decl(self, node):
-        return super(ParameterizedSubstitution, self).visit_class_decl(node)
+        return super().visit_class_decl(node)
 
     def visit_type_param(self, node):
         if self._discard_node():
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_type_param(
-            node)
+        new_node = super().visit_type_param(node)
         return self._update_type(new_node, 'bound')
 
     def visit_field_decl(self, node):
@@ -372,12 +373,11 @@ class ParameterizedSubstitution(Transformation):
         if self._in_select_type_params:
             if not node.override:
                 node.field_type = self._use_type_parameter(
-                    self._namespace, node, node.get_type(), True)
+                    self._namespace, node, node.get_type())
             return node
         if self._in_find_classes_blacklist:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_field_decl(
-            node)
+        new_node = super().visit_field_decl(node)
         return self._update_type(new_node, 'field_type')
 
     def visit_param_decl(self, node):
@@ -387,13 +387,13 @@ class ParameterizedSubstitution(Transformation):
             return node
         if self._in_find_classes_blacklist:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_param_decl(node)
+        new_node = super().visit_param_decl(node)
         return self._update_type(new_node, 'param_type')
 
     def visit_var_decl(self, node):
         if self._in_select_type_params:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_var_decl(node)
+        new_node = super().visit_var_decl(node)
         if self._in_find_classes_blacklist:
             return new_node
         new_node = self._update_type(new_node, 'var_type')
@@ -406,7 +406,7 @@ class ParameterizedSubstitution(Transformation):
         # the parent class.
         if self._in_select_type_params and node.override:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_func_decl(node)
+        new_node = super().visit_func_decl(node)
         if self._discard_node():
             return new_node
         return_gnode = GNode(self._namespace, FUNC_RET)
@@ -425,7 +425,7 @@ class ParameterizedSubstitution(Transformation):
     def visit_new(self, node):
         if self._in_select_type_params:
             return node
-        new_node = super(ParameterizedSubstitution, self).visit_new(node)
+        new_node = super().visit_new(node)
         if self._in_find_classes_blacklist:
             return new_node
         new_node = self._update_type(new_node, 'class_type')
@@ -437,8 +437,7 @@ class ParameterizedSubstitution(Transformation):
     def visit_super_instantiation(self, node):
         if self._in_select_type_params:
             return node
-        new_node = super(ParameterizedSubstitution,
-                         self).visit_super_instantiation(node)
+        new_node = super().visit_super_instantiation(node)
         if self._in_find_classes_blacklist:
             return new_node
         return self._update_type(new_node, 'class_type')
@@ -451,4 +450,4 @@ class ParameterizedSubstitution(Transformation):
             class_decl = self.program.context.get_decl(
                 ast.GLOBAL_NAMESPACE, etype.name)
             self._blacklist_classes.add(class_decl)
-        return super(ParameterizedSubstitution, self).visit_is(node)
+        return super().visit_is(node)

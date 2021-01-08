@@ -1,7 +1,7 @@
 from src.analysis.use_analysis import NONE_NODE
 
 
-class Node(object):
+class Node():
     def is_none(self):
         raise NotImplementedError("is_none must be implemented")
 
@@ -20,17 +20,18 @@ def reachable(graph, start_vertex, dest_vertex):
         next_v = queue.pop(0)
 
         if next_v == dest_vertex:
-             return True
+            return True
 
-        for v in graph[next_v]:
-            if v in visited and visited[v] == False:
-                queue.append(v)
-                visited[v] = True
+        for vertex in graph[next_v]:
+            if vertex in visited and not visited[vertex]:
+                queue.append(vertex)
+                visited[vertex] = True
     return False
 
 
 def bi_reachable(graph, start_vertex, dest_vertex):
     """Bidirectional reachable"""
+    # pylint: disable=arguments-out-of-order
     return (reachable(graph, start_vertex, dest_vertex) or
             reachable(graph, dest_vertex, start_vertex))
 
@@ -57,15 +58,15 @@ def connected(graph, start_vertex, dest_vertex):
         next_v = queue.pop(0)
 
         if next_v == dest_vertex:
-             return True
+            return True
 
         for node, adjs in graph.items():
             if next_v == node:
-                for v in adjs:
-                    if v in visited and visited[v] == False:
-                        queue.append(v)
-                        visited[v] = True
-            if next_v in adjs and visited[node] == False:
+                for vertex in adjs:
+                    if vertex in visited and not visited[vertex]:
+                        queue.append(vertex)
+                        visited[vertex] = True
+            if next_v in adjs and not visited[node]:
                 queue.append(node)
                 visited[node] = True
 
@@ -86,8 +87,9 @@ def none_connected(graph, vertex, none_node=NONE_NODE):
     return False
 
 
-def find_all_paths(graph, start, path=[]):
+def find_all_paths(graph, start, path=None):
     """Find all the paths of graph from start."""
+    path = path if path is not None else []
     path = path + [start]
     if start not in graph:
         return [path]
@@ -133,14 +135,14 @@ def find_sources(graph, vertex):
 
     stack = [vertex]
 
-    while (len(stack)):
-        s = stack.pop()
+    while len(stack) > 0:
+        source = stack.pop()
 
-        if not visited[s]:
-            visited[s] = True
-            s_sources = [n for n in graph.keys() if s in graph[n]]
+        if not visited[source]:
+            visited[source] = True
+            s_sources = [n for n in graph.keys() if source in graph[n]]
             if not s_sources:
-                sources.append(s)
+                sources.append(source)
                 continue
             stack.extend(s_sources)
     return sources

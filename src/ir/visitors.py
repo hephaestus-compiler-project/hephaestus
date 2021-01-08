@@ -2,7 +2,7 @@ from src.ir import ast
 from src.ir import types
 
 
-class ASTVisitor(object):
+class ASTVisitor():
 
     def result(self):
         raise NotImplementedError('result() must be implemented')
@@ -123,6 +123,9 @@ class ASTVisitor(object):
 
 class DefaultVisitor(ASTVisitor):
 
+    def result(self):
+        raise NotImplementedError('result() must be implemented')
+
     def _visit_node(self, node):
         children = node.children()
         for c in children:
@@ -205,6 +208,9 @@ class DefaultVisitor(ASTVisitor):
 
 
 class DefaultVisitorUpdate(DefaultVisitor):
+
+    def result(self):
+        raise NotImplementedError('result() must be implemented')
 
     def _visit_node(self, node):
         children = node.children()

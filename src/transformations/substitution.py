@@ -8,13 +8,24 @@ from src.generators import Generator
 from src.transformations.base import Transformation
 
 
+def create_function_block(function, is_expr, var_decl, declared=False):
+    if not declared:
+        if_cond = ast.Conditional(is_expr, deepcopy(function.body),
+                                  ast.Variable(var_decl.name))
+        return ast.Block([var_decl, if_cond])
+    if_cond = ast.Conditional(is_expr,
+                              ast.Block(deepcopy(function.body.body[1:])),
+                              ast.Variable(var_decl.name))
+    return ast.Block([function.body.body[0], if_cond])
+
+
 class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
     NAME = 'Value Substitution'
 
     def __init__(self, program, logger=None):
-        super(ValueSubstitution, self).__init__(program, logger)
+        super().__init__(program, logger)
         self.types.remove(kt.Any)
         self.generator = Generator(context=self.program.context)
         # We are not interested in types associated with abstract classes or
@@ -64,7 +75,7 @@ class ValueSubstitution(Transformation):
         # If this node has children then randomly decide if we
         # gonna subtitute one of its children or the current node.
         if node.children() and utils.random.bool():
-            return super(ValueSubstitution, self).visit_new(node)
+            return super().visit_new(node)
         subclasses = tu.find_subtypes(node.class_type, self.types)
         if not subclasses:
             return node
@@ -91,7 +102,7 @@ class TypeSubstitution(Transformation):
     NAME = 'Type Substitution (Widening/Narrowing)'
 
     def __init__(self, program, logger=None):
-        super(TypeSubstitution, self).__init__(program, logger)
+        super().__init__(program, logger)
         self.generator = Generator(context=self.program.context)
         # We are not interested in types associated with abstract classes or
         # interfaces.
@@ -184,21 +195,10 @@ class TypeSubstitution(Transformation):
         setter(decl, sup_t)
         return True
 
-    def _create_function_block(self, function, is_expr, var_decl,
-                               declared=False):
-        if not declared:
-            if_cond = ast.Conditional(is_expr, deepcopy(function.body),
-                                      ast.Variable(var_decl.name))
-            return ast.Block([var_decl, if_cond])
-        if_cond = ast.Conditional(is_expr,
-                                  ast.Block(deepcopy(function.body.body[1:])),
-                                  ast.Variable(var_decl.name))
-        return ast.Block([function.body.body[0], if_cond])
-
     def visit_class_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
-        new_node = super(TypeSubstitution, self).visit_class_decl(node)
+        new_node = super().visit_class_decl(node)
         self._namespace = initial_namespace
         return new_node
 
@@ -279,7 +279,7 @@ class TypeSubstitution(Transformation):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
         current_cls = self.get_current_class()
-        new_node = super(TypeSubstitution, self).visit_func_decl(node)
+        new_node = super().visit_func_decl(node)
         is_expression = (not isinstance(new_node.body, ast.Block) or
                          new_node.get_type() == kt.Unit)
         if not is_expression:
@@ -300,20 +300,20 @@ class TypeSubstitution(Transformation):
         else:
             var_decl = None
         use_var = False
-        for i, p in enumerate(new_node.params):
-            old_type = deepcopy(p.get_type())
-            if isinstance(p.param_type, tp.AbstractType):
-                self._check_param_type(new_node, p, i, old_type,
+        for i, param in enumerate(new_node.params):
+            old_type = deepcopy(param.get_type())
+            if isinstance(param.param_type, tp.AbstractType):
+                self._check_param_type(new_node, param, i, old_type,
                                        current_cls)
                 continue
             # Perform type widening on this function's parameters.
             transform = self._type_widening(
-                p, lambda x, y: setattr(x, 'param_type', y))
+                param, lambda x, y: setattr(x, 'param_type', y))
             transform2 = self._check_param_type(
-                new_node, p, i, old_type, current_cls)
+                new_node, param, i, old_type, current_cls)
             transform = transform and transform2
             # We cannot perform type widening in abstract types.
-            if self.no_smart_cast(new_node, p, transform, old_type):
+            if self.no_smart_cast(new_node, param, transform, old_type):
                 # We are done, if one of the following applies:
                 #
                 # * The parameter is not used in the function.
@@ -328,7 +328,7 @@ class TypeSubstitution(Transformation):
             #   val ret : R = ...
             #   if (x is T1) ... else ret
             # }
-            use_var = self._add_is_expr(new_node, var_decl, p, old_type)
+            use_var = self._add_is_expr(new_node, var_decl, param, old_type)
         if use_var:
             new_node.body = ast.Block([var_decl, new_node.body.body[0]])
         if node.func_type == ast.FunctionDeclaration.CLASS_METHOD:
@@ -343,6 +343,5 @@ class TypeSubstitution(Transformation):
                 # Specify the namespace where this variable is used.
                 self._defs[(namespace, node.name)] = True
                 break
-            else:
-                namespace = namespace[:-1]
+            namespace = namespace[:-1]
         return node

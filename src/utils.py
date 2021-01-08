@@ -9,9 +9,9 @@ def prefix_lst(prefix, lst):
                for i in range(1, len(prefix) + 1))
 
 
-def is_number(string):
+def is_number(string_var):
     try:
-        float(string)
+        float(string_var)
         return True
     except ValueError:
         return False
@@ -27,8 +27,8 @@ def lst_get(lst, index=0, default=None):
 
 def read_lines(path):
     lines = []
-    with open(path, 'r') as f:
-        for line in f:
+    with open(path, 'r') as infile:
+        for line in infile:
             lines.append(line.rstrip('\n'))
     return lines
 
@@ -43,13 +43,13 @@ def mkdir(directory_name):
         sys.exit(0)
 
 
-def fprint(string):
+def fprint(text):
     """Full screen print"""
     _, terminal_width = os.popen('stty size', 'r').read().split()
-    print(string.center(int(terminal_width), "="))
+    print(text.center(int(terminal_width), "="))
 
 
-class RandomUtils(object):
+class RandomUtils():
 
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
 
@@ -70,9 +70,9 @@ class RandomUtils(object):
 
     def word(self):
         # TODO: revisit regarding efficiency
-        w = self.r.choice(tuple(self.WORDS))
-        self.WORDS.remove(w)
-        return w
+        word = self.r.choice(tuple(self.WORDS))
+        self.WORDS.remove(word)
+        return word
 
     def integer(self, min_int=0, max_int=10):
         return self.r.randint(min_int, max_int)
@@ -91,7 +91,8 @@ class RandomUtils(object):
         return ''.join(self.r.sample(
             string.ascii_letters + string.digits, length))
 
-    def caps(self, length=1, blacklist=[]):
+    def caps(self, length=1, blacklist=None):
+        blacklist = blacklist if blacklist is not None else []
         while True:
             res = ''.join(self.r.sample(string.ascii_uppercase, length))
             if res not in blacklist:

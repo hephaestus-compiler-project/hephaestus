@@ -21,7 +21,7 @@ class Program(Node):
                                              only_current=True).values()
 
     def update_children(self, children):
-        super(Program, self).update_children(children)
+        super().update_children(children)
         for c in children:
             self.add_declaration(c)
 
@@ -70,7 +70,7 @@ class Block(Node):
         return self.body
 
     def update_children(self, children):
-        super(Block, self).update_children(children)
+        super().update_children(children)
         self.body = children
 
     def __str__(self):
@@ -83,14 +83,17 @@ class Declaration(Node):
 
     def __repr__(self):
         if hasattr(self, 'name'):
+            # pylint: disable=no-member
             return self.name
-        return super(Declaration, self).__repr__()
-
+        return super().__repr__()
 
 
 class VariableDeclaration(Declaration):
-    def __init__(self, name: str, expr: Expr, is_final: bool=True,
-                 var_type: types.Type=None, inferred_type: types.Type=None):
+    def __init__(self, name: str,
+                 expr: Expr,
+                 is_final: bool = True,
+                 var_type: types.Type = None,
+                 inferred_type: types.Type = None):
         self.name = name
         self.expr = expr
         self.is_final = is_final
@@ -106,16 +109,16 @@ class VariableDeclaration(Declaration):
         return self.inferred_type
 
     def update_children(self, children):
-        super(VariableDeclaration, self).update_children(children)
+        super().update_children(children)
         self.expr = children[0]
 
     def __str__(self):
         prefix = "val " if self.is_final else "var "
         if self.var_type is None:
             return prefix + self.name + " = " + str(self.expr)
-        else:
-            return prefix + self.name + ": " + str(self.var_type) + \
-                " = " + str(self.expr)
+        return "{}{}: {} = {}".format(
+            prefix, self.name, str(self.var_type), str(self.expr))
+
 
 class FieldDeclaration(Declaration):
     def __init__(self, name: str, field_type: types.Type, is_final=True,
@@ -154,28 +157,30 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def  __init__(self, class_type: types.Type, args: List[Expr]=[]):
+    def __init__(self, class_type: types.Type, args: List[Expr] = None):
         assert not isinstance(class_type, types.AbstractType)
         self.class_type = class_type
-        self.args = args
+        self.args = args if args is not None else []
 
     def children(self):
         return self.args or []
 
     def update_children(self, children):
-        super(SuperClassInstantiation, self).update_children(children)
+        super().update_children(children)
         if self.args is not None:
             self.args = children
 
     def __str__(self):
         if self.args is None:
             return self.class_type.name
-        else:
-            return self.class_type.name + "(" + ", ".join(map(str, self.args)) + ")"
+        return "{}({})".format(
+            self.class_type.name, ", ".join(map(str, self.args)))
 
 
 class ParameterDeclaration(Declaration):
-    def __init__(self, name: str, param_type: types.Type, default: Expr=None):
+    def __init__(self, name: str,
+                 param_type: types.Type,
+                 default: Expr = None):
         self.name = name
         self.param_type = param_type
         self.default = default
@@ -192,9 +197,8 @@ class ParameterDeclaration(Declaration):
     def __str__(self):
         if self.default is None:
             return self.name + ": " + str(self.param_type)
-        else:
-            return self.name + ": " + str(
-                self.param_type) + " = " + str(self.default)
+        return "{}: {} = {}".format(
+            self.name, str(self.param_type), str(self.default))
 
 
 class FunctionDeclaration(Declaration):
@@ -202,9 +206,15 @@ class FunctionDeclaration(Declaration):
     FUNCTION = 1
 
     # body can be Block or Expr
-    def __init__(self, name: str, params: List[ParameterDeclaration],
-                 ret_type: types.Type, body: Node, func_type: int,
-                 inferred_type: types.Type=None, is_final=True, override=False):
+    def __init__(self,
+                 name: str,
+                 params: List[ParameterDeclaration],
+                 ret_type: types.Type,
+                 body: Node,
+                 func_type: int,
+                 inferred_type: types.Type = None,
+                 is_final=True,
+                 override=False):
         self.name = name
         self.params = params
         self.ret_type = ret_type
@@ -223,7 +233,7 @@ class FunctionDeclaration(Declaration):
         return self.params + [self.body]
 
     def update_children(self, children):
-        super(FunctionDeclaration, self).update_children(children)
+        super().update_children(children)
         len_params = len(self.params)
         for i, c in enumerate(children[:len_params]):
             self.params[i] = c
@@ -238,10 +248,9 @@ class FunctionDeclaration(Declaration):
         if self.ret_type is None:
             return "fun {}({}) =\n  {}".format(
                 self.name, ",".join(map(str, self.params)), str(self.body))
-        else:
-            return "fun {}({}): {} =\n  {}".format(
-                self.name, ",".join(map(str, self.params)), str(self.ret_type),
-                str(self.body))
+        return "fun {}({}): {} =\n  {}".format(
+            self.name, ",".join(map(str, self.params)), str(self.ret_type),
+            str(self.body))
 
 
 class ClassDeclaration(Declaration):
@@ -249,17 +258,21 @@ class ClassDeclaration(Declaration):
     INTERFACE = 1
     ABSTRACT = 2
 
-    def __init__(self, name: str, superclasses: List[SuperClassInstantiation],
-                 class_type: types.Type=None, fields: List[FieldDeclaration]=[],
-                 functions: List[FunctionDeclaration]=[], is_final=True,
-                 type_parameters: List[types.TypeParameter]=[]):
+    def __init__(self, name: str,
+                 superclasses: List[SuperClassInstantiation],
+                 class_type: types.Type = None,
+                 fields: List[FieldDeclaration] = None,
+                 functions: List[FunctionDeclaration] = None,
+                 is_final=True,
+                 type_parameters: List[types.TypeParameter] = None):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
-        self.fields = fields
-        self.functions = functions
+        self.fields = fields if fields is not None else []
+        self.functions = functions if functions is not None else []
         self.is_final = is_final
-        self.type_parameters = type_parameters
+        self.type_parameters = type_parameters if type_parameters is not None \
+            else []
         self.supertypes = [s.class_type for s in self.superclasses]
 
     @property
@@ -273,7 +286,7 @@ class ClassDeclaration(Declaration):
     def update_children(self, children):
         def get_lst(start, end):
             return children[start:end]
-        super(ClassDeclaration, self).update_children(children)
+        super().update_children(children)
         len_fields = len(self.fields)
         len_supercls = len(self.superclasses)
         len_functions = len(self.functions)
@@ -289,8 +302,9 @@ class ClassDeclaration(Declaration):
                             len_fields + len_supercls + len_functions)
         for i, c in enumerate(functions):
             self.functions[i] = c
-        type_params = get_lst(len_fields + len_supercls + len_functions,
-                              len_fields + len_supercls + len_functions + len_tp)
+        type_params = get_lst(
+            len_fields + len_supercls + len_functions,
+            len_fields + len_supercls + len_functions + len_tp)
         for i, c in enumerate(type_params):
             self.type_parameters[i] = c
 
@@ -359,11 +373,17 @@ class ParameterizedFunctionDeclaration(FunctionDeclaration):
     CLASS_METHOD = 0
     FUNCTION = 1
 
-    def __init__(self, name: str, type_parameters: List[types.TypeParameter],
-                 params: List[ParameterDeclaration], ret_type: types.Type,
-                 body: Block, func_type: int, is_final=True, override=False):
-        super(ParameterizedFunctionDeclaration, self).__init__(name, params,
-              ret_type, body, func_type, is_final, override)
+    def __init__(self,
+                 name: str,
+                 type_parameters: List[types.TypeParameter],
+                 params: List[ParameterDeclaration],
+                 ret_type: types.Type,
+                 body: Block,
+                 func_type: int,
+                 is_final=True,
+                 override=False):
+        super().__init__(name, params, ret_type, body,
+                         func_type, is_final, override)
         self.type_parameters = type_parameters
 
     def get_type(self):
@@ -379,11 +399,10 @@ class ParameterizedFunctionDeclaration(FunctionDeclaration):
             return "{}fun<{}> {}({}) =\n  {}".format(
                 keywords, ",".join(map(str, self.type_parameters)),
                 self.name, ",".join(map(str, self.params)), str(self.body))
-        else:
-            return "{}fun<{}> {}({}): {} =\n  {}".format(
-                keywords, ",".join(map(str, self.type_parameters)),
-                self.name, ",".join(map(str, self.params)), str(self.ret_type),
-                str(self.body))
+        return "{}fun<{}> {}({}): {} =\n  {}".format(
+            keywords, ",".join(map(str, self.type_parameters)),
+            self.name, ",".join(map(str, self.params)), str(self.ret_type),
+            str(self.body))
 
 
 class Constant(Expr):
@@ -403,9 +422,8 @@ class Constant(Expr):
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
     def __init__(self, literal: int, integer_type):
-        assert isinstance(literal, int) or isinstance(literal, long), (
-            'Integer literal must either int or long')
-        super(IntegerConstant, self).__init__(literal)
+        assert isinstance(literal, int), 'Integer literal must be int'
+        super().__init__(literal)
         self.integer_type = integer_type
 
 
@@ -420,21 +438,22 @@ class RealConstant(Constant):
             literal_nums = literal
         assert '.' in literal_nums and utils.is_number(literal_nums), (
             'Real literal is not valid')
-        self.literal = literal_nums + ('' if suffix is None else suffix)
+        literal = literal_nums + ('' if suffix is None else suffix)
+        super().__init__(literal)
 
 
 class BooleanConstant(Constant):
     def __init__(self, literal: str):
-        assert literal == 'true' or literal == 'false', (
+        assert literal in ('true', 'false'), (
             'Boolean literal is not "true" or "false"')
-        super(BooleanConstant, self).__init__(literal)
+        super().__init__(literal)
 
 
 class CharConstant(Constant):
     def __init__(self, literal: str):
         assert len(literal) == 1, (
             'Character literal must be a single character')
-        super(CharConstant, self).__init__(literal)
+        super().__init__(literal)
 
     def __str__(self):
         return "'{}'".format(self.literal)
@@ -462,6 +481,7 @@ class Variable(Expr):
     def __repr__(self):
         return str(self.name)
 
+
 class Conditional(Expr):
     def __init__(self, cond: Expr, true_branch: Block, false_branch: Block):
         self.cond = cond
@@ -472,7 +492,7 @@ class Conditional(Expr):
         return [self.cond, self.true_branch, self.false_branch]
 
     def update_children(self, children):
-        super(Conditional, self).update_children(children)
+        super().update_children(children)
         self.cond = children[0]
         self.true_branch = children[1]
         self.false_branch = children[2]
@@ -512,6 +532,7 @@ class BinaryOp(Expr):
 
     def __init__(self, lexpr: Expr, rexpr: Expr, operator: Operator):
         if self.VALID_OPERATORS is not None:
+            # pylint: disable=unsupported-membership-test
             assert operator in self.VALID_OPERATORS, (
                 'Binary operator ' + operator + ' is not valid')
         self.lexpr = lexpr
@@ -522,12 +543,13 @@ class BinaryOp(Expr):
         return [self.lexpr, self.rexpr]
 
     def update_children(self, children):
-        super(BinaryOp, self).update_children(children)
+        super().update_children(children)
         self.lexpr = children[0]
         self.rexpr = children[1]
 
     def __str__(self):
-        return str(self.lexpr) + " " + str(self.operator) + " " + str(self.rexpr)
+        return "{} {} {}".format(
+            str(self.lexpr), str(self.operator), str(self.rexpr))
 
 
 class LogicalExpr(BinaryOp):
@@ -566,15 +588,14 @@ class ArithExpr(BinaryOp):
 
 class Is(BinaryOp):
     def __init__(self, expr: Expr, etype: types.Type, is_not=False):
-        self.lexpr = expr
-        self.rexpr = etype
-        self.operator = Operator('is', is_not=is_not)
+        operator = Operator('is', is_not=is_not)
+        super().__init__(expr, etype, operator)
 
     def children(self):
         return [self.lexpr]
 
     def update_children(self, children):
-        super(BinaryOp, self).update_children(children)
+        super().update_children(children)
         self.lexpr = children[0]
 
 
@@ -587,7 +608,7 @@ class New(Expr):
         return self.args
 
     def update_children(self, children):
-        super(New, self).update_children(children)
+        super().update_children(children)
         self.args = children
 
     def __str__(self):
@@ -611,7 +632,7 @@ class FieldAccess(Expr):
         return [self.expr]
 
     def update_children(self, children):
-        super(FieldAccess, self).update_children(children)
+        super().update_children(children)
         self.expr = children[0]
 
     def __str__(self):
@@ -619,7 +640,7 @@ class FieldAccess(Expr):
 
 
 class FunctionCall(Expr):
-    def __init__(self, func: str, args: Expr, receiver: str=None):
+    def __init__(self, func: str, args: Expr, receiver: str = None):
         self.func = func
         self.args = args
         self.receiver = receiver
@@ -630,7 +651,7 @@ class FunctionCall(Expr):
         return [self.receiver] + self.args
 
     def update_children(self, children):
-        super(FunctionCall, self).update_children(children)
+        super().update_children(children)
         if self.receiver is None:
             self.args = children
         else:
@@ -639,13 +660,13 @@ class FunctionCall(Expr):
 
     def __str__(self):
         if self.receiver is None:
-            return self.func + "(" + ", ".join(map(str, self.args)) + ")"
-        else:
-            return str(self.receiver) + ".(" + \
-                ", ".join(map(str, self.args)) + ")"
+            return "{}({})".format(self.func, ", ".join(map(str, self.args)))
+        return "{}.{}({})".format(
+            str(self.receiver), self.func, ", ".join(map(str, self.args)))
+
 
 class Assignment(Expr):
-    def __init__(self, name: str, expr: Expr, receiver: Expr=None):
+    def __init__(self, name: str, expr: Expr, receiver: Expr = None):
         self.name = name
         self.expr = expr
         self.receiver = receiver
@@ -656,7 +677,7 @@ class Assignment(Expr):
         return [self.expr]
 
     def update_children(self, children):
-        super(Assignment, self).update_children(children)
+        super().update_children(children)
         if self.receiver is not None:
             self.receiver = children[0]
             self.expr = children[1]

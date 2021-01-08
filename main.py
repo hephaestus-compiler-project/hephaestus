@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+# pylint: disable=global-statement
 import multiprocessing as mp
 import sys
 import os
@@ -25,19 +26,19 @@ def save_stats():
         json.dump(STATS, out, indent=2)
 
 
-def run(i):
+def run(iteration_number):
     random.r.seed()
     random.reset_word_pool()
-    executor = Executor(i, args)
-    f, s = executor.process_program()
-    return ProcessRes(failed=f, stats=s)
+    executor = Executor(iteration_number, args)
+    failed, status = executor.process_program()
+    return ProcessRes(failed=failed, stats=status)
 
 
 if args.debug:
     for i in range(1, args.iterations + 1):
-        result = run(i)
-        STATS.update(result.stats)
-        if result.failed:
+        res = run(i)
+        STATS.update(res.stats)
+        if res.failed:
             N_FAILED += 1
         else:
             N_PASSED += 1
@@ -46,7 +47,7 @@ if args.debug:
     sys.exit()
 
 
-template_msg = (u"Test Programs Passed {} / {} \u2714\t\t"
+TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
                 "Test Programs Failed {} / {} \u2718\r")
 
 
@@ -60,20 +61,21 @@ def process_result(result):
     else:
         N_PASSED += 1
     sys.stdout.write('\033[2K\033[1G')
-    msg = template_msg.format(N_PASSED, args.iterations, N_FAILED,
+    msg = TEMPLATE_MSG.format(N_PASSED, args.iterations, N_FAILED,
                               args.iterations)
     sys.stdout.write(msg)
 
 
-def errorCallback(exception):
+def error_callback(exception):
     print(exception)
 
 
 pool = mp.Pool(args.workers)
-sys.stdout.write(template_msg.format(
+sys.stdout.write(TEMPLATE_MSG.format(
     N_PASSED, args.iterations, N_FAILED, args.iterations))
 for i in range(1, args.iterations + 1):
-    pool.apply_async(run, args=(i,), callback=process_result, error_callback=errorCallback)
+    pool.apply_async(
+        run, args=(i,), callback=process_result, error_callback=error_callback)
 pool.close()
 pool.join()
 save_stats()

@@ -1,3 +1,4 @@
+# pylint: disable=pointless-statement
 from typing import Tuple, NamedTuple
 from collections import defaultdict
 
@@ -60,6 +61,7 @@ class UseAnalysis(DefaultVisitor):
         self.program = program
         self.add_none_to_call = True
         self._ret_vars = set()
+        self._selected_namespace = self._namespace
 
     def result(self):
         return self._use_graph
@@ -94,7 +96,7 @@ class UseAnalysis(DefaultVisitor):
     @change_namespace
     def visit_class_decl(self, node):
         self._selected_namespace = self._namespace
-        super(UseAnalysis, self).visit_class_decl(node)
+        super().visit_class_decl(node)
 
     def visit_field_decl(self, node):
         gnode = GNode(self._namespace, node.name)
@@ -140,11 +142,11 @@ class UseAnalysis(DefaultVisitor):
             self.add_none_to_call = prev
         else:
             self._use_graph[gnode].add(NONE_NODE)
-            super(UseAnalysis, self).visit_var_decl(node)
+            super().visit_var_decl(node)
 
     def visit_assign(self, node):
         self._flow_var_to_ref(node, NONE_NODE)
-        super(UseAnalysis, self).visit_assign(node)
+        super().visit_assign(node)
 
     @change_namespace
     def visit_func_decl(self, node):
@@ -159,7 +161,7 @@ class UseAnalysis(DefaultVisitor):
         else:
             expr = node.body
         if not expr:
-            return super(UseAnalysis, self).visit_func_decl(node)
+            return super().visit_func_decl(node)
         if isinstance(expr, ast.Variable):
             self._ret_vars.add(expr.name)
             self._flow_var_to_ref(expr, ret_node)
@@ -168,7 +170,7 @@ class UseAnalysis(DefaultVisitor):
         else:
             if ret_node:
                 self._use_graph[ret_node].add(NONE_NODE)
-        super(UseAnalysis, self).visit_func_decl(node)
+        super().visit_func_decl(node)
 
     def visit_func_call(self, node):
         """Add flows from function call arguments to function declaration

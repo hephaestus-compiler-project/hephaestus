@@ -1,6 +1,8 @@
+# pylint: disable=abstract-method
+from __future__ import annotations
 from copy import deepcopy
 from collections import defaultdict
-from typing import List, Set
+from typing import List
 
 from src.ir.node import Node
 
@@ -16,7 +18,7 @@ class Type(Node):
     def __repr__(self):
         return self.__str__()
 
-    def is_subtype(self, t):
+    def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
     def get_supertypes(self):
@@ -31,23 +33,23 @@ class Type(Node):
                     stack.append(supertype)
         return visited
 
-    def not_related(self, t):
-        return not(self.is_subtype(t) or t.is_subtype(self))
+    def not_related(self, other: Type):
+        return not(self.is_subtype(other) or other.is_subtype(self))
 
     def get_name(self):
         return str(self.name)
 
 
 class AbstractType(Type):
-    def is_subtype(self, t):
+    def is_subtype(self, other):
         raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
 
     def get_supertypes(self):
         # raise TypeError("You cannot call 'get_supertypes()' in an AbstractType")
         # TODO: revisit
-        return super(AbstractType, self).get_supertypes()
+        return super().get_supertypes()
 
-    def not_related(self, t):
+    def not_related(self, other):
         raise TypeError("You cannot call 'not_related()' in an AbstractType")
 
 
@@ -56,7 +58,7 @@ class Builtin(Type):
     """
 
     def __init__(self, name: str):
-        super(Builtin, self).__init__(name)
+        super().__init__(name)
         self.supertypes = [self]
 
     def __str__(self):
@@ -70,8 +72,8 @@ class Builtin(Type):
         """Hash based on the Type"""
         return hash(str(self.__class__))
 
-    def is_subtype(self, t: Type) -> bool:
-        return t == self or t in self.get_supertypes()
+    def is_subtype(self, other: Type) -> bool:
+        return other == self or other in self.get_supertypes()
 
 
 class Classifier(Type):
@@ -79,8 +81,6 @@ class Classifier(Type):
 
 
 class Object(Classifier):
-    def __init__(self, name):
-        self.name = name
 
     def __str__(self):
         return "object " + self.name
@@ -90,9 +90,9 @@ class SimpleClassifier(Classifier):
     """https://kotlinlang.org/spec/type-system.html#simple-classifier-types
     """
 
-    def __init__(self, name: str, supertypes: List[Type] = [], check=False):
-        super(SimpleClassifier, self).__init__(name)
-        self.supertypes = supertypes
+    def __init__(self, name: str, supertypes: List[Type] = None, check=False):
+        super().__init__(name)
+        self.supertypes = supertypes if supertypes is not None else []
         if check:
             self._check_supertypes()
 
@@ -117,18 +117,20 @@ class SimpleClassifier(Classifier):
         """The transitive closure of supertypes must be consistent, i.e., does
         not contain two parameterized types with different type arguments.
         """
-        tc = defaultdict(list)  # Type Constructors
-        for s in filter(lambda x: isinstance(x, ParameterizedType), self.get_supertypes()):
-            tc[s.t_constructor] = tc[s.t_constructor] + [s]
-        print(tc)
-        for t_class in tc.values():
-            for p in t_class:
-                assert p.type_args == t_class[0].type_args, \
+        tconst = defaultdict(list)  # Type Constructors
+        for supertype in filter(
+                lambda x: isinstance(x, ParameterizedType),
+                self.get_supertypes()):
+            tconst[supertype.t_constructor] = \
+                tconst[supertype.t_constructor] + [supertype]
+        for t_class in tconst.values():
+            for ptype in t_class:
+                assert ptype.type_args == t_class[0].type_args, \
                     "The concrete types of {} do not have the same types".format(
                         t_class[0].t_constructor)
 
-    def is_subtype(self, t: Type) -> bool:
-        return t == self or t in self.get_supertypes()
+    def is_subtype(self, other: Type) -> bool:
+        return other == self or other in self.get_supertypes()
 
 
 class TypeParameter(AbstractType):
@@ -137,17 +139,16 @@ class TypeParameter(AbstractType):
     CONTRAVARIANT = 2
 
     def __init__(self, name: str, variance=None, bound: Type = None):
-        super(TypeParameter, self).__init__(name)
+        super().__init__(name)
         self.variance = variance or self.INVARIANT
         self.bound = bound
 
     def variance_to_string(self):
-        if self.variance == 0:
-            return ''
         if self.variance == 1:
             return 'out'
         if self.variance == 2:
             return 'in'
+        return ''
 
     def is_covariant(self):
         return self.variance == 1
@@ -180,11 +181,11 @@ class TypeParameter(AbstractType):
 
 class TypeConstructor(AbstractType):
     def __init__(self, name: str, type_parameters: List[TypeParameter],
-                 supertypes: List[Type] = []):
-        super(TypeConstructor, self).__init__(name)
+                 supertypes: List[Type] = None):
+        super().__init__(name)
         assert len(type_parameters) != 0, "type_parameters is empty"
         self.type_parameters = list(type_parameters)
-        self.supertypes = supertypes
+        self.supertypes = supertypes if supertypes is not None else []
 
     def __str__(self):
         return "{}<{}> {} {}".format(
@@ -203,11 +204,11 @@ class TypeConstructor(AbstractType):
         return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
                     + str(self.type_parameters))
 
-    def is_subtype(self, t):
+    def is_subtype(self, other: Type):
         # TODO revisit
         # from_constructor = isinstance(t, ParameterizedType) and \
         #    t.t_constructor == self
-        return t in self.get_supertypes()
+        return other in self.get_supertypes()
 
     def new(self, type_args: List[Type]):
         return ParameterizedType(self, type_args)
@@ -223,8 +224,8 @@ class ParameterizedType(SimpleClassifier):
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
         self._can_infer_type_args = can_infer_type_args
-        super(ParameterizedType, self).__init__(self.t_constructor.name,
-                                                self.t_constructor.supertypes)
+        super().__init__(self.t_constructor.name,
+                         self.t_constructor.supertypes)
 
     @property
     def can_infer_type_args(self):
@@ -257,18 +258,18 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
-    def is_subtype(self, t: Type) -> bool:
-        if super(ParameterizedType, self).is_subtype(t):
+    def is_subtype(self, other: Type) -> bool:
+        if super().is_subtype(other):
             return True
-        if isinstance(t, ParameterizedType):
-            if self.t_constructor == t.t_constructor:
+        if isinstance(other, ParameterizedType):
+            if self.t_constructor == other.t_constructor:
                 for tp, sarg, targ in zip(self.t_constructor.type_parameters,
-                                          self.type_args, t.type_args):
+                                          self.type_args, other.type_args):
                     if tp.is_invariant() and sarg != targ:
                         return False
-                    elif tp.is_covariant() and not sarg.is_subtype(targ):
+                    if tp.is_covariant() and not sarg.is_subtype(targ):
                         return False
-                    elif tp.is_contravariant() and not targ.is_subtype(sarg):
+                    if tp.is_contravariant() and not targ.is_subtype(sarg):
                         return False
                 return True
         return False
@@ -277,7 +278,7 @@ class ParameterizedType(SimpleClassifier):
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, param_types, ret_type):
-        super(Function, self).__init__(name)
+        super().__init__(name)
         self.param_types = param_types
         self.ret_type = ret_type
 
@@ -285,14 +286,14 @@ class Function(Classifier):
         return self.name + "(" + ','.join(map(str, self.param_types)) +\
             ") -> " + str(self.ret_type)
 
-    def is_subtype(self, t):
+    def is_subtype(self, other: Type):
         # TODO
         return False
 
 class ParameterizedFunction(Function):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, type_parameters, param_types, ret_type):
-        super(ParameterizedFunction, self).__init__(name, param_types, ret_type)
+        super().__init__(name, param_types, ret_type)
         self.type_parameters = type_parameters
 
     def __str__(self):
@@ -300,6 +301,6 @@ class ParameterizedFunction(Function):
             "(" + ','.join(map(str, self.param_types)) +\
             ") -> " + str(self.ret_type)
 
-    def is_subtype(self, t):
+    def is_subtype(self, other: Type):
         # TODO
         return False
