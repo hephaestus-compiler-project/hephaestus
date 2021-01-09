@@ -89,7 +89,8 @@ def _update_type_constructor(etype, new_type):
     return etype
 
 
-def update_supertypes(etype, new_type, test_pred=lambda x, y: x.name == y.name):
+def update_supertypes(etype, new_type,
+                      test_pred=lambda x, y: x.name == y.name):
     visited = [etype]
     while visited:
         source = visited[-1]
@@ -122,7 +123,8 @@ def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
     # arguments and type constructor for updates.
     if isinstance(etype, tp.ParameterizedType):
         etype.type_args = [update_type(ta, new_type) for ta in etype.type_args]
-        etype.t_constructor = update_type(etype.t_constructor, new_type, test_pred)
+        etype.t_constructor = update_type(
+            etype.t_constructor, new_type, test_pred)
         return etype
     # Case 3: If etype is a type constructor recursively inspect is type
     # parameters for updates.
@@ -172,11 +174,13 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             # this too. Remove this class from available types to avoid
             # depthy instantiations.
             types = [t for t in types if t != c]
-            cls_type, _ = instantiate_type_constructor(cls_type, types, only_regular)
+            cls_type, _ = instantiate_type_constructor(
+                cls_type, types, only_regular)
         t_args.append(cls_type)
     # Also return a map of type parameters and their instantiations.
     params_map = {t_param: t_args[i]
-                  for i, t_param in enumerate(type_constructor.type_parameters)}
+                  for i, t_param in enumerate(
+                      type_constructor.type_parameters)}
     return type_constructor.new(t_args), params_map
 
 
@@ -192,5 +196,6 @@ def choose_type(types: List[tp.Type], only_regular=True):
         # We just selected a parameterized class, so we need to instantiate
         # it.
         types = [t for t in types if t != c]
-        cls_type, _ = instantiate_type_constructor(cls_type, types, only_regular)
+        cls_type, _ = instantiate_type_constructor(
+            cls_type, types, only_regular)
     return cls_type

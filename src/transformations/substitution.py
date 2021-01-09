@@ -32,7 +32,8 @@ class ValueSubstitution(Transformation):
         # We are not interested in types associated with abstract classes or
         # interfaces.
         self.types = [c for c in self.types
-                      if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
+                      if getattr(c, 'class_type', 0) ==
+                      ast.ClassDeclaration.REGULAR]
 
     def _generate_new(self, class_decl, class_type, params_map):
         return ast.New(
@@ -179,7 +180,8 @@ class TypeSubstitution(Transformation):
 
         if sup_t is None:
             sup_t = utils.random.choice(superclasses)
-            self._cached_type_widenings[(decl.name, decl.get_type().name)] = sup_t
+            self._cached_type_widenings[(decl.name, decl.get_type().name)] = \
+                sup_t
 
         if isinstance(decl.get_type(), tp.ParameterizedType):
             # The current type of the declaration is parameterized type.

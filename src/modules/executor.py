@@ -85,7 +85,8 @@ class Executor:
             return True, ""
         with tempfile.TemporaryDirectory() as tmpdirname:
             filename = os.path.join(tmpdirname, self.translator.get_filename())
-            executable = os.path.join(tmpdirname, self.translator.get_executable())
+            executable = os.path.join(
+                tmpdirname, self.translator.get_executable())
             command_args = self.translator.get_cmd_build(filename, executable)
             with open(filename, 'w') as out:
                 out.write(program_str)
@@ -136,12 +137,15 @@ class Executor:
         # Save initial (previous) program
         if initial_p:
             initial_filename = os.path.join(mismatch, "initial")
-            with open(initial_filename + "_" + self.translator.get_filename(), 'w') as out:
+            initial_filename_program = "{}_{}".format(
+                initial_filename, self.translator.get_filename())
+            with open(initial_filename_program, 'w') as out:
                 out.write(self._translate_program(initial_p))
             with open(initial_filename + ".bin", 'wb') as out:
                 pickle.dump(initial_p, out)
         # Create a test script
-        dst_executable = os.path.join(mismatch, self.translator.get_executable())
+        dst_executable = os.path.join(
+            mismatch, self.translator.get_executable())
         cmd_build = self.translator.get_cmd_build(dst_filename, dst_executable)
         cmd_exec = self.translator.get_cmd_exec(dst_executable)
         testfile = os.path.join(mismatch, 'test.sh')
@@ -165,7 +169,8 @@ class Executor:
                                    "iter_" + str(i))
             mkdir(dst_dir)
             # Save the program
-            dst_filename = os.path.join(dst_dir, self.translator.get_filename())
+            dst_filename = os.path.join(
+                dst_dir, self.translator.get_filename())
             with open(dst_filename, 'w') as out:
                 out.write(program_str)
         status, _ = self._compile(program_str, compiler_pass=True)
@@ -186,7 +191,8 @@ class Executor:
         transformer = transformation_cls(program, logger)
         if self.args.debug:
             print("Transformation: " + transformer.get_name())
-        self.stats[get_key(i)]['transformations'].append(transformer.get_name())
+        self.stats[get_key(i)]['transformations'].append(
+            transformer.get_name())
         transformer.transform()
         program = transformer.result()
         self.tstack.append((prev_p, transformer))
@@ -202,7 +208,8 @@ class Executor:
                                    str(transformation_number + 1))
             mkdir(dst_dir)
             # Save the program
-            dst_filename = os.path.join(dst_dir, self.translator.get_filename())
+            dst_filename = os.path.join(
+                dst_dir, self.translator.get_filename())
             with open(dst_filename, 'w') as out:
                 out.write(program_str)
         if not comp:
@@ -230,7 +237,7 @@ class Executor:
             for j in range(self.args.transformations):
                 comp = True
                 if ((self.args.only_last or self.args.rerun) and
-                    j != self.args.transformations - 1):
+                        j != self.args.transformations - 1):
                     comp = False
                 status, program = self._apply_trasnformation(j, program, comp,
                                                              i)
@@ -266,9 +273,11 @@ class Executor:
                 self._report(program_str, program)
                 return True, dict(self.stats)
         else:
-            succeed, program, program_str = self._generate_program(self.exec_id)
+            succeed, program, program_str = self._generate_program(
+                self.exec_id)
             if not succeed:
                 self._report(program_str, program)
                 return True, dict(self.stats)
         self.tstack.append((deepcopy(program), "InputProgram"))
-        return self._apply_trasnformations(program, self.exec_id), dict(self.stats)
+        return self._apply_trasnformations(program, self.exec_id), \
+            dict(self.stats)

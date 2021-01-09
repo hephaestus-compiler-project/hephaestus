@@ -56,20 +56,24 @@ class FloatType(NumberType):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
+
 class DoubleType(NumberType):
     def __init__(self, name="Double"):
         super().__init__(name)
         self.supertypes.append(NumberType())
+
 
 class CharType(AnyType):
     def __init__(self, name="Char"):
         super().__init__(name)
         self.supertypes.append(AnyType())
 
+
 class StringType(AnyType):
     def __init__(self, name="String"):
         super().__init__(name)
         self.supertypes.append(AnyType())
+
 
 class BooleanType(AnyType):
     def __init__(self, name="Boolean"):

@@ -97,7 +97,8 @@ class ASTVisitor():
         raise NotImplementedError('visit_equality_expr() must be implemented')
 
     def visit_comparison_expr(self, node):
-        raise NotImplementedError('visit_comparison_expr() must be implemented')
+        raise NotImplementedError(
+            'visit_comparison_expr() must be implemented')
 
     def visit_arith_expr(self, node):
         raise NotImplementedError('visit_arith_expr() must be implemented')

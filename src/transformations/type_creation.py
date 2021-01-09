@@ -87,12 +87,13 @@ def create_abstract_class(class_decl, empty):
                                     body_f, func.func_type,
                                     inferred_type=deepcopy(func.inferred_type),
                                     is_final=False, override=func.override))
-    return ast.ClassDeclaration(utils.random.word().capitalize(),
-                                superclasses=[],
-                                fields=create_non_final_fields(class_decl.fields),
-                                class_type=ast.ClassDeclaration.ABSTRACT,
-                                functions=functions, is_final=False,
-                                type_parameters=class_decl.type_parameters)
+    return ast.ClassDeclaration(
+        utils.random.word().capitalize(),
+        superclasses=[],
+        fields=create_non_final_fields(class_decl.fields),
+        class_type=ast.ClassDeclaration.ABSTRACT,
+        functions=functions, is_final=False,
+        type_parameters=class_decl.type_parameters)
 
 
 def create_regular_class(class_decl, empty):
@@ -270,7 +271,8 @@ class SubtypeCreation(TypeCreation):
                 class_type, args=None)
         args = []
         regular_types = [c for c in self.types
-                         if getattr(c, 'class_type', 0) == ast.ClassDeclaration.REGULAR]
+                         if getattr(c, 'class_type', 0) ==
+                         ast.ClassDeclaration.REGULAR]
         for field in class_decl.fields:
             subtypes = tu.find_subtypes(
                 self._type_params_map.get(field.get_type(), field.get_type()),
@@ -331,11 +333,12 @@ class SubtypeCreation(TypeCreation):
                         p.get_type(), p.get_type()))
                 ) for p in func.params]
             functions.append(
-                ast.FunctionDeclaration(func.name, params, None,
-                                        body=expr,
-                                        func_type=func.func_type,
-                                        inferred_type=deepcopy(func.get_type()),
-                                        is_final=True, override=True))
+                ast.FunctionDeclaration(
+                    func.name, params, None,
+                    body=expr,
+                    func_type=func.func_type,
+                    inferred_type=deepcopy(func.get_type()),
+                    is_final=True, override=True))
         return ast.ClassDeclaration(
             utils.random.word().capitalize(),
             [self._create_super_instantiation(class_decl, class_type)],
@@ -403,7 +406,8 @@ class SupertypeCreation(TypeCreation):
             super_instantiation = ast.SuperClassInstantiation(
                 self._new_class.get_type(),
                 args=(None
-                      if self._new_class.class_type == ast.ClassDeclaration.INTERFACE
+                      if self._new_class.class_type ==
+                      ast.ClassDeclaration.INTERFACE
                       else []))
         else:
             args = (

@@ -23,7 +23,7 @@ class Context():
                 'funcs': {},
                 'vars': {},
                 'classes': {},
-                'decls': OrderedDict() # Here we keep the declaration order
+                'decls': OrderedDict()  # Here we keep the declaration order
             }
             self._context[namespace][entity][name] = value
 
@@ -72,7 +72,8 @@ class Context():
         return decls
 
     def get_decl(self, namespace, name):
-        return self._context.get(namespace, {}).get('decls', {}).get(name, None)
+        return self._context.get(namespace, {}).get('decls', {}).get(
+            name, None)
 
     def get_funcs(self, namespace, only_current=False):
         return self._get_declarations(namespace, 'funcs', only_current)

@@ -9,7 +9,8 @@ from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
 
-def get_decl(context, namespace, decl_name: str, limit=None) -> Tuple[str, ast.Declaration]:
+def get_decl(context, namespace, decl_name: str, limit=None) -> \
+        Tuple[str, ast.Declaration]:
     """
     We search the context for a declaration with the given name (`decl_name`).
 

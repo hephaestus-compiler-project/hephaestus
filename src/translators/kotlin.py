@@ -62,11 +62,11 @@ class KotlinTranslator(ASTVisitor):
             res += "\n"
         ret_keyword = "return " if prev else ""
         if children_res:
-            res += " " * self.ident  + ret_keyword + \
+            res += " " * self.ident + ret_keyword + \
                    children_res[-1][self.ident:] + "\n" + \
                    " " * (self.ident - 2) + "}"
         else:
-            res += " " * self.ident  + ret_keyword + "\n" + \
+            res += " " * self.ident + ret_keyword + "\n" + \
                    " " * (self.ident - 2) + "}"
         self.is_func_block = prev
         self._children_res.append(res)
@@ -104,7 +104,8 @@ class KotlinTranslator(ASTVisitor):
         prefix = " " * old_ident
         prefix += (
             "open "
-            if not node.is_final and node.class_type != ast.ClassDeclaration.INTERFACE
+            if (not node.is_final
+                and node.class_type != ast.ClassDeclaration.INTERFACE)
             else ""
         )
         res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
@@ -295,9 +296,9 @@ class KotlinTranslator(ASTVisitor):
             self._children_res.append(
                 node.class_type.name + "(" + ", ".join(children_res) + ")")
         else:
-            self._children_res.append(
-                " " * self.ident + node.class_type.get_name() + "(" + ", ".join(
-                children_res) + ")")
+            self._children_res.append("{}({})".format(
+                " " * self.ident + node.class_type.get_name(),
+                ", ".join(children_res)))
 
     def visit_field_access(self, node):
         old_ident = self.ident

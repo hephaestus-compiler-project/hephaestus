@@ -88,8 +88,10 @@ def get_variance(context, use_graph, node):
     # If all source nodes of the node are final FieldDeclarations and none of
     # its connected nodes is ParameterDeclaration, then the type parameter can
     # be covariant.
-    if (all(isinstance(s, ast.FieldDeclaration) and s.is_final for s in sn_decl)
-            and not any(isinstance(c, ast.ParameterDeclaration) for c in cn_decl)
+    if (all(isinstance(s, ast.FieldDeclaration) and s.is_final
+            for s in sn_decl)
+            and not any(isinstance(c, ast.ParameterDeclaration)
+                        for c in cn_decl)
             and utils.random.bool()):
         variance = COVARIANT
     # if all source nodes are ParameterDeclaration and none of its connected
@@ -155,7 +157,7 @@ class ParameterizedSubstitution(Transformation):
         # pylint: disable=unidiomatic-typecheck
         classes = {d for d in self.program.declarations
                    if (isinstance(d, ast.ClassDeclaration) and
-                   type(d.get_type()) is types.SimpleClassifier)}
+                       type(d.get_type()) is types.SimpleClassifier)}
         return list(classes.difference(self._blacklist_classes))
 
     def _create_parameterized_type(self) -> types.ParameterizedType:
@@ -190,9 +192,9 @@ class ParameterizedSubstitution(Transformation):
                 #
                 # does not compile.
                 #
-                # To use any other type, we must be sure that any argument is of
-                # the newly selected type. For example, in the previous example,
-                # if we update val x to be Int, then it will work.
+                # To use any other type, we must be sure that any argument is
+                # of the newly selected type. For example, in the previous
+                # example, if we update val x to be Int, then it will work.
                 #
                 # class A<T : Number>
                 # val x: Int = 1
@@ -294,7 +296,6 @@ class ParameterizedSubstitution(Transformation):
         node = self.visit_class_decl(node)
         self._in_select_type_params = False
         return node
-
 
     def _analyse_selected_class(self, node) -> ast.ClassDeclaration:
         """Analyse selected class by following the next steps:

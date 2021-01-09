@@ -45,7 +45,6 @@ class AbstractType(Type):
         raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
 
     def get_supertypes(self):
-        # raise TypeError("You cannot call 'get_supertypes()' in an AbstractType")
         # TODO: revisit
         return super().get_supertypes()
 
@@ -111,7 +110,8 @@ class SimpleClassifier(Classifier):
 
     def __hash__(self):
         """Hash based on the Type"""
-        return hash(str(self.__class__) + str(self.name) + str(self.supertypes))
+        return hash("{}{}{}".format(
+            str(self.__class__), str(self.name), str(self.supertypes)))
 
     def _check_supertypes(self):
         """The transitive closure of supertypes must be consistent, i.e., does
@@ -126,8 +126,9 @@ class SimpleClassifier(Classifier):
         for t_class in tconst.values():
             for ptype in t_class:
                 assert ptype.type_args == t_class[0].type_args, \
-                    "The concrete types of {} do not have the same types".format(
-                        t_class[0].t_constructor)
+                    "The concrete types of " + \
+                    str(t_class[0].t_constructor) + " " + \
+                    "do not have the same types"
 
     def is_subtype(self, other: Type) -> bool:
         return other == self or other in self.get_supertypes()
@@ -173,7 +174,8 @@ class TypeParameter(AbstractType):
 
     def __str__(self):
         return "{}{}{}".format(
-            self.variance_to_string() + ' ' if self.variance != self.INVARIANT else '',
+            self.variance_to_string() +
+            ' ' if self.variance != self.INVARIANT else '',
             self.name,
             ': ' + self.bound.get_name() if self.bound is not None else ''
         )
@@ -216,7 +218,7 @@ class TypeConstructor(AbstractType):
 
 class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor, type_args: List[Type],
-                 can_infer_type_args = False):
+                 can_infer_type_args=False):
         self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
         self.type_args = list(type_args)
@@ -290,6 +292,7 @@ class Function(Classifier):
         # TODO
         return False
 
+
 class ParameterizedFunction(Function):
     # FIXME: Represent function as a parameterized type
     def __init__(self, name, type_parameters, param_types, ret_type):
@@ -297,8 +300,8 @@ class ParameterizedFunction(Function):
         self.type_parameters = type_parameters
 
     def __str__(self):
-        return self.name + "<" ','.join(map(str, self.type_parameters)) + ">" + \
-            "(" + ','.join(map(str, self.param_types)) +\
+        return self.name + "<" ','.join(map(str, self.type_parameters)) + \
+            ">" + "(" + ','.join(map(str, self.param_types)) + \
             ") -> " + str(self.ret_type)
 
     def is_subtype(self, other: Type):
