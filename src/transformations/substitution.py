@@ -5,6 +5,7 @@ from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir import kotlin_types as kt
 from src.generators import Generator
+from src.generators import utils as gu
 from src.transformations.base import Transformation
 
 
@@ -82,16 +83,16 @@ class ValueSubstitution(Transformation):
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
         generators = {
-            kt.Boolean: self.generator.gen_bool_constant,
-            kt.Char: self.generator.gen_char_constant,
-            kt.String: self.generator.gen_string_constant,
-            kt.Number: self.generator.gen_integer_constant,
-            kt.Integer: self.generator.gen_integer_constant,
-            kt.Byte: self.generator.gen_integer_constant,
-            kt.Short: self.generator.gen_integer_constant,
-            kt.Long: self.generator.gen_integer_constant,
-            kt.Float: lambda: self.generator.gen_real_constant(kt.Float),
-            kt.Double: self.generator.gen_real_constant,
+            kt.Boolean: gu.gen_bool_constant,
+            kt.Char: gu.gen_char_constant,
+            kt.String: gu.gen_string_constant,
+            kt.Number: gu.gen_integer_constant,
+            kt.Integer: gu.gen_integer_constant,
+            kt.Byte: gu.gen_integer_constant,
+            kt.Short: gu.gen_integer_constant,
+            kt.Long: gu.gen_integer_constant,
+            kt.Float: lambda: gu.gen_real_constant(kt.Float),
+            kt.Double: gu.gen_real_constant,
         }
         generate = generators.get(sub_c, lambda: self.generate_new(sub_c))
         return generate()
