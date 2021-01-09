@@ -41,8 +41,8 @@ setup(
     version='0.0.1',
     description='Check Type Systems',
     python_requires='>=3.4, <4',
-    setup_requires=['pytest-runner', 'pytest-pylint'],
-    tests_require=['pytest', 'mock', 'pylint'],
+    setup_requires=['pytest-runner', 'pytest-pylint', 'pytest-flake8'],
+    tests_require=['pytest', 'mock', 'pylint', 'flake8'],
     packages=['src'],
     packages_dir={'src': 'src'},
     #  entry_points={
