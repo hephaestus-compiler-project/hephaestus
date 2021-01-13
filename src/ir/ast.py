@@ -595,7 +595,9 @@ class Is(BinaryOp):
         return [self.lexpr]
 
     def update_children(self, children):
-        super().update_children(children)
+        # We want to call the update_children of expr
+        # pylint: disable=bad-super-call
+        super(BinaryOp, self).update_children(children)
         self.lexpr = children[0]
 
 
