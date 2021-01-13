@@ -1,3 +1,4 @@
+# pylint: disable=dangerous-default-value
 from typing import List
 
 from src import utils
@@ -157,10 +158,10 @@ class ObjectDecleration(Declaration):
 
 
 class SuperClassInstantiation(Node):
-    def __init__(self, class_type: types.Type, args: List[Expr] = None):
+    def __init__(self, class_type: types.Type, args: List[Expr] = []):
         assert not isinstance(class_type, types.AbstractType)
         self.class_type = class_type
-        self.args = args if args is not None else []
+        self.args = args
 
     def children(self):
         return self.args or []
@@ -261,18 +262,17 @@ class ClassDeclaration(Declaration):
     def __init__(self, name: str,
                  superclasses: List[SuperClassInstantiation],
                  class_type: types.Type = None,
-                 fields: List[FieldDeclaration] = None,
-                 functions: List[FunctionDeclaration] = None,
+                 fields: List[FieldDeclaration] = [],
+                 functions: List[FunctionDeclaration] = [],
                  is_final=True,
-                 type_parameters: List[types.TypeParameter] = None):
+                 type_parameters: List[types.TypeParameter] = []):
         self.name = name
         self.superclasses = superclasses
         self.class_type = class_type or self.REGULAR
-        self.fields = fields if fields is not None else []
-        self.functions = functions if functions is not None else []
+        self.fields = fields
+        self.functions = functions
         self.is_final = is_final
-        self.type_parameters = type_parameters if type_parameters is not None \
-            else []
+        self.type_parameters = type_parameters
         self.supertypes = [s.class_type for s in self.superclasses]
 
     @property
