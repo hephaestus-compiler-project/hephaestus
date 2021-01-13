@@ -62,7 +62,7 @@ class UseAnalysis(DefaultVisitor):
         self.program = program
         self.add_none_to_call = True
         self._ret_vars = set()
-        self._selected_namespace = self._namespace
+        self._selected_namespace = None
 
     def result(self):
         return self._use_graph
