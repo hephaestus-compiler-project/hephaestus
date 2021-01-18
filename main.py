@@ -26,8 +26,13 @@ STATS = {
         "bugs": args.bugs,
         "name": args.name,
         "language": args.language
+    },
+    "Totals": {
+        "PASSED": 0,
+        "FAILED": 0
     }
 }
+FAULTS = {}
 TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
                 "Test Programs Failed {} / {} \u2718\r")
 ProcessRes = namedtuple("ProcessRes", ['failed', 'stats'])
@@ -67,11 +72,15 @@ def logging():
 
 def save_stats():
     global STATS
+    global FAULTS
     dst_dir = os.path.join(args.test_directory)
-    dst_file = dst_dir + '/stats.json'
+    stats_file = os.path.join(dst_dir, 'stats.json')
+    faults_file = os.path.join(dst_dir, 'faults.json')
     mkdir(dst_dir)
-    with open(dst_file, 'w') as out:
+    with open(stats_file, 'w') as out:
         json.dump(STATS, out, indent=2)
+    with open(faults_file, 'w') as out:
+        json.dump(FAULTS, out, indent=2)
 
 
 def run(iteration_number):
@@ -108,8 +117,11 @@ def debug(time_passed, start_time):
                 STATS.update(res.stats)
             if res.failed:
                 N_FAILED += 1
+                STATS['Totals']['FAILED'] = N_FAILED
+                FAULTS.update(res.stats)
             else:
                 N_PASSED += 1
+                STATS['Totals']['PASSED'] = N_PASSED
         time_passed = time.time() - start_time
         iteration += 1
         save_stats()
@@ -139,8 +151,11 @@ def process_result(result):
             STATS.update(result.stats)
             if result.failed:
                 N_FAILED += 1
+                STATS['Totals']['FAILED'] = N_FAILED
+                FAULTS.update(result.stats)
             else:
                 N_PASSED += 1
+                STATS['Totals']['PASSED'] = N_PASSED
             print_msg()
             save_stats()
     except KeyboardInterrupt:
