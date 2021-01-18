@@ -117,7 +117,7 @@ if not os.path.isdir(args.bugs):
 
 args.test_directory = os.path.join(args.bugs, args.name)
 
-args.stop_cond = "timeout" if args.seconds else "number"
+args.stop_cond = "timeout" if args.seconds else "iterations"
 args.temp_directory = os.path.join(cwd, "temp")
 
 # LOGGING
