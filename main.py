@@ -6,6 +6,7 @@ import os
 import json
 import time
 from collections import namedtuple
+from datetime import datetime
 
 from src.args import args
 from src.utils import random, mkdir, fprint
@@ -31,7 +32,7 @@ TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
 ProcessRes = namedtuple("ProcessRes", ['failed', 'stats'])
 
 
-def log_message():
+def logging():
     print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
                               args.seconds if args.stop_cond == "timeout"
                               else args.iterations))
@@ -41,11 +42,17 @@ def log_message():
     print("{} {}".format("bugs".ljust(21), args.bugs))
     print("{} {}".format("name".ljust(21), args.name))
     fprint("")
+
     if not args.seconds and not args.iterations:
         print()
         print(("Warning: To stop the tool press Ctr + c (Linux) or Ctrl + "
                "Break (Windows)"))
         print()
+
+    with open(args.log_file, 'a') as out:
+        now = datetime.now()
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        out.write("{}; {}; {}\n".format(dt_string, args.name, args.bugs))
 
 
 def save_stats():
@@ -184,7 +191,7 @@ def multi_processing(time_passed, start_time):
 
 
 def main():
-    log_message()
+    logging()
     time_passed = 0
     start_time = time.time()
     if args.debug:

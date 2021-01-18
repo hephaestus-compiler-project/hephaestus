@@ -26,8 +26,8 @@ parser.add_argument(
 )
 parser.add_argument(
     "-b", "--bugs",
-    default=cwd + "/bugs",
-    help="Set bug directory (default: " + cwd + "/bugs)"
+    default=os.path.join(cwd, "bugs"),
+    help="Set bug directory (default: " + str(os.path.join(cwd, "bugs")) + ")"
 )
 parser.add_argument(
     "-n", "--name",
@@ -80,12 +80,17 @@ parser.add_argument(
     "-r", "--rerun",
     action="store_true",
     help=("Run only the last transformation. If failed, start from the last "
-          "and goes back until the transformation introduces the error")
+          "and go back until the transformation introduces the error")
+)
+parser.add_argument(
+    "-F", "--log-file",
+    default=os.path.join(cwd, "logs"),
+    help="Set log file (default: " + str(os.path.join(cwd, "logs")) + ")"
 )
 parser.add_argument(
     "-L", "--log",
     action="store_true",
-    help="Keep logs for each transformation"
+    help="Keep logs for each transformation (bugs/session/logs)"
 )
 parser.add_argument(
     "-N", "--dry-run",
