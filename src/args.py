@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from src.utils import random, mkdir, fprint
+from src.utils import random, mkdir
 from src.modules.executor import Executor
 
 
@@ -116,20 +116,3 @@ args.test_directory = os.path.join(args.bugs, args.name)
 
 args.stop_cond = "timeout" if args.seconds else "iterations"
 args.temp_directory = os.path.join(cwd, "temp")
-
-# LOGGING
-print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
-                          args.seconds if args.stop_cond == "timeout"
-                          else args.iterations))
-print("{} {}".format("transformations".ljust(21), args.transformations))
-print("{} {}".format("transformation_types".ljust(21), ",".join(
-      args.transformation_types)))
-print("{} {}".format("bugs".ljust(21), args.bugs))
-print("{} {}".format("name".ljust(21), args.name))
-fprint("")
-
-if not args.seconds and not args.iterations:
-    print()
-    print(("Warning: To stop the tool press Ctr + c (Linux) or Ctrl + Break "
-           "(Windows)"))
-    print()

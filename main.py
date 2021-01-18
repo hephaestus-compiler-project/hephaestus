@@ -8,17 +8,44 @@ import time
 from collections import namedtuple
 
 from src.args import args
-from src.utils import random, mkdir
+from src.utils import random, mkdir, fprint
 from src.modules.executor import Executor
 
 
 STOP_FLAG = False
 N_FAILED = 0
 N_PASSED = 0
-STATS = {}
+STATS = {
+    "Info": {
+        "stop_cond": args.stop_cond,
+        "stop_cond_value": args.seconds if args.stop_cond == "timeout" \
+            else args.iterations,
+        "transformations": args.transformations,
+        "transformation_types": ",".join(args.transformation_types),
+        "bugs": args.bugs,
+        "name": args.name
+    }
+}
 TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
                 "Test Programs Failed {} / {} \u2718\r")
 ProcessRes = namedtuple("ProcessRes", ['failed', 'stats'])
+
+
+def log_message():
+    print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
+                              args.seconds if args.stop_cond == "timeout"
+                              else args.iterations))
+    print("{} {}".format("transformations".ljust(21), args.transformations))
+    print("{} {}".format("transformation_types".ljust(21), ",".join(
+          args.transformation_types)))
+    print("{} {}".format("bugs".ljust(21), args.bugs))
+    print("{} {}".format("name".ljust(21), args.name))
+    fprint("")
+    if not args.seconds and not args.iterations:
+        print()
+        print(("Warning: To stop the tool press Ctr + c (Linux) or Ctrl + "
+               "Break (Windows)"))
+        print()
 
 
 def save_stats():
@@ -157,6 +184,7 @@ def multi_processing(time_passed, start_time):
 
 
 def main():
+    log_message()
     time_passed = 0
     start_time = time.time()
     if args.debug:
