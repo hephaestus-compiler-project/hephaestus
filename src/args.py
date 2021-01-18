@@ -97,6 +97,13 @@ parser.add_argument(
     action="store_true",
     help="Do not compile the programs"
 )
+parser.add_argument(
+    "--language",
+    default="kotlin",
+    nargs="*",
+    choices=Executor.TRANSLATORS.keys(),
+    help="Select specific language"
+)
 
 
 args = parser.parse_args()

@@ -10,7 +10,7 @@ from datetime import datetime
 
 from src.args import args
 from src.utils import random, mkdir, fprint
-from src.modules.executor import Executor
+from src.modules.executor import Executor, run_command
 
 
 STOP_FLAG = False
@@ -24,7 +24,8 @@ STATS = {
         "transformations": args.transformations,
         "transformation_types": ",".join(args.transformation_types),
         "bugs": args.bugs,
-        "name": args.name
+        "name": args.name,
+        "language": args.language
     }
 }
 TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
@@ -33,6 +34,10 @@ ProcessRes = namedtuple("ProcessRes", ['failed', 'stats'])
 
 
 def logging():
+    global STATS
+    translator = Executor.TRANSLATORS[args.language]()
+    _, compiler = run_command(translator.get_cmd_compiler_version())
+    compiler = compiler.strip()
     print("{} {} ({})".format("stop_cond".ljust(21), args.stop_cond,
                               args.seconds if args.stop_cond == "timeout"
                               else args.iterations))
@@ -41,6 +46,8 @@ def logging():
           args.transformation_types)))
     print("{} {}".format("bugs".ljust(21), args.bugs))
     print("{} {}".format("name".ljust(21), args.name))
+    print("{} {}".format("language".ljust(21), args.language))
+    print("{} {}".format("compiler".ljust(21), compiler))
     fprint("")
 
     if not args.seconds and not args.iterations:
@@ -52,7 +59,10 @@ def logging():
     with open(args.log_file, 'a') as out:
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        out.write("{}; {}; {}\n".format(dt_string, args.name, args.bugs))
+        out.write("{}; {}; {}; {}; {}\n".format(
+            dt_string, args.name, args.bugs, args.language, compiler))
+
+    STATS['Info']['compiler'] = compiler
 
 
 def save_stats():

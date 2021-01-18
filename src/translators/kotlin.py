@@ -31,6 +31,10 @@ class KotlinTranslator(ASTVisitor):
     def get_cmd_exec(executable):
         return ['java', '-jar', executable]
 
+    @staticmethod
+    def get_cmd_compiler_version():
+        return ['kotlinc', '-version']
+
     def result(self):
         if self.program is None:
             raise Exception('You have to translate the program first')

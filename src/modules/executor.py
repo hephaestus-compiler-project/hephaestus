@@ -50,6 +50,9 @@ class Executor:
         'TypeSubstitution': TypeSubstitution,
         'ParameterizedSubstitution': ParameterizedSubstitution
     }
+    TRANSLATORS = {
+        'kotlin': KotlinTranslator
+    }
 
     def __init__(self, exec_id, args):
         self.exec_id = exec_id
@@ -64,7 +67,7 @@ class Executor:
             "error": "",
             "failed": False})
         self.tstack = []  # Transformation programs stack
-        self.translator = None
+        self.translator = Executor.TRANSLATORS[args.language]()
 
     def _compile(self, program_str, compiler_pass=False):
         """Try to compile the generated program.
@@ -154,7 +157,6 @@ class Executor:
             out.write(' '.join(cmd_exec))
 
     def _translate_program(self, program):
-        self.translator = KotlinTranslator()
         self.translator.visit(program)
         return self.translator.result()
 
