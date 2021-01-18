@@ -120,6 +120,12 @@ install_check_type_systems() {
     cd ..
 }
 
+add_run_script_to_path() {
+    mkdir bin
+    cp run.sh bin
+    echo "export PATH=\"\$PATH:$HOME/bin\"" >> $HOME/.bashrc
+}
+
 if [ $# -eq 0 ]
 then
         echo "Missing options!"
@@ -135,18 +141,21 @@ while getopts "hska" OPTION; do
                         install_deps
                         install_kotlin
                         install_check_type_systems
+                        add_run_script_to_path
                         ;;
 
                 s)
                         install_deps
                         install_kotlin_from_source
                         install_check_type_systems
+                        add_run_script_to_path
                         ;;
 
                 a)
                         install_deps
                         install_kotlin_all
                         install_check_type_systems
+                        add_run_script_to_path
                         ;;
 
                 h)
