@@ -57,8 +57,8 @@ def debug(time_passed, start_time):
             N_PASSED += 1
         time_passed = time.time() - start_time
         iteration += 1
+        save_stats()
     print("Total faults: " + str(N_FAILED))
-    save_stats()
     sys.exit()
 
 
@@ -75,6 +75,7 @@ def process_result(result):
     iterations = args.iterations if args.iterations else N_PASSED + N_FAILED
     msg = TEMPLATE_MSG.format(N_PASSED, iterations, N_FAILED, iterations)
     sys.stdout.write(msg)
+    save_stats()
 
 
 def error_callback(exception):
@@ -111,7 +112,6 @@ def multi_processing(time_passed, start_time):
                 error_callback=error_callback)
         pool.close()
         pool.join()
-    save_stats()
     print()
 
 
