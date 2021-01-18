@@ -98,9 +98,6 @@ args = parser.parse_args()
 
 # CHECK ARGUMENTS
 
-if not args.seconds and not args.iterations:
-    args.iterations = 3
-
 if args.seconds and args.iterations:
     sys.exit("Error: you should only set --seconds or --iterations")
 
@@ -130,3 +127,9 @@ print("{} {}".format("transformation_types".ljust(21), ",".join(
 print("{} {}".format("bugs".ljust(21), args.bugs))
 print("{} {}".format("name".ljust(21), args.name))
 fprint("")
+
+if not args.seconds and not args.iterations:
+    print()
+    print(("Warning: To stop the tool press Ctr + c (Linux) or Ctrl + Break "
+           "(Windows)"))
+    print()
