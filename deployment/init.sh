@@ -4,12 +4,12 @@ SDKMAN_DEPS="curl unzip zip"
 export DEBIAN_FRONTEND=noninteractive
 
 update_and_install_common_pks() {
-    apt update && apt upgrade
-    apt install $COMMON_PKGS
+    sudo apt update && sudo apt upgrade
+    sudo apt install $COMMON_PKGS
 }
 
 install_sdkman() {
-    apt install $SDKMAN_DEPS
+    sudo apt install $SDKMAN_DEPS
     curl -s https://get.sdkman.io | /bin/bash
     chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
     source "$HOME/.sdkman/bin/sdkman-init.sh"
