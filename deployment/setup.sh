@@ -44,8 +44,8 @@ install_kotlin_from_source() {
     git clone https://github.com/JetBrains/kotlin.git
     cd kotlin
     ./gradlew -Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000 dist
-    echo "export PATH=\"\$PATH:$HOME/kotlin/dist/bin\"" >> $HOME/.bashrc
-    echo "export KOTLIN_INSTALLATION=$HOME/kotlin/dist/bin" >> $HOME/.bashrc
+    echo "export PATH=\"\$PATH:$HOME/kotlin/dist/kotlinc/bin\"" >> $HOME/.bashrc
+    echo "export KOTLIN_INSTALLATION=$HOME/kotlin" >> $HOME/.bashrc
     cd ..
     source $HOME/.bashrc
 }
