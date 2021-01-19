@@ -7,7 +7,7 @@ update_and_install_common_pks() {
     apt -yqq update && apt -yqq upgrade
     add-apt-repository ppa:deadsnakes/ppa
     apt -yqq update
-    apt install python3.9 python3.9-pip
+    apt install python3.9 python3-pip
     apt -yqq install $COMMON_PKGS
 }
 
@@ -16,6 +16,8 @@ install_sdkman() {
     curl -s https://get.sdkman.io | /bin/bash
     chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
     source "$HOME/.sdkman/bin/sdkman-init.sh"
+    mkdir -p $HOME/.sdkman/etc/
+    echo "sdkman_auto_answer=true" >> $HOME/.sdkman/etc/config
 }
 
 install_deps() {
