@@ -1,10 +1,13 @@
 #! /bin/bash
-COMMON_PKGS="vim software-properties-common git tmux python3 python3-pip cron"
+COMMON_PKGS="vim software-properties-common git tmux cron"
 SDKMAN_DEPS="curl unzip zip"
 export DEBIAN_FRONTEND=noninteractive
 
 update_and_install_common_pks() {
     apt -yqq update && apt -yqq upgrade
+    add-apt-repository ppa:deadsnakes/ppa
+    apt -yqq update
+    apt install python3.9 python3.9-pip
     apt -yqq install $COMMON_PKGS
 }
 
