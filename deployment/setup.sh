@@ -5,10 +5,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 update_and_install_common_pks() {
     apt -yqq update && apt -yqq upgrade
+    apt -yqq install $COMMON_PKGS
     add-apt-repository ppa:deadsnakes/ppa
     apt -yqq update
-    apt install python3.9 python3-pip
-    apt -yqq install $COMMON_PKGS
+    apt -yqq install python3.9 python3-pip
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
 }
 
 install_sdkman() {
