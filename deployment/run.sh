@@ -26,6 +26,7 @@ run_from_source() {
 run_multiple_versions() {
     cd $CHECK_TYPE_SYSTEMS
     git pull
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
     for i in {1..22}; do
         length=$(echo "$VERSIONS" | wc -w)
         rnum=$((1 + $RANDOM%$length+1));
