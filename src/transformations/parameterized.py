@@ -37,6 +37,10 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
                 if (isinstance(targ, types.ParameterizedType) and
                         not bounds_filter(targ)):
                     return False
+                # In some odd/rare cases (~1/1000) targ is an abstract type.
+                # In those cases return False
+                if isinstance(targ, types.AbstractType):
+                    return False
                 if tparam.bound and not targ.is_subtype(tparam.bound):
                     return False
         return True
