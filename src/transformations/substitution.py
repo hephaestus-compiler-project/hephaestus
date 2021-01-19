@@ -58,6 +58,7 @@ class ValueSubstitution(Transformation):
         if isinstance(etype, tp.TypeConstructor):
             # We selected a class that is parameterized. So before its use,
             # we need to instantiate it.
+            # FIXME in extreme cases it may throw an RecursionError
             class_type, params_map = tu.instantiate_type_constructor(
                 etype, self.types)
         else:
@@ -75,10 +76,17 @@ class ValueSubstitution(Transformation):
 
     def visit_new(self, node):
         # If this node has children then randomly decide if we
-        # gonna subtitute one of its children or the current node.
+        # gonna substitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super().visit_new(node)
-        subclasses = tu.find_subtypes(node.class_type, self.types)
+        # FIXME
+        # Known problem in which we have type parameters as type arguments
+        # of a ParameterizedType. In this case, the node.class_type is
+        # problematic
+        try:
+            subclasses = tu.find_subtypes(node.class_type, self.types)
+        except TypeError:
+            return node
         if not subclasses:
             return node
         self.is_transformed = True
@@ -96,6 +104,10 @@ class ValueSubstitution(Transformation):
             kt.Double: gu.gen_real_constant,
         }
         generate = generators.get(sub_c, lambda: self.generate_new(sub_c))
+        # FIXME
+        # Known problem in which we have type parameters as type arguments
+        # of a ParameterizedType. In this case, the decl.get_type() is
+        # problematic
         return generate()
 
 
@@ -305,8 +317,11 @@ class TypeSubstitution(Transformation):
             #   if (x is T) ..
             #   else return ret
             # }
-            var_decl = self.generate_variable_declaration("ret",
-                                                          new_node.get_type())
+            # TODO Check if there is a FieldDeclaration with the same type as
+            # return type
+            if not isinstance(new_node.get_type(), tp.AbstractType):
+                var_decl = self.generate_variable_declaration(
+                    "ret", new_node.get_type())
         else:
             var_decl = None
         use_var = False
@@ -316,6 +331,7 @@ class TypeSubstitution(Transformation):
                 self._check_param_type(new_node, param, i, old_type,
                                        current_cls)
                 continue
+            is_transformed = self.is_transformed
             # Perform type widening on this function's parameters.
             transform = self._type_widening(
                 param, lambda x, y: setattr(x, 'param_type', y))
@@ -330,6 +346,10 @@ class TypeSubstitution(Transformation):
                 # * The type widening operator was not applied.
                 # * The function is abstract.
                 continue
+
+            if isinstance(new_node.get_type(), tp.AbstractType):
+                param.param_type = old_type
+                self.is_transformed = is_transformed
 
             # Otherwise, replace the function body as follows
             # fun (x: T1): R = ...

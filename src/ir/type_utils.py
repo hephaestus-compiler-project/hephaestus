@@ -27,6 +27,7 @@ def _construct_related_types(etype, types, get_subtypes):
     ]
 
 
+# FIXME RecursionError
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 concrete_only=False):
     def to_type(stype):

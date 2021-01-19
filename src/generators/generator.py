@@ -419,6 +419,8 @@ class Generator():
             else:
                 if c.get_type().is_subtype(etype):
                     subclasses.append(c)
+        # FIXME what happens if subclasses is empty?
+        # it may happens due to ParameterizedType with TypeParameters as targs
         return ut.random.choice(
             [s for s in subclasses if s.name == etype.name] or subclasses)
 
