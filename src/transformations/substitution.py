@@ -170,8 +170,15 @@ class TypeSubstitution(Transformation):
         return True
 
     def _type_widening(self, decl, setter):
-        superclasses = tu.find_supertypes(decl.get_type(), self.types,
-                                          concrete_only=True)
+        try:
+            superclasses = tu.find_supertypes(decl.get_type(), self.types,
+                                              concrete_only=True)
+        except TypeError:
+            # FIXME
+            # Known problem in which we have type parameters as type arguments
+            # of a ParameterizedType. In this case, the decl.get_type() is
+            # problematic
+            return False
         if not superclasses:
             return False
         # Inspect cached type widenings for this particular declaration.
