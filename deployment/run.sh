@@ -64,7 +64,7 @@ while getopts "hrsa" OPTION; do
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo ""
-                        echo "   -k     Simple run"
+                        echo "   -r     Simple run"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
                         echo "   -h     help (this output)"
