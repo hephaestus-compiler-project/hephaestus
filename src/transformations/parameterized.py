@@ -49,10 +49,14 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
         if type_constraint is None:
             bound = utils.random.choice(kt.NonNothingTypes)
         else:
-            bound = utils.random.choice(list(filter(
-                bounds_filter, tu.find_supertypes(
-                    type_constraint, ptypes, include_self=True,
-                    concrete_only=True))))
+            candidate_bounds = list(
+                filter(bounds_filter,
+                       tu.find_supertypes(type_constraint,
+                                          ptypes,
+                                          include_self=True,
+                                          concrete_only=True)))
+            if candidate_bounds:
+                bound = utils.random.choice(candidate_bounds)
     return types.TypeParameter(name, variance, bound)
 
 
