@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 TIME_TO_RUN=$((23 * 60 * 60))
 HOUR=$((60 * 60))
 CORES=$(cat /proc/cpuinfo | grep processor | wc -l)

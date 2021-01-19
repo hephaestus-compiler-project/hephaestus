@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 COMMON_PKGS="vim software-properties-common git tmux cron"
 SDKMAN_DEPS="curl unzip zip"
 export DEBIAN_FRONTEND=noninteractive
