@@ -127,7 +127,12 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_type_param(self, node):
-        self._children_res.append(str(node))
+        self._children_res.append("{}{}{}{}".format(
+            node.variance_to_string(),
+            ' ' if node.variance != node.INVARIANT else '',
+            node.name,
+            ': ' + node.bound.get_name() if node.bound is not None else ''
+        ))
 
     def visit_var_decl(self, node):
         old_ident = self.ident
