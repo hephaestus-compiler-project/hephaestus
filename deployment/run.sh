@@ -15,7 +15,8 @@ simple_run() {
 
 run_from_source() {
     cd $KOTLIN_INSTALLATION
-    ./gradlew clean git pull
+    git pull
+    ./gradlew clean
     ./gradlew -Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000 dist
     cd $CHECK_TYPE_SYSTEMS
     git pull
