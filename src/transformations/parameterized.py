@@ -307,6 +307,34 @@ class ParameterizedSubstitution(Transformation):
             node.expr.class_type.can_infer_type_args = True
         return node
 
+    def _check_func_call_infer(self, node: ast.FunctionCall):
+        """We can remove type arguments from function's arguments that are
+        ParameterizedTypes.
+        """
+        # Check if argument is New and class_type is ParameterizedType.
+        # Example:
+        #   class B<T, K>
+        #   fun foo(x: B<Int, Char>) {}
+        #   foo(B<Int, Char>()) // can be foo(B())
+        # We can't remove type arguments when a ParameterDeclaration's
+        # param_type is a super class of the argument.
+        # Example:
+        #   class B
+        #   class C<T>
+        #   fun foo(x: B)
+        #   foo(C<Int>())  // cannot change
+        # TODO Add randomness
+        fdecl = self.program.context.get_funcs(
+            self._namespace, glob=True)[node.func]
+        for pos, arg in enumerate(node.args):
+            if (isinstance(arg, ast.New) and
+                    isinstance(arg.class_type, types.ParameterizedType) and
+                    arg.class_type.name == self._parameterized_type.name and
+                    fdecl.params[pos].param_type.name == arg.class_type.name):
+                arg.class_type.can_infer_type_args = True
+        return node
+
+
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
@@ -485,3 +513,13 @@ class ParameterizedSubstitution(Transformation):
                 ast.GLOBAL_NAMESPACE, etype.name)
             self._blacklist_classes.add(class_decl)
         return super().visit_is(node)
+
+    def visit_func_call(self, node):
+        if self._in_select_type_params:
+            return node
+        new_node = super().visit_func_call(node)
+        if self._in_find_classes_blacklist:
+            return new_node
+        new_node = deepcopy(new_node)
+        new_node = self._check_func_call_infer(new_node)
+        return new_node
