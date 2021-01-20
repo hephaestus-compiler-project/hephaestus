@@ -267,8 +267,8 @@ class ParameterizedSubstitution(Transformation):
                 return tp.type_param
         return old_type
 
-    def _check_infer_of_targs(self, ptype: types.ParameterizedType):
-        """Check if type arguments of a parameterized type can be inferred.
+    def _check_new_infer(self, node: ast.New):
+        """In case of ParameterizedType check if type arguments can be inferred.
         """
         # Check if all type parameters of constructor are used in field
         # declarations.
@@ -279,9 +279,28 @@ class ParameterizedSubstitution(Transformation):
         #   class A<T, K> (val x: T)
         #   val a = A("a") // not enough information to infer type variable K
         # TODO Add randomness
-        if ptype.name == self._parameterized_type.name:
-            return self._type_constructor_decl.all_type_params_in_fields()
-        return False
+        if (isinstance(node.class_type, types.ParameterizedType) and
+                not node.class_type.can_infer_type_args and
+                node.class_type.name == self._parameterized_type.name and
+                self._type_constructor_decl.all_type_params_in_fields()):
+            node.class_type.can_infer_type_args = True
+        return node
+
+    def _check_var_decl_infer(self, node: ast.VariableDeclaration):
+        """If the expr is a New ParameterizedType check if type arguments
+        can be inferred.
+        """
+        # Check if var_type is set.
+        # For instance, in the following example we can remove the type arg.
+        #   class A<T>
+        #   val a: A<String> = A<String>()
+        # TODO Add randomness
+        if (node.var_type and
+                isinstance(node.expr, ast.New) and
+                isinstance(node.expr.class_type, types.ParameterizedType) and
+                node.expr.class_type.name == self._parameterized_type.name):
+            node.expr.class_type.can_infer_type_args = True
+        return node
 
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
@@ -406,7 +425,9 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return new_node
         new_node = self._update_type(new_node, 'var_type')
-        return self._update_type(new_node, 'inferred_type')
+        new_node = self._update_type(new_node, 'inferred_type')
+        new_node = self._check_var_decl_infer(new_node)
+        return new_node
 
     @change_namespace
     def visit_func_decl(self, node):
@@ -438,9 +459,7 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return new_node
         new_node = self._update_type(new_node, 'class_type')
-        if isinstance(new_node.class_type, types.ParameterizedType):
-            new_node.class_type.can_infer_type_args = \
-                self._check_infer_of_targs(new_node.class_type)
+        new_node = self._check_new_infer(new_node)
         return new_node
 
     def visit_super_instantiation(self, node):
