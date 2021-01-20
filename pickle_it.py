@@ -1,6 +1,6 @@
 import sys
 import pickle
-from src.examples.prefix import program
+from src.examples.simple import program
 
 
 with open("example.bin", "wb") as out:
