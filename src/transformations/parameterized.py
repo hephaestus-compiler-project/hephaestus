@@ -290,12 +290,17 @@ class ParameterizedSubstitution(Transformation):
         """If the expr is a New ParameterizedType check if type arguments
         can be inferred.
         """
-        # Check if var_type is set.
+        # Check if var_type is set and not a super--sub class.
         # For instance, in the following example we can remove the type arg.
         #   class A<T>
         #   val a: A<String> = A<String>()
+        # But in the next one we can't.
+        #   open class A
+        #   class B<T>: A()
+        #   val a: A = B<Int>()
         # TODO Add randomness
         if (node.var_type and
+                node.var_type.name == node.expr.class_type.name and
                 isinstance(node.expr, ast.New) and
                 isinstance(node.expr.class_type, types.ParameterizedType) and
                 node.expr.class_type.name == self._parameterized_type.name):
