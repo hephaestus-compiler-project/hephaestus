@@ -300,10 +300,10 @@ class ParameterizedSubstitution(Transformation):
         #   val a: A = B<Int>()
         # TODO Add randomness
         if (node.var_type and
-                node.var_type.name == node.expr.class_type.name and
                 isinstance(node.expr, ast.New) and
                 isinstance(node.expr.class_type, types.ParameterizedType) and
-                node.expr.class_type.name == self._parameterized_type.name):
+                node.expr.class_type.name == self._parameterized_type.name and
+                node.var_type.name == node.expr.class_type.name):
             node.expr.class_type.can_infer_type_args = True
         return node
 
