@@ -1,6 +1,7 @@
 # pylint: disable=too-many-instance-attributes
 from dataclasses import dataclass
 from typing import List
+from copy import deepcopy
 
 from src import utils
 from src.ir import ast
@@ -280,7 +281,6 @@ class ParameterizedSubstitution(Transformation):
         #   val a = A("a") // not enough information to infer type variable K
         # TODO Add randomness
         if (isinstance(node.class_type, types.ParameterizedType) and
-                not node.class_type.can_infer_type_args and
                 node.class_type.name == self._parameterized_type.name and
                 self._type_constructor_decl.all_type_params_in_fields()):
             node.class_type.can_infer_type_args = True
@@ -308,7 +308,8 @@ class ParameterizedSubstitution(Transformation):
         attr_type = getattr(node, attr, None)
         if not attr_type:
             return node
-        new_type = tu.update_type(attr_type, self._parameterized_type)
+        new_type = deepcopy(
+            tu.update_type(attr_type, self._parameterized_type))
         setattr(node, attr, new_type)
         return node
 
