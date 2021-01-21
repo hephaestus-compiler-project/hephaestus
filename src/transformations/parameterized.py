@@ -268,103 +268,6 @@ class ParameterizedSubstitution(Transformation):
                 return tp.type_param
         return old_type
 
-    def _check_new_infer(self, node: ast.New):
-        """In case of ParameterizedType check if type arguments can be inferred.
-        """
-        # Check if all type parameters of constructor are used in field
-        # declarations.
-        # For example, in this case we can infer the type of type arguments
-        #   class A<T, K> (val x: T, val y: K)
-        #   val a = A("a", if (true) -1 else "a")
-        # whereas in the following case we can't
-        #   class A<T, K> (val x: T)
-        #   val a = A("a") // not enough information to infer type variable K
-        # TODO Add randomness
-        if (isinstance(node.class_type, types.ParameterizedType) and
-                node.class_type.name == self._parameterized_type.name and
-                self._type_constructor_decl.all_type_params_in_fields()):
-            node.class_type.can_infer_type_args = True
-        return node
-
-    def _check_var_decl_infer(self, node: ast.VariableDeclaration):
-        """If the expr is a New ParameterizedType check if type arguments
-        can be inferred.
-        """
-        # Check if var_type is set and not a super--sub class.
-        # For instance, in the following example we can remove the type arg.
-        #   class A<T>
-        #   val a: A<String> = A<String>()
-        # But in the next one we can't.
-        #   open class A
-        #   class B<T>: A()
-        #   val a: A = B<Int>()
-        # TODO Add randomness
-        if (node.var_type and
-                isinstance(node.expr, ast.New) and
-                isinstance(node.expr.class_type, types.ParameterizedType) and
-                node.expr.class_type.name == self._parameterized_type.name and
-                node.var_type.name == node.expr.class_type.name):
-            node.expr.class_type.can_infer_type_args = True
-        return node
-
-    def _check_func_call_infer(self, node: ast.FunctionCall):
-        """We can remove type arguments from function's arguments that are
-        ParameterizedTypes.
-        """
-        # Check if argument is New and class_type is ParameterizedType.
-        # Example:
-        #   class B<T, K>
-        #   fun foo(x: B<Int, Char>) {}
-        #   foo(B<Int, Char>()) // can be foo(B())
-        # We can't remove type arguments when a ParameterDeclaration's
-        # param_type is a super class of the argument.
-        # Example:
-        #   class B
-        #   class C<T>
-        #   fun foo(x: B)
-        #   foo(C<Int>())  // cannot change
-        # TODO Add randomness
-        fdecl = self.program.context.get_funcs(
-            self._namespace, glob=True)[node.func]
-        for pos, arg in enumerate(node.args):
-            if (isinstance(arg, ast.New) and
-                    isinstance(arg.class_type, types.ParameterizedType) and
-                    arg.class_type.name == self._parameterized_type.name and
-                    fdecl.params[pos].param_type.name == arg.class_type.name):
-                arg.class_type.can_infer_type_args = True
-        return node
-
-
-    def _check_func_decl_infer(self, node: ast.FunctionDeclaration):
-        """If there is a New expression in the return statement then
-        we can infer its type arguments
-        """
-        # Check if ret_type is set and return statement is a ParameterizedType
-        # Example:
-        #   class A<T>
-        #   fun buz(): A<Number> = A<Number>() // can be A()
-        # If return statement is a subtyppe of ret_type, then we cannot change
-        # it. Consider the following example.
-        #   class A
-        #   class B<T>: A()
-        #   fun buz(): A = B<Int>() // cannot change to B()
-        if node.ret_type is None:
-            return node
-        if isinstance(node.body, ast.New):
-            new = node.body
-        elif (isinstance(node.body, ast.Block) and
-                len(node.body.body) > 0 and
-                isinstance(node.body.body[-1], ast.New)):
-            new = node.body.body[-1]
-        else:
-            return node
-        if (isinstance(new.class_type, types.ParameterizedType) and
-                new.class_type.name == self._parameterized_type.name and
-                new.class_type.name == node.ret_type.name):
-            new.class_type.can_infer_type_args = True
-        return node
-
-
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
@@ -490,7 +393,6 @@ class ParameterizedSubstitution(Transformation):
             return new_node
         new_node = self._update_type(new_node, 'var_type')
         new_node = self._update_type(new_node, 'inferred_type')
-        new_node = self._check_var_decl_infer(new_node)
         return new_node
 
     @change_namespace
@@ -514,7 +416,6 @@ class ParameterizedSubstitution(Transformation):
 
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
-        new_node = self._check_func_decl_infer(new_node)
         return new_node
 
     def visit_new(self, node):
@@ -524,7 +425,6 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return new_node
         new_node = self._update_type(new_node, 'class_type')
-        new_node = self._check_new_infer(new_node)
         return new_node
 
     def visit_super_instantiation(self, node):
@@ -552,5 +452,4 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return new_node
         new_node = deepcopy(new_node)
-        new_node = self._check_func_call_infer(new_node)
         return new_node
