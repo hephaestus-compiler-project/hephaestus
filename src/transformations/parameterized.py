@@ -335,6 +335,36 @@ class ParameterizedSubstitution(Transformation):
         return node
 
 
+    def _check_func_decl_infer(self, node: ast.FunctionDeclaration):
+        """If there is a New expression in the return statement then
+        we can infer its type arguments
+        """
+        # Check if ret_type is set and return statement is a ParameterizedType
+        # Example:
+        #   class A<T>
+        #   fun buz(): A<Number> = A<Number>() // can be A()
+        # If return statement is a subtyppe of ret_type, then we cannot change
+        # it. Consider the following example.
+        #   class A
+        #   class B<T>: A()
+        #   fun buz(): A = B<Int>() // cannot change to B()
+        if node.ret_type is None:
+            return node
+        if isinstance(node.body, ast.New):
+            new = node.body
+        elif (isinstance(node.body, ast.Block) and
+                len(node.body.body) > 0 and
+                isinstance(node.body.body[-1], ast.New)):
+            new = node.body.body[-1]
+        else:
+            return node
+        if (isinstance(new.class_type, types.ParameterizedType) and
+                new.class_type.name == self._parameterized_type.name and
+                new.class_type.name == node.ret_type.name):
+            new.class_type.can_infer_type_args = True
+        return node
+
+
     def _update_type(self, node, attr):
         """Replace _selected_class type occurrences with _parameterized_type
         """
@@ -484,6 +514,7 @@ class ParameterizedSubstitution(Transformation):
 
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
+        new_node = self._check_func_decl_infer(new_node)
         return new_node
 
     def visit_new(self, node):
