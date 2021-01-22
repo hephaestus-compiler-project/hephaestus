@@ -1,6 +1,6 @@
 import sys
 import pickle
-from src.examples.simple import program
+from src.examples.type_args_erasure import program
 
 
 with open("example.bin", "wb") as out:
