@@ -13,7 +13,7 @@ from src.transformations.substitution import (
 from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.transformations.parameterized import ParameterizedSubstitution
-from src.transformations.type_erasure import TypeErasureSubstitution
+from src.transformations.type_erasure import TypeArgumentErasureSubstitution
 from src.translators.kotlin import KotlinTranslator
 from src.utils import mkdir, random
 from src.modules.logging import Logger
@@ -50,7 +50,7 @@ class Executor:
         'ValueSubstitution': ValueSubstitution,
         'TypeSubstitution': TypeSubstitution,
         'ParameterizedSubstitution': ParameterizedSubstitution,
-        'TypeErasureSubstitution': TypeErasureSubstitution
+        'TypeArgumentErasureSubstitution': TypeArgumentErasureSubstitution
     }
     TRANSLATORS = {
         'kotlin': KotlinTranslator

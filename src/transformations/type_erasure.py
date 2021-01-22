@@ -20,10 +20,10 @@ def deepcopynode(func):
     return inner
 
 
-class TypeErasureSubstitution(Transformation):
+class TypeArgumentErasureSubstitution(Transformation):
     """Remove type information when possible:
 
-        1. Remove type arguments from ParameterizedTypes instantiations
+       Remove type arguments from ParameterizedTypes instantiations
     """
     CORRECTNESS_PRESERVING = True
     NAME = 'Type Erasure Substitution'
