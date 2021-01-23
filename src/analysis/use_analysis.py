@@ -54,6 +54,14 @@ FUNC_RET = '__RET__'
 
 
 class UseAnalysis(DefaultVisitor):
+    """Get the use graph for a node.
+
+    To employ UseAnalysis use the following instructions.
+
+    analysis = UseAnalysis(self.program)
+    analysis.visit(node)
+    use_graph = analysis.result()
+    """
     def __init__(self, program):
         # The type of each node is: GNode
         self._use_graph = defaultdict(set)  # node => [node]
