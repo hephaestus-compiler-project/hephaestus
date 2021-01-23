@@ -1,9 +1,11 @@
 # pylint: disable=too-many-instance-attributes
 from copy import deepcopy
+from typing import Tuple
 
 from src.ir import ast
 from src.ir import types
 from src.transformations.base import Transformation, change_namespace
+from src.analysis.use_analysis import UseAnalysis, GNode, NONE_NODE
 
 
 def deepcopynode(func):
@@ -32,6 +34,16 @@ class TypeArgumentErasureSubstitution(Transformation):
         super().__init__(program, logger)
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
 
+        # We use this variable to find to which variable does a `New` assignment
+        # belongs.
+        # (namespace, var_decl)
+        self._var_decl: Tuple[Tuple, ast.VariableDeclaration] = None
+
+    def get_parent_decl(self, namespace):
+        if namespace == ast.GLOBAL_NAMESPACE:
+            return self.program
+        return self.program.context.get_decl(namespace[:-1], namespace[-1])
+
     @deepcopynode
     def _check_new_infer(self, node: ast.New):
         """In case of ParameterizedType check if type arguments can be inferred.
@@ -50,6 +62,29 @@ class TypeArgumentErasureSubstitution(Transformation):
             cdecl = self.program.context.get_classes(
                 self._namespace, glob=True)[node.class_type.name]
             if cdecl.all_type_params_in_fields():
+                if (self._var_decl is not None and
+                        not self._var_decl[1].var_type):
+                    # In this case we should check if there is a flow from the
+                    # variable to another variable, or function call, or New,
+                    # that has a different type than the new inferred type.
+                    # Example:
+                    #
+                    #  class A<T>(val x: T)
+                    #  fun foo(x: A<Any>) {}
+                    #  var a = A<Any>('x') // We cannot infer type arguments
+                    #  foo(a)              // because it will break here
+                    #
+                    # Currently, we cannot find the inferred type if we remove
+                    # the type arguments, thus; we simple check if there is a
+                    # flow from the variable to anywhere.
+                    namespace, var_decl = self._var_decl
+                    analysis = UseAnalysis(self.program)
+                    parent_decl = self.get_parent_decl(namespace)
+                    analysis.visit(parent_decl)
+                    use_graph = analysis.result()
+                    gnode = GNode(namespace, var_decl.name)
+                    if not use_graph[gnode] == {NONE_NODE}:
+                        return node
                 self.is_transformed = True
                 node.class_type.can_infer_type_args = True
         return node
@@ -144,8 +179,10 @@ class TypeArgumentErasureSubstitution(Transformation):
         return super().visit_class_decl(node)
 
     def visit_var_decl(self, node):
+        self._var_decl = (self._namespace, node)
         new_node = super().visit_var_decl(node)
         new_node = self._check_var_decl_infer(new_node)
+        self._var_decl = None
         return new_node
 
     @change_namespace
