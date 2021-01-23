@@ -45,8 +45,11 @@ def mkdir(directory_name):
 
 def fprint(text):
     """Full screen print"""
-    terminal_width = os.get_terminal_size().columns
-    print(text.center(int(terminal_width), "="))
+    try:
+        terminal_width = os.get_terminal_size().columns
+        print(text.center(int(terminal_width), "="))
+    except OSError:  # This error may occur when run under cron
+        print(text)
 
 
 class RandomUtils():
