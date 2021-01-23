@@ -18,5 +18,9 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=root
 HOME=/root/
 SHELL=/bin/bash
-0 0 1-31/2 * * /root/bin/run -r # or -s or -a
+0 0 1-31/2 * * /root/bin/run -k # or -s or -a
+# to check the logs you can run
+journalctl -u cron
+# to ge tthe output of cron runs
+cat /var/mail/root
 ```
