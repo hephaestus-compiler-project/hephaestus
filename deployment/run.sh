@@ -5,6 +5,8 @@ CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
 CORES=$(($CORES - 2))
 TRANSFORMATIONS=40
 VERSIONS="1.4.21 1.4.20 1.4.10 1.4.0 1.3.72 1.3.71 1.3.70 1.3.61 1.3.60 1.3.50 1.3.41 1.3.40 1.3.31 1.3.30 1.3.21 1.3.20 1.3.11 1.3.10 1.3.0 1.2.71 1.2.70 1.2.61 1.2.60 1.2.51 1.2.50 1.2.41 1.2.40 1.2.31 1.2.30 1.2.21 1.2.20 1.2.10 1.2.0 1.1.61 1.1.60 1.1.51 1.1.50 1.1.4-3 1.1.4-2 1.1.4 1.1.3-2 1.1.3 1.1.2-5 1.1.2-2 1.1.2 1.1.1 1.1 1.0.7 1.0.6 1.0.5-2 1.0.5 1.0.4 1.0.3 1.0.2 1.0.1-2 1.0.1-1 1.0.1 1.0.0"
+source /root/.bashrc
+source /root/.bash_profile
 
 
 simple_run() {
@@ -44,10 +46,10 @@ then
         exit 0
 fi
 
-while getopts "hrsa" OPTION; do
+while getopts "hksa" OPTION; do
         case $OPTION in
 
-                r)
+                k)
                         simple_run
                         ;;
 
@@ -61,12 +63,11 @@ while getopts "hrsa" OPTION; do
 
                 h)
                         echo "Usage:"
-                        echo "run.sh -s "
-                        echo "init.sh -r "
+                        echo "init.sh -k "
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo ""
-                        echo "   -r     Simple run"
+                        echo "   -k     Simple run"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
                         echo "   -h     help (this output)"

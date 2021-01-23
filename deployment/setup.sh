@@ -20,11 +20,14 @@ install_sdkman() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     mkdir -p $HOME/.sdkman/etc/
     echo "sdkman_auto_answer=true" >> $HOME/.sdkman/etc/config
+    echo "SDKMAN_DIR=\"/root/.sdkman\"" >> $HOME/.bash_profile
+    echo "source \"/root/.sdkman/bin/sdkman-init.sh\"" >> $HOME.bash_profile
 }
 
 install_deps() {
     update_and_install_common_pks
     install_sdkman
+    echo "source $HOME/.bash_profile >> $HOME/.bashrc"
 }
 
 install_java() {
@@ -35,24 +38,25 @@ install_kotlin_from_source() {
     sdk install java 9.0.4-open
     sdk install java 8.0.265-open
     sdk install gradle
-    echo "export JAVA_HOME=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bashrc
-    echo "export JDK_16=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bashrc
-    echo "export JDK_17=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bashrc
-    echo "export JDK_18=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bashrc
-    echo "export JDK_9=$HOME/.sdkman/candidates/java/9.0.4-open/" >> $HOME/.bashrc
-    source $HOME/.bashrc
+    echo "JAVA_HOME=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bash_profile
+    echo "JDK_16=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bash_profile
+    echo "JDK_17=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bash_profile
+    echo "JDK_18=$HOME/.sdkman/candidates/java/8.0.265-open/" >> $HOME/.bash_profile
+    echo "JDK_9=$HOME/.sdkman/candidates/java/9.0.4-open/" >> $HOME/.bash_profile
+    source $HOME/.bash_profile
     git clone https://github.com/JetBrains/kotlin.git
     cd kotlin
     ./gradlew -Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000 dist
-    echo "export PATH=\"\$PATH:$HOME/kotlin/dist/kotlinc/bin\"" >> $HOME/.bashrc
-    echo "export KOTLIN_INSTALLATION=$HOME/kotlin" >> $HOME/.bashrc
+    echo "PATH=\"\$PATH:$HOME/kotlin/dist/kotlinc/bin\"" >> $HOME/.bash_profile
+    echo "KOTLIN_INSTALLATION=$HOME/kotlin" >> $HOME/.bash_profile
     cd ..
-    source $HOME/.bashrc
+    source $HOME/.bash_profile
 }
 
 install_kotlin() {
     install_java
     sdk install kotlin
+    echo "PATH=\"\$PATH:/root/.sdkman/candidates/kotlin/current/bin/\"" >> $HOME/.bash_profile
 }
 
 install_kotlin_all() {
@@ -115,6 +119,7 @@ install_kotlin_all() {
     sdk install kotlin 1.0.1-1 && \
     sdk install kotlin 1.0.1   && \
     sdk install kotlin 1.0.0
+    echo "PATH=\"\$PATH:/root/.sdkman/candidates/kotlin/current/bin/\"" >> $HOME/.bash_profile
 }
 
 install_check_type_systems() {
@@ -123,14 +128,14 @@ install_check_type_systems() {
     git fetch && git pull
     git checkout stable
     git pull
-    echo "export CHECK_TYPE_SYSTEMS=$(pwd)" >> $HOME/.bashrc
+    echo "CHECK_TYPE_SYSTEMS=$(pwd)" >> $HOME/.bash_profile
     cd ..
 }
 
 add_run_script_to_path() {
     mkdir bin
     cp run.sh bin
-    echo "export PATH=\"\$PATH:$HOME/bin\"" >> $HOME/.bashrc
+    echo "PATH=\"\$PATH:$HOME/bin\"" >> $HOME/.bash_profile
 }
 
 if [ $# -eq 0 ]
