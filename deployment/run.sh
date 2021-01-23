@@ -10,6 +10,7 @@ source /root/.bash_profile
 
 
 simple_run() {
+    sdk install kotlin
     cd $CHECK_TYPE_SYSTEMS
     git pull
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES -l
