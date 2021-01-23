@@ -45,7 +45,7 @@ def mkdir(directory_name):
 
 def fprint(text):
     """Full screen print"""
-    _, terminal_width = os.popen('stty size', 'r').read().split()
+    terminal_width = os.get_terminal_size().columns
     print(text.center(int(terminal_width), "="))
 
 

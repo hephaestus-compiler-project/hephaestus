@@ -31,7 +31,9 @@ def run_command(arguments, get_stdout=True):
         return status, stderr.
     """
     try:
-        cmd = sp.Popen(arguments, stdout=sp.PIPE, stderr=sp.STDOUT)
+        is_windows = os.name == 'nt'
+        cmd = sp.Popen(arguments, stdout=sp.PIPE,
+                       stderr=sp.STDOUT, shell=is_windows)
         stdout, stderr = cmd.communicate()
     except sp.CalledProcessError as err:
         return False, err
