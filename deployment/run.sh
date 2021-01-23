@@ -10,6 +10,7 @@ source /root/.bash_profile
 
 
 simple_run() {
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
     sdk install kotlin
     cd $CHECK_TYPE_SYSTEMS
     git pull
