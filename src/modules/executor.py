@@ -123,7 +123,7 @@ class Executor:
                 # Update stats
                 key = get_key(self.exec_id)
                 transformations = self.stats[key]['transformations'][:len(
-                    self.tstack) + 1]
+                    self.tstack)]
                 self.stats[key]['transformations'] = transformations
                 break
             prev_p = deepcopy(program)
