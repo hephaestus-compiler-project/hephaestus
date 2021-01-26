@@ -384,12 +384,31 @@ class SupertypeCreation(TypeCreation):
                                                 self.empty_supertype)
 
     def _get_subtype_functions(self, class_decl):
+        def check_return_stmt(node: ast.FunctionDeclaration):
+            """Check if return is a New Parameterized node and has
+            can_infer_type_args set to True. In that case, we should always set
+            ret_type.
+
+            Return true is can_infer_type_args is False
+            """
+            if (isinstance(node.body, ast.New) and
+                    getattr(node.body.class_type, 'can_infer_type_args', None)
+                    is True) or (
+                    isinstance(node.body, ast.Block) and
+                    len(node.body.body) > 0 and
+                    isinstance(node.body.body[-1], ast.New) and
+                    getattr(node.body.body[-1].class_type,
+                            'can_infer_type_args', None) is True):
+                return False
+            return True
         functions = []
         func_map = {f.name: f for f in class_decl.functions}
         for func in self._new_class.functions:
             sfunc = func_map[func.name]  # selected_func
+            ret_type = sfunc.ret_type if check_return_stmt(sfunc) else \
+                sfunc.inferred_type
             over_func = ast.FunctionDeclaration(
-                sfunc.name, deepcopy(sfunc.params), sfunc.ret_type,
+                sfunc.name, deepcopy(sfunc.params), ret_type,
                 sfunc.body, sfunc.func_type, sfunc.inferred_type,
                 is_final=sfunc.is_final, override=True)
             if func.body is None:
