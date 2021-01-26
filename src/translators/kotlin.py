@@ -302,8 +302,9 @@ class KotlinTranslator(ASTVisitor):
         self.ident = old_ident
         # Remove type arguments from Parameterized Type
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
-            self._children_res.append(
-                node.class_type.name + "(" + ", ".join(children_res) + ")")
+            self._children_res.append("{}({})".format(
+                " " * self.ident + node.class_type.name,
+                ", ".join(children_res)))
         else:
             self._children_res.append("{}({})".format(
                 " " * self.ident + node.class_type.get_name(),
