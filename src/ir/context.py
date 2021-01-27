@@ -91,6 +91,20 @@ class Context():
                             for cname in self.get_classes(namespace, True)]
         return func_namespaces + class_namespaces
 
+    def get_namespaces_decls(self, namespace, name, decl_type):
+        namespaces_decls = set()  # Set of tuples of namespace, decl
+        namespaces = [(namespace[0],)]
+        while namespaces:
+            namespace = namespaces.pop()
+            decls = self._context.get(namespace, {}).get(decl_type)
+            if decls is not None:
+                for decl_name, decl in decls.items():
+                    if decl_name == name:
+                        ns = namespace + (name,)
+                        namespaces_decls.add((ns, decl))
+            namespaces.extend(self.find_namespaces(namespace))
+        return namespaces_decls
+
     def get_decl(self, namespace, name):
         return self._context.get(namespace, {}).get('decls', {}).get(
             name, None)
