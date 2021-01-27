@@ -182,6 +182,8 @@ class Executor:
                 dst_dir, self.translator.get_filename())
             with open(dst_filename, 'w') as out:
                 out.write(program_str)
+            with open(dst_filename + ".bin", 'wb') as out:
+                pickle.dump(program, out)
         status, _ = self._compile(program_str, compiler_pass=True)
         if not status:
             self._report(program_str, program)
