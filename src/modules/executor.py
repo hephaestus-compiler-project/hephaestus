@@ -167,7 +167,9 @@ class Executor:
     def _generate_program(self, i):
         if self.args.debug:
             print("\nIteration: " + str(i))
-        generator = Generator(max_depth=self.args.max_depth)
+        generator = Generator(
+            max_depth=self.args.max_depth,
+            disable_inference_in_closures=self.args.disable_inference_in_closures)
         program = generator.generate()
         program_str = self._translate_program(program)
         if self.args.keep_all:

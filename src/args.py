@@ -51,6 +51,11 @@ parser.add_argument(
     help="Save all programs"
 )
 parser.add_argument(
+    "--disable-inference-in-closures",
+    action="store_true",
+    help="Generate closures that have an explicit return type"
+)
+parser.add_argument(
     "--max-depth",
     type=int,
     default=7,

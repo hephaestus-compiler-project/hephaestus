@@ -27,7 +27,9 @@ class Generator():
     BUILTIN_TYPES = RET_BUILTIN_TYPES + [kt.Unit]
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
-                 max_var_decls=3, max_side_effects=1, context=None):
+                 max_var_decls=3, max_side_effects=1,
+                 disable_inference_in_closures=False,
+                 context=None):
         self.context = context or Context()
         self.max_depth = max_depth
         self.max_fields = max_fields
@@ -35,6 +37,7 @@ class Generator():
         self.max_params = max_params
         self.max_var_decls = max_var_decls
         self.max_side_effects = max_side_effects
+        self.disable_inference_in_closures = disable_inference_in_closures
         self.depth = 1
         self._vars_in_context = {}
         self._new_from_class = None
@@ -131,6 +134,24 @@ class Generator():
             return ut.random.choice(param_types)
         return self.gen_type(ret_types=False)
 
+    def can_infer_function_ret_type(self, func_expr, decls):
+        if not self.disable_inference_in_closures:
+            return True
+
+        # We want to disable inference in the following situations
+        # fun foo(x: Any) {
+        #    if (x is String) {
+        #       fun bar() = x
+        #       return bar()
+        #    } else return ""
+        # }
+        # This will help us to avoid the repetition of an already discovered
+        # bug.
+        if not isinstance(func_expr, ast.Variable):
+            return True
+
+        return func_expr.name in {d.name for d in decls}
+
     def gen_func_decl(self, etype=None):
         func_name = gu.gen_identifier('lower')
         initial_namespace = self.namespace
@@ -138,6 +159,10 @@ class Generator():
         initial_depth = self.depth
         self.depth += 1
         params = []
+        # Check if this function we want to generate is nested, by checking
+        # the name of the outer namespace. If we are in class then
+        # the outer namespace begins with capital letter.
+        class_method = self.namespace[-1][0].isupper()
         for _ in range(ut.random.integer(0, self.max_params)):
             param = self.gen_param_decl()
             params.append(param)
@@ -147,9 +172,10 @@ class Generator():
         expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
-        decls = [d for d in decls
-                 if not isinstance(d, ast.ParameterDeclaration)]
-        if not decls and ret_type != kt.Unit:
+        var_decls = [d for d in decls
+                     if not isinstance(d, ast.ParameterDeclaration)]
+        if (not var_decls and ret_type != kt.Unit and
+                self.can_infer_function_ret_type(expr, decls)):
             # The function does not contain any declarations and its return
             # type is not Unit. So, we can create an expression-based function.
             inferred_type = ret_type
@@ -170,12 +196,11 @@ class Generator():
             body = ast.Block(decls + exprs + [expr])
         self.depth = initial_depth
         self.namespace = initial_namespace
-        if self.namespace[-1][0].isupper():
-            func_type = ast.FunctionDeclaration.CLASS_METHOD
-        else:
-            func_type = ast.FunctionDeclaration.FUNCTION
         return ast.FunctionDeclaration(
-            func_name, params, ret_type, body, func_type=func_type,
+            func_name, params, ret_type, body,
+            func_type=(ast.FunctionDeclaration.CLASS_METHOD
+                       if class_method
+                       else ast.FunctionDeclaration.FUNCTION),
             inferred_type=inferred_type)
 
     def _add_field_to_class(self, field, fields):
