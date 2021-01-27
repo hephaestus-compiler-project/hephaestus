@@ -2,6 +2,8 @@ from src.ir.ast import *
 from src.ir.kotlin_types import *
 from src.ir.context import *
 
+# class Bam
+#
 # open class A(val x: String) {
 #   open fun foo(y: String, z: String): bam {
 #     val q: String = z
@@ -22,7 +24,7 @@ from src.ir.context import *
 #   }
 # }
 
-bam_cls = ClassDeclaration("bam", [])
+bam_cls = ClassDeclaration("Bam", [])
 
 xA_field = FieldDeclaration(
     "x",
@@ -102,6 +104,7 @@ a_cls = ClassDeclaration(
 )
 
 ctx = Context()
+ctx.add_class(GLOBAL_NAMESPACE, bam_cls.name, bam_cls)
 ctx.add_class(GLOBAL_NAMESPACE, a_cls.name, a_cls)
 ctx.add_var(GLOBAL_NAMESPACE + ('A',), 'x', xA_field)
 ctx.add_var(GLOBAL_NAMESPACE + ('A', 'foo'), 'y', foo_y)
