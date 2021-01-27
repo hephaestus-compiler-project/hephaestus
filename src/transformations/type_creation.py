@@ -20,7 +20,7 @@ def create_non_final_functions(functions):
         ast.FunctionDeclaration(f.name, deepcopy(f.params),
                                 deepcopy(f.get_type()),
                                 deepcopy(f.body),
-                                f.func_type,
+                                ast.FunctionDeclaration.CLASS_METHOD,
                                 inferred_type=deepcopy(f.inferred_type),
                                 is_final=False, override=f.override)
         for f in functions
@@ -39,7 +39,8 @@ def create_override_functions(functions):
     return [
         ast.FunctionDeclaration(f.name, deepcopy(f.params),
                                 deepcopy(f.ret_type),
-                                deepcopy(f.body), f.func_type,
+                                deepcopy(f.body),
+                                ast.FunctionDeclaration.CLASS_METHOD,
                                 inferred_type=deepcopy(f.inferred_type),
                                 is_final=f.is_final, override=True)
         for f in functions
@@ -61,7 +62,8 @@ def create_interface(class_decl, empty):
     functions = [
         ast.FunctionDeclaration(f.name, deepcopy(f.params),
                                 deepcopy(f.get_type()), None,
-                                f.func_type, inferred_type=None,
+                                ast.FunctionDeclaration.CLASS_METHOD,
+                                inferred_type=None,
                                 is_final=False, override=f.override)
         for f in class_decl.functions
     ]
@@ -84,7 +86,8 @@ def create_abstract_class(class_decl, empty):
             ast.FunctionDeclaration(func.name,
                                     deepcopy(func.params),
                                     deepcopy(func.get_type()),
-                                    body_f, func.func_type,
+                                    body_f,
+                                    ast.FunctionDeclaration.CLASS_METHOD,
                                     inferred_type=deepcopy(func.inferred_type),
                                     is_final=False, override=func.override))
     return ast.ClassDeclaration(
@@ -349,7 +352,7 @@ class SubtypeCreation(TypeCreation):
                 ast.FunctionDeclaration(
                     func.name, params, None,
                     body=expr,
-                    func_type=func.func_type,
+                    func_type=ast.FunctionDeclaration.CLASS_METHOD,
                     inferred_type=deepcopy(func.get_type()),
                     is_final=True, override=True))
         return ast.ClassDeclaration(
@@ -420,7 +423,8 @@ class SupertypeCreation(TypeCreation):
                 sfunc.inferred_type
             over_func = ast.FunctionDeclaration(
                 sfunc.name, deepcopy(sfunc.params), ret_type,
-                sfunc.body, sfunc.func_type, sfunc.inferred_type,
+                sfunc.body, ast.FunctionDeclaration.CLASS_METHOD,
+                sfunc.inferred_type,
                 is_final=sfunc.is_final, override=True)
             if func.body is None:
                 # The function of supertype is abstract, so we definetely
