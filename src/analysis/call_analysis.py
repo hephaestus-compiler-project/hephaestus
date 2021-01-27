@@ -1,8 +1,7 @@
-# pylint: disable=inherit-non-class,pointless-statement
-from typing import Tuple, NamedTuple, List
+# pylint: disable=inherit-non-class,pointless-statement,expression-not-assigned
+from typing import Tuple, NamedTuple
 from collections import defaultdict
 
-import src.graph_utils as gu
 import src.utils as ut
 from src.ir import ast
 from src.ir import types as tp
@@ -91,6 +90,26 @@ class CallAnalysis(DefaultVisitor):
     def result(self):
         return self._call_graph, self._calls
 
+    def _check_non_receiver(self, all_namespaces):
+        declared_inside_namespace = [ns for ns in all_namespaces
+                                     if ut.prefix_lst(self._namespace, ns)]
+        if len(declared_inside_namespace) > 0:
+            return declared_inside_namespace
+        namespace = self._namespace
+        while len(namespace) > 0:
+            namespace = namespace[:-1]
+            same_prefix_ns = [ns for ns in all_namespaces
+                              if ut.prefix_lst(namespace, ns)]
+            if len(same_prefix_ns) > 0:
+                # Consider we having those functions:
+                # [('global', 'First', 'foo'), ('global', 'foo')]
+                # and we have called foo from ('global', 'bar')
+                # then the function that will be called is ('global', 'foo')
+                return list(filter(
+                    lambda x: len(x) <= len(self._namespace),
+                    same_prefix_ns))
+        return all_namespaces
+
     def _get_func_namespace(self, func: str, receiver: ast.Expr = None):
         def get_filtered_or_all(namespace, namespaces):
             res = []
@@ -117,23 +136,7 @@ class CallAnalysis(DefaultVisitor):
         # There are multiple functions defined with the same name.
         # Select the namespace that is closer to current namespace.
         if receiver is None:
-            declared_inside_namespace = [ns for ns in all_namespaces
-                                         if ut.prefix_lst(self._namespace, ns)]
-            if len(declared_inside_namespace) > 0:
-                return declared_inside_namespace
-            namespace = self._namespace
-            while len(namespace) > 0:
-                namespace = namespace[:-1]
-                same_prefix_ns = [ns for ns in all_namespaces
-                                  if ut.prefix_lst(namespace, ns)]
-                if len(same_prefix_ns) > 0:
-                    # Consider we having those functions:
-                    # [('global', 'First', 'foo'), ('global', 'foo')]
-                    # and we have called foo from ('global', 'bar')
-                    # then the function that will be called is ('global', 'foo')
-                    return list(filter(
-                        lambda x: len(x) <= len(self._namespace),
-                        same_prefix_ns))
+            return self._check_non_receiver(all_namespaces)
 
         # Handle receiver
         if isinstance(receiver, ast.Variable):
@@ -151,8 +154,8 @@ class CallAnalysis(DefaultVisitor):
             pass
         if isinstance(receiver, ast.FunctionCall):
             pass
-        if isinstance(receiver, ast.FieldAccess):
-            pass
+        # TODO
+        # if isinstance(receiver, ast.FieldAccess):
         return all_namespaces
 
     def _compute_use_graph(self, node):
