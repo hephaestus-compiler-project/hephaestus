@@ -2,7 +2,8 @@ from copy import deepcopy
 
 from src.ir import ast
 from src.analysis.call_analysis import CallAnalysis, CNode
-from tests.resources import program1, program4, program5, program8, program9
+from tests.resources import (program1, program4, program5, program8, program9,
+        program10)
 
 
 def str2node(string):
@@ -98,3 +99,26 @@ def test_program9():
     assert_nodes_len(calls[foo], 1)
     assert_nodes(cg[bar], {foo})
     assert_nodes_len(calls[bar], 0)
+
+
+# Variable receivers
+def test_program10():
+    ca = CallAnalysis(program10.program)
+    cg, calls = ca.result()
+
+    __import__('pprint').pprint(cg)
+    __import__('pprint').pprint(calls)
+
+    first_foo = str2node("global/First/foo")
+    second_foo = str2node("global/Second/foo")
+    global_foo = str2node("global/foo")
+    global_bar = str2node("global/bar")
+
+    assert_nodes(cg[first_foo], set())
+    assert_nodes_len(calls[first_foo], 1)
+    assert_nodes(cg[second_foo], set())
+    assert_nodes_len(calls[second_foo], 1)
+    assert_nodes(cg[global_foo], {first_foo})
+    assert_nodes_len(calls[global_foo], 0)
+    assert_nodes(cg[global_bar], {second_foo})
+    assert_nodes_len(calls[global_bar], 0)
