@@ -13,7 +13,6 @@ def change_namespace(visit):
 
 class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
-    NAME = None
 
     def __init__(self, program, logger=None):
         assert program is not None, 'The given program must not be None'
@@ -38,7 +37,7 @@ class Transformation(DefaultVisitorUpdate):
 
     @classmethod
     def get_name(cls):
-        return cls.NAME
+        return cls.__name__
 
     @classmethod
     def preserve_correctness(cls):

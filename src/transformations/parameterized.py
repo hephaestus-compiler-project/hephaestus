@@ -134,7 +134,6 @@ class ParameterizedSubstitution(Transformation):
            the new ParameterizedType
     """
     CORRECTNESS_PRESERVING = True
-    NAME = 'Parameterized Substitution'
 
     def __init__(self, program, logger=None, max_type_params=3,
                  find_classes_blacklist=True):

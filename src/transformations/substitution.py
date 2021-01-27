@@ -23,7 +23,6 @@ def create_function_block(function, is_expr, var_decl, declared=False):
 class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
-    NAME = 'Value Substitution'
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
@@ -110,7 +109,6 @@ class ValueSubstitution(Transformation):
 
 class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
-    NAME = 'Type Substitution (Widening/Narrowing)'
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)

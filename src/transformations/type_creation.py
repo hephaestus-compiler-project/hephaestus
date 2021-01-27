@@ -266,7 +266,6 @@ class TypeCreation(Transformation):
 
 
 class SubtypeCreation(TypeCreation):
-    NAME = 'Subtype Creator'
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
@@ -367,7 +366,6 @@ class SubtypeCreation(TypeCreation):
 
 
 class SupertypeCreation(TypeCreation):
-    NAME = 'Supertype Creator'
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)

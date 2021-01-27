@@ -28,7 +28,6 @@ class TypeArgumentErasureSubstitution(Transformation):
        Remove type arguments from ParameterizedTypes instantiations
     """
     CORRECTNESS_PRESERVING = True
-    NAME = 'Type Erasure Substitution'
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
