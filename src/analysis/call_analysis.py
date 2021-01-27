@@ -32,7 +32,7 @@ class CallAnalysis(DefaultVisitor):
     To employ CallAnalysis use the following instructions.
 
     analysis = CallAnalysis(self.program)
-    use_graph = analysis.result()
+    call_graph, calls = analysis.result()
     """
     def __init__(self, program):
         # The type of each node is: CNode
