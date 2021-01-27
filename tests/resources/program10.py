@@ -17,13 +17,6 @@ from src.ir.context import Context
 #     val y: Second = Second()
 #     y.foo()
 # }
-#
-# class Third(val z: First) {
-#     fun foo() {
-#         val k = z
-#         z.foo()
-#     }
-# }
 
 first_foo = ast.FunctionDeclaration(
     "foo",
