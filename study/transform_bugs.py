@@ -61,7 +61,7 @@ def transform_kotlin(bugs):
             'summary': bug['summary'],
             'type': 'bug',
             'status': 'closed',
-            'reporter': None,
+            'reporter': bug['reporter']['name'],
             'resolution': 'fixed',
             'labels': [],
             'created': transform_date(bug['created']),
