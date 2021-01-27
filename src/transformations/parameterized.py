@@ -215,8 +215,7 @@ class ParameterizedSubstitution(Transformation):
                 possible_types = [t for t in possible_types
                                   if t.is_subtype(tp.type_param.bound)]
             type_args.append(utils.random.choice(list(possible_types)))
-        return types.ParameterizedType(self._type_constructor_decl.get_type(),
-                                       type_args)
+        return self._type_constructor_decl.get_type().new(type_args)
 
     def _propagate_type_parameter(self, gnode: GNode,
                                   type_param: types.TypeParameter):

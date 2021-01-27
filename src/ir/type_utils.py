@@ -21,7 +21,7 @@ def _construct_related_types(etype, types, get_subtypes):
         valid_args.append(list(t_args))
 
     return [
-        tp.ParameterizedType(etype.t_constructor, type_args)
+        etype.t_constructor.new(type_args)
         for type_args in itertools.product(*valid_args)
         if type_args != tuple(etype.type_args)
     ]
