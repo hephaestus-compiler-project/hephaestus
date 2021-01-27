@@ -87,7 +87,7 @@ class CallAnalysis(DefaultVisitor):
             source = sources[0]
             _, source_decl = get_decl(self.program.context,
                                       self._namespace, source.name)
-            source_type = tu.get_var_decl_type(source_decl)
+            source_type = source_decl.get_type()
             if isinstance(source_type, tp.Builtin):
                 return all_namespaces
             # Get the namespace of source_type

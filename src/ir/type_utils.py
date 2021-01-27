@@ -206,16 +206,3 @@ def choose_type(types: List[tp.Type], only_regular=True):
         cls_type, _ = instantiate_type_constructor(
             cls_type, types, only_regular)
     return cls_type
-
-
-def get_var_decl_type(var):
-    """Get the type of a VariableDeclaration, or ParameterDeclaration, or
-    FieldDeclaration.
-    """
-    if isinstance(var, ast.VariableDeclaration):
-        return var.inferred_type
-    if isinstance(var, ast.ParameterDeclaration):
-        return var.param_type
-    if isinstance(var, ast.FieldDeclaration):
-        return var.field_type
-    return None
