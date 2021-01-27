@@ -137,6 +137,12 @@ def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
             t_params.append(t_param)
         etype.type_parameters = t_params
         return etype
+
+    # Case 4: If etype is a type parameter inspect its bound (if any) for
+    # updates
+    if isinstance(etype, tp.TypeParameter):
+        if etype.bound is not None:
+            etype.bound = update_type(etype.bound, new_type, test_pred)
     return etype
 
 

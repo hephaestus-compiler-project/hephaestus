@@ -122,6 +122,21 @@ def test_update_bound():
     assert supertypes[0].t_constructor.type_parameters[0].bound == new_foo
 
 
+def test_update_type_parameter_with_bound():
+    foo = tp.SimpleClassifier("Foo", [])
+    new_foo = tp.SimpleClassifier("Foo", [tp.SimpleClassifier("New")])
+
+    t_param = tp.TypeParameter("T", bound=None)
+    new_t_param = tutils.update_type(t_param, new_foo)
+
+    assert t_param.bound is None
+
+    t_param.bound = foo
+    new_t_param = tutils.update_type(t_param, new_foo)
+
+    assert t_param.bound == new_foo
+
+
 def test_find_subtypes():
     foo = tp.SimpleClassifier("Foo", [])
     bar = tp.SimpleClassifier("Bar", [foo])
