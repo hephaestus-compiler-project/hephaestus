@@ -129,8 +129,8 @@ class TypeSubstitution(Transformation):
         """Check if the given declaration is used in the current namespace. """
         return self._defs[(self._namespace, decl.name)]
 
-    def _check_param_type(self, fun, param, param_index, old_type,
-                          current_cls):
+    def _check_param_overriden_fun(self, fun, param, param_index, old_type,
+                                   current_cls):
         # The signature of the function defined in the parent class must
         # be the same with that defined in the child class. The following
         # example demonstrates that sometimes, this is not the case
@@ -159,9 +159,14 @@ class TypeSubstitution(Transformation):
                 parent_param = p_fun.params[param_index]
                 child_param = param
             else:
+                # There is no parent-child relations between the current class
+                # and `cls`, so there is no restriction for the type of
+                # function's parameter.
                 continue
 
             if child_param.get_type() == parent_param.get_type():
+                # The type of the parameter is the same for both functions,
+                # so we are OK.
                 continue
 
             if child_param.get_type() == old_type:
@@ -323,14 +328,14 @@ class TypeSubstitution(Transformation):
         for i, param in enumerate(new_node.params):
             old_type = deepcopy(param.get_type())
             if isinstance(param.param_type, tp.AbstractType):
-                self._check_param_type(new_node, param, i, old_type,
-                                       current_cls)
+                self._check_param_overriden_fun(new_node, param, i, old_type,
+                                                current_cls)
                 continue
             is_transformed = self.is_transformed
             # Perform type widening on this function's parameters.
             transform = self._type_widening(
                 param, lambda x, y: setattr(x, 'param_type', y))
-            transform2 = self._check_param_type(
+            transform2 = self._check_param_overriden_fun(
                 new_node, param, i, old_type, current_cls)
             transform = transform and transform2
             # We cannot perform type widening in abstract types.

@@ -181,6 +181,50 @@ class TypeParameter(AbstractType):
         )
 
 
+def substitute_type_args(etype, type_map):
+    assert isinstance(etype, ParameterizedType)
+    type_args = []
+    for t_arg in etype.type_args:
+        if isinstance(t_arg, ParameterizedType):
+            type_args.append(
+                substitute_type_args(t_arg, type_map))
+        else:
+            type_args.append(type_map.get(t_arg, t_arg))
+    new_type_map = {
+        tp: type_args[i]
+        for i, tp in enumerate(etype.t_constructor.type_parameters)
+    }
+    type_con = perform_type_substitution(
+        etype.t_constructor, new_type_map)
+    return ParameterizedType(type_con, type_args)
+
+
+def perform_type_substitution(etype, type_map):
+    # This function performs the following substitution.
+    # Imagine that we have the following case.
+    #
+    # class Y<T>
+    # class X<T>: Y<T>()
+    #
+    # When, we instantiate the type constructor X with a specific type
+    # argument (e.g., String), we must also substitute the type parameter
+    # of its supertype (i.e., Y<T>) with the given type argument.
+    # For example, the supertype of X<String> is Y<String> and not Y<T>.
+    #
+    # This also works for nested definitions. For example
+    # class X<T> : Y<Z<T>>()
+    supertypes = []
+    for t in etype.supertypes:
+        if isinstance(t, ParameterizedType):
+            supertypes.append(substitute_type_args(t, type_map))
+        else:
+            supertypes.append(t)
+
+    etype = deepcopy(etype)
+    etype.supertypes = supertypes
+    return etype
+
+
 class TypeConstructor(AbstractType):
     def __init__(self, name: str, type_parameters: List[TypeParameter],
                  supertypes: List[Type] = None):
@@ -213,7 +257,10 @@ class TypeConstructor(AbstractType):
         return other in self.get_supertypes()
 
     def new(self, type_args: List[Type]):
-        return ParameterizedType(self, type_args)
+        type_map = {tp: type_args[i]
+                    for i, tp in enumerate(self.type_parameters)}
+        type_con = perform_type_substitution(self, type_map)
+        return ParameterizedType(type_con, type_args)
 
 
 class ParameterizedType(SimpleClassifier):
