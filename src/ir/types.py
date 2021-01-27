@@ -272,7 +272,7 @@ class TypeConstructor(AbstractType):
     def __eq__(self, other: AbstractType):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
-                self.supertypes == other.supertypes and
+                # TODO Revisit self.supertypes == other.supertypes and
                 str(self.type_parameters) == str(other.type_parameters))
 
     def __hash__(self):
