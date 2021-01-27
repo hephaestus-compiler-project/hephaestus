@@ -135,6 +135,10 @@ if args.transformation_schedule and args.transformations:
     sys.exit("Options --transformation-schedule and --transfromations"
              " are mutually exclusive. You can't use both.")
 
+if not args.transformation_schedule and not args.transformations:
+    sys.exit("You have to provide one of --transformation-schedule or"
+             " --transformations.")
+
 if args.transformation_schedule and (
         not os.path.isfile(args.transformation_schedule)):
     sys.exit("You have to provide a valid file in --transformation-schedule")

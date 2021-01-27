@@ -261,9 +261,9 @@ class Executor:
 
     def _apply_transformations(self, program, i):
         failed = False
+        transformations = self._get_transformation_schedule()
+        len_schedule = len(transformations)
         try:
-            transformations = self._get_transformation_schedule()
-            len_schedule = len(transformations)
             for j, transformation in enumerate(transformations):
                 comp = True
                 if ((self.args.only_last or self.args.rerun) and
@@ -288,6 +288,16 @@ class Executor:
                 print(err)
             failed = True
             self.stats[get_key(i)]['error'] = err
+
+        if self.args.keep_all:
+            schedule_file = os.path.join(self.args.test_directory,
+                                         "transformations",
+                                         "iter_" + str(i), "schedule.txt")
+            # Save a file name 'schedule.txt' that contains the schedule
+            # of transformations.
+            with open(schedule_file, 'w') as out:
+                out.write('\n'.join([t.get_name() for t in transformations]))
+
         if failed:
             self.stats[get_key(i)]['failed'] = True
         return failed
