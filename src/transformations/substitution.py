@@ -83,10 +83,7 @@ class ValueSubstitution(Transformation):
         # Known problem in which we have type parameters as type arguments
         # of a ParameterizedType. In this case, the node.class_type is
         # problematic
-        try:
-            subclasses = tu.find_subtypes(node.class_type, self.types)
-        except TypeError:
-            return node
+        subclasses = tu.find_subtypes(node.class_type, self.types)
         if not subclasses:
             return node
         self.is_transformed = True
