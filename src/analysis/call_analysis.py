@@ -3,7 +3,6 @@ from typing import Tuple, NamedTuple, List
 from collections import defaultdict
 
 import src.graph_utils as gu
-import src.ir.type_utils as tu
 import src.utils as ut
 from src.ir import ast
 from src.ir import types as tp
@@ -25,10 +24,47 @@ class CNode(NamedTuple):
         return self.__str__()
 
 
+def get_gnode_type(gnode, namespace, context):
+    # TODO Do we need to add limit?
+    decl = get_decl(context, namespace, gnode.name)
+    if decl:
+        return decl[1].get_type()
+    return None
+
+
+def find_gnode_type(gnode, namespace, context, use_graph):
+    """Find the type of a gnode
+
+    If gnode is a declaration return its type, otherwise return the type
+    of an adjacent node.
+    """
+    def get_adj(gnode):
+        return [v for v, e in use_graph.items if gnode in e]
+
+    gnode_type = get_gnode_type(gnode, namespace, context)
+    if gnode_type:
+        return gnode_type
+
+    visited = {v: False for v in use_graph.keys()}
+
+    queue = get_adj(gnode)
+
+    while len(queue) > 0:
+        adjacent = queue.pop(0)
+        if not visited[adjacent]:
+            visited[adjacent] = True
+            adj_type = get_gnode_type(adjacent, namespace, context)
+            if adj_type:
+                return adj_type
+            queue.extend(get_adj(adjacent))
+    return None
+
+
 class CallAnalysis(DefaultVisitor):
     """Get the call graph of a program.
 
     Currently we only handle simple function calls.
+    For example we don't support multi functions.
     We only support user defined functions.
     In case a function is not declared in the context, we simple ignore it.
 
@@ -76,24 +112,40 @@ class CallAnalysis(DefaultVisitor):
             namespace, _ = list(funcs)[0]
             return [namespace]
 
-        # Handle receiver
         all_namespaces = [func[0] for func in funcs]
+
+        # There are multiple functions defined with the same name.
+        # Select the namespace that is closer to current namespace.
+        if receiver is None:
+            declared_inside_namespace = [ns for ns in all_namespaces
+                                         if ut.prefix_lst(self._namespace, ns)]
+            if len(declared_inside_namespace) > 0:
+                return declared_inside_namespace
+            namespace = self._namespace
+            while len(namespace) > 0:
+                namespace = namespace[:-1]
+                same_prefix_ns = [ns for ns in all_namespaces
+                                  if ut.prefix_lst(namespace, ns)]
+                if len(same_prefix_ns) > 0:
+                    # Consider we having those functions:
+                    # [('global', 'First', 'foo'), ('global', 'foo')]
+                    # and we have called foo from ('global', 'bar')
+                    # then the function that will be called is ('global', 'foo')
+                    return list(filter(
+                        lambda x: len(x) <= len(self._namespace),
+                        same_prefix_ns))
+
+        # Handle receiver
         if isinstance(receiver, ast.Variable):
-            # Find the type of the source of the variable
             gnode = GNode(self._namespace, receiver.name)
-            sources = gu.find_sources(self._use_graph, gnode)
-            if len(sources) > 1:
-                return all_namespaces
-            source = sources[0]
-            _, source_decl = get_decl(self.program.context,
-                                      self._namespace, source.name)
-            source_type = source_decl.get_type()
-            if isinstance(source_type, tp.Builtin):
+            gnode_type = find_gnode_type(
+                gnode, self._namespace, self.program.context, self._use_graph)
+            if isinstance(gnode, tp.Builtin) or gnode is None:
                 return all_namespaces
             # Get the namespace of source_type
             # It is not possible to have multiple classes with the same name
             namespace, _ = list(self.program.context.get_namespaces_decls(
-                self._namespace, source_type.name, 'classes'))[0]
+                self._namespace, gnode_type.name, 'classes'))[0]
             return get_filtered_or_all(namespace, all_namespaces)
         if isinstance(receiver, ast.New):
             pass
