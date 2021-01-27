@@ -91,9 +91,12 @@ class Context():
                             for cname in self.get_classes(namespace, True)]
         return func_namespaces + class_namespaces
 
-    def get_namespaces_decls(self, namespace, name, decl_type):
+    def get_namespaces_decls(self, namespace, name, decl_type, glob=True):
         namespaces_decls = set()  # Set of tuples of namespace, decl
-        namespaces = [(namespace[0],)]
+        if glob:
+            namespaces = [(namespace[0],)]
+        else:
+            namespaces = [namespace]
         while namespaces:
             namespace = namespaces.pop()
             decls = self._context.get(namespace, {}).get(decl_type)
