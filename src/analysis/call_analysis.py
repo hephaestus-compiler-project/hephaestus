@@ -24,6 +24,8 @@ class CallAnalysis(DefaultVisitor):
     """Get the call graph of a program.
 
     Currently we only handle simple function calls.
+    We only support user defined functions.
+    In case a function is not declared in the context, we simple ignore it.
 
     Graphs:
         * _call_graph: caller => callee
@@ -49,6 +51,8 @@ class CallAnalysis(DefaultVisitor):
     def _get_func_namespace(self, func: str, receiver: str = None):
         funcs = self.program.context.get_namespaces_decls(
             self._namespace, func, 'funcs')
+        if len(funcs) == 0:
+            return None
         # TODO handle receiver
         namespace, _ = list(funcs)[0]
         return namespace
@@ -66,5 +70,6 @@ class CallAnalysis(DefaultVisitor):
     def visit_func_call(self, node):
         super().visit_func_call(node)
         callee_ns = self._get_func_namespace(node.func, node.receiver)
-        self._call_graph[CNode(self._namespace)].add(CNode(callee_ns))
-        self._calls[CNode(callee_ns)].add(node)
+        if callee_ns:
+            self._call_graph[CNode(self._namespace)].add(CNode(callee_ns))
+            self._calls[CNode(callee_ns)].add(node)
