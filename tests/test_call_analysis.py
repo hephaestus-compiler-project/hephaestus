@@ -106,18 +106,18 @@ def test_program10():
     ca = CallAnalysis(program10.program)
     cg, calls = ca.result()
 
-    __import__('pprint').pprint(cg)
-    __import__('pprint').pprint(calls)
-
     first_foo = str2node("global/First/foo")
     second_foo = str2node("global/Second/foo")
+    third_foo = str2node("global/Third/foo")
     global_foo = str2node("global/foo")
     global_bar = str2node("global/bar")
 
     assert_nodes(cg[first_foo], set())
-    assert_nodes_len(calls[first_foo], 1)
+    assert_nodes_len(calls[first_foo], 2)
     assert_nodes(cg[second_foo], set())
     assert_nodes_len(calls[second_foo], 1)
+    assert_nodes(cg[third_foo], {first_foo})
+    assert_nodes_len(calls[third_foo], 0)
     assert_nodes(cg[global_foo], {first_foo})
     assert_nodes_len(calls[global_foo], 0)
     assert_nodes(cg[global_bar], {second_foo})
