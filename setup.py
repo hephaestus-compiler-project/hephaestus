@@ -1,6 +1,8 @@
 import os
 import shutil
 import glob
+import distutils
+import subprocess
 from setuptools import setup, find_packages, Command
 from pathlib import Path
 
@@ -36,6 +38,41 @@ class CleanCommand(Command):
                 shutil.rmtree(path)
 
 
+class PylintCommand(distutils.cmd.Command):
+    """A custom command to run Pylint on all Python source files."""
+
+    description = 'run Pylint on Python source files'
+    user_options = [
+        # The format is (long option, short option, description).
+        ('pylint-rcfile=', None, 'path to Pylint config file'),
+    ]
+
+    def initialize_options(self):
+        """Set default values for options."""
+        # Each user option must be listed here with their default value.
+        self.pylint_rcfile = os.path.join(here, 'pylintrc')
+
+    def finalize_options(self):
+        """Post-process options."""
+        if self.pylint_rcfile:
+            assert os.path.exists(self.pylint_rcfile), (
+            'Pylint config file %s does not exist.' % self.pylint_rcfile)
+
+    def run(self):
+        """Run command."""
+        command = ['pytest']
+        command.append('--pylint')
+        command.append('--flake8')
+        command.append(os.path.join(here, 'src'))
+        self.announce(
+            'Running command: %s' % str(command),
+            level=distutils.log.INFO)
+        try:
+            subprocess.check_call(command)
+        except subprocess.CalledProcessError:
+            pass
+
+
 setup(
     name='checktypesystems',
     version='0.0.1',
@@ -52,5 +89,6 @@ setup(
     #  },
     cmdclass={
         'clean': CleanCommand,
+        'lint': PylintCommand,
     },
 )
