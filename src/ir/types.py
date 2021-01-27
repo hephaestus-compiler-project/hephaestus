@@ -18,6 +18,9 @@ class Type(Node):
     def __repr__(self):
         return self.__str__()
 
+    def has_type_variables(self):
+        raise NotImplementedError("You have to implement has_type_variables()")
+
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
@@ -48,6 +51,9 @@ class AbstractType(Type):
         # TODO: revisit
         return super().get_supertypes()
 
+    def has_type_variables(self):
+        return True
+
     def not_related(self, other):
         raise TypeError("You cannot call 'not_related()' in an AbstractType")
 
@@ -59,6 +65,9 @@ class Builtin(Type):
     def __init__(self, name: str):
         super().__init__(name)
         self.supertypes = [self]
+
+    def has_type_variables(self):
+        return False
 
     def __str__(self):
         return str(self.name) + "(builtin)"
@@ -94,6 +103,9 @@ class SimpleClassifier(Classifier):
         self.supertypes = supertypes if supertypes is not None else []
         if check:
             self._check_supertypes()
+
+    def has_type_variables(self):
+        return False
 
     def __str__(self):
         return "{}{}".format(
@@ -189,7 +201,13 @@ def substitute_type_args(etype, type_map):
             type_args.append(
                 substitute_type_args(t_arg, type_map))
         else:
-            type_args.append(type_map.get(t_arg, t_arg))
+            t = type_map.get(t_arg)
+            if t is None or t.has_type_variables():
+                # The type parameter does not correspond to an abstract type
+                # so, there is nothing to substitute.
+                type_args.append(t_arg)
+            else:
+                type_args.append(t)
     new_type_map = {
         tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
@@ -275,6 +293,9 @@ class ParameterizedType(SimpleClassifier):
         self._can_infer_type_args = can_infer_type_args
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
+
+    def has_type_variables(self):
+        return any(t_arg.has_type_variables() for t_arg in self.type_args)
 
     @property
     def can_infer_type_args(self):
