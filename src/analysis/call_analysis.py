@@ -5,6 +5,7 @@ from collections import defaultdict
 from src.ir import ast
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
+from src.analysis.use_analysis import UseAnalysis
 
 
 class CNode(NamedTuple):
@@ -40,8 +41,10 @@ class CallAnalysis(DefaultVisitor):
         # The type of each node is: CNode
         self._call_graph = defaultdict(set)  # namespace => [CNode]
         # All call sites of a function
-        self._calls = defaultdict(set)  # namespace => [CNode]
+        self._calls = defaultdict(set)  # namespace => [FunctionCall]
         self._namespace = ast.GLOBAL_NAMESPACE
+        # We compute the use_graph for each top level declaration.
+        self._use_graph = None
         self.program = program
         self.visit(self.program)
 
@@ -57,12 +60,20 @@ class CallAnalysis(DefaultVisitor):
         namespace, _ = list(funcs)[0]
         return namespace
 
+    def _compute_use_graph(self, node):
+        if len(self._namespace) == 2:
+            analysis = UseAnalysis(self.program)
+            analysis.visit(node)
+            self._use_graph = analysis.result()
+
     @change_namespace
     def visit_class_decl(self, node):
+        self._compute_use_graph(node)
         super().visit_class_decl(node)
 
     @change_namespace
     def visit_func_decl(self, node):
+        self._compute_use_graph(node)
         self._call_graph[CNode(self._namespace)]
         self._calls[CNode(self._namespace)]
         super().visit_func_decl(node)
