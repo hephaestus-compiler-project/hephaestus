@@ -52,6 +52,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--disable-inference-in-closures",
+    default=True,
     action="store_true",
     help="Generate closures that have an explicit return type"
 )
