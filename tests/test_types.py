@@ -121,3 +121,15 @@ def test_parameterized_with_chain_inheritance_and_nested():
     st = st.supertypes[0]
     assert st.name == "X"
     assert st.type_args == [kt.String]
+
+
+def test_parameterized_with_bound_abstract():
+    type_param = tp.TypeParameter("T")
+    type_param2 = tp.TypeParameter("K", bound=type_param)
+
+    x_con = tp.TypeConstructor("X", [type_param, type_param2], [])
+    x = x_con.new([kt.Any, kt.String])
+
+    assert x.supertypes == []
+    assert x.t_constructor.type_parameters == \
+        [type_param, tp.TypeParameter("K", bound=kt.Any)]

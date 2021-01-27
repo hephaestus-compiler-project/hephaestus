@@ -193,21 +193,22 @@ class TypeParameter(AbstractType):
         )
 
 
+def _get_type_substitution(etype, type_map):
+    if isinstance(etype, ParameterizedType):
+        return substitute_type_args(etype, type_map)
+    t = type_map.get(etype)
+    if t is None or t.has_type_variables():
+        # The type parameter does not correspond to an abstract type
+        # so, there is nothing to substitute.
+        return etype
+    return t
+
+
 def substitute_type_args(etype, type_map):
     assert isinstance(etype, ParameterizedType)
     type_args = []
     for t_arg in etype.type_args:
-        if isinstance(t_arg, ParameterizedType):
-            type_args.append(
-                substitute_type_args(t_arg, type_map))
-        else:
-            t = type_map.get(t_arg)
-            if t is None or t.has_type_variables():
-                # The type parameter does not correspond to an abstract type
-                # so, there is nothing to substitute.
-                type_args.append(t_arg)
-            else:
-                type_args.append(t)
+        type_args.append(_get_type_substitution(t_arg, type_map))
     new_type_map = {
         tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
@@ -237,8 +238,18 @@ def perform_type_substitution(etype, type_map):
             supertypes.append(substitute_type_args(t, type_map))
         else:
             supertypes.append(t)
+    type_params = []
+    for t_param in etype.type_parameters:
+        if t_param.bound is None:
+            type_params.append(t_param)
+            continue
+
+        new_bound = _get_type_substitution(t_param.bound, type_map)
+        t_param = TypeParameter(t_param.name, t_param.variance, new_bound)
+        type_params.append(t_param)
 
     etype = deepcopy(etype)
+    etype.type_parameters = type_params
     etype.supertypes = supertypes
     return etype
 
