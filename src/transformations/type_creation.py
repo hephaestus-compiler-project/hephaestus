@@ -251,6 +251,19 @@ class TypeCreation(Transformation):
         self.update_type(new_node, 'inferred_type')
         return new_node
 
+    def visit_class_decl(self, node):
+        new_node = super().visit_class_decl(node)
+        if not new_node.is_parameterized():
+            return new_node
+
+        # Now we need to check the type parameters of this class for any
+        # updates. For example, if a type parameter has bound that refers
+        # to the type we changed, we need to update this bound.
+        new_type = self._old_class.get_type()
+        for i, t_param in enumerate(node.type_parameters):
+            new_node.type_parameters[i] = tu.update_type(t_param, new_type)
+        return new_node
+
 
 class SubtypeCreation(TypeCreation):
     NAME = 'Subtype Creator'
