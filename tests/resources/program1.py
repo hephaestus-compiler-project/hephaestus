@@ -2,6 +2,25 @@ from src.ir.ast import *
 from src.ir.kotlin_types import *
 from src.ir.context import *
 
+# open class A(val x: String) {
+#   open fun foo(y: String, z: String): bam {
+#     val q: String = z
+#     val x: String = q
+#     return bar(y, "foo", q)
+#   }
+#
+#   open fun bar(arg: String, y: String, z: String): bam {
+#     return bam(arg)
+#   }
+#
+#   open fun buz(): String {
+#     return x
+#   }
+#
+#   open fun spam(): String {
+#     return (if (true) { x } else { "foo" })
+#   }
+# }
 
 bam_cls = ClassDeclaration("bam", [])
 

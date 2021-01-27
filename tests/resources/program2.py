@@ -2,6 +2,11 @@ from src.ir.ast import *
 from src.ir.kotlin_types import *
 from src.ir.context import *
 
+# open class Bam(val x: String) {
+#   open fun getX(z: String): String {
+#     return x
+#   }
+# }
 
 xB_field = FieldDeclaration(
     "x",
