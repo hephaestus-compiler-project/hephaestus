@@ -21,7 +21,7 @@ parser.add_argument(
 parser.add_argument(
     "-t", "--transformations",
     type=int,
-    default=5,
+    default=None,
     help="Number of transformations in each round"
 )
 parser.add_argument(
@@ -40,6 +40,12 @@ parser.add_argument(
     nargs="*",
     choices=Executor.TRANSFORMATIONS.keys(),
     help="Select specific transformations to perform"
+)
+parser.add_argument(
+    "--transformation-schedule",
+    default=None,
+    type=str,
+    help="A file containing the schedule of transformations"
 )
 parser.add_argument(
     "-R", "--replay",
@@ -124,6 +130,14 @@ if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
 
 if sum(1 for i in (args.rerun, args.debug) if i is True) > 1:
     sys.exit("Error: You can use only one of -r, -d.")
+
+if args.transformation_schedule and args.transformations:
+    sys.exit("Options --transformation-schedule and --transfromations"
+             " are mutually exclusive. You can't use both.")
+
+if args.transformation_schedule and (
+        not os.path.isfile(args.transformation_schedule)):
+    sys.exit("You have to provide a valid file in --transformation-schedule")
 
 # PRE-PROCESSING
 

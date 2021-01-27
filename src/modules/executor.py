@@ -4,6 +4,7 @@ import tempfile
 import pickle
 import traceback
 import subprocess as sp
+import sys
 from copy import deepcopy
 from collections import defaultdict
 
@@ -15,7 +16,7 @@ from src.transformations.type_creation import (
 from src.transformations.parameterized import ParameterizedSubstitution
 from src.transformations.type_erasure import TypeArgumentErasureSubstitution
 from src.translators.kotlin import KotlinTranslator
-from src.utils import mkdir, random
+from src.utils import mkdir, random, read_lines
 from src.modules.logging import Logger
 
 
@@ -187,8 +188,8 @@ class Executor:
             return False, program, program_str
         return True, program, program_str
 
-    def _apply_trasnformation(self, transformation_number, program, comp, i):
-        transformation_cls = random.choice(self.transformations)
+    def _apply_transformation(self, transformation_cls,
+                              transformation_number, program, comp, i):
         if self.args.log:
             logger = Logger(self.args.name, self.args.test_directory, i,
                             transformation_cls.get_name(),
@@ -239,16 +240,37 @@ class Executor:
             return "break", program
         return "succeed", program
 
-    def _apply_trasnformations(self, program, i):
+    def _get_transformation_schedule(self):
+        if self.args.transformations:
+            # Randomly generate a transformation schedule.
+            return [
+                random.choice(self.transformations)
+                for i in range(self.args.transformations)
+            ]
+        # Get transformation schedule from file.
+        lines = read_lines(self.args.transformation_schedule)
+        schedule = []
+        for line in lines:
+            transformation = self.TRANSFORMATIONS.get(line)
+            if transformation is None:
+                sys.exit(
+                    "Transformation " + line
+                    + " found in schedule is not valid.")
+            schedule.append(transformation)
+        return schedule
+
+    def _apply_transformations(self, program, i):
         failed = False
         try:
-            for j in range(self.args.transformations):
+            transformations = self._get_transformation_schedule()
+            len_schedule = len(transformations)
+            for j, transformation in enumerate(transformations):
                 comp = True
                 if ((self.args.only_last or self.args.rerun) and
-                        j != self.args.transformations - 1):
+                        j != len_schedule - 1):
                     comp = False
-                status, program = self._apply_trasnformation(j, program, comp,
-                                                             i)
+                status, program = self._apply_transformation(
+                    transformation, j, program, comp, i)
                 if status == "continue":
                     continue
                 if status == "break":
@@ -287,5 +309,5 @@ class Executor:
                 self._report(program_str, program)
                 return True, dict(self.stats)
         self.tstack.append((deepcopy(program), "InputProgram"))
-        return self._apply_trasnformations(program, self.exec_id), \
+        return self._apply_transformations(program, self.exec_id), \
             dict(self.stats)
