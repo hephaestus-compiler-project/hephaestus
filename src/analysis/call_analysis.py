@@ -64,6 +64,7 @@ class CallAnalysis(DefaultVisitor):
         super().visit_func_decl(node)
 
     def visit_func_call(self, node):
+        super().visit_func_call(node)
         callee_ns = self._get_func_namespace(node.func, node.receiver)
         self._call_graph[CNode(self._namespace)].add(CNode(callee_ns))
         self._calls[CNode(callee_ns)].add(node)
