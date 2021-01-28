@@ -183,22 +183,47 @@ class TypeSubstitution(Transformation):
                 continue
 
             if child_param.get_type() == old_type:
-                # Since, we didn't update the child method, we must not update
-                # the parent. Update the context accordingly.
-                parent_param.param_type = deepcopy(old_type)
-                self.program.context.add_var(
-                    parent_namespace, parent_param.name, parent_param)
-                return False
+                if not isinstance(parent_param.param_type, tp.AbstractType):
+                    # Since, we didn't update the child method, we must not
+                    # update the parent. Update the context accordingly.
+                    # Note that we update the parent only if it's parameter
+                    # is not abstract.
+                    parent_param.param_type = deepcopy(old_type)
+                    self.program.context.add_var(
+                        parent_namespace, parent_param.name, parent_param)
+                    return False
 
-            if parent_param.get_type() == old_type or (
-                    isinstance(parent_param.get_type(), tp.AbstractType)):
-                if not isinstance(old_type, tp.AbstractType):
-                    # We have to change the param type of the child method
-                    # back to the old one. Update context accordingly.
+            if not isinstance(old_type, tp.AbstractType):
+                # We have to change the param type of the child method
+                # back to the old one. Update context accordingly.
+                if not isinstance(parent_param.param_type, tp.AbstractType):
+                    # Case 1: If the parent is abstract, then we keep the
+                    # old type of child.
+                    child_param.param_type = deepcopy(parent_param.param_type)
                     self.program.context.add_var(
                         child_namespace, child_param.name, child_param)
+                else:
+                    # Case 2: If the parent is not abstract, then the child
+                    # must be the same with the parent.
+                    # This protects us from situtations like the following
+                    #
+                    # Initial Program
+                    # ===============
+                    # X<out T>
+                    # foo(x: X<Int>) // parent
+                    # override foo(x: X<Int>) // child
+                    #
+                    # Final Program
+                    # =============
+                    # foo(x: X<Number>) // parent
+                    # override foo(x: X<Any>) // child wrong!!!!
+                    #
+                    # The following assignment ensures that the .type of
+                    # child param is X<Number> and not X<Any>
                     child_param.param_type = deepcopy(old_type)
-                    return False
+                    self.program.context.add_var(
+                        child_namespace, child_param.name, child_param)
+                return False
 
         return True
 
@@ -353,22 +378,24 @@ class TypeSubstitution(Transformation):
         for i, param in enumerate(new_node.params):
             old_type = deepcopy(param.get_type())
 
-            # We cannot perform type widening if there is a New as argument with
-            # can_infer_type_args set to True. Consider the following example
+            # We cannot perform type widening if there is a New as argument
+            # with can_infer_type_args set to True. Consider the following
+            # example
+            #
             #  fun foo(x: A<Int>) {...}
             #  fun bar() {
             #      foo(A())
             #  }
-            new_node_calls = self._get_calls() # set of FunctionCall objects
+            new_node_calls = self._get_calls()  # set of FunctionCall objects
             if any(isinstance(fcal.args[i], ast.New) and
                    isinstance(fcal.args[i].class_type, tp.ParameterizedType) and
                    fcal.args[i].class_type.can_infer_type_args
                    for fcal in new_node_calls):
+                self._check_param_overriden_fun(
+                    new_node, param, i, old_type, current_cls)
                 continue
 
             if isinstance(param.param_type, tp.AbstractType):
-                #self._check_param_overriden_fun(new_node, param, i, old_type,
-                #                                current_cls)
                 continue
             is_transformed = self.is_transformed
             # Perform type widening on this function's parameters.
