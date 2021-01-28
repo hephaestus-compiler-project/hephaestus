@@ -123,3 +123,34 @@ def test_classifier_check_supertypes():
         assert True
     p_type_i2 = ParameterizedType(t_constructor, [IntegerType()])
     cls4 = SimpleClassifier("Cls4", [p_type_i2, p_type_i], True)
+
+
+def test_inherits_from_simple():
+    cls1 = ClassDeclaration("A", [], ClassDeclaration.REGULAR,)
+    cls2 = ClassDeclaration("B", [SuperClassInstantiation(cls1.get_type())], 0)
+
+    assert cls2.inherits_from(cls1)
+    assert not cls1.inherits_from(cls2)
+
+
+def test_inherits_from_parameterized():
+    cls1 = ClassDeclaration("A", [], 0,
+                            type_parameters=[TypeParameter("T")])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([kt.String]))], 0)
+
+    assert cls2.inherits_from(cls1)
+    assert not cls1.inherits_from(cls2)
+
+
+def test_inherits_from_parameterized_with_abstract():
+    type_param = TypeParameter("T")
+    type_param2 = TypeParameter("K", bound=Any)
+    cls1 = ClassDeclaration("A", [], 0,
+                            type_parameters=[type_param])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([type_param2]))], 0,
+        type_parameters=[type_param2]
+    )
+    assert cls2.inherits_from(cls1)
+    assert not cls1.inherits_from(cls2)
