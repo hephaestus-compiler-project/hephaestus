@@ -3,7 +3,7 @@ from copy import deepcopy
 from src.ir import ast
 from src.analysis.call_analysis import CallAnalysis, CNode
 from tests.resources import (program1, program4, program5, program8, program9,
-        program10, program11)
+        program10, program11, program12)
 
 
 def str2node(string):
@@ -116,3 +116,18 @@ def test_program11():
     assert_nodes(cg[second_foo], set(), calls[second_foo], 0)
     assert_nodes(cg[global_foo], set(), calls[global_foo], 1)
     assert_nodes(cg[global_bar], {global_foo, first_foo}, calls[global_bar], 0)
+
+# Function call and New receivers
+def test_program12():
+    ca = CallAnalysis(program12.program)
+    cg, calls = ca.result()
+
+    first_foo = str2node("global/First/foo")
+    second_foo = str2node("global/Second/foo")
+    global_foo = str2node("global/foo")
+    global_bar = str2node("global/bar")
+
+    assert_nodes(cg[first_foo], set(), calls[first_foo], 1)
+    assert_nodes(cg[second_foo], set(), calls[second_foo], 1)
+    assert_nodes(cg[global_foo], set(), calls[global_foo], 1)
+    assert_nodes(cg[global_bar], {global_foo, first_foo, second_foo}, calls[global_bar], 0)
