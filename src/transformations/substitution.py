@@ -343,12 +343,11 @@ class TypeSubstitution(Transformation):
             #      foo(A())
             #  }
             new_node_calls = self._get_calls() # set of FunctionCall objects
-            for fcal in new_node_calls:
-                arg = fcal.args[i]
-                if (isinstance(arg, ast.New) and
-                        isinstance(arg.class_type, tp.ParameterizedType) and
-                        arg.class_type.can_infer_type_args):
-                    continue
+            if any(isinstance(fcal.args[i], ast.New) and
+                   isinstance(fcal.args[i].class_type, tp.ParameterizedType) and
+                   fcal.args[i].class_type.can_infer_type_args
+                   for fcal in new_node_calls):
+                continue
 
             if isinstance(param.param_type, tp.AbstractType):
                 self._check_param_overriden_fun(new_node, param, i, old_type,
