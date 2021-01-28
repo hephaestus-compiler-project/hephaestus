@@ -110,6 +110,8 @@ def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
         return etype
     if isinstance(etype, tp.Builtin) or isinstance(new_type, tp.Builtin):
         return etype
+
+    update_supertypes(etype, new_type, test_pred)
     # Case 1: The test_pred func of the two types match.
     if test_pred(etype, new_type):
         # So if the new type is a type constructor update the type
@@ -119,7 +121,6 @@ def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
         # Otherwise replace `etype` with `new_type`
         return new_type
 
-    update_supertypes(etype, new_type, test_pred)
     # Case 2: If etype is a parameterized type, recursively inspect its type
     # arguments and type constructor for updates.
     if isinstance(etype, tp.ParameterizedType):
