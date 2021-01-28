@@ -1,0 +1,3 @@
+program.kt:10:8: error: type mismatch: inferred type is X<out A> but X<A> was expected
+   foo(tmp)
+          ^
