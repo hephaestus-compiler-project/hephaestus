@@ -7,6 +7,7 @@ from src.ir import kotlin_types as kt
 from src.generators import Generator
 from src.generators import utils as gu
 from src.transformations.base import Transformation
+from src.analysis.call_analysis import CNode, CallAnalysis
 
 
 def create_function_block(function, is_expr, var_decl, declared=False):
@@ -119,6 +120,7 @@ class TypeSubstitution(Transformation):
         self._namespace = ('global',)
         self._cached_type_widenings = {}
         self._func_decls = defaultdict(set)
+        self._calls = None
 
     def get_current_class(self):
         cls_name = self._namespace[-2]
@@ -128,6 +130,12 @@ class TypeSubstitution(Transformation):
     def is_decl_used(self, decl):
         """Check if the given declaration is used in the current namespace. """
         return self._defs[(self._namespace, decl.name)]
+
+    def _get_calls(self):
+        if not self._calls:
+            ca = CallAnalysis(self.program)
+            _, self._calls = ca.result()
+        return self._calls[CNode(self._namespace)]
 
     def _check_param_overriden_fun(self, fun, param, param_index, old_type,
                                    current_cls):
@@ -327,6 +335,21 @@ class TypeSubstitution(Transformation):
         use_var = False
         for i, param in enumerate(new_node.params):
             old_type = deepcopy(param.get_type())
+
+            # We cannot perform type widening if there is a New as argument with
+            # can_infer_type_args set to True. Consider the following example
+            #  fun foo(x: A<Int>) {...}
+            #  fun bar() {
+            #      foo(A())
+            #  }
+            new_node_calls = self._get_calls() # set of FunctionCall objects
+            for fcal in new_node_calls:
+                arg = fcal.args[i]
+                if (isinstance(arg, ast.New) and
+                        isinstance(arg.class_type, tp.ParameterizedType) and
+                        arg.class_type.can_infer_type_args):
+                    continue
+
             if isinstance(param.param_type, tp.AbstractType):
                 self._check_param_overriden_fun(new_node, param, i, old_type,
                                                 current_cls)
