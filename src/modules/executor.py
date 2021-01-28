@@ -295,6 +295,10 @@ class Executor:
             schedule_file = os.path.join(self.args.test_directory,
                                          "transformations",
                                          "iter_" + str(i), "schedule.txt")
+            dirname = os.path.dirname(schedule_file)
+            if not os.path.exists(dirname):
+                mkdir(dirname)
+
             # Save a file name 'schedule.txt' that contains the schedule
             # of transformations.
             with open(schedule_file, 'w') as out:
