@@ -172,7 +172,7 @@ class CallAnalysis(DefaultVisitor):
             function_namespace = namespaces_reduction(
                 self._namespace, all_namespaces)
             # We cannot find the exact function declaration
-            if len(function_namespace) > 1:
+            if len(function_namespace) != 1:
                 return all_namespaces
             function_namespace = function_namespace[0]
             function_decl = self.program.context.get_decl(
