@@ -59,6 +59,29 @@ def find_gnode_type(gnode, namespace, context, use_graph):
     return None
 
 
+def namespaces_reduction(namespace, all_namespaces):
+    """Try to find filter out namespaces that cannot be called.
+    """
+    declared_inside_namespace = [ns for ns in all_namespaces
+                                 if ut.prefix_lst(namespace, ns)]
+    if len(declared_inside_namespace) > 0:
+        return declared_inside_namespace
+    tmp_namespace = namespace
+    while len(tmp_namespace) > 0:
+        tmp_namespace = tmp_namespace[:-1]
+        same_prefix_ns = [ns for ns in all_namespaces
+                          if ut.prefix_lst(tmp_namespace, ns)]
+        if len(same_prefix_ns) > 0:
+            # Consider we having those functions:
+            # [('global', 'First', 'foo'), ('global', 'foo')]
+            # and we have called foo from ('global', 'bar')
+            # then the function that will be called is ('global', 'foo')
+            return list(filter(
+                lambda x: len(x) <= len(namespace),
+                same_prefix_ns))
+    return all_namespaces
+
+
 class CallAnalysis(DefaultVisitor):
     """Get the call graph of a program.
 
@@ -90,26 +113,6 @@ class CallAnalysis(DefaultVisitor):
     def result(self):
         return self._call_graph, self._calls
 
-    def _check_non_receiver(self, all_namespaces):
-        declared_inside_namespace = [ns for ns in all_namespaces
-                                     if ut.prefix_lst(self._namespace, ns)]
-        if len(declared_inside_namespace) > 0:
-            return declared_inside_namespace
-        namespace = self._namespace
-        while len(namespace) > 0:
-            namespace = namespace[:-1]
-            same_prefix_ns = [ns for ns in all_namespaces
-                              if ut.prefix_lst(namespace, ns)]
-            if len(same_prefix_ns) > 0:
-                # Consider we having those functions:
-                # [('global', 'First', 'foo'), ('global', 'foo')]
-                # and we have called foo from ('global', 'bar')
-                # then the function that will be called is ('global', 'foo')
-                return list(filter(
-                    lambda x: len(x) <= len(self._namespace),
-                    same_prefix_ns))
-        return all_namespaces
-
     def _get_func_namespace(self, func: str, receiver: ast.Expr = None):
         def get_filtered_or_all(namespace, namespaces):
             res = []
@@ -136,14 +139,14 @@ class CallAnalysis(DefaultVisitor):
         # There are multiple functions defined with the same name.
         # Select the namespace that is closer to current namespace.
         if receiver is None:
-            return self._check_non_receiver(all_namespaces)
+            return namespaces_reduction(self._namespace, all_namespaces)
 
         # Handle receiver
         if isinstance(receiver, ast.Variable):
             gnode = GNode(self._namespace, receiver.name)
             gnode_type = find_gnode_type(
                 gnode, self._namespace, self.program.context, self._use_graph)
-            if isinstance(gnode, tp.Builtin) or gnode is None:
+            if isinstance(gnode_type, tp.Builtin) or gnode_type is None:
                 return all_namespaces
             # Get the namespace of source_type
             # It is not possible to have multiple classes with the same name
@@ -151,9 +154,36 @@ class CallAnalysis(DefaultVisitor):
                 self._namespace, gnode_type.name, 'classes'))[0]
             return get_filtered_or_all(namespace, all_namespaces)
         if isinstance(receiver, ast.New):
-            pass
+            # There should be only one class declaration per name.
+            new_namespace, _ = list(self.program.context.get_namespaces_decls(
+                self._namespace,
+                receiver.class_type.name,
+                'classes'))[0]
+            return namespaces_reduction(new_namespace, all_namespaces)
         if isinstance(receiver, ast.FunctionCall):
-            pass
+            if receiver.receiver:
+                # TODO
+                return all_namespaces
+            # Possible Function declaration
+            function_decls = self.program.context.get_namespaces_decls(
+                self._namespace, receiver.func, 'funcs')
+            function_namespaces = list(zip(*function_decls))[0]
+            # FIXME if it has a receiver we must be more precise
+            function_namespace = namespaces_reduction(
+                self._namespace, all_namespaces)
+            # We cannot find the exact function declaration
+            if len(function_namespace) > 1:
+                return all_namespaces
+            function_namespace = function_namespace[0]
+            function_decl = self.program.context.get_decl(
+                    function_namespace[:-1], function_namespace[-1])
+            function_type = function_decl.inferred_type
+            if isinstance(function_type, tp.Builtin) or function_type is None:
+                return all_namespaces
+            # It is not possible to have multiple classes with the same name
+            namespace, _ = list(self.program.context.get_namespaces_decls(
+                self._namespace, function_type.name, 'classes'))[0]
+            return get_filtered_or_all(namespace, all_namespaces)
         # TODO
         # if isinstance(receiver, ast.FieldAccess):
         return all_namespaces
