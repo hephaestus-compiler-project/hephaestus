@@ -161,11 +161,16 @@ class TypeSubstitution(Transformation):
 
         for cls, p_fun in funcs:
             if cls.inherits_from(current_cls):
+                parent_namespace = self._namespace
                 parent_param = param
                 child_param = p_fun.params[param_index]
+                child_namespace = ast.GLOBAL_NAMESPACE + (cls.name, p_fun.name)
             elif current_cls.inherits_from(cls):
+                parent_namespace = ast.GLOBAL_NAMESPACE + (
+                    cls.name, p_fun.name)
                 parent_param = p_fun.params[param_index]
                 child_param = param
+                child_namespace = self._namespace
             else:
                 # There is no parent-child relations between the current class
                 # and `cls`, so there is no restriction for the type of
@@ -178,12 +183,20 @@ class TypeSubstitution(Transformation):
                 continue
 
             if child_param.get_type() == old_type:
+                # Since, we didn't update the child method, we must not update
+                # the parent. Update the context accordingly.
                 parent_param.param_type = deepcopy(old_type)
+                self.program.context.add_var(
+                    parent_namespace, parent_param.name, parent_param)
                 return False
 
             if parent_param.get_type() == old_type or (
                     isinstance(parent_param.get_type(), tp.AbstractType)):
                 if not isinstance(old_type, tp.AbstractType):
+                    # We have to change the param type of the child method
+                    # back to the old one. Update context accordingly.
+                    self.program.context.add_var(
+                        child_namespace, child_param.name, child_param)
                     child_param.param_type = deepcopy(old_type)
                     return False
 
@@ -221,8 +234,12 @@ class TypeSubstitution(Transformation):
             # Therefore, we don't perform type widening in this case.
             if self.is_decl_used(decl):
                 return False
+        # At this point, we update the type of the parameter.
+        # So we set the field to `is_transformed=True`, and update the context
+        # of the program accordingly.
         self.is_transformed = True
         setter(decl, sup_t)
+        self.program.context.add_var(self._namespace, decl.name, decl)
         return True
 
     def visit_class_decl(self, node):
@@ -371,6 +388,8 @@ class TypeSubstitution(Transformation):
 
             if isinstance(new_node.get_type(), tp.AbstractType):
                 param.param_type = old_type
+                self.program.context.add_var(self._namespace, param.name,
+                                             param)
                 self.is_transformed = is_transformed
 
             # Otherwise, replace the function body as follows
