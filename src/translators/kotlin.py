@@ -8,32 +8,17 @@ class KotlinTranslator(ASTVisitor):
     filename = "program.kt"
     executable = "program.jar"
 
-    def __init__(self):
+    def __init__(self, package=None):
         self._children_res = []
         self.program = None
         self.ident = 0
         self.is_func_block = False
         self._cast_integers = False
+        self.package = package
 
     @staticmethod
     def get_filename():
         return KotlinTranslator.filename
-
-    @staticmethod
-    def get_executable():
-        return KotlinTranslator.executable
-
-    @staticmethod
-    def get_cmd_build(filename, executable):
-        return ['kotlinc', filename, '-include-runtime', '-d', executable]
-
-    @staticmethod
-    def get_cmd_exec(executable):
-        return ['java', '-jar', executable]
-
-    @staticmethod
-    def get_cmd_compiler_version():
-        return ['kotlinc', '-version']
 
     def result(self):
         if self.program is None:
@@ -52,7 +37,12 @@ class KotlinTranslator(ASTVisitor):
         children = node.children()
         for c in children:
             c.accept(self)
-        self.program = '\n\n'.join(self.pop_children_res(children))
+        if self.package:
+            package_str = 'package ' + self.package + '\n'
+        else:
+            package_str = ''
+        self.program = package_str + '\n\n'.join(
+            self.pop_children_res(children))
 
     def visit_block(self, node):
         children = node.children()
