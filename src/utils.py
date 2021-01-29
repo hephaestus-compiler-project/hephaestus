@@ -1,5 +1,6 @@
 import random
 import string
+import pickle
 import os
 import sys
 
@@ -50,6 +51,26 @@ def fprint(text):
         print(text.center(int(terminal_width), "="))
     except OSError:  # This error may occur when run under cron
         print(text)
+
+
+def translate_program(translator, program):
+    translator.visit(program)
+    return translator.result()
+
+
+def load_program(path):
+    with open(path, 'rb') as initial_bin:
+        return pickle.load(initial_bin)
+
+
+def dump_program(path, program):
+    with open(path, 'wb') as out:
+        pickle.dump(program, out)
+
+
+def save_text(path, text):
+    with open(path, 'w') as out:
+        out.write(text)
 
 
 class RandomUtils():
