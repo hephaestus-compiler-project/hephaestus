@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 from src.utils import random, mkdir
-from src.modules.executor import Executor
+from src.modules.processor import ProgramProcessor
 
 
 cwd = os.getcwd()
@@ -25,6 +25,12 @@ parser.add_argument(
     help="Number of transformations in each round"
 )
 parser.add_argument(
+    "--batch",
+    type=int,
+    default=1,
+    help='Number of programs to generate before invoking the compiler'
+)
+parser.add_argument(
     "-b", "--bugs",
     default=os.path.join(cwd, "bugs"),
     help="Set bug directory (default: " + str(os.path.join(cwd, "bugs")) + ")"
@@ -36,9 +42,9 @@ parser.add_argument(
 )
 parser.add_argument(
     "-T", "--transformation-types",
-    default=Executor.TRANSFORMATIONS.keys(),
+    default=ProgramProcessor.TRANSFORMATIONS.keys(),
     nargs="*",
-    choices=Executor.TRANSFORMATIONS.keys(),
+    choices=ProgramProcessor.TRANSFORMATIONS.keys(),
     help="Select specific transformations to perform"
 )
 parser.add_argument(
@@ -76,13 +82,8 @@ parser.add_argument(
 parser.add_argument(
     "-w", "--workers",
     type=int,
-    default=1,
+    default=None,
     help="Number of workers for processing test programs"
-)
-parser.add_argument(
-    "-l", "--only-last",
-    action="store_true",
-    help="Test only the last transformation"
 )
 parser.add_argument(
     "-d", "--debug",
@@ -113,7 +114,7 @@ parser.add_argument(
     "--language",
     default="kotlin",
     nargs="*",
-    choices=Executor.TRANSLATORS.keys(),
+    choices=['kotlin'],
     help="Select specific language"
 )
 
@@ -128,9 +129,6 @@ if args.seconds and args.iterations:
 if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
     sys.exit("Error: --name {} already exists".format(args.name))
 
-if sum(1 for i in (args.rerun, args.debug) if i is True) > 1:
-    sys.exit("Error: You can use only one of -r, -d.")
-
 if args.transformation_schedule and args.transformations:
     sys.exit("Options --transformation-schedule and --transfromations"
              " are mutually exclusive. You can't use both.")
@@ -142,6 +140,11 @@ if not args.transformation_schedule and not args.transformations:
 if args.transformation_schedule and (
         not os.path.isfile(args.transformation_schedule)):
     sys.exit("You have to provide a valid file in --transformation-schedule")
+
+
+if args.rerun and args.workers:
+    sys.exit('You cannot use -r option in parallel mode')
+
 
 # PRE-PROCESSING
 
