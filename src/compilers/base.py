@@ -1,7 +1,6 @@
 class BaseCompiler():
-    def __init__(self, input_name, executable):
+    def __init__(self, input_name):
         self.input_name = input_name
-        self.executable = executable
 
     @classmethod
     def get_compiler_version(cls):
