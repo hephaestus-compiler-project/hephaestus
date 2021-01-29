@@ -354,6 +354,7 @@ class TypeSubstitution(Transformation):
         new_node = super().visit_func_decl(node)
         is_expression = (not isinstance(new_node.body, ast.Block) or
                          new_node.get_type() == kt.Unit)
+        var_decl = None
         if not is_expression:
             # If function is not expression-based, create a variable
             # declaration holding a value whose type is the same with the
@@ -372,8 +373,6 @@ class TypeSubstitution(Transformation):
             if not isinstance(new_node.get_type(), tp.AbstractType):
                 var_decl = self.generate_variable_declaration(
                     "ret", new_node.get_type())
-        else:
-            var_decl = None
         use_var = False
         for i, param in enumerate(new_node.params):
             old_type = deepcopy(param.get_type())
