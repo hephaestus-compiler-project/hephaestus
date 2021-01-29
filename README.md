@@ -1,6 +1,19 @@
 check-type-system
 =================
 
+Reported Bugs
+-------------
+
+#### Kotlin
+
+* <https://youtrack.jetbrains.com/issues?q=%23theosotr%20>
+* <https://youtrack.jetbrains.com/issues?q=%23stefanoshaliassos%20>
+
+#### Groovy
+
+* <https://issues.apache.org/jira/browse/GROOVY-9907?filter=-2&jql=reporter%20%3D%20%22Thodoris%20Sotiropoulos%22%20>
+* <https://issues.apache.org/jira/issues/?filter=-2&jql=reporter%20%3D%20schaliasos>
+
 Installation
 ------------
 
