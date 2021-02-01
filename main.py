@@ -148,6 +148,7 @@ def save_stats():
         json.dump(faults, out, indent=2)
     with open(stats_file, 'w') as out:
         json.dump(STATS, out, indent=2)
+    STATS['faults'] = faults
 
 
 def stop_condition(iteration, time_passed):
@@ -166,6 +167,7 @@ def update_stats(res, batch):
     STATS['faults'].update(res)
     if not cli_args.debug:
         print_msg()
+    save_stats()
 
 
 def get_batches(programs):
@@ -379,7 +381,6 @@ def run():
         _run(process_program, process_res)
     except KeyboardInterrupt:
         pass
-    save_stats()
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
@@ -411,7 +412,6 @@ def run_parallel():
     except KeyboardInterrupt:
         pool.terminate()
         pool.join()
-    save_stats()
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
