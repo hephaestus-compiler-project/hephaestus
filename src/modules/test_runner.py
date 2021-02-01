@@ -182,6 +182,7 @@ def gen_program(pid, dirname, package):
 
     The program belongs to the given package.
     """
+    utils.random.reset_word_pool()
     translator = TRANSLATORS[cli_args.language](package)
     proc = ProgramProcessor(pid, translator, cli_args)
     program, oracle = proc.generate_program()
@@ -243,6 +244,11 @@ def gen_program(pid, dirname, package):
         'program': dst_file
     }
     return ProgramRes(False, stats)
+
+
+def gen_program_mul(pid, dirname, package):
+    utils.random.r.seed()
+    return gen_program(pid, dirname, package)
 
 
 def _report_failed(pid, tid, compiler, oracle):
@@ -381,7 +387,7 @@ def run_parallel():
     pool = mp.Pool(cli_args.workers)
 
     def process_program(pid, dirname, package):
-        return pool.apply_async(gen_program, args=(pid, dirname, package))
+        return pool.apply_async(gen_program_mul, args=(pid, dirname, package))
 
     def process_res(start_index, res, testdir, batch):
         def update(res):
