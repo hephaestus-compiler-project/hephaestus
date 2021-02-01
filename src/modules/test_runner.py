@@ -227,7 +227,7 @@ def gen_program(pid, dirname, package):
         except KeyboardInterrupt:
             return None
 
-    if program_str is not None:
+    if program_str is None:
         program_str = utils.translate_program(translator, program)
     dst_file = os.path.join(dirname, translator.get_filename())
     dst_file2 = os.path.join(cli_args.test_directory, str(pid),
