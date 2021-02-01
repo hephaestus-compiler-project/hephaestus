@@ -235,7 +235,7 @@ def gen_program(pid, dirname, package):
     if program_str is None:
         program_str = utils.translate_program(translator, program)
     dst_file = os.path.join(dirname, translator.get_filename())
-    dst_file2 = os.path.join(cli_args.test_directory, str(pid),
+    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
                              translator.get_filename())
     save_program(program, program_str, dst_file)
     save_program(program, program_str, dst_file2)
@@ -266,9 +266,9 @@ def _report_failed(pid, tid, compiler, oracle):
         compiler = COMPILERS[cli_args.language](program_file)
         status, _ = run_command(compiler.get_compiler_cmd())
         if status == oracle:
-            dst_file = os.path.join(cli_args.test_directory, str(pid),
+            dst_file = os.path.join(cli_args.test_directory, 'tmp', str(pid),
                                     "initial_program.kt")
-            dst_file2 = os.path.join(cli_args.test_directory, str(pid),
+            dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
                                      "program.kt")
             shutil.copyfile(program_file, dst_file)
             shutil.copyfile(program_file + ".bin", dst_file + ".bin")
@@ -321,7 +321,9 @@ def check_oracle(dirname, oracles):
                 print(msg.format(pid))
             if cli_args.rerun:
                 _report_failed(pid, cli_args.transformations, compiler, oracle)
-            continue
+            shutil.copytree(
+                os.path.join(cli_args.test_directory, 'tmp', str(pid)),
+                os.path.join(cli_args.test_directory, str(pid)))
         if not oracle and program not in failed:
             # Here, we have a case where we expected that the compiler would
             # not be able to compile the program. However, the compiler
@@ -333,8 +335,10 @@ def check_oracle(dirname, oracles):
                 print(msg.format(pid))
             if cli_args.rerun:
                 _report_failed(pid, cli_args.transformations, compiler, oracle)
-            continue
-        shutil.rmtree(os.path.join(cli_args.test_directory, str(pid)))
+            shutil.copytree(
+                os.path.join(cli_args.test_directory, 'tmp', str(pid)),
+                os.path.join(cli_args.test_directory, str(pid)))
+        shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp', str(pid)))
     # Clear the directory of programs.
     shutil.rmtree(dirname)
     return output
@@ -381,6 +385,7 @@ def run():
         _run(process_program, process_res)
     except KeyboardInterrupt:
         pass
+    shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp'))
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
@@ -412,6 +417,7 @@ def run_parallel():
     except KeyboardInterrupt:
         pool.terminate()
         pool.join()
+    shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp'))
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
