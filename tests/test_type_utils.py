@@ -137,6 +137,34 @@ def test_update_type_parameter_with_bound():
     assert t_param.bound == new_foo
 
 
+def test_update_bound_supertypes():
+    type_param1 = tp.TypeParameter("W")
+    type_param2 = tp.TypeParameter("N", bound=kt.Byte)
+    type_param3 = tp.TypeParameter("S")
+
+    type_param4 = tp.TypeParameter("T")
+    type_param5 = tp.TypeParameter("X")
+    type_param6 = tp.TypeParameter("Z")
+    foo_con = tp.TypeConstructor(
+        "Foo", [type_param4, type_param5, type_param6])
+    bar_con = tp.TypeConstructor(
+        "Bar", [type_param1, type_param2, type_param3],
+        []
+    )
+    initial_type = bar_con.new([kt.Integer, kt.Byte, kt.String])
+
+    new_bar_con = tp.TypeConstructor(
+        "Bar", [type_param1, type_param2, type_param3],
+        [foo_con.new([type_param1, type_param2, type_param3])]
+    )
+
+    new_type = tutils.update_type(initial_type, new_bar_con)
+    assert len(new_type.supertypes) == 1
+    assert new_type.supertypes[0].name == 'Foo'
+    assert new_type.supertypes[0].type_args == [kt.Integer, kt.Byte, kt.String]
+    assert new_type.type_args == [kt.Integer, kt.Byte, kt.String]
+
+
 def test_find_subtypes():
     foo = tp.SimpleClassifier("Foo", [])
     bar = tp.SimpleClassifier("Bar", [foo])

@@ -83,8 +83,7 @@ def find_supertypes(etype, types, include_self=False, bound=None,
 def _update_type_constructor(etype, new_type):
     assert isinstance(new_type, tp.TypeConstructor)
     if isinstance(etype, tp.ParameterizedType):
-        etype.t_constructor = new_type
-        return etype
+        return new_type.new(etype.type_args)
     if isinstance(etype, tp.TypeConstructor):
         return new_type
     return etype
