@@ -121,6 +121,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+
 # CHECK ARGUMENTS
 
 if args.seconds and args.iterations:
@@ -144,6 +145,10 @@ if args.transformation_schedule and (
 
 if args.rerun and args.workers:
     sys.exit('You cannot use -r option in parallel mode')
+
+
+if args.rerun and not args.keep_all:
+    sys.exit("The -r option only works with the option -k")
 
 
 # PRE-PROCESSING
