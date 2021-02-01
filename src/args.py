@@ -150,6 +150,9 @@ if args.rerun and args.workers:
 if args.rerun and not args.keep_all:
     sys.exit("The -r option only works with the option -k")
 
+if args.rerun and args.batch:
+    sys.exit("You cannot use -r option with the option --batch")
+
 
 # PRE-PROCESSING
 
