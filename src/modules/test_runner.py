@@ -364,7 +364,7 @@ def run():
         oracles = OrderedDict()
         for i, r in enumerate(res):
             oracles[start_index + i] = r
-        res = check_oracle(testdir, oracles)
+        res = {} if cli_args.dry_run else check_oracle(testdir, oracles)
         update_stats(res, batch)
 
     try:
@@ -391,6 +391,8 @@ def run_parallel():
         oracles = OrderedDict()
         for i, r in enumerate(res):
             oracles[start_index + i] = r
+        if cli_args.dry_run:
+            return update({})
         pool.apply_async(check_oracle, args=(testdir, oracles),
                          callback=update)
 
