@@ -106,8 +106,10 @@ def run_command(arguments, get_stdout=True):
     """
     try:
         is_windows = os.name == 'nt'
+        sys_env = os.environ.copy()
+        sys_env['JAVA_OPTS'] = "-Xmx8g"
         cmd = sp.Popen(arguments, stdout=sp.PIPE,
-                       stderr=sp.STDOUT, shell=is_windows)
+                       stderr=sp.STDOUT, shell=is_windows, env=sys_env)
         stdout, stderr = cmd.communicate()
     except sp.CalledProcessError as err:
         return False, err
