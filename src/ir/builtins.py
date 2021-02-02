@@ -153,6 +153,12 @@ class DoubleType(NumberType):
         self.supertypes.append(NumberType())
 
 
+class BigDecimalType(NumberType):
+    def __init__(self, name="BigDecimal"):
+        super().__init__(name)
+        self.supertypes.append(NumberType())
+
+
 class CharType(AnyType):
     def __init__(self, name="Char"):
         super().__init__(name)
@@ -182,8 +188,9 @@ Long = LongType()
 Byte = ByteType()
 Float = FloatType()
 Double = DoubleType()
+BigDecimal = BigDecimalType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean]
+                   Double, Char, String, Boolean, BigDecimal]
