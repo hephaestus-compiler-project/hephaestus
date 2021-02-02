@@ -37,6 +37,7 @@ class ValueSubstitution(Transformation):
         kt.Long: gu.gen_integer_constant,
         kt.Float: lambda: gu.gen_real_constant(kt.Float),
         kt.Double: gu.gen_real_constant,
+        kt.Any: lambda: ast.New(kt.Any, []),
     }
 
     def __init__(self, program, logger=None):
@@ -454,7 +455,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     CORRECTNESS_PRESERVING = False
 
-    def __init__(self, program, logger=None, min_expr_depth=4):
+    def __init__(self, program, logger=None, min_expr_depth=6):
         super().__init__(program, logger)
         super().__init__(program, logger)
         self.depth = 0
@@ -490,7 +491,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     @change_depth
     def visit_integer_constant(self, node):
         return self.replace_value_node(
-            node, node.integer_type,
+            node, node.integer_type or kt.Integer,
             exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long])
 
     @change_depth
@@ -517,7 +518,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         _, decl = vardecl
         if decl.get_type() == kt.Any:
             return node
-        return self.replace_value_node(node, decl.get_type(), exclude=[])
+        return self.replace_value_node(node, decl.get_type(),
+                                       exclude=[decl.get_type()])
 
     @change_depth
     def visit_var_decl(self, node):

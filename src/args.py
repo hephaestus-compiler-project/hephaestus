@@ -42,9 +42,9 @@ parser.add_argument(
 )
 parser.add_argument(
     "-T", "--transformation-types",
-    default=ProgramProcessor.TRANSFORMATIONS.keys(),
+    default=ProgramProcessor.CP_TRANSFORMATIONS.keys(),
     nargs="*",
-    choices=ProgramProcessor.TRANSFORMATIONS.keys(),
+    choices=ProgramProcessor.CP_TRANSFORMATIONS.keys(),
     help="Select specific transformations to perform"
 )
 parser.add_argument(

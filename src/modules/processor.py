@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from src.generators.generator import Generator
 from src.transformations.substitution import (
-    ValueSubstitution, TypeSubstitution)
+    ValueSubstitution, TypeSubstitution, IncorrectSubtypingSubstitution)
 from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.transformations.parameterized import ParameterizedSubstitution
@@ -15,7 +15,8 @@ from src.modules.logging import Logger
 
 class ProgramProcessor():
 
-    TRANSFORMATIONS = {
+    # Correctness-preserving transformations
+    CP_TRANSFORMATIONS = {
         'SupertypeCreation': SupertypeCreation,
         'SubtypeCreation': SubtypeCreation,
         'ValueSubstitution': ValueSubstitution,
@@ -24,13 +25,20 @@ class ProgramProcessor():
         'TypeArgumentErasureSubstitution': TypeArgumentErasureSubstitution
     }
 
-    def __init__(self, proc_id, translator, args):
+    # Non correctness-preserving transformations
+    NCP_TRANSFORMATIONS = {
+        'IncorrectSubtypingSubstitution': IncorrectSubtypingSubstitution,
+    }
+
+    def __init__(self, proc_id, args):
         self.proc_id = proc_id
         self.args = args
         self.transformations = [
-            ProgramProcessor.TRANSFORMATIONS[t]
+            ProgramProcessor.CP_TRANSFORMATIONS[t]
             for t in self.args.transformation_types
         ]
+        self.ncp_transformations = list(
+            ProgramProcessor.NCP_TRANSFORMATIONS.values())
         self.transformation_schedule = self._get_transformation_schedule()
         self.current_transformation = 0
 
@@ -64,7 +72,7 @@ class ProgramProcessor():
         lines = read_lines(self.args.transformation_schedule)
         schedule = []
         for line in lines:
-            transformation = self.TRANSFORMATIONS.get(line)
+            transformation = self.CP_TRANSFORMATIONS.get(line)
             if transformation is None:
                 sys.exit(
                     "Transformation " + line
@@ -103,4 +111,15 @@ class ProgramProcessor():
         program, transformer = self._apply_transformation(
             transformer_cls, self.current_transformation + 1, program)
         self.current_transformation += 1
+        if not transformer.is_transformed:
+            return None
         return program, transformer.preserve_correctness()
+
+    def inject_fault(self, program):
+        transformer_cls = random.choice(self.ncp_transformations)
+        program, transformer = self._apply_transformation(
+            transformer_cls, self.current_transformation + 1, program)
+        self.current_transformation += 1
+        if not transformer.is_transformed:
+            return None
+        return program, True

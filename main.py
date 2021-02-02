@@ -177,7 +177,7 @@ def get_batches(programs):
     return min(cli_args.batch, cli_args.iterations - programs)
 
 
-def gen_program(pid, dirname, package):
+def gen_program(pid, dirname, packages):
     """
     This function is responsible processing an iteration.
 
@@ -185,11 +185,11 @@ def gen_program(pid, dirname, package):
     transformations, and finally it saves the resulting program into the
     given directory.
 
-    The program belongs to the given package.
+    The program belongs to the given packages.
     """
     utils.random.reset_word_pool()
-    translator = TRANSLATORS[cli_args.language](package)
-    proc = ProgramProcessor(pid, translator, cli_args)
+    translator = TRANSLATORS[cli_args.language]('src.' + packages[0])
+    proc = ProgramProcessor(pid, cli_args)
     program, oracle = proc.get_program()
     if cli_args.keep_all:
         # Save the initial program.
@@ -201,7 +201,10 @@ def gen_program(pid, dirname, package):
     program_str = None
     while proc.can_transform():
         try:
-            program, oracle = proc.transform_program(program)
+            res = proc.transform_program(program)
+            if res is None:
+                continue
+            program, oracle = res
             if cli_args.keep_all:
                 # Save every program resulted by the current transformation.
                 program_str = utils.translate_program(translator, program)
@@ -225,7 +228,6 @@ def gen_program(pid, dirname, package):
             stats = {
                 'transformations': [t.get_name()
                                     for t in proc.get_transformations()],
-                'oracle': oracle,
                 'error': err,
                 'program': None
             }
@@ -233,27 +235,40 @@ def gen_program(pid, dirname, package):
         except KeyboardInterrupt:
             return None
 
-    if program_str is None:
-        program_str = utils.translate_program(translator, program)
-    dst_file = os.path.join(dirname, translator.get_filename())
-    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
-                             translator.get_filename())
-    save_program(program, program_str, dst_file)
-    save_program(program, program_str, dst_file2)
-    utils.dump_program(dst_file2 + ".bin", program)
     stats = {
         'transformations': [t.get_name()
                             for t in proc.get_transformations()],
-        'oracle': oracle,
         'error': None,
-        'program': dst_file
+        'programs': {},
     }
+    if program_str is None:
+        program_str = utils.translate_program(translator, program)
+    dst_file = os.path.join(dirname, packages[0], translator.get_filename())
+    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
+                             translator.get_filename())
+    stats['programs'][dst_file] = True
+    save_program(program, program_str, dst_file)
+    save_program(program, program_str, dst_file2)
+
+    translator.package = 'src.' + packages[1]
+    res = proc.inject_fault(program)
+    if res is None:
+        return ProgramRes(False, stats)
+    program, _ = res
+    dst_file = os.path.join(dirname, packages[1], translator.get_filename())
+    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
+                             'incorrect.kt')
+    program_str = utils.translate_program(translator, program)
+    stats['programs'][dst_file] = False
+    save_program(program, program_str, dst_file)
+    save_program(program, program_str, dst_file2)
+
     return ProgramRes(False, stats)
 
 
-def gen_program_mul(pid, dirname, package):
+def gen_program_mul(pid, dirname, packages):
     utils.random.r.seed()
-    return gen_program(pid, dirname, package)
+    return gen_program(pid, dirname, packages)
 
 
 def _report_failed(pid, tid, compiler, oracle):
@@ -316,35 +331,38 @@ def check_oracle(dirname, oracles):
         if proc_res.failed:
             output[pid] = proc_res.stats
             continue
-        program, oracle = (proc_res.stats['program'], proc_res.stats['oracle'])
-        if oracle and program in failed:
-            # Here the program should be compiled successfully. However,
-            # it's in the list of the error messages.
-            proc_res.stats['error'] = '\n'.join(failed[program])
-            output[pid] = proc_res.stats
-            if cli_args.debug:
-                msg = 'Mismatch found in program {}. Expected to compile'
-                print(msg.format(pid))
-            if cli_args.rerun:
-                _report_failed(pid, cli_args.transformations, compiler, oracle)
-            shutil.copytree(
-                os.path.join(cli_args.test_directory, 'tmp', str(pid)),
-                os.path.join(cli_args.test_directory, str(pid)))
-        if not oracle and program not in failed:
-            # Here, we have a case where we expected that the compiler would
-            # not be able to compile the program. However, the compiler
-            # managed to compile it successfully.
-            proc_res.stats['error'] = 'SHOULD NOT BE COMPILED'
-            output[pid] = proc_res.stats
-            if cli_args.debug:
-                msg = 'Mismatch found in program {}. Expected to fail'
-                print(msg.format(pid))
-            if cli_args.rerun:
-                _report_failed(pid, cli_args.transformations, compiler, oracle)
-            shutil.copytree(
-                os.path.join(cli_args.test_directory, 'tmp', str(pid)),
-                os.path.join(cli_args.test_directory, str(pid)))
-        shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp', str(pid)))
+        for program, oracle in proc_res.stats['programs'].items():
+            if oracle and program in failed:
+                # Here the program should be compiled successfully. However,
+                # it's in the list of the error messages.
+                proc_res.stats['error'] = '\n'.join(failed[program])
+                output[pid] = proc_res.stats
+                if cli_args.debug:
+                    msg = 'Mismatch found in program {}. Expected to compile'
+                    print(msg.format(pid))
+                if cli_args.rerun:
+                    _report_failed(pid, cli_args.transformations, compiler,
+                                   oracle)
+                shutil.copytree(
+                    os.path.join(cli_args.test_directory, 'tmp', str(pid)),
+                    os.path.join(cli_args.test_directory, str(pid)))
+            if not oracle and program not in failed:
+                # Here, we have a case where we expected that the compiler
+                # would not be able to compile the program. However,
+                # the compiler managed to compile it successfully.
+                proc_res.stats['error'] = 'SHOULD NOT BE COMPILED'
+                output[pid] = proc_res.stats
+                if cli_args.debug:
+                    msg = 'Mismatch found in program {}. Expected to fail'
+                    print(msg.format(pid))
+                if cli_args.rerun:
+                    _report_failed(pid, cli_args.transformations, compiler,
+                                   oracle)
+                shutil.copytree(
+                    os.path.join(cli_args.test_directory, 'tmp', str(pid)),
+                    os.path.join(cli_args.test_directory, str(pid)))
+        shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp',
+                                   str(pid)))
     # Clear the directory of programs.
     shutil.rmtree(dirname)
     return output
@@ -361,10 +379,10 @@ def _run(process_program, process_res):
             res = []
             batches = get_batches(iteration - 1)
             for i in range(batches):
-                package = utils.random.word()
-                dirname = os.path.join(tmpdir, 'src', package)
+                packages = (utils.random.word(), utils.random.word())
+                dirname = os.path.join(tmpdir, 'src')
                 pid = iteration + i
-                r = process_program(pid, dirname, 'src.' + package)
+                r = process_program(pid, dirname, packages)
                 res.append(r)
 
             process_res(iteration, res, tmpdir, batches)
@@ -377,8 +395,8 @@ def _run(process_program, process_res):
 
 def run():
 
-    def process_program(pid, dirname, package):
-        return gen_program(pid, dirname, package)
+    def process_program(pid, dirname, packages):
+        return gen_program(pid, dirname, packages)
 
     def process_res(start_index, res, testdir, batch):
         oracles = OrderedDict()
@@ -400,8 +418,8 @@ def run_parallel():
 
     pool = mp.Pool(cli_args.workers)
 
-    def process_program(pid, dirname, package):
-        return pool.apply_async(gen_program_mul, args=(pid, dirname, package))
+    def process_program(pid, dirname, packages):
+        return pool.apply_async(gen_program_mul, args=(pid, dirname, packages))
 
     def process_res(start_index, res, testdir, batch):
         def update(res):
