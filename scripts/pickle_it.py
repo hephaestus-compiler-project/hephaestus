@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.getcwd())
 example_usage = '''example:
 
-  python pickle_it.py "src.examples.kt_15706" kt_15706.bin'''
+  python scripts/pickle_it.py "src.examples.kt_15706" kt_15706.bin'''
 
 parser = argparse.ArgumentParser(
     description='Pickle a program.',
