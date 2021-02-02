@@ -11,6 +11,16 @@ def change_namespace(visit):
     return inner
 
 
+def change_depth(visit):
+    def inner(self, node):
+        initial_depth = self.depth
+        self.depth += 1
+        new_node = visit(self, node)
+        self.depth = initial_depth
+        return new_node
+    return inner
+
+
 class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
 

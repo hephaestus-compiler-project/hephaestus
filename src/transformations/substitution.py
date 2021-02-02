@@ -4,9 +4,11 @@ from collections import defaultdict
 from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir import kotlin_types as kt
+from src.ir.context import get_decl
 from src.generators import Generator
 from src.generators import utils as gu
-from src.transformations.base import Transformation
+from src.transformations.base import (
+    Transformation, change_depth, change_namespace)
 from src.analysis.call_analysis import CNode, CallAnalysis
 
 
@@ -24,6 +26,18 @@ def create_function_block(function, is_expr, var_decl, declared=False):
 class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
+    GENERATORS = {
+        kt.Boolean: gu.gen_bool_constant,
+        kt.Char: gu.gen_char_constant,
+        kt.String: gu.gen_string_constant,
+        kt.Number: gu.gen_integer_constant,
+        kt.Integer: gu.gen_integer_constant,
+        kt.Byte: gu.gen_integer_constant,
+        kt.Short: gu.gen_integer_constant,
+        kt.Long: gu.gen_integer_constant,
+        kt.Float: lambda: gu.gen_real_constant(kt.Float),
+        kt.Double: gu.gen_real_constant,
+    }
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
@@ -88,19 +102,7 @@ class ValueSubstitution(Transformation):
             return node
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
-        generators = {
-            kt.Boolean: gu.gen_bool_constant,
-            kt.Char: gu.gen_char_constant,
-            kt.String: gu.gen_string_constant,
-            kt.Number: gu.gen_integer_constant,
-            kt.Integer: gu.gen_integer_constant,
-            kt.Byte: gu.gen_integer_constant,
-            kt.Short: gu.gen_integer_constant,
-            kt.Long: gu.gen_integer_constant,
-            kt.Float: lambda: gu.gen_real_constant(kt.Float),
-            kt.Double: gu.gen_real_constant,
-        }
-        generate = generators.get(sub_c, lambda: self.generate_new(sub_c))
+        generate = self.GENERATORS.get(sub_c, lambda: self.generate_new(sub_c))
         # FIXME
         # Known problem in which we have type parameters as type arguments
         # of a ParameterizedType. In this case, the decl.get_type() is
@@ -373,6 +375,8 @@ class TypeSubstitution(Transformation):
             if not isinstance(new_node.get_type(), tp.AbstractType):
                 var_decl = self.generate_variable_declaration(
                     "ret", new_node.get_type())
+                self.program.context.add_var(self._namespace, var_decl.name,
+                                             var_decl)
         use_var = False
         for i, param in enumerate(new_node.params):
             old_type = deepcopy(param.get_type())
@@ -442,3 +446,121 @@ class TypeSubstitution(Transformation):
                 break
             namespace = namespace[:-1]
         return node
+
+
+class IncorrectSubtypingSubstitution(ValueSubstitution):
+
+    CORRECTNESS_PRESERVING = False
+
+    def __init__(self, program, logger=None, min_expr_depth=4):
+        super().__init__(program, logger)
+        super().__init__(program, logger)
+        self.depth = 0
+        self.min_expr_depth = min_expr_depth
+        self.types.append(kt.Any)
+        self._namespace = ast.GLOBAL_NAMESPACE
+
+    def replace_value_node(self, node, t, exclude=[]):
+        # We have already performed a transformation or the value is included
+        # in a simple expression.
+        if self.is_transformed or self.depth < self.min_expr_depth or (
+              utils.random.bool()):
+            return node
+        types = [t for t in self.types if t not in exclude]
+        ir_type = tu.find_irrelevant_type(t, types)
+        if ir_type is None:
+            # We didn't find an irrelevant type, so we can't substitute
+            # the given node.
+            return node
+        generate = self.GENERATORS.get(ir_type,
+                                       lambda: self.generate_new(ir_type))
+        self.is_transformed = True
+        return generate()
+
+    @change_namespace
+    def visit_class_decl(self, node):
+        return super().visit_class_decl(node)
+
+    @change_namespace
+    def visit_func_decl(self, node):
+        return super().visit_func_decl(node)
+
+    @change_depth
+    def visit_integer_constant(self, node):
+        return self.replace_value_node(
+            node, node.integer_type,
+            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long])
+
+    @change_depth
+    def visit_real_constant(self, node):
+        real_type = kt.Float if node.literal.endswith('f') else kt.Double
+        return self.replace_value_node(
+            node, real_type, exclude=[kt.Double, kt.Float])
+
+    @change_depth
+    def visit_char_constant(self, node):
+        return self.replace_value_node(node, kt.Char, exclude=[])
+
+    @change_depth
+    def visit_string_constant(self, node):
+        return self.replace_value_node(node, kt.String, exclude=[])
+
+    @change_depth
+    def visit_boolean_constant(self, node):
+        return self.replace_value_node(node, kt.Boolean, exclude=[])
+
+    @change_depth
+    def visit_variable(self, node):
+        vardecl = get_decl(self.program.context, self._namespace, node.name)
+        _, decl = vardecl
+        if decl.get_type() == kt.Any:
+            return node
+        return self.replace_value_node(node, decl.get_type(), exclude=[])
+
+    @change_depth
+    def visit_var_decl(self, node):
+        if node.get_type() == kt.Any:
+            return node
+        return super().visit_var_decl(node)
+
+    @change_depth
+    def visit_logical_expr(self, node):
+        return super().visit_logical_expr(node)
+
+    @change_depth
+    def visit_equality_expr(self, node):
+        return super().visit_equality_expr(node)
+
+    @change_depth
+    def visit_comparison_expr(self, node):
+        return super().visit_comparison_expr(node)
+
+    @change_depth
+    def visit_arith_expr(self, node):
+        return super().visit_arith_expr(node)
+
+    @change_depth
+    def visit_conditional(self, node):
+        return super().visit_conditional(node)
+
+    @change_depth
+    def visit_is(self, node):
+        return super().visit_is(node)
+
+    @change_depth
+    def visit_new(self, node):
+        # TODO Handle constructor arguments.
+        return self.replace_value_node(node, node.class_type, exclude=[])
+
+    @change_depth
+    def visit_field_access(self, node):
+        return super().visit_field_access(node)
+
+    @change_depth
+    def visit_func_call(self, node):
+        # TODO Handle function arguments.
+        return super().visit_func_call(node)
+
+    @change_depth
+    def visit_assign(self, node):
+        return super().visit_assign(node)
