@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from src import utils
 from src.ir import ast, types as tp, type_utils as tu
-from src.ir import kotlin_types as kt
 from src.ir.context import get_decl
 from src.generators import Generator
 from src.generators import utils as gu
@@ -26,31 +25,32 @@ def create_function_block(function, is_expr, var_decl, declared=False):
 class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
-    GENERATORS = {
-        kt.Boolean: gu.gen_bool_constant,
-        kt.Char: gu.gen_char_constant,
-        kt.String: gu.gen_string_constant,
-        kt.Number: lambda: gu.gen_integer_constant(utils.random.choice([
-            kt.Byte, kt.Short, kt.Integer, kt.Long
-        ])),
-        kt.Integer: lambda: gu.gen_integer_constant(kt.Integer),
-        kt.Byte: lambda: gu.gen_integer_constant(kt.Byte),
-        kt.Short: lambda: gu.gen_integer_constant(kt.Short),
-        kt.Long: lambda: gu.gen_integer_constant(kt.Long),
-        kt.Float: lambda: gu.gen_real_constant(kt.Float),
-        kt.Double: lambda: gu.gen_real_constant(kt.Double),
-        kt.Any: lambda: ast.New(kt.Any, []),
-    }
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
-        self.types.remove(kt.Any)
+        self.bt_factory = self.program.bt_factory
         self.generator = Generator(context=self.program.context)
         # We are not interested in types associated with abstract classes or
         # interfaces.
         self.types = [c for c in self.types
                       if getattr(c, 'class_type', 0) ==
                       ast.ClassDeclaration.REGULAR]
+        self.types.remove(self.bt_factory.get_any_type())
+        self.generators = {
+            self.bt_factory.get_boolean_type(): gu.gen_bool_constant,
+            self.bt_factory.get_char_type(): gu.gen_char_constant,
+            self.bt_factory.get_string_type(): gu.gen_string_constant,
+            self.bt_factory.get_number_type(): gu.gen_integer_constant,
+            self.bt_factory.get_integer_type(): gu.gen_integer_constant,
+            self.bt_factory.get_byte_type(): gu.gen_integer_constant,
+            self.bt_factory.get_short_type(): gu.gen_integer_constant,
+            self.bt_factory.get_long_type(): gu.gen_integer_constant,
+            self.bt_factory.get_float_type(): \
+                lambda: gu.gen_real_constant(
+                    self.bt_factory.get_float_type()),
+            self.bt_factory.get_double_type(): gu.gen_real_constant,
+            self.bt_factory.get_big_decimal_type(): gu.gen_real_constant,
+        }
 
     def _generate_new(self, class_decl, class_type, params_map):
         return ast.New(
@@ -101,7 +101,7 @@ class ValueSubstitution(Transformation):
             return node
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
-        generate = self.GENERATORS.get(sub_c, lambda: self.generate_new(sub_c))
+        generate = self.generators.get(sub_c, lambda: self.generate_new(sub_c))
         return generate()
 
 
@@ -110,6 +110,7 @@ class TypeSubstitution(Transformation):
 
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
+        self.bt_factory = self.program.bt_factory
         self.generator = Generator(context=self.program.context)
         self.types.remove(kt.Any)
         # We are not interested in types associated with abstract classes or
@@ -304,7 +305,8 @@ class TypeSubstitution(Transformation):
         return ast.VariableDeclaration(name, expr, var_type=etype)
 
     def _add_is_expr(self, node, var_decl, param, old_type):
-        bool_expr = self.generator.generate_expr(kt.Boolean, only_leaves=True)
+        bool_expr = self.generator.generate_expr(
+            self.bt_factory.get_boolean_type(), only_leaves=True)
         is_expr = ast.Is(ast.Variable(param.name), old_type,
                          utils.random.bool())
         and_expr = ast.LogicalExpr(
@@ -330,7 +332,7 @@ class TypeSubstitution(Transformation):
         # expected type (same with the return type of the function).
         if var_decl:
             else_expr = ast.Variable(var_decl.name)
-        elif node.get_type() == kt.Unit:
+        elif node.get_type() == self.bt_factory.get_void_type():
             else_expr = ast.Block([])
         else:
             else_expr = self.generator.generate_expr(node.get_type(),
@@ -345,7 +347,7 @@ class TypeSubstitution(Transformation):
                 and_expr, else_expr, if_body)
         if var_decl:
             node.body = ast.Block(ret_var + [if_cond])
-        elif node.get_type() == kt.Unit:
+        elif node.get_type() == self.bt_factory.get_void_type():
             node.body = ast.Block([if_cond])
         else:
             node.body = if_cond
@@ -370,7 +372,7 @@ class TypeSubstitution(Transformation):
         current_cls = self.get_current_class()
         new_node = super().visit_func_decl(node)
         is_expression = (not isinstance(new_node.body, ast.Block) or
-                         new_node.get_type() == kt.Unit)
+                         new_node.get_type() == self.bt_factory.get_void_type())
         var_decl = None
         if not is_expression:
             # If function is not expression-based, create a variable

@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from src.ir import ast
 from src.ir.context import get_decl
-from src.ir import kotlin_types as kt
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
@@ -136,7 +135,7 @@ class UseAnalysis(DefaultVisitor):
     @change_namespace
     def visit_func_decl(self, node):
         ret_node = None
-        if node.get_type() != kt.Unit:
+        if node.get_type() != self.program.bt_factory.get_void_type():
             # We add a special node for representing the return of a function.
             ret_node = GNode(self._namespace, FUNC_RET)
             self._use_graph[ret_node]

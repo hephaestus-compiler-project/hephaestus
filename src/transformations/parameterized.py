@@ -6,7 +6,6 @@ from copy import deepcopy
 from src import utils
 from src.ir import ast
 from src.ir import types, type_utils as tu
-from src.ir import kotlin_types as kt
 import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis, GNode, FUNC_RET
@@ -26,7 +25,7 @@ def get_type_params_names(total):
 
 
 def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
-                          variance):
+                          variance, builtin_types):
     def bounds_filter(bound):
         # In case the constraint is a parameterized type, then we should check
         # that the bound confronts to the constraints of type_constraint's
@@ -48,7 +47,7 @@ def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
     bound = None
     if utils.random.bool():
         if type_constraint is None:
-            bound = utils.random.choice(kt.NonNothingTypes)
+            bound = utils.random.choice(builtin_types)
         else:
             candidate_bounds = list(
                 filter(bounds_filter,
@@ -177,11 +176,13 @@ class ParameterizedSubstitution(Transformation):
             type_arg = None
             if tp.variance == INVARIANT:
                 type_arg = tp.constraint if tp.constraint else \
-                    utils.random.choice(kt.NonNothingTypes)
+                    utils.random.choice(
+                        self.program.bt_factory.get_non_nothing_types())
                 type_args.append(type_arg)
                 continue
             if tp.constraint is None:
-                possible_types = kt.NonNothingTypes
+                possible_types = \
+                    self.program.bt_factory.get_non_nothing_types()
             else:
                 possible_types = []
                 if tp.variance == CONTRAVARIANT:
@@ -261,7 +262,11 @@ class ParameterizedSubstitution(Transformation):
                 tp.variance = get_variance(
                     self.program.context, self._use_graph, tp.node)
                 tp.type_param = create_type_parameter(
-                    tp.name, old_type, self.types, tp.variance)
+                    tp.name,
+                    old_type,
+                    self.types,
+                    tp.variance,
+                    self.program.bt_factory.get_non_nothing_types())
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return old_type
@@ -280,7 +285,11 @@ class ParameterizedSubstitution(Transformation):
         for tp in self._type_params:
             if tp.type_param is None:
                 tp.type_param = create_type_parameter(
-                    tp.name, None, self.types, utils.random.choice(VARIANCE))
+                    tp.name,
+                    None,
+                    self.types,
+                    utils.random.choice(VARIANCE),
+                    self.program.bt_factory.get_non_nothing_types())
 
     def _select_type_params(self, node) -> ast.Node:
         self._in_select_type_params = True

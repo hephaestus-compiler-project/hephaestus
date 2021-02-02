@@ -137,7 +137,7 @@ def test_inherits_from_parameterized():
     cls1 = ClassDeclaration("A", [], 0,
                             type_parameters=[TypeParameter("T")])
     cls2 = ClassDeclaration(
-        "B", [SuperClassInstantiation(cls1.get_type().new([kt.String]))], 0)
+        "B", [SuperClassInstantiation(cls1.get_type().new([String]))], 0)
 
     assert cls2.inherits_from(cls1)
     assert not cls1.inherits_from(cls2)

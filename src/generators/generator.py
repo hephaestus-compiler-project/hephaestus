@@ -1,36 +1,23 @@
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-arguments
 from typing import Tuple, List
 
 from src import utils as ut
 from src.generators import utils as gu
 from src.ir import ast, types
-from src.ir import kotlin_types as kt
 from src.ir.context import Context
+from src.ir.builtins import BuiltinFactory
+from src.ir import BUILTIN_FACTORIES
 
 
 class Generator():
 
-    RET_BUILTIN_TYPES = [
-        kt.Any,
-        kt.Number,
-        kt.Integer,
-        kt.Byte,
-        kt.Short,
-        kt.Long,
-        kt.Char,
-        kt.Float,
-        kt.Double,
-        kt.Boolean,
-        kt.String,
-    ]
-
-    BUILTIN_TYPES = RET_BUILTIN_TYPES + [kt.Unit]
-
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, max_side_effects=1,
+                 language="kotlin",
                  disable_inference_in_closures=False,
                  context=None):
         self.context = context or Context()
+        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.max_depth = max_depth
         self.max_fields = max_fields
         self.max_funcs = max_funcs
@@ -43,6 +30,10 @@ class Generator():
         self._new_from_class = None
         self._stop_var = False
         self.namespace = ('global',)
+
+        self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
+        self.builtin_types = self.ret_builtin_types + \
+            [self.bt_factory.get_void_type()]
 
     # pylint: disable=unused-argument
     def gen_equality_expr(self, expr_type=None, only_leaves=False):
@@ -68,42 +59,45 @@ class Generator():
         initial_depth = self.depth
         self.depth += 1
         op = ut.random.choice(ast.LogicalExpr.VALID_OPERATORS)
-        e1 = self.generate_expr(kt.Boolean, only_leaves)
-        e2 = self.generate_expr(kt.Boolean, only_leaves)
+        e1 = self.generate_expr(self.bt_factory.get_boolean_type(),
+                                only_leaves)
+        e2 = self.generate_expr(self.bt_factory.get_boolean_type(),
+                                only_leaves)
         self.depth = initial_depth
         return ast.LogicalExpr(e1, e2, op)
 
     # pylint: disable=unused-argument
     def gen_comparison_expr(self, expr_type=None, only_leaves=False):
         valid_types = [
-            kt.String,
-            kt.Boolean,
-            kt.Double,
-            kt.Char,
-            kt.Float,
-            kt.Integer,
-            kt.Byte,
-            kt.Short,
-            kt.Long
+            self.bt_factory.get_string_type(),
+            self.bt_factory.get_boolean_type(),
+            self.bt_factory.get_double_type(),
+            self.bt_factory.get_char_type(),
+            self.bt_factory.get_float_type(),
+            self.bt_factory.get_integer_type(),
+            self.bt_factory.get_byte_type(),
+            self.bt_factory.get_short_type(),
+            self.bt_factory.get_long_type(),
+            self.bt_factory.get_big_decimal_type()
         ]
-        number_types = [
-            kt.Byte,
-            kt.Short,
-            kt.Integer,
-            kt.Long,
-            kt.Float,
-            kt.Double,
-        ]
+        number_types = self.bt_factory.get_number_types()
         e2_types = {
-            kt.String: [kt.String],
-            kt.Boolean: [kt.Boolean],
-            kt.Double: number_types,
-            kt.Char: [kt.Char],
-            kt.Float: number_types,
-            kt.Integer: number_types,
-            kt.Byte: number_types,
-            kt.Short: number_types,
-            kt.Long: number_types
+            self.bt_factory.get_string_type(): [
+                self.bt_factory.get_string_type()
+            ],
+            self.bt_factory.get_boolean_type(): [
+                self.bt_factory.get_boolean_type()
+            ],
+            self.bt_factory.get_double_type(): number_types,
+            self.bt_factory.get_big_decimal_type(): number_types,
+            self.bt_factory.get_char_type(): [
+                self.bt_factory.get_char_type()
+            ],
+            self.bt_factory.get_float_type(): number_types,
+            self.bt_factory.get_integer_type(): number_types,
+            self.bt_factory.get_byte_type(): number_types,
+            self.bt_factory.get_short_type(): number_types,
+            self.bt_factory.get_long_type(): number_types
         }
         initial_depth = self.depth
         self.depth += 1
@@ -168,25 +162,27 @@ class Generator():
             params.append(param)
             self.context.add_var(self.namespace, param.name, param)
         ret_type = self._get_func_ret_type(params, etype)
-        expr_type = self.gen_type(False) if ret_type == kt.Unit else ret_type
+        expr_type = self.gen_type(False) \
+            if ret_type == self.bt_factory.get_void_type() else ret_type
         expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
         var_decls = [d for d in decls
                      if not isinstance(d, ast.ParameterDeclaration)]
-        if (not var_decls and ret_type != kt.Unit and
+        if (not var_decls and
+                ret_type != self.bt_factory.get_void_type() and
                 self.can_infer_function_ret_type(expr, decls)):
             # The function does not contain any declarations and its return
             # type is not Unit. So, we can create an expression-based function.
             inferred_type = ret_type
             body = expr
             # If the return type is Number, then this must be explicit.
-            if ret_type != kt.Number:
+            if ret_type != self.bt_factory.get_number_type():
                 ret_type = None
         else:
             inferred_type = None
             # Generate a number of expressions with side-effects.
-            exprs = [self.generate_expr(kt.Unit)
+            exprs = [self.generate_expr(self.bt_factory.get_void_type())
                      for _ in range(ut.random.integer(
                          0, self.max_side_effects))]
             decls = list(self.context.get_declarations(
@@ -243,8 +239,8 @@ class Generator():
         class_decls = self.context.get_classes(self.namespace)
         # Randomly choose whether we should generate a builtin type or not.
         if not class_decls or ut.random.bool():
-            builtins = self.RET_BUILTIN_TYPES if ret_types \
-                else self.BUILTIN_TYPES
+            builtins = self.ret_builtin_types if ret_types \
+                else self.builtin_types
             return ut.random.choice(builtins)
         # Get all class declarations in the current namespace
         if not class_decls:
@@ -263,7 +259,7 @@ class Generator():
         t_args = []
         for _ in cls_type.type_parameters:
             # FIXME: use user-defined types too.
-            t_args.append(ut.random.choice(self.RET_BUILTIN_TYPES))
+            t_args.append(ut.random.choice(self.ret_builtin_types))
         return cls_type.new(t_args)
 
     def gen_variable_decl(self, etype=None, only_leaves=False):
@@ -277,7 +273,7 @@ class Generator():
         vtype = (
             var_type
             if ut.random.bool() or
-            not is_final or etype == kt.Number
+            not is_final or etype == self.bt_factory.get_number_type()
             else None)
         return ast.VariableDeclaration(
             gu.gen_identifier('lower'),
@@ -289,7 +285,8 @@ class Generator():
     def gen_conditional(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
         self.depth += 1
-        cond = self.generate_expr(kt.Boolean, only_leaves)
+        cond = self.generate_expr(self.bt_factory.get_boolean_type(),
+                                  only_leaves)
         true_expr = self.generate_expr(etype, only_leaves, subtype)
         false_expr = self.generate_expr(etype, only_leaves, subtype)
         self.depth = initial_depth
@@ -452,8 +449,10 @@ class Generator():
     # pylint: disable=unused-argument
     def gen_new(self, etype, only_leaves=False, subtype=True):
         news = {
-            kt.Any: ast.New(kt.Any, args=[]),
-            kt.Unit: ast.New(kt.Unit, args=[])
+            self.bt_factory.get_any_type(): ast.New(
+                self.bt_factory.get_any_type(), args=[]),
+            self.bt_factory.get_void_type(): ast.New(
+                self.bt_factory.get_void_type(), args=[])
         }
         con = news.get(etype)
         if con is not None:
@@ -597,7 +596,10 @@ class Generator():
         body = ast.Block(decls + [expr])
         self.depth = initial_depth
         main_func = ast.FunctionDeclaration(
-            "main", params=[], ret_type=kt.Unit, body=body,
+            "main",
+            params=[],
+            ret_type=self.bt_factory.get_void_type(),
+            body=body,
             func_type=ast.FunctionDeclaration.FUNCTION)
         self.namespace = initial_namespace
         return main_func
@@ -614,19 +616,20 @@ class Generator():
             lambda x: self.gen_new(x, only_leaves, subtype),
         ]
         constant_candidates = {
-            kt.Number: gu.gen_integer_constant,
-            kt.Integer: gu.gen_integer_constant,
-            kt.Byte: gu.gen_integer_constant,
-            kt.Short: gu.gen_integer_constant,
-            kt.Long: gu.gen_integer_constant,
-            kt.Float: gu.gen_real_constant,
-            kt.Double: gu.gen_real_constant,
-            kt.Char: gu.gen_char_constant,
-            kt.String: gu.gen_string_constant,
-            kt.Boolean: gu.gen_bool_constant
+            self.bt_factory.get_number_type(): gu.gen_integer_constant,
+            self.bt_factory.get_integer_type(): gu.gen_integer_constant,
+            self.bt_factory.get_byte_type(): gu.gen_integer_constant,
+            self.bt_factory.get_short_type(): gu.gen_integer_constant,
+            self.bt_factory.get_long_type(): gu.gen_integer_constant,
+            self.bt_factory.get_float_type(): gu.gen_real_constant,
+            self.bt_factory.get_double_type(): gu.gen_real_constant,
+            self.bt_factory.get_big_decimal_type(): gu.gen_real_constant,
+            self.bt_factory.get_char_type(): gu.gen_char_constant,
+            self.bt_factory.get_string_type(): gu.gen_string_constant,
+            self.bt_factory.get_boolean_type(): gu.gen_bool_constant
         }
         binary_ops = {
-            kt.Boolean: [
+            self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
                 lambda x: self.gen_equality_expr(only_leaves),
                 lambda x: self.gen_comparison_expr(only_leaves)
@@ -640,7 +643,7 @@ class Generator():
             gen_variable
         ]
 
-        if expr_type == kt.Unit:
+        if expr_type == self.bt_factory.get_void_type():
             return [gen_fun_call,
                     lambda x: self.gen_assignment(x, only_leaves)]
 

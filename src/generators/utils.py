@@ -1,6 +1,8 @@
 from src import utils
 from src.ir import ast
-from src.ir import kotlin_types as kt
+
+import src.ir.types as tp
+import src.ir.builtins as bt
 
 
 def gen_identifier(ident_type=None):
@@ -26,7 +28,8 @@ def gen_real_constant(expr_type=None):
     prefix = str(utils.random.integer(0, 100))
     suffix = str(utils.random.integer(0, 1000))
     sign = utils.random.choice(['', '-'])
-    if expr_type == kt.Float:
+    if (isinstance(expr_type, tp.Builtin) and
+            expr_type.get_builtin_type() == bt.Float):
         suffix += "f"
     return ast.RealConstant(sign + prefix + "." + suffix)
 

@@ -98,6 +98,7 @@ class ProgramProcessor():
             print("\nGenerating program: " + str(self.proc_id))
         generator = Generator(
             max_depth=self.args.max_depth,
+            language=self.args.language,
             disable_inference_in_closures=self.args.disable_inference_in_closures)
         program = generator.generate()
         return program, True

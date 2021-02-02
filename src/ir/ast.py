@@ -3,7 +3,9 @@ from typing import List
 
 from src import utils
 from src.ir.node import Node
-from src.ir import types, kotlin_types as kt
+from src.ir import types
+from src.ir.builtins import BuiltinFactory
+from src.ir import BUILTIN_FACTORIES
 
 
 GLOBAL_NAMESPACE = ('global',)
@@ -14,8 +16,10 @@ class Expr(Node):
 
 
 class Program(Node):
-    def __init__(self, context):
+    # Set default value to kotlin for backward compatibility
+    def __init__(self, context, language="kotlin"):
         self.context = context
+        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
 
     def children(self):
         return self.context.get_declarations(GLOBAL_NAMESPACE,
@@ -38,7 +42,7 @@ class Program(Node):
     def get_types(self):
         usr_types = [d for d in self.declarations
                      if isinstance(d, ClassDeclaration)]
-        return usr_types + kt.NonNothingTypes
+        return usr_types + self.bt_factory.get_non_nothing_types()
 
     def update_declarations(self, decls):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls

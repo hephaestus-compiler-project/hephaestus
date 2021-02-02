@@ -2,7 +2,7 @@ from copy import deepcopy
 from collections import defaultdict, OrderedDict
 
 from src import utils
-from src.ir import ast, types as tp, kotlin_types as kt, type_utils as tu
+from src.ir import ast, types as tp, type_utils as tu
 from src.generators import Generator
 from src.transformations.base import Transformation, change_namespace
 
@@ -302,7 +302,7 @@ class SubtypeCreation(TypeCreation):
             expr = self.generator.generate_expr(
                 self._type_params_map.get(func.get_type(), func.get_type()),
                 only_leaves=True)
-            if func.get_type() == kt.Unit:
+            if func.get_type() == self.program.bt_factory.get_void_type():
                 # We must create a block, if functions returns Unit.
                 expr = ast.Block([expr])
             params = [
