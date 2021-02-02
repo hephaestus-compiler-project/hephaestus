@@ -302,6 +302,11 @@ def check_oracle(dirname, oracles):
     command_args = compiler.get_compiler_cmd()
     # At this point, we run the compiler
     _, err = run_command(command_args)
+    # TODO In case there is an error in the compiler output and none of the
+    # programs match with regex to that error, it means that something bad
+    # happened. For example, heap space error. In that case, we should log a
+    # message in stdout and in STATS.
+
     # Analyze the compiler output and check whether there are programs
     # that the compiler did not manage to compile.
     failed = compiler.analyze_compiler_output(err)
