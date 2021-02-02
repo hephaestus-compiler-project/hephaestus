@@ -14,7 +14,7 @@ simple_run() {
     sdk install kotlin
     cd $CHECK_TYPE_SYSTEMS
     git pull
-    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES -l
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30
 }
 
 run_from_source() {
@@ -24,7 +24,7 @@ run_from_source() {
     ./gradlew -Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000 dist
     cd $CHECK_TYPE_SYSTEMS
     git pull
-    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES -l
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30
 }
 
 run_multiple_versions() {
@@ -36,7 +36,7 @@ run_multiple_versions() {
         rnum=$((1 + $RANDOM%$length+1));
         version=$(echo $VERSIONS | cut -d " " -f $rnum)
         sdk use kotlin $version
-        python3 main.py -s $HOUR -t $TRANSFORMATIONS -w $CORES -l
+        python3 main.py -s $HOUR -t $TRANSFORMATIONS -w $CORES --batch 30
     done
 }
 
