@@ -86,7 +86,8 @@ def logging():
                "Break (Windows)"))
         print()
 
-    print_msg()
+    if not cli_args.debug:
+        print_msg()
     with open(cli_args.log_file, 'a') as out:
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -189,7 +190,7 @@ def gen_program(pid, dirname, package):
     utils.random.reset_word_pool()
     translator = TRANSLATORS[cli_args.language](package)
     proc = ProgramProcessor(pid, translator, cli_args)
-    program, oracle = proc.generate_program()
+    program, oracle = proc.get_program()
     if cli_args.keep_all:
         # Save the initial program.
         save_program(
