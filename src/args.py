@@ -134,7 +134,7 @@ if args.transformation_schedule and args.transformations:
     sys.exit("Options --transformation-schedule and --transfromations"
              " are mutually exclusive. You can't use both.")
 
-if not args.transformation_schedule and not args.transformations:
+if not args.transformation_schedule and args.transformations is None:
     sys.exit("You have to provide one of --transformation-schedule or"
              " --transformations.")
 

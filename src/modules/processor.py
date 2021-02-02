@@ -54,7 +54,7 @@ class ProgramProcessor():
         return program, transformer
 
     def _get_transformation_schedule(self):
-        if self.args.transformations:
+        if self.args.transformations is not None:
             # Randomly generate a transformation schedule.
             return [
                 random.choice(self.transformations)
