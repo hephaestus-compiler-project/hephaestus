@@ -138,6 +138,8 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
         # with any parameterized type created by this type constructor.
         type_list = [t for t in types if t != etype]
         return get_irrelevant_parameterized_type(t, type_list, type_args_map)
+    if hasattr(t, 'get_type'):
+        return t.get_type()
     return t
 
 
