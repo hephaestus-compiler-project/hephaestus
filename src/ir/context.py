@@ -1,3 +1,4 @@
+from typing import Tuple
 from copy import deepcopy
 from collections import OrderedDict
 
@@ -137,3 +138,27 @@ class Context():
 
     def get_decl_type(self, namespace, name):
         return type(self.get_decl(namespace, name))
+
+
+def get_decl(context, namespace, decl_name: str, limit=None) -> \
+        Tuple[str, ast.Declaration]:
+    """
+    We search the context for a declaration with the given name (`decl_name`).
+
+    The search begins from the given namespace `namespace` up to the namespace
+    given by `limit`.
+    """
+    def stop_cond(ns):
+        # If 'limit' is provided, we search the given declaration 'node'
+        # up to a certain namespace.
+        return (len(ns)
+                if limit is None
+                else utils.prefix_lst(limit, ns))
+
+    while stop_cond(namespace):
+        decls = context.get_declarations(namespace, True)
+        decl = decls.get(decl_name)
+        if decl:
+            return namespace, decl
+        namespace = namespace[:-1]
+    return None

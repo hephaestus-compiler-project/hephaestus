@@ -2,35 +2,11 @@
 from typing import Tuple, NamedTuple
 from collections import defaultdict
 
-from src import utils
 from src.ir import ast
+from src.ir.context import get_decl
 from src.ir import kotlin_types as kt
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
-
-
-def get_decl(context, namespace, decl_name: str, limit=None) -> \
-        Tuple[str, ast.Declaration]:
-    """
-    We search the context for a declaration with the given name (`decl_name`).
-
-    The search begins from the given namespace `namespace` up to the namespace
-    given by `limit`.
-    """
-    def stop_cond(ns):
-        # If 'limit' is provided, we search the given declaration 'node'
-        # up to a certain namespace.
-        return (len(ns)
-                if limit is None
-                else utils.prefix_lst(limit, ns))
-
-    while stop_cond(namespace):
-        decls = context.get_declarations(namespace, True)
-        decl = decls.get(decl_name)
-        if decl:
-            return namespace, decl
-        namespace = namespace[:-1]
-    return None
 
 
 class GNode(NamedTuple):
