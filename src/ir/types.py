@@ -83,6 +83,9 @@ class Builtin(Type):
     def is_subtype(self, other: Type) -> bool:
         return other == self or other in self.get_supertypes()
 
+    def get_builtin_type(self):
+        raise NotImplementedError("You have to implement get_builtin_type")
+
 
 class Classifier(Type):
     pass
