@@ -27,13 +27,15 @@ def _construct_related_types(etype, types, get_subtypes):
     ]
 
 
+def to_type(stype, types):
+    if isinstance(stype, tp.TypeConstructor):
+        stype, _ = instantiate_type_constructor(stype, types)
+    return stype
+
+
 # FIXME RecursionError
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 concrete_only=False):
-    def to_type(stype):
-        if isinstance(stype, tp.TypeConstructor):
-            stype, _ = instantiate_type_constructor(stype, types)
-        return stype
 
     # Otherwise, if we want to find the supertypes of a given type, `bound`
     # is interpreted a greatest bound.
@@ -64,7 +66,7 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
 
     if not get_subtypes and bound:
         t_set = {st for st in t_set if st.is_subtype(bound)}
-    return [to_type(t) for t in t_set] if concrete_only else list(t_set)
+    return [to_type(t, types) for t in t_set] if concrete_only else list(t_set)
 
 
 def find_subtypes(etype, types, include_self=False, bound=None,
@@ -78,6 +80,65 @@ def find_supertypes(etype, types, include_self=False, bound=None,
     return _find_types(etype, types, get_subtypes=False,
                        include_self=include_self, bound=bound,
                        concrete_only=concrete_only)
+
+
+def get_irrelevant_parameterized_type(etype, types, type_args_map):
+    assert isinstance(etype, tp.TypeConstructor)
+    type_args = type_args_map.get(etype.name)
+
+    if type_args is None:
+        # We don't have any restriction for the type arguments, so simply
+        # instantiate the given type constructor.
+        t, _ = instantiate_type_constructor(etype, types)
+        return t
+
+    new_type_args = list(type_args)
+
+    for i, t_param in enumerate(etype.type_parameters):
+        if t_param.is_invariant():
+            type_list = [to_type(t, types) for t in types if t != type_args[i]]
+            new_type_args[i] = utils.random.choice(type_list)
+        else:
+            t = find_irrelevant_type(type_args[i], types)
+            if t is None:
+                continue
+            new_type_args[i] = t
+
+    if new_type_args == type_args:
+        return None
+    return etype.new(new_type_args)
+
+
+def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
+    """
+    Find a type that is irrelevant to the given type.
+
+    This means that there is no subtyping relation between the given type
+    and the returned type.
+    """
+    supertypes = find_supertypes(etype, types, include_self=True,
+                                 concrete_only=True)
+    subtypes = find_subtypes(etype, types, include_self=True,
+                             concrete_only=True)
+    relevant_types = supertypes + subtypes
+    # If any type included in the list of relevant types is parameterized,
+    # then create a map with their type arguments.
+    type_args_map = {
+        t.name: t.type_args
+        for t in relevant_types
+        if isinstance(t, tp.ParameterizedType)
+    }
+    available_types = [t for t in types if t not in relevant_types]
+    if not available_types:
+        return None
+    t = utils.random.choice(available_types)
+    if isinstance(t, tp.TypeConstructor):
+        # Must instantiate the given type constrcutor. Also pass the map of
+        # type arguments in order to pass type arguments that are irrelevant
+        # with any parameterized type created by this type constructor.
+        type_list = [t for t in types if t != etype]
+        return get_irrelevant_parameterized_type(t, type_list, type_args_map)
+    return t
 
 
 def _update_type_constructor(etype, new_type):

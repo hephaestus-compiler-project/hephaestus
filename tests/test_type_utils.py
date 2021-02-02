@@ -454,3 +454,73 @@ def test_find_types_with_classes():
 
     supertypes = set(tutils.find_supertypes(baz.get_type(), classes))
     assert supertypes == {bar.get_type(), foo.get_type()}
+
+
+def test_find_irrelevant_type():
+    foo = tp.SimpleClassifier("Foo")
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    qux = tp.SimpleClassifier("Qux", [])
+
+    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz])
+    assert ir_type is None
+
+    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz, qux])
+    assert ir_type == qux
+
+
+def test_find_irrelevant_type_parameterized():
+    foo = tp.SimpleClassifier("Foo")
+    bar = tp.SimpleClassifier("Bar", [foo])
+    baz = tp.SimpleClassifier("Baz", [bar])
+    qux = tp.SimpleClassifier("Qux", [])
+
+    con = tp.TypeConstructor("X", [tp.TypeParameter("T")])
+    t = con.new([bar])
+
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+    con = tp.TypeConstructor(
+        "X", [tp.TypeParameter("T", variance=tp.TypeParameter.COVARIANT)])
+    t = con.new([bar])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+    con = tp.TypeConstructor(
+        "X", [tp.TypeParameter("T", variance=tp.TypeParameter.CONTRAVARIANT)])
+    t = con.new([bar])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
+
+def test_find_irrelevant_type_parameterized2():
+    foo = tp.SimpleClassifier("Foo")
+    con = tp.TypeConstructor("X", [tp.TypeParameter("T")])
+    t = con.new([foo])
+    bar = tp.SimpleClassifier("Bar", [t])
+
+    ir_type = tutils.find_irrelevant_type(t, [foo, con, bar])
+    assert ir_type is not None
+    assert not ir_type.is_subtype(t)
+    assert not t.is_subtype(ir_type)
