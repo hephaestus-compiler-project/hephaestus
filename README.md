@@ -18,21 +18,32 @@ Installation
 ------------
 
 You must have installed Java.
-In Debian/Ubuntu, you can install it 
+In Debian/Ubuntu, you can install it
 by running the following command.
 
 ```
 sudo apt install default-jdk default-jre
 ```
 
-#### Install Kotlin
+#### Install sdkman
 
-To install kotlin you can use sdkman.
+To install all targeted languages you can use sdkman.
 
 ```
 curl -s "https://get.sdkman.io" | bash
 source "$HOME/.sdkman/bin/sdkman-init.sh"
+```
+
+#### Install Kotlin
+
+```
 sdk install kotlin
+```
+
+#### Install Groovy
+
+```
+sdk install groovy
 ```
 
 Run
