@@ -1,5 +1,6 @@
 # Custom
 bugs/*
+replay_tmp
 temp/
 notes/
 *.class
