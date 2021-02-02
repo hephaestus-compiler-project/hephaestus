@@ -72,13 +72,15 @@ class ProgramProcessor():
             schedule.append(transformation)
         return schedule
 
-    def _get_program(self):
+    def get_program(self):
         if self.args.replay:
+            if self.args.debug:
+                print("\nLoading program: " + self.args.replay)
             # Load the program from the given file.
-            return load_program(self.args.replay)
+            return load_program(self.args.replay), True
         else:
             # Generate a new program.
-            return self.generate_program(self.proc_id)
+            return self.generate_program()
 
     def get_transformations(self):
         return self.transformation_schedule[:self.current_transformation]
