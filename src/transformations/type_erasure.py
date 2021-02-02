@@ -29,8 +29,8 @@ class TypeArgumentErasureSubstitution(Transformation):
     """
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, logger=None):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None):
+        super().__init__(program, language, logger)
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
 
         # We use this variable to find to which variable does a `New` assignment

@@ -51,7 +51,7 @@ class ProgramProcessor():
         else:
             logger = None
         prev_p = deepcopy(program)
-        transformer = transformation_cls(program, logger)
+        transformer = transformation_cls(program, self.args.language, logger)
         if self.args.debug:
             print("Transformation " + str(transformation_number) + ": " +
                   transformer.get_name())

@@ -24,9 +24,10 @@ def change_depth(visit):
 class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
 
-    def __init__(self, program, logger=None):
+    def __init__(self, program, language, logger=None):
         assert program is not None, 'The given program must not be None'
         self.is_transformed = False
+        self.language = language
         self.program = program
         self.types = self.program.get_types()
         self.logger = logger

@@ -26,10 +26,13 @@ class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, logger=None):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None):
+        super().__init__(program, language, logger)
         self.bt_factory = self.program.bt_factory
-        self.generator = Generator(context=self.program.context)
+        self.types.remove(self.bt_factory.get_any_type())
+        self.generator = Generator(
+            context=self.program.context,
+            language=language)
         # We are not interested in types associated with abstract classes or
         # interfaces.
         self.types = [c for c in self.types
@@ -108,11 +111,13 @@ class ValueSubstitution(Transformation):
 class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, logger=None):
+    def __init__(self, program, language, logger=None):
         super().__init__(program, logger)
         self.bt_factory = self.program.bt_factory
         self.generator = Generator(context=self.program.context)
-        self.types.remove(kt.Any)
+        self.generator = Generator(
+            context=self.program.context,
+            language=language)
         # We are not interested in types associated with abstract classes or
         # interfaces.
         self._defs = defaultdict(bool)
@@ -494,7 +499,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # the given node.
             return node
 
-        generate = self.GENERATORS.get(ir_type,
+        generate = self.generators.get(ir_type,
                                        lambda: self.generate_new(ir_type))
         self.is_transformed = True
         self.error_injected = 'Expected type is {}, but {} was found'.format(
@@ -553,7 +558,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         new_children = [receiver] if receiver else []
         previous = self._expected_type
         for i, t in enumerate(types):
-            if t != kt.Any:
+            if t != self.bt_factory.get_any_type():
                 self._expected_type = t
                 new_children.append(self.visit(node.args[i]))
             else:
@@ -572,7 +577,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     def visit_func_decl(self, node):
         previous = self._expected_type
         self._expected_type = (
-            node.get_type() if node.get_type() != kt.Unit else None)
+            node.get_type()
+            if node.get_type() != self.bt_factory.get_void_type() else None)
         new_node = super().visit_func_decl(node)
         self._expected_type = previous
         return new_node
@@ -580,7 +586,11 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     @change_depth
     def visit_integer_constant(self, node):
         return self.replace_value_node(
-            node, exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long])
+            node, exclude=[
+                self.bt_factory.get_byte_type(),
+                self.bt_factory.get_short_type(),
+                self.bt_factory.get_integer_type(),
+                self.bt_factory.get_long_type()])
 
     @change_depth
     def visit_real_constant(self, node):
@@ -603,7 +613,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         vardecl = get_decl(self.program.context, self._namespace, node.name)
         assert vardecl is not None
         _, decl = vardecl
-        if decl.get_type() == kt.Any:
+        if decl.get_type() == self.bt_factory.get_any_type():
             return node
         return self.replace_value_node(node, exclude=[])
 
@@ -611,7 +621,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     def visit_var_decl(self, node):
         # If the type of variable is Any or we perform type inference,
         # then, it's not safe to perfom the substitution.
-        if node.get_type() == kt.Any or node.var_type is None:
+        if (node.get_type() == self.bt_factory.get_any_type() or
+                node.var_type is None):
             return node
         previous = self._expected_type
         self._expected_type = node.get_type()
@@ -621,7 +632,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     def visit_logical_expr(self, node):
         previous = self._expected_type
-        self._expected_type = kt.Boolean
+        self._expected_type = self.bt_factory.get_boolean_type()
         new_node = super().visit_logical_expr(node)
         self._expected_type = previous
         return new_node
@@ -645,7 +656,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     @change_depth
     def visit_conditional(self, node):
         previous = self._expected_type
-        self._expected_type = kt.Boolean
+        self._expected_type = self.bt_factory.get_boolean_type()
         cond = self.visit(node.cond)
         self._expected_type = previous
         expr1 = self.visit(node.true_branch)
@@ -660,7 +671,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     @change_depth
     def visit_new(self, node):
         # We call the constructor of Any so, there's nothing to replace.
-        if node.class_type == kt.Any:
+        if node.class_type == self.bt_factory.get_any_type():
             return node
         if utils.random.bool():
             return self.replace_value_node(node, exclude=[])
@@ -678,7 +689,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             for f in cls.fields:
                 if isinstance(f.get_type(), tp.AbstractType) and (
                         node.class_type.can_infer_type_args):
-                    field_types.append(kt.Any)
+                    field_types.append(self.bt_factory.get_any_type())
                 else:
                     field_types.append(type_param_map.get(f.get_type(),
                                                           f.get_type()))

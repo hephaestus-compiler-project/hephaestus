@@ -134,9 +134,9 @@ class ParameterizedSubstitution(Transformation):
     """
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, logger=None, max_type_params=3,
+    def __init__(self, program, language, logger=None, max_type_params=3,
                  find_classes_blacklist=True):
-        super().__init__(program, logger)
+        super().__init__(program, language, logger)
         self._max_type_params: int = max_type_params
 
         self._selected_class_decl: ast.ClassDeclaration = None

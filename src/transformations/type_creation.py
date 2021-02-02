@@ -115,8 +115,8 @@ class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, logger=None):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None):
+        super().__init__(program, language, logger)
         self._new_class = None
         self._old_class = None
         self._namespace = ast.GLOBAL_NAMESPACE
@@ -233,9 +233,11 @@ class TypeCreation(Transformation):
 
 class SubtypeCreation(TypeCreation):
 
-    def __init__(self, program, logger=None):
-        super().__init__(program, logger)
-        self.generator = Generator(context=self.program.context)
+    def __init__(self, program, language, logger=None):
+        super().__init__(program, language, logger)
+        self.generator = Generator(
+            context=self.program.context,
+            language=language)
         # This dictionary is used to map type parameters to their
         # type arguments.
         # This used, if we chose to create subtype from a parameterized class.
@@ -333,8 +335,8 @@ class SubtypeCreation(TypeCreation):
 
 class SupertypeCreation(TypeCreation):
 
-    def __init__(self, program, logger=None):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None):
+        super().__init__(program, language, logger)
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self.empty_supertype = False
