@@ -351,7 +351,10 @@ class ParameterizedSubstitution(Transformation):
 
     @change_namespace
     def visit_class_decl(self, node):
-        return super().visit_class_decl(node)
+        new_node = super().visit_class_decl(node)
+        self.program.context.add_class(ast.GLOBAL_NAMESPACE, new_node.name,
+                                       new_node)
+        return new_node
 
     def visit_type_param(self, node):
         if self._discard_node():
@@ -456,5 +459,4 @@ class ParameterizedSubstitution(Transformation):
         new_node = super().visit_func_call(node)
         if self._in_find_classes_blacklist:
             return new_node
-        new_node = deepcopy(new_node)
         return new_node
