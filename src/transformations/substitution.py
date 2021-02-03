@@ -553,13 +553,16 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     def visit_integer_constant(self, node):
         return self.replace_value_node(
             node, node.integer_type or kt.Integer,
-            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long])
+            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long,
+                     kt.Float, kt.Double])
 
     @change_depth
     def visit_real_constant(self, node):
         real_type = kt.Float if node.literal.endswith('f') else kt.Double
         return self.replace_value_node(
-            node, real_type, exclude=[kt.Double, kt.Float])
+            node, real_type,
+            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long, kt.Double,
+                     kt.Float])
 
     @change_depth
     def visit_char_constant(self, node):
@@ -590,19 +593,19 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         return super().visit_var_decl(node)
 
     def visit_logical_expr(self, node):
-        return node
+        return super().visit_logical_expr(node)
 
     @change_depth
     def visit_equality_expr(self, node):
-        return node
+        return super().visit_equality_expr(node)
 
     @change_depth
     def visit_comparison_expr(self, node):
-        return node
+        return super().visit_comparison_expr(node)
 
     @change_depth
     def visit_arith_expr(self, node):
-        return node
+        return super().visit_arith_expr(node)
 
     @change_depth
     def visit_conditional(self, node):
@@ -628,8 +631,14 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
                 for i, t_param in enumerate(
                     node.class_type.t_constructor.type_parameters)
             }
-            field_types = [type_param_map.get(f.get_type(), f.get_type())
-                           for f in cls.fields]
+            field_types = []
+            for f in cls.fields:
+                if isinstance(f.get_type(), tp.AbstractType) and (
+                        node.class_type.can_infer_type_args):
+                    field_types.append(kt.Any)
+                else:
+                    field_types.append(type_param_map.get(f.get_type(),
+                                                          f.get_type()))
         return self._replace_node_args(node, field_types)
 
     @change_depth
