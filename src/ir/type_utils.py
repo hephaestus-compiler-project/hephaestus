@@ -305,7 +305,19 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
         if t is None:
             return None
         decl = get_decl_from_inheritance(t, name, context)
-        return None if decl is None else decl[0].get_type()
+        if decl is None:
+            return None
+        decl, rec_t = decl
+        if isinstance(decl.get_type(), tp.AbstractType):
+            assert isinstance(rec_t, tp.ParameterizedType)
+            type_param_map = {
+                t_param: rec_t.type_args[i]
+                for i, t_param in enumerate(
+                    rec_t.t_constructor.type_parameters)
+            }
+            return type_param_map.get(decl.get_type())
+        else:
+            return decl.get_type()
 
     def _return_type_hint(t):
         if not names:
