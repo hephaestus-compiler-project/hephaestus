@@ -1,5 +1,5 @@
 from src.ir import types as tp, kotlin_types as kt
-from src.ir import ast, type_utils as tutils
+from src.ir import ast, type_utils as tutils, context as ctx
 
 
 def test_update_type_builtins():
@@ -553,3 +553,113 @@ def test_find_irrelevant_type_with_given_classes():
 
     ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz, qux])
     assert ir_type == qux.get_type()
+
+
+def test_type_hint_constants_and_binary_ops():
+    context = ctx.Context()
+    expr = ast.IntegerConstant(10, kt.Long)
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Long
+
+    expr = ast.RealConstant("10.9f")
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Float
+
+    expr = ast.BooleanConstant("true")
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Boolean
+
+    expr = ast.CharConstant("d")
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Char
+
+    expr = ast.StringConstant("true")
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.String
+
+    expr = ast.LogicalExpr(ast.StringConstant("true"),
+                           ast.StringConstant("false"),
+                           ast.Operator("&&"))
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Boolean
+
+
+def test_type_hint_variables():
+    context = ctx.Context()
+    expr = ast.Variable("x")
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+
+    decl = ast.VariableDeclaration("x", ast.StringConstant("foo"),
+                                   var_type=kt.String)
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.String
+
+
+def test_type_hint_new():
+    context = ctx.Context()
+    expr = ast.New(kt.Any, [])
+    assert tutils.get_type_hint(expr, context, tuple()) == kt.Any
+
+
+def test_type_hint_conditional():
+    context = ctx.Context()
+    decl = ast.VariableDeclaration("x", ast.StringConstant("foo"),
+                                   var_type=kt.String)
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr1 = ast.Variable("x")
+    expr2 = ast.StringConstant("foo")
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, expr2)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, expr1)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr2)
+
+    assert tutils.get_type_hint(cond3, context, ast.GLOBAL_NAMESPACE) == kt.String
+
+
+def test_type_hint_func_call():
+    context = ctx.Context()
+    func = ast.FunctionDeclaration("func", params=[], ret_type=kt.Unit,
+                                   body=None,
+                                   func_type=ast.FunctionDeclaration.FUNCTION)
+    context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+    expr = ast.FunctionCall("func", [])
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Unit
+
+
+def test_type_hint_func_call_receiver():
+    context = ctx.Context()
+    func = ast.FunctionDeclaration("func", params=[], ret_type=kt.Integer,
+                                   body=None,
+                                   func_type=ast.FunctionDeclaration.CLASS_METHOD)
+    cls = ast.ClassDeclaration("Foo", [], 0, functions=[func])
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_func(ast.GLOBAL_NAMESPACE + (cls.name,), func.name, func)
+
+    new_expr = ast.New(cls.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=cls.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr1 = ast.Variable("x")
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+
+    expr = ast.FunctionCall("func", [], cond3)
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+
+
+def test_type_hint_field_access():
+    context = ctx.Context()
+    field = ast.FieldDeclaration("f", kt.Integer)
+    cls = ast.ClassDeclaration("Foo", [], 0, fields=[field])
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_var(ast.GLOBAL_NAMESPACE + (cls.name,), field.name, field)
+
+    new_expr = ast.New(cls.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=cls.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr1 = ast.Variable("x")
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+
+    expr = ast.FieldAccess(cond3, "f")
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer

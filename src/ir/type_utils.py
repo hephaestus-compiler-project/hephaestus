@@ -1,8 +1,8 @@
 import itertools
-from typing import List
+from typing import List, Tuple
 
 from src import utils
-from src.ir import ast, types as tp
+from src.ir import ast, types as tp, context as ctx, kotlin_types as kt
 
 
 def _construct_related_types(etype, types, get_subtypes):
@@ -274,3 +274,76 @@ def choose_type(types: List[tp.Type], only_regular=True):
         cls_type, _ = instantiate_type_constructor(
             cls_type, types, only_regular)
     return cls_type
+
+
+def get_type_hint(expr: ast.Expr, context: ctx.Context,
+                  namespace: Tuple[str]) -> tp.Type:
+    """
+    Get a hint of the type of the expression.
+
+    It's just a hint.
+    """
+
+    names = []
+
+    def _comp_type(t, name):
+        if t is None:
+            return None
+        decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (t.name,), name)
+        return None if decl is None else decl[1].get_type()
+
+    def _return_type_hint(t):
+        if not names:
+            return t
+        for name in reversed(names):
+            t = _comp_type(t, name)
+            if t is None:
+                return None
+        return t
+
+    while True:
+        if isinstance(expr, ast.IntegerConstant):
+            return _return_type_hint(expr.integer_type or kt.IntegerType)
+
+        elif isinstance(expr, ast.RealConstant):
+            return _return_type_hint(
+                kt.Float if expr.literal.endswith('f') else kt.Double)
+
+        elif isinstance(expr, ast.BooleanConstant):
+            return _return_type_hint(kt.Boolean)
+
+        elif isinstance(expr, ast.CharConstant):
+            return _return_type_hint(kt.Char)
+
+        elif isinstance(expr, ast.StringConstant):
+            return _return_type_hint(kt.String)
+
+        elif isinstance(expr, ast.BinaryOp):
+            return _return_type_hint(kt.Boolean)
+
+        elif isinstance(expr, ast.New):
+            return _return_type_hint(expr.class_type)
+
+        elif isinstance(expr, ast.Variable):
+            vardecl = ctx.get_decl(context, namespace, expr.name)
+            return _return_type_hint(
+                None if vardecl is None else vardecl[1].get_type())
+
+        elif isinstance(expr, ast.Conditional):
+            expr = expr.true_branch
+
+        elif isinstance(expr, ast.FunctionCall):
+            if expr.receiver is None:
+                funcdecl = ctx.get_decl(context, namespace, expr.func)
+                return _return_type_hint(
+                    None if funcdecl is None else funcdecl[1].get_type())
+            else:
+                names.append(expr.func)
+                expr = expr.receiver
+
+        elif isinstance(expr, ast.FieldAccess):
+            names.append(expr.field)
+            expr = expr.expr
+
+        else:
+            return kt.Unit
