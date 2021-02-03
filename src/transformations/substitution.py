@@ -474,8 +474,11 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # We didn't find an irrelevant type, so we can't substitute
             # the given node.
             return node
-        assert not ir_type.is_subtype(t)
-        assert not t.is_subtype(ir_type)
+        try:
+            assert not ir_type.is_subtype(t)
+            assert not t.is_subtype(ir_type)
+        except AssertionError:
+            import pdb; pdb.set_trace()
         generate = self.GENERATORS.get(ir_type,
                                        lambda: self.generate_new(ir_type))
         self.is_transformed = True
@@ -497,9 +500,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # the function from the inheritance chain of the receiver.
         receiver_t = tu.get_type_hint(node.receiver, self.program.context,
                                       self._namespace)
-        #if receiver_t is None:
-        #    import pdb; pdb.set_trace()
-        #    return None
+        if receiver_t is None:
+            import pdb; pdb.set_trace()
         func_decl = tu.get_decl_from_inheritance(
             receiver_t, node.func, self.program.context)
         if func_decl is None:
@@ -510,9 +512,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             if not isinstance(p.get_type(), tp.AbstractType):
                 params.append(p.get_type())
                 continue
-
-            #if not isinstance(receiver, tp.ParameterizedType):
-            #    import pdb; pdb.set_trace()
 
             # At this point, the declaration of the function says that
             # the type of the current parameter is abstract. So, based on
@@ -527,6 +526,20 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             assert concrete_type is not None
             params.append(concrete_type)
         return params
+
+    def _replace_node_args(self, node, types):
+        assert len(types) == len(node.args)
+        receiver = getattr(node, 'receiver', None)
+        new_children = [receiver] if receiver else []
+        for i, t in enumerate(types):
+            if t != kt.Any:
+                new_children.append(self.visit(node.args[i]))
+            else:
+                # We can't perform the substitution, when the expected type
+                # is Any, as any type is valid.
+                new_children.append(node.args[i])
+        node.update_children(new_children)
+        return node
 
     @change_namespace
     def visit_class_decl(self, node):
@@ -576,21 +589,20 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             return node
         return super().visit_var_decl(node)
 
-    @change_depth
     def visit_logical_expr(self, node):
-        return super().visit_logical_expr(node)
+        return node
 
     @change_depth
     def visit_equality_expr(self, node):
-        return super().visit_equality_expr(node)
+        return node
 
     @change_depth
     def visit_comparison_expr(self, node):
-        return super().visit_comparison_expr(node)
+        return node
 
     @change_depth
     def visit_arith_expr(self, node):
-        return super().visit_arith_expr(node)
+        return node
 
     @change_depth
     def visit_conditional(self, node):
@@ -602,8 +614,23 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_new(self, node):
-        # TODO Handle constructor arguments.
-        return self.replace_value_node(node, node.class_type, exclude=[])
+        if node.class_type == kt.Any:
+            return node
+        if utils.random.bool():
+            return self.replace_value_node(node, node.class_type, exclude=[])
+        _, cls = get_decl(self.program.context, ast.GLOBAL_NAMESPACE,
+                          node.class_type.name)
+        if not cls.is_parameterized():
+            field_types = [f.get_type() for f in cls.fields]
+        else:
+            type_param_map = {
+                t_param: node.class_type.type_args[i]
+                for i, t_param in enumerate(
+                    node.class_type.t_constructor.type_parameters)
+            }
+            field_types = [type_param_map.get(f.get_type(), f.get_type())
+                           for f in cls.fields]
+        return self._replace_node_args(node, field_types)
 
     @change_depth
     def visit_field_access(self, node):
@@ -617,18 +644,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         if param_types is None:
             return node
 
-        assert len(param_types) == len(node.args)
-
-        new_children = [node.receiver] if node.receiver else []
-        for i, p in enumerate(param_types):
-            if p != kt.Any:
-                new_children.append(self.visit(node.args[i]))
-            else:
-                # We can't perform the substitution, when the expected type
-                # is Any, as any type is valid.
-                new_children.append(node.args[i])
-        node.update_children(new_children)
-        return node
+        return self._replace_node_args(node, param_types)
 
     @change_depth
     def visit_assign(self, node):
