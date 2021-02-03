@@ -276,6 +276,21 @@ def choose_type(types: List[tp.Type], only_regular=True):
     return cls_type
 
 
+def get_decl_from_inheritance(receiver_t: tp.Type,
+                              decl_name: str,
+                              context: ctx.Context) -> ast.Declaration:
+    """
+    Inspect the inheritance chain until you find a declaration with a certain
+    name.
+    """
+    for st in receiver_t.get_supertypes():
+        decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (st.name,),
+                            decl_name)
+        if decl is not None:
+            return decl[1]
+    return None
+
+
 def get_type_hint(expr: ast.Expr, context: ctx.Context,
                   namespace: Tuple[str]) -> tp.Type:
     """
@@ -289,8 +304,8 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
     def _comp_type(t, name):
         if t is None:
             return None
-        decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (t.name,), name)
-        return None if decl is None else decl[1].get_type()
+        decl = get_decl_from_inheritance(t, name, context)
+        return None if decl is None else decl.get_type()
 
     def _return_type_hint(t):
         if not names:

@@ -663,3 +663,59 @@ def test_type_hint_field_access():
     expr = ast.FieldAccess(cond3, "f")
     assert tutils.get_type_hint(expr, context, tuple()) is None
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+
+
+def test_type_hint_func_call_inheritance():
+    context = ctx.Context()
+    func = ast.FunctionDeclaration("func", params=[], ret_type=kt.Integer,
+                                   body=None,
+                                   func_type=ast.FunctionDeclaration.CLASS_METHOD)
+    cls = ast.ClassDeclaration("Foo", [], 0, functions=[func])
+    cls2 = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(cls.get_type(), [])], 0)
+    cls3 = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(cls2.get_type(), [])], 0)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
+    context.add_func(ast.GLOBAL_NAMESPACE + (cls.name,), func.name, func)
+
+    new_expr = ast.New(cls3.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=cls3.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr1 = ast.Variable("x")
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+
+    expr = ast.FunctionCall("func", [], cond3)
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+
+
+def test_type_hint_field_access_inheritance():
+    context = ctx.Context()
+    field = ast.FieldDeclaration("f", kt.Integer)
+    cls = ast.ClassDeclaration("Foo", [], 0, fields=[field])
+    cls2 = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(cls.get_type(), [])], 0)
+    cls3 = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(cls2.get_type(), [])], 0)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+    context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
+    context.add_var(ast.GLOBAL_NAMESPACE + (cls.name,), field.name, field)
+
+    new_expr = ast.New(cls3.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=cls3.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr1 = ast.Variable("x")
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+
+    expr = ast.FieldAccess(cond3, "f")
+    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
