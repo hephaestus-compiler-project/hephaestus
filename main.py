@@ -15,11 +15,13 @@ from src.args import args as cli_args
 from src import utils
 from src.compilers.kotlin import KotlinCompiler
 from src.translators.kotlin import KotlinTranslator
+from src.translators.groovy import GroovyTranslator
 from src.modules.processor import ProgramProcessor
 
 
 TRANSLATORS = {
-    'kotlin': KotlinTranslator
+    'kotlin': KotlinTranslator,
+    'groovy': GroovyTranslator
 }
 COMPILERS = {
     'kotlin': KotlinCompiler
