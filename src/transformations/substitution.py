@@ -457,7 +457,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     def __init__(self, program, logger=None, min_expr_depth=6):
         super().__init__(program, logger)
-        super().__init__(program, logger)
         self.depth = 0
         self.min_expr_depth = min_expr_depth
         self.types.append(kt.Any)
@@ -469,16 +468,65 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         if self.is_transformed or self.depth < self.min_expr_depth or (
               utils.random.bool()):
             return node
-        types = [t for t in self.types if t not in exclude]
+        types = [tt for tt in self.types if tt not in exclude]
         ir_type = tu.find_irrelevant_type(t, types)
         if ir_type is None:
             # We didn't find an irrelevant type, so we can't substitute
             # the given node.
             return node
+        assert not ir_type.is_subtype(t)
+        assert not t.is_subtype(ir_type)
         generate = self.GENERATORS.get(ir_type,
                                        lambda: self.generate_new(ir_type))
         self.is_transformed = True
         return generate()
+
+    def _get_func_param_types(self, node):
+        if node.receiver is None:
+            # We have a function call without a receiver. Then, simply find
+            # the declaration of the function in the context, and retrieve
+            # its parameters.
+            fundecl = get_decl(self.program.context, self._namespace,
+                               node.func)
+            if fundecl is None:
+                return None
+            return [p.get_type() for p in fundecl[1].params]
+
+        # At this point, we have a function call with a receiver. First,
+        # find the type of its receiver, and retrieve the declaration of
+        # the function from the inheritance chain of the receiver.
+        receiver_t = tu.get_type_hint(node.receiver, self.program.context,
+                                      self._namespace)
+        #if receiver_t is None:
+        #    import pdb; pdb.set_trace()
+        #    return None
+        func_decl = tu.get_decl_from_inheritance(
+            receiver_t, node.func, self.program.context)
+        if func_decl is None:
+            return None
+        func_decl, receiver = func_decl
+        params = []
+        for p in func_decl.params:
+            if not isinstance(p.get_type(), tp.AbstractType):
+                params.append(p.get_type())
+                continue
+
+            #if not isinstance(receiver, tp.ParameterizedType):
+            #    import pdb; pdb.set_trace()
+
+            # At this point, the declaration of the function says that
+            # the type of the current parameter is abstract. So, based on
+            # the instantiation of the receiver, find its concrete type.
+            assert isinstance(receiver, tp.ParameterizedType)
+            type_param_map = {
+                t_param: receiver.type_args[i]
+                for i, t_param in enumerate(
+                    receiver.t_constructor.type_parameters)
+            }
+            concrete_type = type_param_map.get(p.get_type())
+            assert concrete_type is not None
+            params.append(concrete_type)
+        return params
 
     @change_namespace
     def visit_class_decl(self, node):
@@ -515,6 +563,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     @change_depth
     def visit_variable(self, node):
         vardecl = get_decl(self.program.context, self._namespace, node.name)
+        assert vardecl is not None
         _, decl = vardecl
         if decl.get_type() == kt.Any:
             return node
@@ -562,8 +611,24 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_func_call(self, node):
-        # TODO Handle function arguments.
-        return super().visit_func_call(node)
+        param_types = self._get_func_param_types(node)
+        # We were not able to find the parameters of the function, so it's
+        # not safe to perform the substitution here.
+        if param_types is None:
+            return node
+
+        assert len(param_types) == len(node.args)
+
+        new_children = [node.receiver] if node.receiver else []
+        for i, p in enumerate(param_types):
+            if p != kt.Any:
+                new_children.append(self.visit(node.args[i]))
+            else:
+                # We can't perform the substitution, when the expected type
+                # is Any, as any type is valid.
+                new_children.append(node.args[i])
+        node.update_children(new_children)
+        return node
 
     @change_depth
     def visit_assign(self, node):
