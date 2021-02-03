@@ -304,8 +304,8 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
     def _comp_type(t, name):
         if t is None:
             return None
-        decl, _ = get_decl_from_inheritance(t, name, context)
-        return None if decl is None else decl.get_type()
+        decl = get_decl_from_inheritance(t, name, context)
+        return None if decl is None else decl[0].get_type()
 
     def _return_type_hint(t):
         if not names:
