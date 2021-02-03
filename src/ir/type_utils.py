@@ -287,7 +287,7 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
         decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (st.name,),
                             decl_name)
         if decl is not None:
-            return decl[1]
+            return decl[1], st
     return None
 
 
@@ -304,7 +304,7 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
     def _comp_type(t, name):
         if t is None:
             return None
-        decl = get_decl_from_inheritance(t, name, context)
+        decl, _ = get_decl_from_inheritance(t, name, context)
         return None if decl is None else decl.get_type()
 
     def _return_type_hint(t):
