@@ -283,7 +283,18 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
     Inspect the inheritance chain until you find a declaration with a certain
     name.
     """
-    for st in receiver_t.get_supertypes():
+    classes = [
+        c
+        for c in context.get_classes(ast.GLOBAL_NAMESPACE,
+                                     only_current=True).values()
+        if not c.is_parameterized()
+    ]
+    supertypes = list(receiver_t.get_supertypes())
+    # We need to traverse also the subtypes due to smart cast.
+    # For example, a function may be defined in a child class but in the
+    # context, we have the parent class due to smart cast.
+    subtypes = list(find_subtypes(receiver_t, classes, include_self=False))
+    for st in supertypes + subtypes:
         decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (st.name,),
                             decl_name)
         if decl is not None:
