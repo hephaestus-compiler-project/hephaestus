@@ -116,6 +116,13 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
     This means that there is no subtyping relation between the given type
     and the returned type.
     """
+
+    def _cls2type(cls):
+        if hasattr(cls, 'get_type'):
+            return cls.get_type()
+        return cls
+
+    types = [_cls2type(t) for t in types]
     supertypes = find_supertypes(etype, types, include_self=True,
                                  concrete_only=True)
     subtypes = find_subtypes(etype, types, include_self=True,
@@ -132,8 +139,6 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
     if not available_types:
         return None
     t = utils.random.choice(available_types)
-    if hasattr(t, 'get_type'):
-        t = t.get_type()
     if isinstance(t, tp.TypeConstructor):
         # Must instantiate the given type constrcutor. Also pass the map of
         # type arguments in order to pass type arguments that are irrelevant

@@ -422,6 +422,20 @@ def test_find_subtypes_with_bound():
     }
 
 
+def test_find_subtypes_with_classes():
+    foo = ast.ClassDeclaration("Foo", [], 0)
+    bar = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(foo.get_type())], 0)
+    baz = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(bar.get_type())], 0)
+    qux = ast.ClassDeclaration("Qux", [], 0)
+
+    subtypes = set(tutils.find_subtypes(
+        bar.get_type(), {foo, bar, baz, qux}, include_self=True,
+        concrete_only=True))
+    assert subtypes == {baz.get_type(), bar.get_type()}
+
+
 def test_find_types_with_classes():
     foo = ast.ClassDeclaration("Foo", [], ast.ClassDeclaration.REGULAR,
                                fields=[], functions=[])
@@ -524,3 +538,18 @@ def test_find_irrelevant_type_parameterized2():
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
+
+
+def test_find_irrelevant_type_with_given_classes():
+    foo = ast.ClassDeclaration("Foo", [], 0)
+    bar = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(foo.get_type())], 0)
+    baz = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(bar.get_type())], 0)
+    qux = ast.ClassDeclaration("Qux", [], 0)
+
+    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz])
+    assert ir_type is None
+
+    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz, qux])
+    assert ir_type == qux.get_type()
