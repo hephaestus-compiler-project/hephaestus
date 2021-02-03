@@ -14,6 +14,7 @@ from collections import namedtuple, OrderedDict
 from src.args import args as cli_args
 from src import utils
 from src.compilers.kotlin import KotlinCompiler
+from src.compilers.groovy import GroovyCompiler
 from src.translators.kotlin import KotlinTranslator
 from src.translators.groovy import GroovyTranslator
 from src.modules.processor import ProgramProcessor
@@ -24,7 +25,8 @@ TRANSLATORS = {
     'groovy': GroovyTranslator
 }
 COMPILERS = {
-    'kotlin': KotlinCompiler
+    'kotlin': KotlinCompiler,
+    'groovy': GroovyCompiler
 }
 STATS = {
     "Info": {
