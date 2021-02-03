@@ -1,5 +1,6 @@
 from collections import defaultdict
 import re
+import os
 
 from src.compilers.base import BaseCompiler
 
@@ -7,6 +8,10 @@ from src.compilers.base import BaseCompiler
 class GroovyCompiler(BaseCompiler):
     # Match (example.groovy):(error message until empty line)
     REGEX = re.compile(r'([a-zA-Z0-9\\/_]+.groovy):([\s\S]*?(?=\n{2,}))')
+
+    def __init__(self, input_name):
+        input_name = os.path.join(input_name, '*', '*.groovy')
+        super().__init__(input_name)
 
     @classmethod
     def get_compiler_version(cls):
