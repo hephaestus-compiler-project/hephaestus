@@ -371,7 +371,9 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return node
         new_node = super().visit_field_decl(node)
-        return self._update_type(new_node, 'field_type')
+        new_node = self._update_type(new_node, 'field_type')
+        self.program.context.add_var(self._namespace, new_node.name, new_node)
+        return new_node
 
     def visit_param_decl(self, node):
         if self._in_select_type_params:
@@ -381,7 +383,9 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return node
         new_node = super().visit_param_decl(node)
-        return self._update_type(new_node, 'param_type')
+        new_node = self._update_type(new_node, 'param_type')
+        self.program.context.add_var(self._namespace, new_node.name, new_node)
+        return new_node
 
     def visit_var_decl(self, node):
         if self._in_select_type_params:
@@ -391,6 +395,7 @@ class ParameterizedSubstitution(Transformation):
             return new_node
         new_node = self._update_type(new_node, 'var_type')
         new_node = self._update_type(new_node, 'inferred_type')
+        self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
     @change_namespace
@@ -414,6 +419,8 @@ class ParameterizedSubstitution(Transformation):
 
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
+        self.program.context.add_func(self._namespace[:-1], new_node.name,
+                                      new_node)
         return new_node
 
     def visit_new(self, node):

@@ -4,7 +4,7 @@ from collections import defaultdict, OrderedDict
 from src import utils
 from src.ir import ast, types as tp, kotlin_types as kt, type_utils as tu
 from src.generators import Generator
-from src.transformations.base import Transformation
+from src.transformations.base import Transformation, change_namespace
 
 
 def create_non_final_fields(fields):
@@ -119,6 +119,7 @@ class TypeCreation(Transformation):
         super().__init__(program, logger)
         self._new_class = None
         self._old_class = None
+        self._namespace = ast.GLOBAL_NAMESPACE
 
     def _add_function_vars(self, new_class, old_class, func):
         func_namespace = ast.GLOBAL_NAMESPACE + (new_class.name, func.name,)
@@ -214,6 +215,10 @@ class TypeCreation(Transformation):
         node.add_declaration(self._old_class)
         return new_node
 
+    @change_namespace
+    def visit_class_decl(self, node):
+        return super().visit_class_decl(node)
+
     def update_type(self, node, attr):
         new_type = self._old_class.get_type()
         attr_value = getattr(node, attr)
@@ -234,24 +239,30 @@ class TypeCreation(Transformation):
         self.update_type(new_node, 'class_type')
         return new_node
 
+    @change_namespace
     def visit_func_decl(self, node):
         new_node = super().visit_func_decl(node)
         self.update_type(new_node, 'ret_type')
         self.update_type(new_node, 'inferred_type')
+        self.program.context.add_func(self._namespace[:-1], new_node.name,
+                                      new_node)
         return new_node
 
     def visit_field_decl(self, node):
         self.update_type(node, 'field_type')
+        self.program.context.add_var(self._namespace, node.name, node)
         return node
 
     def visit_param_decl(self, node):
         self.update_type(node, 'param_type')
+        self.program.context.add_var(self._namespace, node.name, node)
         return node
 
     def visit_var_decl(self, node):
         new_node = super().visit_var_decl(node)
         self.update_type(new_node, 'var_type')
         self.update_type(new_node, 'inferred_type')
+        self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
     def visit_type_param(self, node):
