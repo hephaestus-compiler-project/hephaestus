@@ -474,11 +474,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # We didn't find an irrelevant type, so we can't substitute
             # the given node.
             return node
-        try:
-            assert not ir_type.is_subtype(t)
-            assert not t.is_subtype(ir_type)
-        except AssertionError:
-            import pdb; pdb.set_trace()
+
         generate = self.GENERATORS.get(ir_type,
                                        lambda: self.generate_new(ir_type))
         self.is_transformed = True
@@ -500,8 +496,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # the function from the inheritance chain of the receiver.
         receiver_t = tu.get_type_hint(node.receiver, self.program.context,
                                       self._namespace)
-        if receiver_t is None:
-            import pdb; pdb.set_trace()
         func_decl = tu.get_decl_from_inheritance(
             receiver_t, node.func, self.program.context)
         if func_decl is None:
@@ -588,7 +582,9 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_var_decl(self, node):
-        if node.get_type() == kt.Any:
+        # If the type of variable is Any or we perform type inference,
+        # then, it's not safe to perfom the substitution.
+        if node.get_type() == kt.Any or node.var_type is None:
             return node
         return super().visit_var_decl(node)
 

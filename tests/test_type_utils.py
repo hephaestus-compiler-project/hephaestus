@@ -540,6 +540,23 @@ def test_find_irrelevant_type_parameterized2():
     assert not t.is_subtype(ir_type)
 
 
+def test_find_irrelevant_type_parameterized_parent():
+    type_param = tp.TypeParameter("T")
+    foo = ast.ClassDeclaration("Foo", [], 0)
+    bar = ast.ClassDeclaration(
+        "Bar", [ast.SuperClassInstantiation(foo.get_type())], 0,
+        type_parameters=[type_param]
+    )
+    baz = ast.ClassDeclaration(
+        "Baz", [ast.SuperClassInstantiation(
+            bar.get_type().new([foo.get_type()]))], 0)
+    qux = ast.ClassDeclaration("Qux", [], 0)
+
+    ir_type = tutils.find_irrelevant_type(baz.get_type(), [foo, bar, baz])
+    # TODO
+    assert ir_type is not None
+
+
 def test_find_irrelevant_type_with_given_classes():
     foo = ast.ClassDeclaration("Foo", [], 0)
     bar = ast.ClassDeclaration(
