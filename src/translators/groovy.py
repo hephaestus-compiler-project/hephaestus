@@ -14,7 +14,7 @@ def append_to(visit):
         elif (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(
                     node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
-            self._main_childre.append(res)
+            self._main_children.append(res)
         else:
             self._children_res.append(res)
     return inner
@@ -63,16 +63,18 @@ class GroovyTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         if self.package:
-            package_str = 'package ' + self.package + '\n'
+            package_str = 'package ' + self.package + '\n\n'
         else:
             package_str = ''
-        main_cls = "class Main {{ \n{}\n{}\n }}".format(
-            '\n\npublic static '.join(self._main_children),
-            'public static ' + self._main_method)
+        main_cls = "class Main {{\n{}\n{}\n}}".format(
+            "\n\n\tstatic ".join(self._main_children) if self._main_children
+            else '',
+            "public static " + self._main_method if self._main_method else '')
+        res = "\n\n".join(self.pop_children_res(children))
         self.program = "{}{}{}".format(
             package_str,
-            '\n\n'.join(self.pop_children_res(children)),
-            main_cls)
+            main_cls,
+            "\n\n" + res if res else '')
 
     @append_to
     def visit_block(self, node):
@@ -99,17 +101,27 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     def visit_super_instantiation(self, node):
         self.ident = 0
-        children = node.children()
-        for c in children:
-            c.accept(self)
-        children_res = self.pop_children_res(children)
-        if node.args is None:
-            return node.class_type.get_name()
-        return node.class_type.get_name() + "(" + ", ".join(children_res) + ")"
+        return node.class_type.get_name()
 
     @append_to
     @change_namespace
     def visit_class_decl(self, node):
+        def construct_constructor():
+            ident = self.ident + 2
+            # TODO handle superclass
+            params = [f.field_type.name + ' ' + f.name for f in node.fields]
+            constructor_params = ",".join(params)
+            # FIXME
+            constructor_super = (ident + 2) * " " + "super(" + ",".join(params) + ")"
+            fields = ["this." + f.name + ' = ' + f.name for f in node.fields]
+            constructor_fields = (ident + 2) * " " + "\n".join(fields)
+            return "{}public {}({}) {{\n{}\n{}\n}}".format(
+                ident * ' ',
+                node.name,
+                constructor_params,
+                constructor_super,
+                constructor_fields
+            )
         old_ident = self.ident
         self.ident += 2
         children = node.children()
@@ -129,22 +141,25 @@ class GroovyTranslator(ASTVisitor):
             children_res[len_fields + len_supercls + len_functions:])
         prefix = " " * old_ident
         prefix += (
-            "open "
-            if (not node.is_final
-                and node.class_type != ast.ClassDeclaration.INTERFACE)
-            else ""
+            "final "
+            if node.is_final else ""
         )
         res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
         if type_parameters_res:
             res = "{}<{}>".format(res, type_parameters_res)
-        if field_res:
-            res = "{}({})".format(
-                res, ", ".join(field_res))
         if superclasses_res:
-            res += ": " + ", ".join(superclasses_res)
-        if function_res:
-            res += " {\n" + "\n\n".join(
-                function_res) + "\n" + " " * old_ident + "}"
+            res += " extends " + ", ".join(superclasses_res)
+        # TODO check super
+        if function_res or field_res:
+            body = " {\n"
+            spaces = "\n\n" + self.ident * '\t'
+            if field_res:
+                body += spaces.join(field_res)
+            body += "\n\n" + construct_constructor() + "\n\n"
+            if function_res:
+                body +=  spaces.join(function_res)
+            body += "\n" + " " * old_ident + "}"
+            res += body
         self.ident = old_ident
         return res
 
@@ -166,25 +181,24 @@ class GroovyTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        var_type = "val " if node.is_final else "var "
-        res = prefix + var_type + node.name
+        var_type = "final " if node.is_final else ""
+        res = prefix + var_type
         if node.var_type is not None:
-            res += ": " + node.var_type.get_name()
+            res += " " + node.var_type.get_name()
+        res += node.name
         res += " = " + children_res[0]
         self.ident = old_ident
         return res
 
     @append_to
     def visit_field_decl(self, node):
-        prefix = '' if node.can_override else 'open '
-        prefix += '' if not node.override else 'override '
-        prefix += 'val ' if node.is_final else 'var '
-        res = prefix + node.name + ": " + node.field_type.get_name()
+        prefix = 'final ' if node.is_final else ''
+        res = prefix + node.field_type.get_name() + ' ' + node.name
         return res
 
     @append_to
     def visit_param_decl(self, node):
-        res = node.name + ": " + node.param_type.get_name()
+        res = node.param_type.get_name() + node.name
         return res
 
     @append_to
@@ -201,7 +215,7 @@ class GroovyTranslator(ASTVisitor):
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1] if node.body else ''
         prefix = " " * old_ident
-        prefix += "" if node.is_final else "open "
+        prefix += "final " if node.is_final else ""
         prefix += "" if not node.override else "override "
         prefix += "" if node.body is not None else "abstract "
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
