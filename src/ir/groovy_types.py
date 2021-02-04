@@ -63,7 +63,7 @@ class ObjectType(GroovyBuiltin):
 
 
 class VoidType(ObjectType):
-    def __init__(self, name="Void"):
+    def __init__(self, name="void"):
         super().__init__(name)
         self.supertypes.append(ObjectType())
 
