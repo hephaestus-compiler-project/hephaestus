@@ -62,6 +62,13 @@ class GroovyTranslator(ASTVisitor):
         self._children_res = self._children_res[:-len_c]
         return res
 
+    def _get_main_prefix(self, decl_type, name):
+        ns_decls = list(self.context.get_namespaces_decls(
+            self._namespace, name, decl_type))
+        if len(ns_decls) == 1 and ns_decls[0][0][:-1] == ast.GLOBAL_NAMESPACE:
+            return "Main."
+        return ""
+
     def visit_program(self, node):
         self.context = node.context
         children = node.children()
@@ -71,9 +78,9 @@ class GroovyTranslator(ASTVisitor):
             package_str = 'package ' + self.package + '\n\n'
         else:
             package_str = ''
+        main_decls = ["static " + d for d in self._main_children]
         main_cls = "class Main {{\n{}\n{}\n}}".format(
-            "\n\n\tstatic ".join(self._main_children) if self._main_children
-            else '',
+            "\n".join(main_decls),
             "public static " + self._main_method if self._main_method else '')
         res = "\n\n".join(self.pop_children_res(children))
         self.program = "{}{}{}".format(
@@ -238,7 +245,7 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_param_decl(self, node):
-        res = node.param_type.get_name() + node.name
+        res = node.param_type.get_name() + " " + node.name
         return res
 
     @append_to
@@ -293,7 +300,8 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_variable(self, node):
-        return " " * self.ident + node.name
+        main_prefix = self._get_main_prefix('vars', node.name)
+        return " " * self.ident + main_prefix + node.name
 
     @append_to
     def visit_binary_op(self, node):
@@ -388,12 +396,17 @@ class GroovyTranslator(ASTVisitor):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
+        func = self._get_main_prefix('funcs', node.func) + node.func
         if node.receiver:
             return "{}{}.{}({})".format(
-                " " * self.ident, children_res[0], node.func,
+                " " * self.ident,
+                children_res[0],
+                func,
                 ", ".join(children_res[1:]))
         return "{}{}({})".format(
-            " " * self.ident, node.func, ", ".join(children_res))
+            " " * self.ident,
+            func,
+            ", ".join(children_res))
 
     @append_to
     def visit_assign(self, node):
