@@ -269,7 +269,7 @@ class GroovyTranslator(ASTVisitor):
             body = "{\n" + body_res + "\n}" if is_expression else body_res
         res = "{}{} {}({}) {}".format(
             prefix,
-            node.ret_type.get_name(),
+            node.inferred_type.get_name(),
             node.name,
             ", ".join(param_res),
             body
