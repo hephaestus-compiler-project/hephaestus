@@ -271,10 +271,13 @@ class GroovyTranslator(ASTVisitor):
             return False
         old_ident = self.ident
         self.ident += 2
+        prev_cast_number = self._cast_number
         children = node.children()
         prev = self.is_func_block
         self.is_func_block = node.get_type() != gt.Void
         is_expression = not isinstance(node.body, ast.Block)
+        if is_expression:
+            self._cast_number = True
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
@@ -302,6 +305,7 @@ class GroovyTranslator(ASTVisitor):
             )
         self.ident = old_ident
         self.is_func_block = prev
+        self._cast_number = prev_cast_number
         return res
 
     @append_to
