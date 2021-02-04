@@ -99,13 +99,12 @@ class GroovyTranslator(ASTVisitor):
         res = "{\n" + "\n".join(children_res[:-1])
         if children_res[:-1]:
             res += "\n"
-        ret_keyword = "return " if prev else ""
         if children_res:
-            res += " " * self.ident + ret_keyword + \
+            res += " " * self.ident +  \
                    children_res[-1][self.ident:] + "\n" + \
                    " " * (self.ident - 2) + "}"
         else:
-            res += " " * self.ident + ret_keyword + "\n" + \
+            res += " " * self.ident +  "\n" + \
                    " " * (self.ident - 2) + "}"
         self.is_func_block = prev
         return res
@@ -252,6 +251,13 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     @change_namespace
     def visit_func_decl(self, node):
+        def is_closure():
+            parent_namespace = self._namespace[:-2]
+            parent_name = self._namespace[-2]
+            parent_decl = self.context.get_decl(parent_namespace, parent_name)
+            if isinstance(parent_decl, ast.FunctionDeclaration):
+                return True
+            return False
         old_ident = self.ident
         self.ident += 2
         children = node.children()
@@ -268,13 +274,21 @@ class GroovyTranslator(ASTVisitor):
         body = ""
         if body_res:
             body = "{\n" + body_res + "\n}" if is_expression else body_res
-        res = "{}{} {}({}) {}".format(
-            prefix,
-            node.inferred_type.get_name(),
-            node.name,
-            ", ".join(param_res),
-            body
-        )
+        if is_closure():
+            res = "{}def {} = {{ {} -> {}}}".format(
+                " " * old_ident,
+                node.name,
+                ", ".join(param_res),
+                body_res,
+            )
+        else:
+            res = "{}{} {}({}) {}".format(
+                prefix,
+                node.inferred_type.get_name(),
+                node.name,
+                ", ".join(param_res),
+                body
+            )
         self.ident = old_ident
         self.is_func_block = prev
         return res
