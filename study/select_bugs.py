@@ -36,6 +36,63 @@ def get_groovy_query():
     }
 
 
+def get_scala_query():
+    return {
+        'lang': 'scala',
+        'status': 'closed',
+        '$or': [
+            {
+                '$and': [
+                    {
+                        '$or': [
+                            {'labels': 'bug'},
+                            {'labels': 'itype:bug'},
+                            {'labels': 'itype:crash'},
+                        ]
+                    },
+                    {
+                        '$or': [
+                            {'labels': 'area:implicits'},
+                            {'labels': 'area:gadt'},
+                            {'labels': 'area:match-types'},
+                            {'labels': 'area:nullability'},
+                            {'labels': 'area:overloading'},
+                            {'labels': 'area:pattern-matching'},
+                            {'labels': 'area:typer'},
+                            {'labels': 'area:erasure'},
+                            {'labels': 'area:erased-terms'},
+                        ]
+                    }
+                ]
+
+            },
+            {
+                '$or': [
+                    {'labels': 'blocker'},
+                    {'labels': 'compiler crash'},
+                    {'labels': 'dependent types'},
+                    {'labels': 'erasure'},
+                    {'labels': 'errors and warnings'},
+                    {'labels': 'existential'},
+                    {'labels': 'structural types'},
+                    {'labels': 'gadt'},
+                    {'labels': 'implicit classes'},
+                    {'labels': 'implicit'},
+                    {'labels': 'infer'},
+                    {'labels': 'typer'},
+                    {'labels': 'overloading'},
+                    {'labels': 'patmat'},
+                    {'labels': 'should compile'},
+                    {'labels': 'should not compile'},
+                    {'labels': 'runtime crash'},
+                    {'labels': 'singleton-type'},
+                    {'labels': 'typelevel'},
+                ]
+            }
+        ],
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--lang',
