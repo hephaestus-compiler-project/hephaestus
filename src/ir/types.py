@@ -147,7 +147,7 @@ class SimpleClassifier(Classifier):
         # Since the subtyping relation is transitive, we must also check
         # whether any supertype of the current type is also subtype of the
         # given type.
-        return other == self or other in supertypes or any(
+        return other == self or any(
             st.is_subtype(other) for st in supertypes
             if st != self
         )
