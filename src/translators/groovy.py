@@ -1,4 +1,7 @@
 # pylint: disable=protected-access
+from collections import OrderedDict
+from copy import deepcopy
+
 from src.ir import ast, groovy_types as gt
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
@@ -10,7 +13,7 @@ def append_to(visit):
         if (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(node, ast.FunctionDeclaration) and
                 node.name == "main"):
-            self._main_method = res
+            self._main_method = res.replace("main()", "main(String[] args)")
         elif (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(
                     node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
@@ -31,6 +34,7 @@ class GroovyTranslator(ASTVisitor):
         self.ident = 0
         self.is_func_block = False
         self.package = package
+        self.context = None
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
@@ -59,6 +63,7 @@ class GroovyTranslator(ASTVisitor):
         return res
 
     def visit_program(self, node):
+        self.context = node.context
         children = node.children()
         for c in children:
             c.accept(self)
@@ -106,17 +111,48 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     @change_namespace
     def visit_class_decl(self, node):
-        def construct_constructor():
-            ident = self.ident + 2
-            # TODO handle superclass
-            params = [f.field_type.name + ' ' + f.name for f in node.fields]
+        def get_superclasses_interfaces():
+            # In correct programs len(superclasses) must be at most 1.
+            superclasses = []
+            interfaces = []
+            for cls_inst in node.superclasses:
+                cls_name = cls_inst.class_type.name
+                cls_decl = self.context.get_classes(
+                    self._namespace, glob=True)[cls_name]
+                if cls_decl.class_type == ast.ClassDeclaration.INTERFACE:
+                    interfaces.append(cls_name)
+                else:
+                    superclasses.append(cls_name)
+            return superclasses, interfaces
+
+        def get_super_fields(superclasses):
+            super_fields = OrderedDict()
+            for cls_name in superclasses:
+                cls_decl = self.context.get_classes(
+                    self._namespace, glob=True)[cls_name]
+                for field in cls_decl.fields:
+                    super_fields[field.name] = field.field_type.get_name()
+            return super_fields
+
+        def get_constructor_params(super_fields):
+            # Maybe we have to do for the transitive closure
+            constructor_fields = deepcopy(super_fields)
+            for field in node.fields:
+                constructor_fields[field.name] = field.field_type.get_name()
+            return constructor_fields
+
+        def construct_constructor(superclasses):
+            super_fields = get_super_fields(superclasses)
+            params = [tname + ' ' + name
+                      for name, tname in
+                      get_constructor_params(super_fields).items()]
             constructor_params = ",".join(params)
-            # FIXME
-            constructor_super = (ident + 2) * " " + "super(" + ",".join(params) + ")"
+            constructor_super = "\nsuper(" + ",".join(super_fields) + ")" \
+                if superclasses else ''
             fields = ["this." + f.name + ' = ' + f.name for f in node.fields]
-            constructor_fields = (ident + 2) * " " + "\n".join(fields)
-            return "{}public {}({}) {{\n{}\n{}\n}}".format(
-                ident * ' ',
+            constructor_fields = "\n".join(fields)
+            return "{}public {}({}) {{{}\n{}\n}}".format(
+                self.ident * ' ',
                 node.name,
                 constructor_params,
                 constructor_super,
@@ -131,9 +167,7 @@ class GroovyTranslator(ASTVisitor):
         field_res = [children_res[i]
                      for i, _ in enumerate(node.fields)]
         len_fields = len(field_res)
-        superclasses_res = [children_res[i + len_fields]
-                            for i, _ in enumerate(node.superclasses)]
-        len_supercls = len(superclasses_res)
+        len_supercls = len(node.superclasses)
         function_res = [children_res[i + len_fields + len_supercls]
                         for i, _ in enumerate(node.functions)]
         len_functions = len(function_res)
@@ -147,19 +181,24 @@ class GroovyTranslator(ASTVisitor):
         res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
         if type_parameters_res:
             res = "{}<{}>".format(res, type_parameters_res)
-        if superclasses_res:
-            res += " extends " + ", ".join(superclasses_res)
-        # TODO check super
+        superclasses, interfaces = get_superclasses_interfaces()
+        if superclasses:
+            res += " extends " + ", ".join(superclasses)
+        if interfaces:
+            res += " implements " + ", ".join(interfaces)
+        body = " {"
         if function_res or field_res:
-            body = " {\n"
+            body += "\n"
             spaces = "\n\n" + self.ident * '\t'
             if field_res:
                 body += spaces.join(field_res)
-            body += "\n\n" + construct_constructor() + "\n\n"
+            body += "\n\n" + construct_constructor(superclasses) + "\n\n"
             if function_res:
                 body +=  spaces.join(function_res)
             body += "\n" + " " * old_ident + "}"
-            res += body
+        else:
+            body += "}"
+        res += body
         self.ident = old_ident
         return res
 
@@ -184,7 +223,7 @@ class GroovyTranslator(ASTVisitor):
         var_type = "final " if node.is_final else ""
         res = prefix + var_type
         if node.var_type is not None:
-            res += " " + node.var_type.get_name()
+            res += node.var_type.get_name() + " "
         res += node.name
         res += " = " + children_res[0]
         self.ident = old_ident
@@ -192,7 +231,8 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_field_decl(self, node):
-        prefix = 'final ' if node.is_final else ''
+        prefix = "public "
+        prefix += 'final ' if node.is_final else ''
         res = prefix + node.field_type.get_name() + ' ' + node.name
         return res
 
@@ -202,6 +242,7 @@ class GroovyTranslator(ASTVisitor):
         return res
 
     @append_to
+    @change_namespace
     def visit_func_decl(self, node):
         old_ident = self.ident
         self.ident += 2
@@ -216,14 +257,16 @@ class GroovyTranslator(ASTVisitor):
         body_res = children_res[-1] if node.body else ''
         prefix = " " * old_ident
         prefix += "final " if node.is_final else ""
-        prefix += "" if not node.override else "override "
-        prefix += "" if node.body is not None else "abstract "
-        res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
-        if node.ret_type:
-            res += ": " + node.ret_type.get_name()
+        body = ""
         if body_res:
-            sign = "=" if is_expression and node.get_type() != gt.Void else ""
-            res += " " + sign + "\n" + body_res
+            body = "{\n" + body_res + "\n}" if is_expression else body_res
+        res = "{}{} {}({}) {}".format(
+            prefix,
+            node.ret_type.get_name(),
+            node.name,
+            ", ".join(param_res),
+            body
+        )
         self.ident = old_ident
         self.is_func_block = prev
         return res
@@ -318,10 +361,10 @@ class GroovyTranslator(ASTVisitor):
         # Remove type arguments from Parameterized Type
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
             return "{}({})".format(
-                " " * self.ident + node.class_type.name,
+                " " * self.ident + "new " + node.class_type.name,
                 ", ".join(children_res))
         return "{}({})".format(
-            " " * self.ident + node.class_type.get_name(),
+            " " * self.ident + "new " + node.class_type.get_name(),
             ", ".join(children_res))
 
     @append_to
