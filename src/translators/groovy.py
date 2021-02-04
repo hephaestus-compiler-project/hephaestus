@@ -240,7 +240,9 @@ class GroovyTranslator(ASTVisitor):
         res = prefix + var_type
         if node.var_type is not None:
             res += node.var_type.get_name() + " "
-        res += node.name
+        main_prefix = self._get_main_prefix('vars', node.name) \
+            if self._namespace != ast.GLOBAL_NAMESPACE else ""
+        res += main_prefix + node.name
         res += " = " + children_res[0]
         self.ident = old_ident
         return res
