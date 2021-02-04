@@ -143,7 +143,14 @@ class SimpleClassifier(Classifier):
                     "do not have the same types"
 
     def is_subtype(self, other: Type) -> bool:
-        return other == self or other in self.get_supertypes()
+        supertypes = self.get_supertypes()
+        # Since the subtyping relation is transitive, we must also check
+        # whether any supertype of the current type is also subtype of the
+        # given type.
+        return other == self or other in supertypes or any(
+            st.is_subtype(other) for st in supertypes
+            if st != self
+        )
 
 
 class TypeParameter(AbstractType):

@@ -133,3 +133,13 @@ def test_parameterized_with_bound_abstract():
     assert x.supertypes == []
     assert x.t_constructor.type_parameters == \
         [type_param, tp.TypeParameter("K", bound=kt.Any)]
+
+
+def test_subtype_covariant_parameterized():
+    type_param = tp.TypeParameter("T", tp.TypeParameter.COVARIANT)
+    foo = tp.TypeConstructor("Foo", [type_param], [])
+    bar = tp.SimpleClassifier("Bar",
+                              [foo.new([kt.String])])
+
+    assert bar.is_subtype(foo.new([kt.String]))
+    assert bar.is_subtype(foo.new([kt.Any]))
