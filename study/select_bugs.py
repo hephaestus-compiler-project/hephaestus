@@ -93,6 +93,48 @@ def get_scala_query():
     }
 
 
+def get_java_query():
+    return {
+        'lang': 'java',
+        'type': 'bug',
+        'resolution': 'fixed',
+        '$and': [
+            {
+                '$or': [
+                    {'priority': 'P3'},
+                    {'priority': 'P2'},
+                    {'priority': 'P1'},
+                ]
+            },
+            {
+                '$or': [
+                    {'status': 'closed'},
+                    {'status': 'resolved'},
+                ]
+            },
+            {
+                '$or': [
+                    {'subcomponents': 'javac'},
+                ]
+            },
+            {
+                '$or': [
+                    {'versions': '7'},
+                    {'versions': '8'},
+                    {'versions': '9'},
+                    {'versions': '10'},
+                    {'versions': '12'},
+                    {'versions': '13'},
+                    {'versions': '14'},
+                    {'versions': '15'},
+                    {'versions': '16'},
+                    {'versions': '17'},
+                ]
+            }
+        ]
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--lang',
