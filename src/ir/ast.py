@@ -299,7 +299,7 @@ class ClassDeclaration(Declaration):
 
     def __init__(self, name: str,
                  superclasses: List[SuperClassInstantiation],
-                 class_type: types.Type = None,
+                 class_type: int = None,
                  fields: List[FieldDeclaration] = [],
                  functions: List[FunctionDeclaration] = [],
                  is_final=True,
@@ -680,7 +680,7 @@ class FieldAccess(Expr):
 
 
 class FunctionCall(Expr):
-    def __init__(self, func: str, args: Expr, receiver: str = None):
+    def __init__(self, func: str, args: List[Expr], receiver: Expr = None):
         self.func = func
         self.args = args
         self.receiver = receiver
