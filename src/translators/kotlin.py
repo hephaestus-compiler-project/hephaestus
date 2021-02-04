@@ -204,7 +204,12 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(" " * self.ident + literal + suffix)
 
     def visit_real_constant(self, node):
-        self._children_res.append(" " * self.ident + str(node.literal))
+        real_types = {
+            kt.Float: "f"
+        }
+        suffix = real_types.get(node.real_type, "")
+        self._children_res.append(
+            " " * self.ident + str(node.literal) + suffix)
 
     def visit_char_constant(self, node):
         self._children_res.append("{}'{}'".format(

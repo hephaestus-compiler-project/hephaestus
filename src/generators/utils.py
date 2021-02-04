@@ -28,10 +28,7 @@ def gen_real_constant(expr_type=None):
     prefix = str(utils.random.integer(0, 100))
     suffix = str(utils.random.integer(0, 1000))
     sign = utils.random.choice(['', '-'])
-    if (isinstance(expr_type, tp.Builtin) and
-            expr_type.get_builtin_type() == bt.Float):
-        suffix += "f"
-    return ast.RealConstant(sign + prefix + "." + suffix)
+    return ast.RealConstant(sign + prefix + "." + suffix, expr_type)
 
 
 # pylint: disable=unused-argument

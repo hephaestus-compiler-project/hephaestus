@@ -467,17 +467,11 @@ class IntegerConstant(Constant):
 
 class RealConstant(Constant):
 
-    def __init__(self, literal: str):
-        suffix = None
-        if literal.endswith('f') or literal.endswith('F'):
-            literal_nums = literal[:-1]
-            suffix = literal[-1]
-        else:
-            literal_nums = literal
-        assert '.' in literal_nums and utils.is_number(literal_nums), (
+    def __init__(self, literal: str, real_type):
+        assert '.' in literal and utils.is_number(literal), (
             'Real literal is not valid')
-        literal = literal_nums + ('' if suffix is None else suffix)
         super().__init__(literal)
+        self.real_type = real_type
 
 
 class BooleanConstant(Constant):
