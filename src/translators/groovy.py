@@ -199,7 +199,8 @@ class GroovyTranslator(ASTVisitor):
             spaces = "\n\n" + self.ident * '\t'
             if field_res:
                 body += spaces.join(field_res)
-            body += "\n\n" + construct_constructor(superclasses) + "\n\n"
+            if superclasses or field_res:
+                body += "\n\n" + construct_constructor(superclasses) + "\n\n"
             if function_res:
                 body +=  spaces.join(function_res)
             body += "\n" + " " * old_ident + "}"
