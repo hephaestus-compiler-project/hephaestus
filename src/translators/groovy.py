@@ -35,6 +35,7 @@ class GroovyTranslator(ASTVisitor):
         self.is_func_block = False
         self.package = package
         self.context = None
+        self._cast_number = False
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
@@ -93,8 +94,16 @@ class GroovyTranslator(ASTVisitor):
         children = node.children()
         prev = self.is_func_block
         self.is_func_block = False
-        for c in children:
-            c.accept(self)
+        children_len = len(children)
+        for i, c in enumerate(children):
+            # Cast return statement if it's a number literal
+            if prev and i == children_len - 1:
+                prev_cast_number = self._cast_number
+                self._cast_number = True
+                c.accept(self)
+                self._cast_number = prev_cast_number
+            else:
+                c.accept(self)
         children_res = self.pop_children_res(children)
         res = "{\n" + "\n".join(children_res[:-1])
         if children_res[:-1]:
@@ -295,15 +304,31 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_integer_constant(self, node):
-        return " " * self.ident + str(node.literal)
+        if not self._cast_number:
+            return " " * self.ident + str(node.literal)
+        integer_types = {
+            gt.Long: "(Long) ",
+            gt.Short: "(Short) ",
+            gt.Byte: "(Byte) ",
+            gt.Number: "(Number) ",
+        }
+        cast = integer_types.get(node.integer_type, "")
+        return " " * self.ident + cast + str(node.literal)
 
     @append_to
     def visit_real_constant(self, node):
-        return " " * self.ident + str(node.literal)
+        if not self._cast_number:
+            return " " * self.ident + str(node.literal)
+        real_types = {
+            gt.Double: "(Double) ",
+            gt.Float: "(Float) "
+        }
+        cast = real_types.get(node.real_type, "")
+        return " " * self.ident + cast + str(node.literal)
 
     @append_to
     def visit_char_constant(self, node):
-        return "{}'{}'".format(" " * self.ident, node.literal)
+        return "{}(Character) '{}'".format(" " * self.ident, node.literal)
 
     @append_to
     def visit_string_constant(self, node):
@@ -378,6 +403,8 @@ class GroovyTranslator(ASTVisitor):
     def visit_new(self, node):
         old_ident = self.ident
         self.ident = 0
+        prev_cast_number = self._cast_number
+        self._cast_number = True
         children = node.children()
         for c in children:
             c.accept(self)
@@ -385,12 +412,15 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         # Remove type arguments from Parameterized Type
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
-            return "{}({})".format(
+            res = "{}({})".format(
                 " " * self.ident + "new " + node.class_type.name,
                 ", ".join(children_res))
-        return "{}({})".format(
+        else:
+            res = "{}({})".format(
             " " * self.ident + "new " + node.class_type.get_name(),
             ", ".join(children_res))
+        self._cast_number = prev_cast_number
+        return res
 
     @append_to
     def visit_field_access(self, node):
@@ -408,6 +438,8 @@ class GroovyTranslator(ASTVisitor):
     def visit_func_call(self, node):
         old_ident = self.ident
         self.ident = 0
+        prev_cast_number = self._cast_number
+        self._cast_number = True
         children = node.children()
         for c in children:
             c.accept(self)
@@ -415,15 +447,18 @@ class GroovyTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
         if node.receiver:
-            return "{}{}.{}({})".format(
+            res = "{}{}.{}({})".format(
                 " " * self.ident,
                 children_res[0],
                 func,
                 ", ".join(children_res[1:]))
-        return "{}{}({})".format(
+        else:
+            res = "{}{}({})".format(
             " " * self.ident,
             func,
             ", ".join(children_res))
+        self._cast_number = prev_cast_number
+        return res
 
     @append_to
     def visit_assign(self, node):
