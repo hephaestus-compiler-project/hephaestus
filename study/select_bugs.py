@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
 
     fun = globals()['get_' + args.lang + "_query"]
-    bugs = [e['id'] for e in col.find(fun())]
+    bugs = [e['url'] for e in col.find(fun())]
     with open(args.output, 'w') as out:
         out.write('\n'.join(bugs))
 
