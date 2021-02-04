@@ -22,6 +22,20 @@ def get_kotlin_query():
     }
 
 
+def get_groovy_query():
+    return {
+        'lang': 'groovy',
+        'type': 'bug',
+        'status': 'closed',
+        'resolution': 'fixed',
+        '$or': [
+            {'components': 'static type checker'},
+            {'compomenets': 'static compilation'},
+            {'compomenets': 'compiler'},
+        ]
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--lang',
