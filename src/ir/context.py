@@ -93,6 +93,9 @@ class Context():
         return func_namespaces + class_namespaces
 
     def get_namespaces_decls(self, namespace, name, decl_type, glob=True):
+        """Return a set of tuples of namespace, decl. Note that namespace
+        includes the name of the decl.
+        """
         namespaces_decls = set()  # Set of tuples of namespace, decl
         if glob:
             namespaces = [(namespace[0],)]
