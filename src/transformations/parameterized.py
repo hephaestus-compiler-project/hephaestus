@@ -156,6 +156,21 @@ class ParameterizedSubstitution(Transformation):
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
 
+    def support_decl_site_variance(self):
+        if self.program.bt_factory.get_language() == "kotlin":
+            return True
+        return False
+
+    def _get_variance(self, node: GNode, decl_site=True):
+        if decl_site and self.support_decl_site_variance():
+            return get_variance(self.program.context, self._use_graph, node)
+        return INVARIANT
+
+    def _get_random_variance(self, decl_site=True):
+        if decl_site and self.support_decl_site_variance():
+            return utils.random.choice(VARIANCE)
+        return INVARIANT
+
     def _discard_node(self):
         return self._in_select_type_params or self._in_find_classes_blacklist
 
@@ -259,8 +274,7 @@ class ParameterizedSubstitution(Transformation):
             if tp.constraint is None:
                 tp.constraint = old_type
                 tp.node = GNode(namespace, node.name)
-                tp.variance = get_variance(
-                    self.program.context, self._use_graph, tp.node)
+                tp.variance = self._get_variance(tp.node)
                 tp.type_param = create_type_parameter(
                     tp.name,
                     old_type,
@@ -288,7 +302,7 @@ class ParameterizedSubstitution(Transformation):
                     tp.name,
                     None,
                     self.types,
-                    utils.random.choice(VARIANCE),
+                    self._get_random_variance(),
                     self.program.bt_factory.get_non_nothing_types())
 
     def _select_type_params(self, node) -> ast.Node:
