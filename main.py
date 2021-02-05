@@ -406,6 +406,7 @@ def _run(process_program, process_res):
     start_time = time.time()
     try:
         while stop_condition(iteration, time_passed):
+            utils.random.reset_word_pool()
             tmpdir = tempfile.mkdtemp()
             res = []
             batches = get_batches(iteration - 1)
