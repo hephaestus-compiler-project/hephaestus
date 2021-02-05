@@ -122,6 +122,9 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
             return cls.get_type()
         return cls
 
+    if etype == kt.Any:
+        return None
+
     types = [_cls2type(t) for t in types]
     supertypes = find_supertypes(etype, types, include_self=True,
                                  concrete_only=True)
