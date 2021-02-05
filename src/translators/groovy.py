@@ -15,7 +15,7 @@ def append_to(visit):
                 node.name == "main"):
             # If we want to run the program we must replace main() with
             # main(String[] args)
-            pass
+            self._main_method = res
         elif (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(
                     node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
