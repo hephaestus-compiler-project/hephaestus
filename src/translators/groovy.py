@@ -13,7 +13,9 @@ def append_to(visit):
         if (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(node, ast.FunctionDeclaration) and
                 node.name == "main"):
-            self._main_method = res.replace("main()", "main(String[] args)")
+            # If we want to run the program we must replace main() with
+            # main(String[] args)
+            pass
         elif (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(
                     node, (ast.VariableDeclaration, ast.FunctionDeclaration))):
@@ -44,7 +46,7 @@ class GroovyTranslator(ASTVisitor):
         self._main_children = []
         # main method should be declared public static void, it should be the
         # last element of Main's block.
-        self._main_method = None
+        self._main_method = ""
 
     @staticmethod
     def get_filename():
@@ -88,6 +90,9 @@ class GroovyTranslator(ASTVisitor):
             package_str,
             main_cls,
             "\n\n" + res if res else '')
+        # Clear the state
+        self._main_method = ""
+        self._main_children = []
 
     @append_to
     def visit_block(self, node):
