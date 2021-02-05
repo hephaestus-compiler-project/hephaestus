@@ -17,8 +17,9 @@ class Expr(Node):
 
 class Program(Node):
     # Set default value to kotlin for backward compatibility
-    def __init__(self, context, language="kotlin"):
+    def __init__(self, context, language):
         self.context = context
+        self.language = language
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
 
     def children(self):

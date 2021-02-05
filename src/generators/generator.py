@@ -13,9 +13,11 @@ class Generator():
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, max_side_effects=1,
-                 language="kotlin",
+                 language=None,
                  disable_inference_in_closures=False,
                  context=None):
+        assert language is not None, "You must specify the language"
+        self.language = language
         self.context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.max_depth = max_depth
@@ -698,4 +700,4 @@ class Generator():
         main_func = self.generate_main_func()
         self.namespace = ('global',)
         self.context.add_func(self.namespace, 'main', main_func)
-        return ast.Program(self.context)
+        return ast.Program(self.context, self.language)

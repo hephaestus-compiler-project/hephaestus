@@ -157,7 +157,7 @@ class ParameterizedSubstitution(Transformation):
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
 
     def support_decl_site_variance(self):
-        if self.program.bt_factory.get_language() == "kotlin":
+        if self.language == "kotlin":
             return True
         return False
 
