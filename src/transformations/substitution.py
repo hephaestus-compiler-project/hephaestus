@@ -117,6 +117,7 @@ class TypeSubstitution(Transformation):
     def __init__(self, program, logger=None):
         super().__init__(program, logger)
         self.generator = Generator(context=self.program.context)
+        self.types.remove(kt.Any)
         # We are not interested in types associated with abstract classes or
         # interfaces.
         self._defs = defaultdict(bool)
@@ -662,16 +663,18 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_field_access(self, node):
-        rec_t = tu.get_type_hint(node.expr, self.program.context,
-                                 self._namespace)
-        if not rec_t:
-            return node
-        previous = self._expected_type
-        self._expected_type = rec_t
-        new_rec = self.visit(node.expr)
-        self._expected_type = previous
-        node.update_children([new_rec])
+        # TODO handle receiver of field access.
         return node
+        # rec_t = tu.get_type_hint(node.expr, self.program.context,
+        #                          self._namespace)
+        # if not rec_t:
+        #     return node
+        # previous = self._expected_type
+        # self._expected_type = rec_t
+        # new_rec = self.visit(node.expr)
+        # self._expected_type = previous
+        # node.update_children([new_rec])
+        # return node
 
     @change_depth
     def visit_func_call(self, node):
