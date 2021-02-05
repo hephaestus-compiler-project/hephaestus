@@ -120,13 +120,13 @@ class Generator():
         param_type = etype or self.gen_type()
         return ast.ParameterDeclaration(name, param_type)
 
-    def _get_func_ret_type(self, params, etype):
+    def _get_func_ret_type(self, params, etype, not_void=False):
         if etype is not None:
             return etype
         param_types = [p.param_type for p in params]
         if param_types and ut.random.bool():
             return ut.random.choice(param_types)
-        return self.gen_type(ret_types=False)
+        return self.gen_type(ret_types=not_void)
 
     def can_infer_function_ret_type(self, func_expr, decls):
         if not self.disable_inference_in_closures:
@@ -146,7 +146,7 @@ class Generator():
 
         return func_expr.name in {d.name for d in decls}
 
-    def gen_func_decl(self, etype=None):
+    def gen_func_decl(self, etype=None, not_void=False):
         func_name = gu.gen_identifier('lower')
         initial_namespace = self.namespace
         self.namespace += (func_name,)
@@ -161,7 +161,7 @@ class Generator():
             param = self.gen_param_decl()
             params.append(param)
             self.context.add_var(self.namespace, param.name, param)
-        ret_type = self._get_func_ret_type(params, etype)
+        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         expr_type = self.gen_type(False) \
             if ret_type == self.bt_factory.get_void_type() else ret_type
         expr = self.generate_expr(expr_type)
@@ -336,6 +336,8 @@ class Generator():
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
                 attr_type = attr.get_type()
+                if attr_type == self.bt_factory.get_void_type():
+                    continue
                 if not attr_type:
                     continue
                 cond = attr_type.is_subtype(etype) if subtype else \
@@ -365,7 +367,7 @@ class Generator():
                 return cls, attr
         return None
 
-    def _gen_matching_func(self, etype) -> \
+    def _gen_matching_func(self, etype, not_void=False) -> \
             Tuple[ast.ClassDeclaration, ast.Declaration]:
         # Randomly choose to generate a function or a class method.
         if ut.random.bool():
@@ -373,7 +375,7 @@ class Generator():
             self.namespace = (self.namespace
                               if ut.random.bool() else ast.GLOBAL_NAMESPACE)
             # Generate a function
-            func = self.gen_func_decl(etype)
+            func = self.gen_func_decl(etype, not_void=not_void)
             self.context.add_func(self.namespace, func.name, func)
             self.namespace = initial_namespace
             return None, func
@@ -387,7 +389,7 @@ class Generator():
             if cls_fun is None:
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
-                cls_fun = self._gen_matching_func(etype)
+                cls_fun = self._gen_matching_func(etype, not_void=True)
             cls, func = cls_fun
             receiver = None if cls is None else self.generate_expr(
                 cls.get_type(), only_leaves)
