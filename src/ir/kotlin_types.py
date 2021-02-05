@@ -6,6 +6,9 @@ import src.ir.builtins as bt
 
 
 class KotlinBuiltinFactory(bt.BuiltinFactory):
+    def get_language(self):
+        return "kotlin"
+
     def get_builtin(self):
         return KotlinBuiltin
 

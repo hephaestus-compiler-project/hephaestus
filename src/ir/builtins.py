@@ -6,6 +6,10 @@ from src.ir.types import Builtin
 
 class BuiltinFactory(ABC):
     @abstractmethod
+    def get_language(self):
+        pass
+
+    @abstractmethod
     def get_builtin(self):
         pass
 

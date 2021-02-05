@@ -6,6 +6,9 @@ import src.ir.builtins as bt
 
 
 class GroovyBuiltinFactory(bt.BuiltinFactory):
+    def get_language(self):
+        return "groovy"
+
     def get_builtin(self):
         return GroovyBuiltin
 
