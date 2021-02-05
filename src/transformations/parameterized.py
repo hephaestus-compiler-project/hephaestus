@@ -417,8 +417,9 @@ class ParameterizedSubstitution(Transformation):
         ret_type = get_connected_type_param(
             self._use_graph, self._type_params, return_gnode)
         if ret_type:
-            new_node.ret_type = ret_type
-            new_node.inferred_type = ret_type
+            copied_t = deepcopy(ret_type)
+            new_node.ret_type = copied_t
+            new_node.inferred_type = copied_t
 
         new_node = self._update_type(new_node, 'ret_type')
         new_node = self._update_type(new_node, 'inferred_type')
