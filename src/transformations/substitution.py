@@ -94,20 +94,12 @@ class ValueSubstitution(Transformation):
         # gonna substitute one of its children or the current node.
         if node.children() and utils.random.bool():
             return super().visit_new(node)
-        # FIXME
-        # Known problem in which we have type parameters as type arguments
-        # of a ParameterizedType. In this case, the node.class_type is
-        # problematic
         subclasses = tu.find_subtypes(node.class_type, self.types)
         if not subclasses:
             return node
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
         generate = self.GENERATORS.get(sub_c, lambda: self.generate_new(sub_c))
-        # FIXME
-        # Known problem in which we have type parameters as type arguments
-        # of a ParameterizedType. In this case, the decl.get_type() is
-        # problematic
         return generate()
 
 
@@ -232,15 +224,8 @@ class TypeSubstitution(Transformation):
         return True
 
     def _type_widening(self, decl, setter):
-        try:
-            superclasses = tu.find_supertypes(decl.get_type(), self.types,
-                                              concrete_only=True)
-        except TypeError:
-            # FIXME
-            # Known problem in which we have type parameters as type arguments
-            # of a ParameterizedType. In this case, the decl.get_type() is
-            # problematic
-            return False
+        superclasses = tu.find_supertypes(decl.get_type(), self.types,
+                                          concrete_only=True)
         if not superclasses:
             return False
         # Inspect cached type widenings for this particular declaration.
