@@ -1,7 +1,8 @@
 import re
 
 from src.translators.groovy import GroovyTranslator
-from tests.resources.translators.groovy import program1, program2, program3
+from tests.resources.translators.groovy import (program1, program2, program3,
+    program4)
 
 
 def translate(translator_cls, program):
@@ -38,6 +39,17 @@ def test_groovy_closures():
     expected = "tests/resources/translators/groovy/program3.groovy"
     program = program3.program
     res = translate(GroovyTranslator, program)
+    expected_res = read_expected(expected)
+    res = re.sub('\s+', ' ', res)
+    expected_res = re.sub('\s+', ' ', expected_res)
+    assert res.strip() == expected_res.strip()
+
+
+def test_groovy_generics():
+    expected = "tests/resources/translators/groovy/program4.groovy"
+    program = program4.program
+    res = translate(GroovyTranslator, program)
+    print(res)
     expected_res = read_expected(expected)
     res = re.sub('\s+', ' ', res)
     expected_res = re.sub('\s+', ' ', expected_res)

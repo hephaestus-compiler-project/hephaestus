@@ -225,11 +225,10 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_type_param(self, node):
-        return "{}{}{}{}".format(
-            node.variance_to_string(),
-            ' ' if node.variance != node.INVARIANT else '',
+        return "{}{}".format(
             node.name,
-            ': ' + node.bound.get_name() if node.bound is not None else ''
+            ' extends ' + node.bound.get_name()
+            if node.bound is not None else ''
         )
 
     @append_to
