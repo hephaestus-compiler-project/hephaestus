@@ -445,7 +445,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         super().__init__(program, logger)
         self.depth = 0
         self.min_expr_depth = min_expr_depth
-        self.types.append(kt.Any)
         self._namespace = ast.GLOBAL_NAMESPACE
         self._expected_type = None
         self.error_injected = None
@@ -454,7 +453,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # We have already performed a transformation or the value is included
         # in a simple expression.
         if self.is_transformed or self.depth < self.min_expr_depth or (
-              utils.random.bool()) or not self._expected_type:
+              not self._expected_type or utils.random.bool()):
             return node
         types = [tt for tt in self.types if tt not in exclude]
         ir_type = tu.find_irrelevant_type(self._expected_type, types)
@@ -470,35 +469,42 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             str(self._expected_type), str(ir_type))
         return generate()
 
-    def _get_func_param_types(self, node):
+    def _get_attribute_types(self, node, name, attr_getter):
         if node.receiver is None:
-            # We have a function call without a receiver. Then, simply find
-            # the declaration of the function in the context, and retrieve
-            # its parameters.
-            fundecl = get_decl(self.program.context, self._namespace,
-                               node.func)
-            if fundecl is None:
+            # We have an access without a receiver. Then, simply find
+            # the declaration of this variable/function in the context,
+            # and retrieve its types.
+            decl = get_decl(self.program.context, self._namespace, name)
+            if decl is None:
                 return None
-            return [p.get_type() for p in fundecl[1].params]
+            return (
+                [p.get_type() for p in attr_getter(decl[1])]
+                if attr_getter
+                else [decl[1].get_type()]
+            )
 
-        # At this point, we have a function call with a receiver. First,
+        # At this point, we have an attribute access with a receiver. First,
         # find the type of its receiver, and retrieve the declaration of
-        # the function from the inheritance chain of the receiver.
+        # the correspondng attribute/method from the inheritance chain of
+        # the receiver.
         receiver_t = tu.get_type_hint(node.receiver, self.program.context,
                                       self._namespace)
-        func_decl = tu.get_decl_from_inheritance(
-            receiver_t, node.func, self.program.context)
-        if func_decl is None:
+        decl = tu.get_decl_from_inheritance(
+            receiver_t, name, self.program.context)
+        if decl is None:
+            # We were unable to find the declaration.
             return None
-        func_decl, receiver = func_decl
-        params = []
-        for p in func_decl.params:
+        decl, receiver = decl
+        if not attr_getter:
+            return [decl.get_type()]
+        types = []
+        for p in attr_getter(decl):
             if not isinstance(p.get_type(), tp.AbstractType):
-                params.append(p.get_type())
+                types.append(p.get_type())
                 continue
 
-            # At this point, the declaration of the function says that
-            # the type of the current parameter is abstract. So, based on
+            # At this point, the declaration says that
+            # the type of the current attribute is abstract. So, based on
             # the instantiation of the receiver, find its concrete type.
             type_param_map = {
                 t_param: receiver.type_args[i]
@@ -507,8 +513,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             }
             concrete_type = type_param_map.get(p.get_type())
             assert concrete_type is not None
-            params.append(concrete_type)
-        return params
+            types.append(concrete_type)
+        return types
 
     def _replace_node_args(self, node, types):
         receiver = getattr(node, 'receiver', None)
@@ -663,7 +669,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_func_call(self, node):
-        param_types = self._get_func_param_types(node)
+        param_types = self._get_attribute_types(node, node.func,
+                                                lambda x: x.params)
         # We were not able to find the parameters of the function, so it's
         # not safe to perform the substitution here.
         if param_types is None:
@@ -673,5 +680,14 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_assign(self, node):
-        # TODO handle assignments
+        lhs_type = self._get_attribute_types(node, node.name, None)
+        if lhs_type is None:
+            return node
+
+        previous = self._expected_type
+        self._expected_type = lhs_type[0]
+        children = [node.receiver] if node.receiver else []
+        expr_node = self.visit(node.expr)
+        node.update_children(children + [expr_node])
+        self._expected_type = previous
         return node
