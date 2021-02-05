@@ -435,6 +435,8 @@ class TypeSubstitution(Transformation):
         if current_cls is not None:
             self._func_decls[new_node.name].add((current_cls, new_node))
         self._namespace = initial_namespace
+        self.program.context.add_func(self._namespace, new_node.name,
+                                      new_node)
         return new_node
 
     def visit_variable(self, node):
