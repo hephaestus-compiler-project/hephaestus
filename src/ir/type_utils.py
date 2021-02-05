@@ -191,10 +191,10 @@ def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
     # Case 2: If etype is a parameterized type, recursively inspect its type
     # arguments and type constructor for updates.
     if isinstance(etype, tp.ParameterizedType):
-        etype.type_args = [update_type(ta, new_type) for ta in etype.type_args]
-        etype.t_constructor = update_type(
+        new_type_args = [update_type(ta, new_type) for ta in etype.type_args]
+        new_t_constructor = update_type(
             etype.t_constructor, new_type, test_pred)
-        return etype
+        return new_t_constructor.new(new_type_args)
     # Case 3: If etype is a type constructor recursively inspect is type
     # parameters for updates.
     if isinstance(etype, tp.TypeConstructor):
