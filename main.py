@@ -109,6 +109,10 @@ def run_command(arguments, get_stdout=True):
     Returns:
         return status, stderr.
     """
+    if arguments[0] == "groovyc":
+        tmp_src_dir = os.path.join(cli_args.test_directory, 'tmp')
+        utils.mkdir(tmp_src_dir)
+        os.chdir(tmp_src_dir)
     try:
         is_windows = os.name == 'nt'
         sys_env = os.environ.copy()
