@@ -240,8 +240,11 @@ class GroovyTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         var_type = "final " if node.is_final else ""
         res = prefix + var_type
-        if node.var_type is not None:
-            res += node.var_type.get_name() + " "
+        # Global variables declared as fields in Main, thus we must specify
+        # their type.
+        if (node.var_type is not None or
+                self._namespace == ast.GLOBAL_NAMESPACE):
+            res += node.inferred_type.get_name() + " "
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         res += main_prefix + node.name
