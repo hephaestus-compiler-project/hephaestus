@@ -1,5 +1,5 @@
 class Main {
-    public static final void main(String[] args) {
+    public static final void main() {
         B b = new B("b")
         A ba = new B("ba")
     }
