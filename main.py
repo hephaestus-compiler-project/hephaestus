@@ -177,6 +177,53 @@ def get_batches(programs):
     return min(cli_args.batch, cli_args.iterations - programs)
 
 
+def process_cp_transformations(pid, dirname, translator, proc,
+                               program, package_name):
+    program_str = None
+    while proc.can_transform():
+        res = proc.transform_program(program)
+        if res is None:
+            continue
+        program, oracle = res
+        if cli_args.keep_all:
+            # Save every program resulted by the current transformation.
+            program_str = utils.translate_program(translator, program)
+            save_program(
+                program,
+                utils.translate_program(translator, program),
+                os.path.join(
+                    get_transformations_dir(
+                        pid, proc.current_transformation - 1),
+                    translator.get_filename())
+            )
+    if program_str is None:
+        program_str = utils.translate_program(translator, program)
+    dst_file = os.path.join(dirname, package_name,
+                            translator.get_filename())
+    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
+                             translator.get_filename())
+    save_program(program, program_str, dst_file)
+    save_program(program, program_str, dst_file2)
+    return dst_file
+
+
+def process_ncp_transformations(pid, dirname, translator, proc,
+                                program, package_name):
+    translator.package = 'src.' + package_name
+    res = proc.inject_fault(program)
+    if res is None:
+        return None
+    program, injected_err = res
+    dst_file = os.path.join(dirname, package_name,
+                            translator.get_filename())
+    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
+                             'incorrect.kt')
+    program_str = utils.translate_program(translator, program)
+    save_program(program, program_str, dst_file)
+    save_program(program, program_str, dst_file2)
+    return dst_file, injected_err
+
+
 def gen_program(pid, dirname, packages):
     """
     This function is responsible processing an iteration.
@@ -198,73 +245,41 @@ def gen_program(pid, dirname, packages):
             utils.translate_program(translator, program),
             os.path.join(get_generator_dir(pid), translator.get_filename())
         )
-    program_str = None
-    while proc.can_transform():
-        try:
-            res = proc.transform_program(program)
-            if res is None:
-                continue
-            program, oracle = res
-            if cli_args.keep_all:
-                # Save every program resulted by the current transformation.
-                program_str = utils.translate_program(translator, program)
-                save_program(
-                    program,
-                    utils.translate_program(translator, program),
-                    os.path.join(
-                        get_transformations_dir(
-                            pid, proc.current_transformation - 1),
-                        translator.get_filename())
-                )
-        except Exception as exc:
-            # This means that we have programming error in transformations
-            err = ''
-            if cli_args.print_stacktrace:
-                err = str(traceback.format_exc())
-            else:
-                err = str(exc)
-            if cli_args.debug:
-                print(err)
-            stats = {
-                'transformations': [t.get_name()
-                                    for t in proc.get_transformations()],
-                'error': err,
-                'program': None
-            }
-            return ProgramRes(True, stats)
-        except KeyboardInterrupt:
-            return None
-
-    stats = {
-        'transformations': [t.get_name()
-                            for t in proc.get_transformations()],
-        'error': None,
-        'programs': {},
-    }
-    if program_str is None:
-        program_str = utils.translate_program(translator, program)
-    dst_file = os.path.join(dirname, packages[0], translator.get_filename())
-    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
-                             translator.get_filename())
-    stats['programs'][dst_file] = True
-    save_program(program, program_str, dst_file)
-    save_program(program, program_str, dst_file2)
-
-    translator.package = 'src.' + packages[1]
-    res = proc.inject_fault(program)
-    if res is None:
+    try:
+        correct_program = process_cp_transformations(
+            pid, dirname, translator, proc, program, packages[0])
+        stats = {
+            'transformations': [t.get_name()
+                                for t in proc.get_transformations()],
+            'error': None,
+            'programs': {
+                correct_program: True
+            },
+        }
+        incorrect_program = process_ncp_transformations(
+            pid, dirname, translator, proc, program, packages[1])
+        if incorrect_program:
+            stats['error'] = incorrect_program[1]
+            stats['programs'][incorrect_program[0]] = False
         return ProgramRes(False, stats)
-    program, injected_err = res
-    dst_file = os.path.join(dirname, packages[1], translator.get_filename())
-    dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
-                             'incorrect.kt')
-    program_str = utils.translate_program(translator, program)
-    stats['programs'][dst_file] = False
-    stats['error'] = injected_err
-    save_program(program, program_str, dst_file)
-    save_program(program, program_str, dst_file2)
-
-    return ProgramRes(False, stats)
+    except Exception as exc:
+        # This means that we have programming error in transformations
+        err = ''
+        if cli_args.print_stacktrace:
+            err = str(traceback.format_exc())
+        else:
+            err = str(exc)
+        if cli_args.debug:
+            print(err)
+        stats = {
+            'transformations': [t.get_name()
+                                for t in proc.get_transformations()],
+            'error': err,
+            'program': None
+        }
+        return ProgramRes(True, stats)
+    except KeyboardInterrupt:
+        return None
 
 
 def gen_program_mul(pid, dirname, packages):
