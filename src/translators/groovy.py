@@ -230,6 +230,8 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     def visit_var_decl(self, node):
         old_ident = self.ident
+        prev_cast_number = self._cast_number
+        self._cast_number = True
         prefix = " " * self.ident
         self.ident = 0
         children = node.children()
@@ -244,6 +246,7 @@ class GroovyTranslator(ASTVisitor):
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         res += main_prefix + node.name
         res += " = " + children_res[0]
+        self._cast_number = prev_cast_number
         self.ident = old_ident
         return res
 
