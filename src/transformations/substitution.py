@@ -673,4 +673,5 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_assign(self, node):
-        return super().visit_assign(node)
+        # TODO handle assignments
+        return node
