@@ -476,6 +476,8 @@ class GroovyTranslator(ASTVisitor):
     def visit_assign(self, node):
         old_ident = self.ident
         self.ident = 0
+        prev_cast_number = self._cast_number
+        self._cast_number = True
         children = node.children()
         for c in children:
             c.accept(self)
@@ -489,4 +491,5 @@ class GroovyTranslator(ASTVisitor):
             res = "{}{} = {}".format(" " * old_ident, name,
                                      children_res[0])
         self.ident = old_ident
+        self._cast_number = prev_cast_number
         return res
