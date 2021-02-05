@@ -555,7 +555,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_integer_constant(self, node):
-        return self.replace_value_node(node, exclude=[])
+        return self.replace_value_node(
+            node, exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long])
 
     @change_depth
     def visit_real_constant(self, node):
