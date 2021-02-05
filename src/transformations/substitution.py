@@ -455,21 +455,23 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     CORRECTNESS_PRESERVING = False
 
-    def __init__(self, program, logger=None, min_expr_depth=6):
+    def __init__(self, program, logger=None, min_expr_depth=5):
         super().__init__(program, logger)
         self.depth = 0
         self.min_expr_depth = min_expr_depth
         self.types.append(kt.Any)
         self._namespace = ast.GLOBAL_NAMESPACE
+        self._expected_type = None
+        self.error_injected = None
 
-    def replace_value_node(self, node, t, exclude=[]):
+    def replace_value_node(self, node, exclude=[]):
         # We have already performed a transformation or the value is included
         # in a simple expression.
         if self.is_transformed or self.depth < self.min_expr_depth or (
-              utils.random.bool()):
+              utils.random.bool()) or not self._expected_type:
             return node
         types = [tt for tt in self.types if tt not in exclude]
-        ir_type = tu.find_irrelevant_type(t, types)
+        ir_type = tu.find_irrelevant_type(self._expected_type, types)
         if ir_type is None:
             # We didn't find an irrelevant type, so we can't substitute
             # the given node.
@@ -478,6 +480,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         generate = self.GENERATORS.get(ir_type,
                                        lambda: self.generate_new(ir_type))
         self.is_transformed = True
+        self.error_injected = 'Expected type is {}, but {} was found'.format(
+            str(self._expected_type), str(ir_type))
         return generate()
 
     def _get_func_param_types(self, node):
@@ -510,7 +514,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # At this point, the declaration of the function says that
             # the type of the current parameter is abstract. So, based on
             # the instantiation of the receiver, find its concrete type.
-            assert isinstance(receiver, tp.ParameterizedType)
             type_param_map = {
                 t_param: receiver.type_args[i]
                 for i, t_param in enumerate(
@@ -522,16 +525,18 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         return params
 
     def _replace_node_args(self, node, types):
-        assert len(types) == len(node.args)
         receiver = getattr(node, 'receiver', None)
         new_children = [receiver] if receiver else []
+        previous = self._expected_type
         for i, t in enumerate(types):
             if t != kt.Any:
+                self._expected_type = t
                 new_children.append(self.visit(node.args[i]))
             else:
                 # We can't perform the substitution, when the expected type
                 # is Any, as any type is valid.
                 new_children.append(node.args[i])
+        self._expected_type = previous
         node.update_children(new_children)
         return node
 
@@ -541,34 +546,32 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_namespace
     def visit_func_decl(self, node):
-        return super().visit_func_decl(node)
+        previous = self._expected_type
+        self._expected_type = (
+            node.get_type() if node.get_type() != kt.Unit else None)
+        new_node = super().visit_func_decl(node)
+        self._expected_type = previous
+        return new_node
 
     @change_depth
     def visit_integer_constant(self, node):
-        return self.replace_value_node(
-            node, node.integer_type or kt.Integer,
-            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long,
-                     kt.Float, kt.Double])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_real_constant(self, node):
-        real_type = kt.Float if node.literal.endswith('f') else kt.Double
-        return self.replace_value_node(
-            node, real_type,
-            exclude=[kt.Byte, kt.Short, kt.Integer, kt.Long, kt.Double,
-                     kt.Float])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_char_constant(self, node):
-        return self.replace_value_node(node, kt.Char, exclude=[])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_string_constant(self, node):
-        return self.replace_value_node(node, kt.String, exclude=[])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_boolean_constant(self, node):
-        return self.replace_value_node(node, kt.Boolean, exclude=[])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_variable(self, node):
@@ -577,8 +580,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         _, decl = vardecl
         if decl.get_type() == kt.Any:
             return node
-        return self.replace_value_node(node, decl.get_type(),
-                                       exclude=[decl.get_type()])
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_var_decl(self, node):
@@ -586,37 +588,57 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # then, it's not safe to perfom the substitution.
         if node.get_type() == kt.Any or node.var_type is None:
             return node
-        return super().visit_var_decl(node)
+        previous = self._expected_type
+        self._expected_type = node.get_type()
+        new_node = super().visit_var_decl(node)
+        self._expected_type = previous
+        return new_node
 
     def visit_logical_expr(self, node):
-        return super().visit_logical_expr(node)
+        previous = self._expected_type
+        self._expected_type = kt.Boolean
+        new_node = super().visit_logical_expr(node)
+        self._expected_type = previous
+        return new_node
 
     @change_depth
     def visit_equality_expr(self, node):
-        return super().visit_equality_expr(node)
+        previous = self._expected_type
+        self._expected_type = None
+        new_node = super().visit_equality_expr(node)
+        self._expected_type = previous
+        return new_node
 
     @change_depth
     def visit_comparison_expr(self, node):
-        return super().visit_comparison_expr(node)
+        return node
 
     @change_depth
     def visit_arith_expr(self, node):
-        return super().visit_arith_expr(node)
+        return node
 
     @change_depth
     def visit_conditional(self, node):
-        return super().visit_conditional(node)
+        previous = self._expected_type
+        self._expected_type = kt.Boolean
+        cond = self.visit(node.cond)
+        self._expected_type = previous
+        expr1 = self.visit(node.true_branch)
+        expr2 = self.visit(node.false_branch)
+        node.update_children([cond, expr1, expr2])
+        return node
 
     @change_depth
     def visit_is(self, node):
-        return super().visit_is(node)
+        return node
 
     @change_depth
     def visit_new(self, node):
+        # We call the constructor of Any so, there's nothing to replace.
         if node.class_type == kt.Any:
             return node
         if utils.random.bool():
-            return self.replace_value_node(node, node.class_type, exclude=[])
+            return self.replace_value_node(node, exclude=[])
         _, cls = get_decl(self.program.context, ast.GLOBAL_NAMESPACE,
                           node.class_type.name)
         if not cls.is_parameterized():
@@ -639,7 +661,16 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_field_access(self, node):
-        return super().visit_field_access(node)
+        rec_t = tu.get_type_hint(node.expr, self.program.context,
+                                 self._namespace)
+        if not rec_t:
+            return node
+        previous = self._expected_type
+        self._expected_type = rec_t
+        new_rec = self.visit(node.expr)
+        self._expected_type = previous
+        node.update_children([new_rec])
+        return node
 
     @change_depth
     def visit_func_call(self, node):

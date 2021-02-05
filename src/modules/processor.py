@@ -122,4 +122,4 @@ class ProgramProcessor():
         self.current_transformation += 1
         if not transformer.is_transformed:
             return None
-        return program, True
+        return program, transformer.error_injected

@@ -254,12 +254,13 @@ def gen_program(pid, dirname, packages):
     res = proc.inject_fault(program)
     if res is None:
         return ProgramRes(False, stats)
-    program, _ = res
+    program, injected_err = res
     dst_file = os.path.join(dirname, packages[1], translator.get_filename())
     dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
                              'incorrect.kt')
     program_str = utils.translate_program(translator, program)
     stats['programs'][dst_file] = False
+    stats['error'] = injected_err
     save_program(program, program_str, dst_file)
     save_program(program, program_str, dst_file2)
 
@@ -350,7 +351,8 @@ def check_oracle(dirname, oracles):
                 # Here, we have a case where we expected that the compiler
                 # would not be able to compile the program. However,
                 # the compiler managed to compile it successfully.
-                proc_res.stats['error'] = 'SHOULD NOT BE COMPILED'
+                proc_res.stats['error'] = 'SHOULD NOT BE COMPILED: ' + \
+                    proc_res.stats['error']
                 output[pid] = proc_res.stats
                 if cli_args.debug:
                     msg = 'Mismatch found in program {}. Expected to fail'
