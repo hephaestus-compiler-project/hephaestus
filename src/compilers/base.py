@@ -9,7 +9,6 @@ class BaseCompiler():
     def get_compiler_cmd(self):
         raise NotImplementedError('get_compiler_cmd() must be implemented')
 
-    @classmethod
     def analyze_compiler_output(cls, output):
         raise NotImplementedError(
             'analyze_compiler_output() must be implemented')

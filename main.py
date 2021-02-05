@@ -341,6 +341,20 @@ def check_oracle(dirname, oracles):
     # Analyze the compiler output and check whether there are programs
     # that the compiler did not manage to compile.
     failed = compiler.analyze_compiler_output(err)
+    if compiler.crash_msg:
+        # We just found a compiler crash.
+        shutil.rmtree(dirname)
+        output = {}
+        if cli_args.debug:
+            print('We found compiler crash')
+        for pid, proc_res in oracles.items():
+            if not proc_res.failed:
+                shutil.copytree(
+                    os.path.join(cli_args.test_directory, 'tmp', str(pid)),
+                    os.path.join(cli_args.test_directory, str(pid)))
+                proc_res.stats['error'] = compiler.crash_msg
+                output[pid] = proc_res.stats
+        return output
 
     output = {}
     for pid, proc_res in oracles.items():

@@ -14,6 +14,7 @@ class KotlinCompiler(BaseCompiler):
 
     def __init__(self, input_name):
         super().__init__(input_name)
+        self.crash_msg = None
 
     @classmethod
     def get_compiler_version(cls):
@@ -23,18 +24,17 @@ class KotlinCompiler(BaseCompiler):
         return ['kotlinc', self.input_name, '-include-runtime', '-d',
                 'program.jar']
 
-    @classmethod
-    def analyze_compiler_output(cls, output):
+    def analyze_compiler_output(self, output):
+        self.crashed = None
         failed = defaultdict(list)
-        matches = re.findall(cls.ERROR_REGEX, output)
+        matches = re.findall(self.ERROR_REGEX, output)
         for match in matches:
             filename = match[0]
             error_msg = match[1]
             failed[filename].append(error_msg)
 
-        matches = re.findall(cls.CRASH_REGEX, output)
-        for match in matches:
-            filename = match[1]
-            error_msg = match[0]
-            failed[filename].append(error_msg)
+        match = re.search(self.CRASH_REGEX, output)
+        if match:
+            self.crash_msg = ':'.join(match.groups())
+            return None
         return failed
