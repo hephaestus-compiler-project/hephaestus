@@ -207,7 +207,7 @@ class Generator():
         funcs.append(func)
         self.context.add_func(self.namespace, func.name, func)
 
-    def gen_class_decl(self, field_type=None, fret_type=None):
+    def gen_class_decl(self, field_type=None, fret_type=None, not_void=False):
         class_name = gu.gen_identifier('capitalize')
         initial_namespace = self.namespace
         self.namespace += (class_name,)
@@ -223,9 +223,11 @@ class Generator():
             self._add_field_to_class(self.gen_field_decl(), fields)
         funcs = []
         if fret_type:
-            self._add_func_to_class(self.gen_func_decl(fret_type), funcs)
+            self._add_func_to_class(
+                self.gen_func_decl(fret_type, not_void=not_void), funcs)
         for _ in range(ut.random.integer(0, max_funcs)):
-            self._add_func_to_class(self.gen_func_decl(), funcs)
+            self._add_func_to_class(
+                self.gen_func_decl(not_void=not_void), funcs)
         self.namespace = initial_namespace
         self.depth = initial_depth
         return ast.ClassDeclaration(
@@ -306,6 +308,8 @@ class Generator():
                 attr_type = attr.get_type()
                 if not attr_type:
                     continue
+                if attr_type == self.bt_factory.get_void_type():
+                    continue
                 cond = attr_type.is_subtype(etype) if subtype \
                     else attr_type == etype
                 if not cond:
@@ -336,9 +340,9 @@ class Generator():
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
                 attr_type = attr.get_type()
-                if attr_type == self.bt_factory.get_void_type():
-                    continue
                 if not attr_type:
+                    continue
+                if attr_type == self.bt_factory.get_void_type():
                     continue
                 cond = attr_type.is_subtype(etype) if subtype else \
                     attr_type == etype
@@ -351,7 +355,7 @@ class Generator():
             return None
         return ut.random.choice(class_decls)
 
-    def _gen_matching_class(self, etype, attr_name) -> \
+    def _gen_matching_class(self, etype, attr_name, not_void=False) -> \
             Tuple[ast.ClassDeclaration, ast.Declaration]:
         initial_namespace = self.namespace
         self.namespace = ast.GLOBAL_NAMESPACE
@@ -359,7 +363,7 @@ class Generator():
             kwargs = {'fret_type': etype}
         else:
             kwargs = {'field_type': etype}
-        cls = self.gen_class_decl(**kwargs)
+        cls = self.gen_class_decl(**kwargs, not_void=not_void)
         self.context.add_class(self.namespace, cls.name, cls)
         self.namespace = initial_namespace
         for attr in getattr(cls, attr_name):
@@ -408,7 +412,8 @@ class Generator():
         if not objs:
             cls_f = self._get_matching_class(etype, subtype, 'fields')
             if cls_f is None:
-                cls_f = self._gen_matching_class(etype, 'fields')
+                cls_f = self._gen_matching_class(
+                    etype, 'fields', not_void=True)
             cls, func = cls_f
             receiver = self.generate_expr(cls.get_type(), only_leaves)
             objs.append((receiver, func))
