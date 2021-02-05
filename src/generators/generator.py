@@ -320,6 +320,7 @@ class Generator():
         # in the current class.
         for func in self.context.get_funcs(self.namespace).values():
             cond = (
+                func.get_type() != self.bt_factory.get_void_type() and
                 func.get_type().is_subtype(etype)
                 if subtype else func.get_type() == etype)
             # The receiver object for this kind of functions is None.
