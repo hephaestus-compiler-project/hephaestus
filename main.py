@@ -109,9 +109,11 @@ def run_command(arguments, get_stdout=True):
     Returns:
         return status, stderr.
     """
-    if arguments[0] == "groovyc":
+    is_groovy = arguments[0] == "groovyc"
+    if is_groovy:
         tmp_src_dir = os.path.join(cli_args.test_directory, 'tmp')
         utils.mkdir(tmp_src_dir)
+        old_cwd = os.getcwd()
         os.chdir(tmp_src_dir)
     try:
         is_windows = os.name == 'nt'
@@ -125,6 +127,8 @@ def run_command(arguments, get_stdout=True):
         stdout, stderr = cmd.communicate()
     except sp.CalledProcessError as err:
         return False, err
+    if is_groovy:
+        os.chdir(old_cwd)
     stderr = stderr.decode("utf-8") if stderr else ""
     stdout = stdout.decode("utf-8") if stdout else ""
     err = stdout if get_stdout else stderr
