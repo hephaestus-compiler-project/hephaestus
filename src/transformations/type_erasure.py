@@ -79,6 +79,7 @@ class TypeArgumentErasureSubstitution(Transformation):
                     namespace, var_decl = self._var_decl
                     analysis = UseAnalysis(self.program)
                     parent_decl = self.get_parent_decl(namespace)
+                    # FIXME @schaliasos parent_decl may be None
                     analysis.visit(parent_decl)
                     use_graph = analysis.result()
                     gnode = GNode(namespace, var_decl.name)
