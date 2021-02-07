@@ -1,0 +1,6 @@
+program.kt:3:4: error: no method 'equals(Any?): Boolean' available
+	x == 1
+   ^
+program.kt:3:4: error: unresolved reference: ==
+	x == 1
+   ^
