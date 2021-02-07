@@ -43,6 +43,35 @@ class Program(Node):
     def update_declarations(self, decls):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls
 
+    def _add_function(self, namespace, func):
+        namespace = namespace + (func.name,)
+        for p in func.params:
+            self.context.add_var(namespace, p.name, p)
+        if not func.body or not isinstance(func.body, Block):
+            return
+        stack = list(func.body.body)
+        while stack:
+            s = stack.pop()
+            if isinstance(s, VariableDeclaration):
+                self.context.add_var(namespace, s.name, s)
+
+            if isinstance(s, FunctionDeclaration):
+                self._add_function(namespace, s)
+
+            if isinstance(s, Conditional):
+                stack.append(s.true_branch)
+                stack.append(s.false_branch)
+
+            if isinstance(s, Block):
+                stack.extend(s.body)
+
+    def _add_class(self, namespace, class_decl):
+        namespace = namespace + (class_decl.name,)
+        for f in class_decl.fields:
+            self.context.add_var(namespace, f.name, f)
+        for f in class_decl.functions:
+            self._add_function(namespace, f)
+
     def add_declaration(self, decl):
         decl_types = {
             FunctionDeclaration: self.context.add_func,
@@ -50,6 +79,11 @@ class Program(Node):
             VariableDeclaration: self.context.add_var,
         }
         decl_types[decl.__class__](GLOBAL_NAMESPACE, decl.name, decl)
+        if isinstance(decl, ClassDeclaration):
+            self._add_class(GLOBAL_NAMESPACE, decl)
+
+        if isinstance(decl, FunctionDeclaration):
+            self._add_function(GLOBAL_NAMESPACE, decl)
 
     def remove_declaration(self, decl):
         decl_types = {

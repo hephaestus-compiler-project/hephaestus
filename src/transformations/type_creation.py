@@ -121,69 +121,6 @@ class TypeCreation(Transformation):
         self._old_class = None
         self._namespace = ast.GLOBAL_NAMESPACE
 
-    def _add_function_vars(self, new_class, old_class, func):
-        func_namespace = ast.GLOBAL_NAMESPACE + (new_class.name, func.name,)
-        old_namespace = ast.GLOBAL_NAMESPACE + (old_class.name, func.name)
-        # Find all declarations in the namespace of the old class.
-        n_decls = self.program.context.get_declarations_in(old_namespace)
-        for ns, decls in n_decls.items():
-            # Find declarations relative to the old namespace
-            rel = ns[len(func_namespace):]
-            # Construct the new namespace, e.g.,
-            # 'global/OldClass/func/var': VariableDecl(...)
-            #  =>
-            # 'global/NewClass/func/var': VariableDecl(...)
-            new_namespace = func_namespace + rel
-            for decl_name, decl in decls.items():
-                if isinstance(decl, ast.FunctionDeclaration):
-                    self.program.context.add_func(new_namespace,
-                                                  decl_name, decl)
-                else:
-                    self.program.context.add_var(new_namespace,
-                                                 decl_name, decl)
-
-    def add_class_context(self, new_class, old_class):
-        namespace = ast.GLOBAL_NAMESPACE + (new_class.name,)
-        for field in new_class.fields:
-            # Add class fields to context.
-            self.program.context.add_var(namespace, field.name, field)
-        for func in new_class.functions:
-            # Add functions to context.
-            self.program.context.add_func(namespace, func.name, func)
-            func_namespace = namespace + (func.name,)
-            for param in func.params:
-                # Add function params to context.
-                self.program.context.add_var(func_namespace, param.name, param)
-            if not func.body:
-                continue
-            if isinstance(self, SupertypeCreation):
-                # Add all declarations relative the function of the old
-                # class to the namespace corresponding to the function of
-                # new class.
-                self._add_function_vars(new_class, old_class, func)
-        self.program.add_declaration(new_class)
-        # At the following lines, we place new class at the right place.
-        # For example, if the new class inherits from the old class, we place
-        # the new class after the declaration of the old class.
-        #
-        # Otherwise, if the old class inherits from the new class, we place
-        # the new class before the declaration of the old class.
-        # This assumption regarding ordering of class declarations is useful
-        # for other transformations.
-        decls = OrderedDict()
-        after_old = new_class.inherits_from(old_class)
-        for name, decl in self.program.get_declarations().items():
-            if name == old_class.name and after_old:
-                decls[name] = decl
-                decls[new_class.name] = new_class
-            if name == old_class.name and not after_old:
-                decls[new_class.name] = new_class
-                decls[name] = decl
-            if name == new_class.name:
-                continue
-            decls[name] = decl
-        self.program.update_declarations(decls)
-
     def create_new_class(self, class_decl):
         raise NotImplementedError('create_new_class() must be implemented')
 
@@ -210,9 +147,10 @@ class TypeCreation(Transformation):
         self._old_class = self.adapt_old_class(class_decl)
         # Add the newly created class to the program's context.
         new_node = super().visit_program(self.program)
-        self.add_class_context(self._new_class, self._old_class)
-        # Update the old class.
-        node.add_declaration(self._old_class)
+        self.program = new_node
+        # Update the old class and add new class to the context.
+        new_node.add_declaration(self._old_class)
+        new_node.add_declaration(self._new_class)
         return new_node
 
     @change_namespace
