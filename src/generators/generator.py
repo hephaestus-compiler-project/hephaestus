@@ -240,13 +240,13 @@ class Generator():
         )
 
     def gen_type(self, ret_types=True):
+        class_decls = self.context.get_classes(self.namespace)
         # Randomly choose whether we should generate a builtin type or not.
-        if ut.random.bool():
+        if not class_decls or ut.random.bool():
             builtins = self.RET_BUILTIN_TYPES if ret_types \
                 else self.BUILTIN_TYPES
             return ut.random.choice(builtins)
         # Get all class declarations in the current namespace
-        class_decls = self.context.get_classes(self.namespace)
         if not class_decls:
             # Not class declaration are available in the current namespace
             # so create a new one.
