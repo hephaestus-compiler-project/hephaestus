@@ -1,4 +1,4 @@
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,dangerous-default-value
 from copy import deepcopy
 from typing import Tuple
 
@@ -29,8 +29,8 @@ class TypeArgumentErasureSubstitution(Transformation):
     """
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, language, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
 
         # We use this variable to find to which variable does a `New` assignment

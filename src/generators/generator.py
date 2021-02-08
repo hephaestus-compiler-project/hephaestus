@@ -1,4 +1,4 @@
-# pylint: disable=too-many-instance-attributes,too-many-arguments
+# pylint: disable=too-many-instance-attributes,too-many-arguments,dangerous-default-value
 from typing import Tuple, List
 
 from src import utils as ut
@@ -14,7 +14,7 @@ class Generator():
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, max_side_effects=1,
                  language=None,
-                 disable_inference_in_closures=False,
+                 options={},
                  context=None):
         assert language is not None, "You must specify the language"
         self.language = language
@@ -26,7 +26,8 @@ class Generator():
         self.max_params = max_params
         self.max_var_decls = max_var_decls
         self.max_side_effects = max_side_effects
-        self.disable_inference_in_closures = disable_inference_in_closures
+        self.disable_inference_in_closures = options.get(
+            "disable_inference_in_closures", False)
         self.depth = 1
         self._vars_in_context = {}
         self._new_from_class = None

@@ -51,7 +51,9 @@ class ProgramProcessor():
         else:
             logger = None
         prev_p = deepcopy(program)
-        transformer = transformation_cls(program, self.args.language, logger)
+        transformer = transformation_cls(
+            program, self.args.language, logger,
+            self.args.options[transformation_cls.get_name()])
         if self.args.debug:
             print("Transformation " + str(transformation_number) + ": " +
                   transformer.get_name())
@@ -99,7 +101,7 @@ class ProgramProcessor():
         generator = Generator(
             max_depth=self.args.max_depth,
             language=self.args.language,
-            disable_inference_in_closures=self.args.disable_inference_in_closures)
+            options=self.args.options["Generator"])
         program = generator.generate()
         return program, True
 

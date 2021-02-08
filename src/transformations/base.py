@@ -1,3 +1,4 @@
+# pylint: disable=protected-access,dangerous-default-value
 from src.ir.visitors import DefaultVisitorUpdate
 
 
@@ -24,13 +25,14 @@ def change_depth(visit):
 class Transformation(DefaultVisitorUpdate):
     CORRECTNESS_PRESERVING = None
 
-    def __init__(self, program, language, logger=None):
+    def __init__(self, program, language, logger=None, options={}):
         assert program is not None, 'The given program must not be None'
         self.is_transformed = False
         self.language = language
         self.program = program
         self.types = self.program.get_types()
         self.logger = logger
+        self.options = options
         if self.logger:
             self.logger.log_info()
 

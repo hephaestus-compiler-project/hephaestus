@@ -1,3 +1,4 @@
+# pylint: disable=dangerous-default-value
 from copy import deepcopy
 from collections import defaultdict, OrderedDict
 
@@ -115,8 +116,8 @@ class TypeCreation(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, language, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self._new_class = None
         self._old_class = None
         self._namespace = ast.GLOBAL_NAMESPACE
@@ -233,8 +234,8 @@ class TypeCreation(Transformation):
 
 class SubtypeCreation(TypeCreation):
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, language, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self.generator = Generator(
             context=self.program.context,
             language=language)
@@ -335,8 +336,8 @@ class SubtypeCreation(TypeCreation):
 
 class SupertypeCreation(TypeCreation):
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, language, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self.empty_supertype = False

@@ -1,3 +1,4 @@
+# pylint: disable=dangerous-default-value
 from copy import deepcopy
 from collections import defaultdict
 
@@ -26,8 +27,8 @@ class ValueSubstitution(Transformation):
 
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, language, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self.bt_factory = self.program.bt_factory
         self.types.remove(self.bt_factory.get_any_type())
         self.generator = Generator(
@@ -111,8 +112,8 @@ class ValueSubstitution(Transformation):
 class TypeSubstitution(Transformation):
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, language, logger=None):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self.bt_factory = self.program.bt_factory
         self.generator = Generator(context=self.program.context)
         self.generator = Generator(
@@ -125,6 +126,8 @@ class TypeSubstitution(Transformation):
         self._cached_type_widenings = {}
         self._func_decls = defaultdict(set)
         self._calls = None
+        self.disable_params_type_widening = self.options.get(
+            "disable_params_type_widening", False)
 
     def get_current_class(self):
         cls_name = self._namespace[-2]
@@ -376,6 +379,11 @@ class TypeSubstitution(Transformation):
         self._namespace += (node.name,)
         current_cls = self.get_current_class()
         new_node = super().visit_func_decl(node)
+        if self.disable_params_type_widening:
+            # We cannot continue because we will need to use Is
+            self._namespace = initial_namespace
+            return new_node
+
         is_expression = (not isinstance(new_node.body, ast.Block) or
                          new_node.get_type() == self.bt_factory.get_void_type())
         var_decl = None

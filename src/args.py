@@ -116,6 +116,23 @@ parser.add_argument(
     choices=['kotlin', 'groovy'],
     help="Select specific language"
 )
+parser.add_argument(
+    "--disable-params-type-widening",
+    action="store_true",
+    help="Option for TypeSubstitution"
+)
+parser.add_argument(
+    "--find-classes-blacklist",
+    action="store_true",
+    default=True,
+    help="Option for ParameterizedSubstitution"
+)
+parser.add_argument(
+    "--max-type-params",
+    type=int,
+    default=3,
+    help="Option for ParameterizedSubstitution"
+)
 
 
 args = parser.parse_args()
@@ -162,3 +179,23 @@ args.test_directory = os.path.join(args.bugs, args.name)
 
 args.stop_cond = "timeout" if args.seconds else "iterations"
 args.temp_directory = os.path.join(cwd, "temp")
+args.options = {
+    "Generator": {
+        "disable_inference_in_closures": args.disable_inference_in_closures
+    },
+    "TypeSubstitution": {
+        "disable_params_type_widening": args.disable_params_type_widening
+    },
+    "ValueSubstitution": {},
+    "SupertypeCreation": {},
+    "SubtypeCreation": {},
+    "ParameterizedSubstitution": {
+        "find_classes_blacklist": args.find_classes_blacklist,
+        "max_type_params": args.max_type_params
+    },
+    "TypeArgumentErasureSubstitution": {}
+}
+
+# FIXME
+if args.language == "groovy":
+    args.options["TypeSubstitution"]["disable_params_type_widening"] = True

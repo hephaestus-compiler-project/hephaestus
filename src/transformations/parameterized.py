@@ -1,4 +1,4 @@
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,dangerous-default-value
 from dataclasses import dataclass
 from typing import List
 from copy import deepcopy
@@ -134,10 +134,9 @@ class ParameterizedSubstitution(Transformation):
     """
     CORRECTNESS_PRESERVING = True
 
-    def __init__(self, program, language, logger=None, max_type_params=3,
-                 find_classes_blacklist=True):
-        super().__init__(program, language, logger)
-        self._max_type_params: int = max_type_params
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
+        self._max_type_params: int = options.get("max_type_params", 3)
 
         self._selected_class_decl: ast.ClassDeclaration = None
         self._type_constructor_decl: ast.ClassDeclaration = None
@@ -151,7 +150,8 @@ class ParameterizedSubstitution(Transformation):
         # select which variables to replace their types with TypeParameters
         self._in_select_type_params: bool = False
         self._in_find_classes_blacklist: bool = False
-        self.find_classes_blacklist = find_classes_blacklist
+        self.find_classes_blacklist = options.get("find_classes_blacklist",
+                                                  True)
         self._blacklist_classes = set()
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
