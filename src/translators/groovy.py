@@ -344,7 +344,8 @@ class GroovyTranslator(ASTVisitor):
             return " " * self.ident + str(node.literal)
         real_types = {
             gt.Double: "(Double) ",
-            gt.Float: "(Float) "
+            gt.Float: "(Float) ",
+            gt.Number: "(Number) ",
         }
         cast = real_types.get(node.real_type, "")
         return " " * self.ident + cast + str(node.literal)
