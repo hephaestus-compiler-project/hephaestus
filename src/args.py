@@ -133,6 +133,12 @@ parser.add_argument(
     default=3,
     help="Option for ParameterizedSubstitution"
 )
+parser.add_argument(
+    "--min-expr-depth",
+    type=int,
+    default=5,
+    help="Option for IncorrectSubtypingSubstitution"
+)
 
 
 args = parser.parse_args()
@@ -193,7 +199,10 @@ args.options = {
         "find_classes_blacklist": args.find_classes_blacklist,
         "max_type_params": args.max_type_params
     },
-    "TypeArgumentErasureSubstitution": {}
+    "TypeArgumentErasureSubstitution": {},
+    "IncorrectSubtypingSubstitution": {
+        "min_expr_depth": args.min_expr_depth
+    }
 }
 
 # FIXME

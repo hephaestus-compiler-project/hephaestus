@@ -39,7 +39,8 @@ class ValueSubstitution(Transformation):
         self.types = [c for c in self.types
                       if getattr(c, 'class_type', 0) ==
                       ast.ClassDeclaration.REGULAR]
-        self.types.remove(self.bt_factory.get_any_type())
+        if self.bt_factory.get_any_type() in self.types:
+            self.types.remove(self.bt_factory.get_any_type())
         self.generators = {
             self.bt_factory.get_boolean_type(): gu.gen_bool_constant,
             self.bt_factory.get_char_type(): gu.gen_char_constant,
@@ -115,7 +116,6 @@ class TypeSubstitution(Transformation):
     def __init__(self, program, language, logger=None, options={}):
         super().__init__(program, language, logger, options)
         self.bt_factory = self.program.bt_factory
-        self.generator = Generator(context=self.program.context)
         self.generator = Generator(
             context=self.program.context,
             language=language)
@@ -128,6 +128,9 @@ class TypeSubstitution(Transformation):
         self._calls = None
         self.disable_params_type_widening = self.options.get(
             "disable_params_type_widening", False)
+
+        if self.bt_factory.get_any_type() in self.types:
+            self.types.remove(self.bt_factory.get_any_type())
 
     def get_current_class(self):
         cls_name = self._namespace[-2]
@@ -486,10 +489,10 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     CORRECTNESS_PRESERVING = False
 
-    def __init__(self, program, logger=None, min_expr_depth=5):
-        super().__init__(program, logger)
+    def __init__(self, program, language, logger=None, options={}):
+        super().__init__(program, language, logger, options)
         self.depth = 0
-        self.min_expr_depth = min_expr_depth
+        self.min_expr_depth = self.options.get("min_expr_depth", 5)
         self._namespace = ast.GLOBAL_NAMESPACE
         self._expected_type = None
         self.error_injected = None
