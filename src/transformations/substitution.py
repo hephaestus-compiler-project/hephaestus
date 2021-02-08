@@ -159,11 +159,13 @@ class TypeSubstitution(Transformation):
 
         for cls, p_fun in funcs:
             if cls.inherits_from(current_cls):
+                child_cls, parent_cls = cls, current_cls
                 parent_namespace = self._namespace
                 parent_param = param
                 child_param = p_fun.params[param_index]
                 child_namespace = ast.GLOBAL_NAMESPACE + (cls.name, p_fun.name)
             elif current_cls.inherits_from(cls):
+                child_cls, parent_cls = current_cls, cls
                 parent_namespace = ast.GLOBAL_NAMESPACE + (
                     cls.name, p_fun.name)
                 parent_param = p_fun.params[param_index]
@@ -221,6 +223,20 @@ class TypeSubstitution(Transformation):
                     child_param.param_type = deepcopy(old_type)
                     self.program.context.add_var(
                         child_namespace, child_param.name, child_param)
+                    return False
+            else:
+                supertype = child_cls.superclasses[0].class_type
+                if isinstance(supertype, tp.ParameterizedType):
+                    type_param_map = {
+                        t_param: supertype.type_args[i]
+                        for i, t_param in enumerate(
+                            supertype.t_constructor.type_parameters)
+                    }
+                    prev_type = type_param_map.get(old_type)
+                    if prev_type:
+                        child_param.param_type = deepcopy(prev_type)
+                        self.program.context.add_var(
+                            child_namespace, child_param.name, child_param)
                 return False
 
         return True
@@ -388,6 +404,8 @@ class TypeSubstitution(Transformation):
                 continue
 
             if isinstance(param.param_type, tp.AbstractType):
+                self._check_param_overriden_fun(
+                    new_node, param, i, old_type, current_cls)
                 continue
             is_transformed = self.is_transformed
             # Perform type widening on this function's parameters.
