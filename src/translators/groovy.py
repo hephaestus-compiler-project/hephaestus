@@ -318,8 +318,9 @@ class GroovyTranslator(ASTVisitor):
                 body_res,
             )
         else:
-            res = "{}{} {}({}) {}".format(
+            res = "{}{}{} {}({}) {}".format(
                 prefix,
+                "abstract " if body == "" else "",
                 node.inferred_type.get_name(),
                 node.name,
                 ", ".join(param_res),
