@@ -1,0 +1,7 @@
+https://youtrack.jetbrains.com/issue/KT-18790,no fix available
+https://youtrack.jetbrains.com/issue/KT-10962,no fix available
+https://youtrack.jetbrains.com/issue/KT-32262,no fix available
+https://youtrack.jetbrains.com/issue/KT-38799,warning
+https://youtrack.jetbrains.com/issue/KT-32203,warning
+https://youtrack.jetbrains.com/issue/KT-13348,warning
+https://youtrack.jetbrains.com/issue/KT-24237,no fix available
