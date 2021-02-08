@@ -151,6 +151,28 @@ class TypeCreation(Transformation):
         # Update the old class and add new class to the context.
         new_node.add_declaration(self._old_class)
         new_node.add_declaration(self._new_class)
+
+        # At the following lines, we place new class at the right place.
+        # For example, if the new class inherits from the old class, we place
+        # the new class after the declaration of the old class.
+        #
+        # Otherwise, if the old class inherits from the new class, we place
+        # the new class before the declaration of the old class.
+        # This assumption regarding ordering of class declarations is useful
+        # for other transformations.
+        decls = OrderedDict()
+        after_old = self._new_class.inherits_from(self._old_class)
+        for name, decl in self.program.get_declarations().items():
+            if name == self._old_class.name and after_old:
+                decls[name] = decl
+                decls[self._new_class.name] = self._new_class
+            if name == self._old_class.name and not after_old:
+                decls[self._new_class.name] = self._new_class
+                decls[name] = decl
+            if name == self._new_class.name:
+                continue
+            decls[name] = decl
+        new_node.update_declarations(decls)
         return new_node
 
     @change_namespace
