@@ -272,8 +272,7 @@ class ParameterizedSubstitution(Transformation):
         attr_type = getattr(node, attr, None)
         if not attr_type:
             return node
-        new_type = deepcopy(
-            tu.update_type(attr_type, self._parameterized_type))
+        new_type = tu.update_type(attr_type, self._parameterized_type)
         setattr(node, attr, new_type)
         return node
 
