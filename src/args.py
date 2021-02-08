@@ -139,6 +139,12 @@ parser.add_argument(
     default=5,
     help="Option for IncorrectSubtypingSubstitution"
 )
+parser.add_argument(
+    "-P",
+    "--only-preserve-correctness-substitutions",
+    action="store_true",
+    help="Use only preserve correctness substitution"
+)
 
 
 args = parser.parse_args()

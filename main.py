@@ -271,11 +271,12 @@ def gen_program(pid, dirname, packages):
                 correct_program: True
             },
         }
-        incorrect_program = process_ncp_transformations(
-            pid, dirname, translator, proc, program, packages[1])
-        if incorrect_program:
-            stats['error'] = incorrect_program[1]
-            stats['programs'][incorrect_program[0]] = False
+        if not cli_args.only_preserve_correctness_substitutions:
+            incorrect_program = process_ncp_transformations(
+                pid, dirname, translator, proc, program, packages[1])
+            if incorrect_program:
+                stats['error'] = incorrect_program[1]
+                stats['programs'][incorrect_program[0]] = False
         return ProgramRes(False, stats)
     except Exception as exc:
         # This means that we have programming error in transformations
