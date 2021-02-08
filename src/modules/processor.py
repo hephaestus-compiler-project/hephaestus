@@ -36,6 +36,8 @@ class ProgramProcessor():
         self.transformations = [
             ProgramProcessor.CP_TRANSFORMATIONS[t]
             for t in self.args.transformation_types
+            if not (self.args.language == "groovy" and
+            t == "TypeArgumentErasureSubstitution")
         ]
         self.ncp_transformations = list(
             ProgramProcessor.NCP_TRANSFORMATIONS.values())
