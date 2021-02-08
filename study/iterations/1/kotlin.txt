@@ -11,3 +11,4 @@ https://youtrack.jetbrains.com/issue/KT-22728
 https://youtrack.jetbrains.com/issue/KT-10711
 https://youtrack.jetbrains.com/issue/KT-37249
 https://youtrack.jetbrains.com/issue/KT-11468
+https://youtrack.jetbrains.com/issue/KT-4334
