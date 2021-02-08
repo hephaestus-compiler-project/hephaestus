@@ -577,7 +577,7 @@ def test_type_hint_constants_and_binary_ops():
     expr = ast.IntegerConstant(10, kt.Long)
     assert tutils.get_type_hint(expr, context, tuple()) == kt.Long
 
-    expr = ast.RealConstant("10.9f")
+    expr = ast.RealConstant("10.9", kt.Float)
     assert tutils.get_type_hint(expr, context, tuple()) == kt.Float
 
     expr = ast.BooleanConstant("true")

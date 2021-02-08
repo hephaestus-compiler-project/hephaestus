@@ -17,7 +17,6 @@ class A {
 class B extends A {
     public final String a
     public B(String a) {
-        super(a)
         this.a = a
     }
 }
