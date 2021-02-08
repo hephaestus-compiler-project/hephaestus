@@ -157,15 +157,23 @@ class TypeSubstitution(Transformation):
         if not funcs:
             return True
 
+        cls, p_fun = list(funcs)[0]
+        current_cls_sts = [st.name
+                           for st in current_cls.get_type().get_supertypes()]
+
+        transform = True
         for cls, p_fun in funcs:
-            if cls.inherits_from(current_cls):
-                child_cls, parent_cls = cls, current_cls
+
+            cls_sts = [st.name for st in cls.get_type().get_supertypes()]
+
+            if current_cls.name in cls_sts:
+                child_cls_sts, parent_cls = cls_sts, current_cls
                 parent_namespace = self._namespace
                 parent_param = param
                 child_param = p_fun.params[param_index]
                 child_namespace = ast.GLOBAL_NAMESPACE + (cls.name, p_fun.name)
-            elif current_cls.inherits_from(cls):
-                child_cls, parent_cls = current_cls, cls
+            elif cls.name in current_cls_sts:
+                child_cls_sts, parent_cls = current_cls_sts, cls
                 parent_namespace = ast.GLOBAL_NAMESPACE + (
                     cls.name, p_fun.name)
                 parent_param = p_fun.params[param_index]
@@ -191,7 +199,8 @@ class TypeSubstitution(Transformation):
                     parent_param.param_type = deepcopy(old_type)
                     self.program.context.add_var(
                         parent_namespace, parent_param.name, parent_param)
-                    return False
+                    transform = False
+                    continue
 
             if not isinstance(old_type, tp.AbstractType):
                 # We have to change the param type of the child method
@@ -223,9 +232,10 @@ class TypeSubstitution(Transformation):
                     child_param.param_type = deepcopy(old_type)
                     self.program.context.add_var(
                         child_namespace, child_param.name, child_param)
-                    return False
+                transform = False
             else:
-                supertype = child_cls.superclasses[0].class_type
+                supertype = [st for st in child_cls_sts
+                             if st.name == parent_cls.name]
                 if isinstance(supertype, tp.ParameterizedType):
                     type_param_map = {
                         t_param: supertype.type_args[i]
@@ -237,9 +247,9 @@ class TypeSubstitution(Transformation):
                         child_param.param_type = deepcopy(prev_type)
                         self.program.context.add_var(
                             child_namespace, child_param.name, child_param)
-                return False
+                transform = False
 
-        return True
+        return transform
 
     def _type_widening(self, decl, setter):
         superclasses = tu.find_supertypes(decl.get_type(), self.types,
