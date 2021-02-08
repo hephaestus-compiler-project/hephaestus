@@ -159,3 +159,20 @@ def test_subtype_covariant_parameterized():
     assert bar_str.is_subtype(bar_any)
     assert not foo_any.is_subtype(foo_str)
     assert not bar_any.is_subtype(foo_str)
+
+
+def test_subtype_contravariant_parameterized():
+    type_param = tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)
+    foo = tp.TypeConstructor("Foo", [type_param], [])
+    bar = tp.TypeConstructor("Bar", [type_param],
+                             [foo.new([type_param])])
+
+    bar_str = bar.new([kt.String])
+    bar_any = bar.new([kt.Any])
+    foo_str = foo.new([kt.String])
+    foo_any = foo.new([kt.Any])
+
+    assert bar_str.is_subtype(foo_str)
+    assert not bar_str.is_subtype(bar_any)
+    assert foo_any.is_subtype(foo_str)
+    assert bar_any.is_subtype(foo_str)
