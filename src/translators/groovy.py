@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from copy import deepcopy
 
-from src.ir import ast, groovy_types as gt
+from src.ir import ast, types, groovy_types as gt
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
 
@@ -154,39 +154,27 @@ class GroovyTranslator(ASTVisitor):
                     superclasses.append(cls_name)
             return superclasses, interfaces
 
-        def get_super_fields(superclasses):
-            super_fields = OrderedDict()
-            for cls_name in superclasses:
-                cls_decl = self.context.get_classes(
-                    self._namespace, glob=True)[cls_name]
-                for field in cls_decl.fields:
-                    super_fields[field.name] = field.field_type.get_name()
-            return super_fields
-
-        def get_constructor_params(super_fields):
+        def get_constructor_params():
             # Maybe we have to do for the transitive closure
-            constructor_fields = deepcopy(super_fields)
+            constructor_fields = OrderedDict()
             for field in node.fields:
                 constructor_fields[field.name] = field.field_type.get_name()
             return constructor_fields
 
-        def construct_constructor(superclasses):
-            super_fields = get_super_fields(superclasses)
+        def construct_constructor():
             params = [tname + ' ' + name
                       for name, tname in
-                      get_constructor_params(super_fields).items()]
+                      get_constructor_params().items()]
             constructor_params = ",".join(params)
-            constructor_super = "\nsuper(" + ",".join(super_fields) + ")" \
-                if superclasses else ''
             fields = ["this." + f.name + ' = ' + f.name for f in node.fields]
             constructor_fields = "\n".join(fields)
-            return "{}public {}({}) {{{}\n{}\n}}".format(
+            return "{}public {}({}) {{\n{}\n}}".format(
                 self.ident * ' ',
                 node.name,
                 constructor_params,
-                constructor_super,
                 constructor_fields
             )
+
         old_ident = self.ident
         self.ident += 2
         children = node.children()
@@ -226,7 +214,7 @@ class GroovyTranslator(ASTVisitor):
             if field_res:
                 body += spaces.join(field_res)
             if superclasses or field_res:
-                body += "\n\n" + construct_constructor(superclasses) + "\n\n"
+                body += "\n\n" + construct_constructor() + "\n\n"
             if function_res:
                 body +=  spaces.join(function_res)
             body += "\n" + " " * old_ident + "}"
