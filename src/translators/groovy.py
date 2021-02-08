@@ -48,6 +48,13 @@ class GroovyTranslator(ASTVisitor):
         # last element of Main's block.
         self._main_method = ""
 
+        # We need the following state vars to support blocks inside conditions.
+        # In groovy the `{ ... }` is a closure. Hence, if we have a Block
+        # inside a condition it means we have a closure, thus we must call it
+        # immediately `()`.
+        self._inside_is = False
+        self._inside_is_function = False
+
     @staticmethod
     def get_filename():
         return GroovyTranslator.filename
@@ -120,6 +127,8 @@ class GroovyTranslator(ASTVisitor):
         else:
             res += " " * self.ident +  "\n" + \
                    " " * (self.ident - 2) + "}"
+        if self._inside_is and not self._inside_is_function:
+            res += "()"
         self.is_func_block = prev
         return res
 
@@ -279,6 +288,9 @@ class GroovyTranslator(ASTVisitor):
             if isinstance(parent_decl, ast.FunctionDeclaration):
                 return True
             return False
+        if self._inside_is:
+            prev_inside_is_function = self._inside_is_function
+            self._inside_is_function = True
         old_ident = self.ident
         self.ident += 2
         prev_cast_number = self._cast_number
@@ -316,6 +328,8 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         self.is_func_block = prev
         self._cast_number = prev_cast_number
+        if self._inside_is:
+            self._inside_is_function = prev_inside_is_function
         return res
 
     @append_to
@@ -387,6 +401,8 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_conditional(self, node):
+        prev_inside_is = self._inside_is
+        self._inside_is = True
         old_ident = self.ident
         self.ident += 2
         children = node.children()
@@ -399,6 +415,7 @@ class GroovyTranslator(ASTVisitor):
             children_res[1],
             children_res[2])
         self.ident = old_ident
+        self._inside_is = prev_inside_is
         return res
 
     @append_to
