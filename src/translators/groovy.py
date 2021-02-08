@@ -28,6 +28,7 @@ def append_to(visit):
 class GroovyTranslator(ASTVisitor):
 
     filename = "Main.groovy"
+    incorrect_filename = "incorrect.groovy"
     executable = "Main.jar"
 
     def __init__(self, package=None):
@@ -58,6 +59,10 @@ class GroovyTranslator(ASTVisitor):
     @staticmethod
     def get_filename():
         return GroovyTranslator.filename
+
+    @staticmethod
+    def get_incorrect_filename():
+        return GroovyTranslator.incorrect_filename
 
     def result(self) -> str:
         if self.program is None:

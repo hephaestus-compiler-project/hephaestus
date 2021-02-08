@@ -232,7 +232,7 @@ def process_ncp_transformations(pid, dirname, translator, proc,
     dst_file = os.path.join(dirname, package_name,
                             translator.get_filename())
     dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
-                             'incorrect.kt')
+                             translator.get_incorrect_filename())
     program_str = utils.translate_program(translator, program)
     save_program(program, program_str, dst_file)
     save_program(program, program_str, dst_file2)

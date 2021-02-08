@@ -6,6 +6,7 @@ class KotlinTranslator(ASTVisitor):
     # TODO: Add a decorator for bottom-up traversal.
 
     filename = "program.kt"
+    incorrect_filename = "incorrect.kt"
     executable = "program.jar"
 
     def __init__(self, package=None):
@@ -19,6 +20,10 @@ class KotlinTranslator(ASTVisitor):
     @staticmethod
     def get_filename():
         return KotlinTranslator.filename
+
+    @staticmethod
+    def get_incorrect_filename():
+        return KotlinTranslator.incorrect_filename
 
     def result(self):
         if self.program is None:
