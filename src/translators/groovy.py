@@ -214,7 +214,11 @@ class GroovyTranslator(ASTVisitor):
         if superclasses:
             res += " extends " + ", ".join(superclasses)
         if interfaces:
-            res += " implements " + ", ".join(interfaces)
+            if node.class_type == ast.ClassDeclaration.INTERFACE:
+                # len(interfaces) should not be more than 1.
+                res += " extends " + ", ".join(interfaces)
+            else:
+                res += " implements " + ", ".join(interfaces)
         body = " {"
         if function_res or field_res:
             body += "\n"
