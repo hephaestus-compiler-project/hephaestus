@@ -7,11 +7,14 @@ from src.compilers.base import BaseCompiler
 
 class GroovyCompiler(BaseCompiler):
     # Match (example.groovy):(error message until empty line)
-    REGEX = re.compile(r'([a-zA-Z0-9\\/_]+.groovy):([\s\S]*?(?=\n{2,}))')
+    ERROR_REGEX = re.compile(r'([a-zA-Z0-9\\/_]+.groovy):([\s\S]*?(?=\n{2,}))')
+
+    CRASH_REGEX = re.compile(r'(java\.lang.*)\n(.*)')
 
     def __init__(self, input_name):
         input_name = os.path.join(input_name, '*', '*.groovy')
         super().__init__(input_name)
+        self.crash_msg = None
 
     @classmethod
     def get_compiler_version(cls):
@@ -20,12 +23,17 @@ class GroovyCompiler(BaseCompiler):
     def get_compiler_cmd(self):
         return ['groovyc', '--compile-static', self.input_name]
 
-    @classmethod
-    def analyze_compiler_output(cls, output):
+    def analyze_compiler_output(self, output):
+        self.crashed = None
         failed = defaultdict(list)
-        matches = re.findall(cls.REGEX, output)
+        matches = re.findall(self.ERROR_REGEX, output)
         for match in matches:
             filename = match[0]
             error_msg = match[1]
             failed[filename].append(error_msg)
+
+        match = re.search(self.CRASH_REGEX, output)
+        if match:
+            self.crash_msg = ':'.join(match.groups())
+            return None
         return failed
