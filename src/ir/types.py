@@ -189,7 +189,7 @@ class TypeParameter(AbstractType):
                 self.bound == other.bound)
 
     def __hash__(self):
-        return hash(str(self.name) + str(self.variance) + str(self.bound))
+        return hash(str(self.name) + str(self.variance))
 
     def __str__(self):
         return "{}{}{}".format(
