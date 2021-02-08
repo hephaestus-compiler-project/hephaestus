@@ -412,7 +412,7 @@ class GroovyTranslator(ASTVisitor):
         res = "{}{} {} {}".format(
             " " * old_ident,
             children_res[0],
-            "!" if node.operator.is_not else "" + "instanceof",
+            "!instanceof" if node.operator.is_not else "instanceof",
             node.rexpr.get_name())
         self.ident = old_ident
         return res
