@@ -30,13 +30,15 @@ class ValueSubstitution(Transformation):
         kt.Boolean: gu.gen_bool_constant,
         kt.Char: gu.gen_char_constant,
         kt.String: gu.gen_string_constant,
-        kt.Number: gu.gen_integer_constant,
-        kt.Integer: gu.gen_integer_constant,
-        kt.Byte: gu.gen_integer_constant,
-        kt.Short: gu.gen_integer_constant,
-        kt.Long: gu.gen_integer_constant,
+        kt.Number: lambda: gu.gen_integer_constant(utils.random.choice([
+            kt.Byte, kt.Short, kt.Integer, kt.Long
+        ])),
+        kt.Integer: lambda: gu.gen_integer_constant(kt.Integer),
+        kt.Byte: lambda: gu.gen_integer_constant(kt.Byte),
+        kt.Short: lambda: gu.gen_integer_constant(kt.Short),
+        kt.Long: lambda: gu.gen_integer_constant(kt.Long),
         kt.Float: lambda: gu.gen_real_constant(kt.Float),
-        kt.Double: gu.gen_real_constant,
+        kt.Double: lambda: gu.gen_real_constant(kt.Double),
         kt.Any: lambda: ast.New(kt.Any, []),
     }
 
