@@ -70,7 +70,7 @@ def create_interface(class_decl, empty):
     return ast.ClassDeclaration(utils.random.word().capitalize(),
                                 superclasses=[], fields=[],
                                 class_type=ast.ClassDeclaration.INTERFACE,
-                                functions=functions,
+                                functions=functions, is_final=False,
                                 type_parameters=class_decl.type_parameters)
 
 
