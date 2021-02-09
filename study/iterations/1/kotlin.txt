@@ -12,3 +12,9 @@ https://youtrack.jetbrains.com/issue/KT-10711
 https://youtrack.jetbrains.com/issue/KT-37249
 https://youtrack.jetbrains.com/issue/KT-11468
 https://youtrack.jetbrains.com/issue/KT-4334
+https://youtrack.jetbrains.com/issue/KT-32184
+https://youtrack.jetbrains.com/issue/KT-10197
+https://youtrack.jetbrains.com/issue/KT-41693
+https://youtrack.jetbrains.com/issue/KT-44420
+https://youtrack.jetbrains.com/issue/KT-35602
+https://youtrack.jetbrains.com/issue/KT-6992
