@@ -28,6 +28,7 @@ Exception
 extends
 false
 final
+finalize
 finally
 float
 for
