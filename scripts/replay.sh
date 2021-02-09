@@ -3,8 +3,8 @@
 # Find which transformation introduce the error
 #
 
-if [ $# -ne 2 ]; then
-    echo $0: usage: replay.sh bugs/name iteration_number
+if [ $# -ne 3 ]; then
+    echo $0: usage: replay.sh bugs/name iteration_number language
     exit 1
 fi
 if ! command -v jq &> /dev/null
@@ -23,16 +23,32 @@ fi
 
 NAME=$1
 ITER=$2
+LANGUAGE=$3
 FAULTS=$NAME/faults.json
 TRANSFORMATIONS=$NAME/transformations/iter_$ITER
 TRANSFORMATION="Generation"
-LAST_I=$(ls bugs/eaknW/transformations/iter_15/ | sort -nr | head -1)
+LAST_I=$(ls $TRANSFORMATIONS | sort -nr | head -1)
 LAST_TRANS=$(cat $FAULTS | jq --arg ITER "$ITER" --argjson I "$LAST_I" \
     '.[$ITER]["transformations"][$I]')
 
+case "$LANGUAGE" in
+    "kotlin")
+        PROGRAM="program.kt.bin"
+        ;;
+
+    "groovy")
+        PROGRAM="Main.groovy.bin"
+        ;;
+
+    *)
+        echo "language should be groovy or kotlin"
+        exit
+        ;;
+esac
+
 check() {
    bin=$1
-   if python3 main.py -i 1 -t 0 -R $bin -d -b replay_tmp | grep -q "faults: 1"; then
+   if python3 main.py -i 1 -t 0 -R $bin -d -b replay_tmp --language $LANGUAGE | grep -q "faults: 1"; then
        return 1
    else
        return 0
@@ -44,11 +60,11 @@ for i in $(ls $TRANSFORMATIONS | sort -nr); do
     TRANSFORMATION=$(cat $FAULTS | jq \
         --arg ITER "$ITER" --argjson I "$i" \
         '.[$ITER]["transformations"][$I]')
-    bin=$TRANSFORMATIONS/$i/program.kt.bin
+    bin=$TRANSFORMATIONS/$i/$PROGRAM
     if check $bin; then
         echo "$LAST_I: $LAST_TRANS"
         echo "You can use the following command to try to reproduce the bug"
-        echo "python3 main.py -i 1 -t 1 -T $LAST_TRANS -R $bin -d"
+        echo "python3 main.py -i 1 -t 1 -T $LAST_TRANS -R $bin -d --language $LANGUAGE"
         rm -rf replay_tmp
         exit
     fi
