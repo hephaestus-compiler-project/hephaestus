@@ -49,6 +49,7 @@ class Program(Node):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls
 
     def _add_function(self, namespace, func):
+        self.context.add_func(namespace, func.name, func)
         namespace = namespace + (func.name,)
         for p in func.params:
             self.context.add_var(namespace, p.name, p)
