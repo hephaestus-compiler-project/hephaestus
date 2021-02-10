@@ -314,12 +314,14 @@ class SubtypeCreation(TypeCreation):
                     deepcopy(self._type_params_map.get(
                         p.get_type(), p.get_type()))
                 ) for p in func.params]
+            inferred_type = deepcopy(self._type_params_map.get(
+                func.get_type(), func.get_type()))
             functions.append(
                 ast.FunctionDeclaration(
                     func.name, params, None,
                     body=expr,
                     func_type=ast.FunctionDeclaration.CLASS_METHOD,
-                    inferred_type=deepcopy(func.get_type()),
+                    inferred_type=inferred_type,
                     is_final=True, override=True))
         return ast.ClassDeclaration(
             utils.random.word().capitalize(),
