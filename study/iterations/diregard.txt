@@ -9,3 +9,4 @@ https://github.com/scala/bug/issues/8522,no fix available
 https://github.com/scala/bug/issues/2613,duplicate
 https://github.com/scala/bug/issues/7750,warning
 https://github.com/scala/bug/issues/11435,no concrete fix available
+https://github.com/lampepfl/dotty/pull/10327,unrelated
