@@ -15,3 +15,6 @@ https://issues.apache.org/jira/browse/GROOVY-7987
 https://issues.apache.org/jira/browse/GROOVY-8445
 https://issues.apache.org/jira/browse/GROOVY-7316
 https://issues.apache.org/jira/browse/GROOVY-7420
+https://issues.apache.org/jira/browse/GROOVY-7315
+https://issues.apache.org/jira/browse/GROOVY-6030
+https://issues.apache.org/jira/browse/GROOVY-8059
