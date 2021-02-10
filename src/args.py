@@ -145,6 +145,12 @@ parser.add_argument(
     action="store_true",
     help="Use only preserve correctness substitution"
 )
+parser.add_argument(
+    "--timeout",
+    type=int,
+    default=600,
+    help="Timeout for transformations (in seconds)"
+)
 
 
 args = parser.parse_args()
@@ -196,17 +202,28 @@ args.options = {
         "disable_inference_in_closures": args.disable_inference_in_closures
     },
     "TypeSubstitution": {
-        "disable_params_type_widening": args.disable_params_type_widening
+        "disable_params_type_widening": args.disable_params_type_widening,
+        "timeout": args.timeout
     },
-    "ValueSubstitution": {},
-    "SupertypeCreation": {},
-    "SubtypeCreation": {},
+    "ValueSubstitution": {
+        "timeout": args.timeout
+    },
+    "SupertypeCreation": {
+        "timeout": args.timeout
+    },
+    "SubtypeCreation": {
+        "timeout": args.timeout
+    },
     "ParameterizedSubstitution": {
         "find_classes_blacklist": args.find_classes_blacklist,
-        "max_type_params": args.max_type_params
+        "max_type_params": args.max_type_params,
+        "timeout": args.timeout
     },
-    "TypeArgumentErasureSubstitution": {},
+    "TypeArgumentErasureSubstitution": {
+        "timeout": args.timeout
+    },
     "IncorrectSubtypingSubstitution": {
+        "timeout": args.timeout,
         "min_expr_depth": args.min_expr_depth
     }
 }

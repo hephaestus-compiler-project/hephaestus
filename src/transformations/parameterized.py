@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import List
 from copy import deepcopy
 
+import src.graph_utils as gutils
 from src import utils
 from src.ir import ast
 from src.ir import types, type_utils as tu
-import src.graph_utils as gutils
 from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis, GNode, FUNC_RET
 
@@ -323,7 +323,6 @@ class ParameterizedSubstitution(Transformation):
         analysis = UseAnalysis(self.program)
         analysis.visit(node)
         self._use_graph = analysis.result()
-        self.log(self._use_graph)
 
         node = self._select_type_params(node)
 

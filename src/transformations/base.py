@@ -1,5 +1,47 @@
 # pylint: disable=protected-access,dangerous-default-value
+import time
+import threading
+import sys
+from copy import deepcopy
+
 from src.ir.visitors import DefaultVisitorUpdate
+
+
+def timeout_function(log, entity, timeouted):
+    log("{}: took too long (timeout)".format(entity))
+    sys.stderr.flush() # Python 3 stderr is likely buffered.
+    timeouted[0] = True
+
+
+def visitor_logging_and_timeout_with_args(*args):
+    def wrap_visitor_func(visitor_func):
+        def wrapped_visitor(self, node):
+            if len(args) > 0:
+                self.log(*args)
+            transformation_name = self.__class__.__name__
+            visitor_name = visitor_func.__name__
+            entity = transformation_name + "-" + visitor_name
+            self.log("{}: Begin".format(entity))
+
+            old_node = deepcopy(node)
+            timeouted = [False]
+            start = time.time()
+            try:
+                timer = threading.Timer(
+                    self.timeout, timeout_function,
+                    args=[self.log, entity, timeouted])
+                timer.start()
+                new_node = visitor_func(self, node)
+            finally:
+                timer.cancel()
+            end = time.time()
+            if timeouted[0]:
+                new_node = old_node
+            self.log("{}: {} elapsed time".format(entity, str(end - start)))
+            self.log("{}: End".format(entity))
+            return new_node
+        return wrapped_visitor
+    return wrap_visitor_func
 
 
 def change_namespace(visit):
@@ -33,6 +75,7 @@ class Transformation(DefaultVisitorUpdate):
         self.types = self.program.get_types()
         self.logger = logger
         self.options = options
+        self.timeout = options.get("timeout", 600)
         if self.logger:
             self.logger.log_info()
 
@@ -55,3 +98,7 @@ class Transformation(DefaultVisitorUpdate):
     @classmethod
     def preserve_correctness(cls):
         return cls.CORRECTNESS_PRESERVING
+
+    @visitor_logging_and_timeout_with_args()
+    def visit_program(self, node):
+        return super().visit_program(node)
