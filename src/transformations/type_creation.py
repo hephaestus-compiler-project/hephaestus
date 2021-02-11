@@ -121,6 +121,7 @@ class TypeCreation(Transformation):
         self._new_class = None
         self._old_class = None
         self._namespace = ast.GLOBAL_NAMESPACE
+        self.tupd = tu.TypeUpdater()
 
     def create_new_class(self, class_decl):
         raise NotImplementedError('create_new_class() must be implemented')
@@ -186,7 +187,7 @@ class TypeCreation(Transformation):
         if not attr_value:
             # Nothing to update.
             return None
-        new_type = tu.update_type(attr_value, new_type)
+        new_type = self.tupd.update_type(attr_value, new_type)
         setattr(node, attr, new_type)
         return node
 

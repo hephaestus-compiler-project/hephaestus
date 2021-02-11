@@ -160,61 +160,89 @@ def _update_type_constructor(etype, new_type):
     return etype
 
 
-def update_supertypes(etype, new_type,
-                      test_pred=lambda x, y: x.name == y.name):
-    visited = [etype]
-    while visited:
-        source = visited[-1]
-        for i, supert in enumerate(source.supertypes):
-            if supert == new_type:
-                return
-            source.supertypes[i] = update_type(supert, new_type, test_pred)
+class TypeUpdater():
+    def __init__(self):
+        self._cache = {}
 
-            if supert not in visited:
-                visited.append(supert)
-        visited = visited[1:]
+    def update_supertypes(self, etype, new_type,
+                          test_pred=lambda x, y: x.name == y.name):
+        visited = [etype]
+        while visited:
+            source = visited[-1]
+            for i, supert in enumerate(source.supertypes):
+                if supert == new_type:
+                    return
+                source.supertypes[i] = self._update_type(supert, new_type,
+                                                         test_pred)
 
+                if supert not in visited:
+                    visited.append(supert)
+            visited = visited[1:]
 
-def update_type(etype, new_type, test_pred=lambda x, y: x.name == y.name):
-    if etype is None:
+    def _update_type(self, etype, new_type,
+                     test_pred=lambda x, y: x.name == y.name):
+        if isinstance(etype, tp.TypeParameter):
+            return self.update_type(etype, new_type, test_pred)
+        key = (
+            (etype.name, True)
+            if isinstance(etype, tp.TypeConstructor)
+            else (etype.name, False)
+        )
+        updated_type = self._cache.get(key)
+        if not updated_type:
+            new_type = self.update_type(etype, new_type, test_pred)
+            self._cache[key] = new_type
+            return new_type
+        if isinstance(etype, tp.ParameterizedType):
+            new_type_args = [self._update_type(ta, new_type)
+                             for ta in etype.type_args]
+            updated_type = updated_type.t_constructor.new(new_type_args)
+        return updated_type
+
+    def update_type(self, etype, new_type,
+                    test_pred=lambda x, y: x.name == y.name):
+        if etype is None:
+            return etype
+        if isinstance(etype, tp.Builtin) or isinstance(new_type, tp.Builtin):
+            return etype
+
+        self.update_supertypes(etype, new_type, test_pred)
+        # Case 1: The test_pred func of the two types match.
+        if test_pred(etype, new_type):
+            # So if the new type is a type constructor update the type
+            # constructor of 'etype' (if it is applicable)
+            if isinstance(new_type, tp.TypeConstructor):
+                return _update_type_constructor(etype, new_type)
+            # Otherwise replace `etype` with `new_type`
+            return new_type
+
+        # Case 2: If etype is a parameterized type, recursively inspect its
+        # type arguments and type constructor for updates.
+        if isinstance(etype, tp.ParameterizedType):
+            new_type_args = [self._update_type(ta, new_type)
+                             for ta in etype.type_args]
+            new_t_constructor = self._update_type(
+                etype.t_constructor, new_type, test_pred)
+            return new_t_constructor.new(new_type_args)
+        # Case 3: If etype is a type constructor recursively inspect is type
+        # parameters for updates.
+        if isinstance(etype, tp.TypeConstructor):
+            t_params = []
+            for t_param in etype.type_parameters:
+                if t_param.bound is not None:
+                    t_param.bound = self._update_type(
+                        t_param.bound, new_type, test_pred)
+                t_params.append(t_param)
+            etype.type_parameters = t_params
+            return etype
+
+        # Case 4: If etype is a type parameter inspect its bound (if any) for
+        # updates
+        if isinstance(etype, tp.TypeParameter):
+            if etype.bound is not None:
+                etype.bound = self._update_type(etype.bound, new_type,
+                                                test_pred)
         return etype
-    if isinstance(etype, tp.Builtin) or isinstance(new_type, tp.Builtin):
-        return etype
-
-    update_supertypes(etype, new_type, test_pred)
-    # Case 1: The test_pred func of the two types match.
-    if test_pred(etype, new_type):
-        # So if the new type is a type constructor update the type
-        # constructor of 'etype' (if it is applicable)
-        if isinstance(new_type, tp.TypeConstructor):
-            return _update_type_constructor(etype, new_type)
-        # Otherwise replace `etype` with `new_type`
-        return new_type
-
-    # Case 2: If etype is a parameterized type, recursively inspect its type
-    # arguments and type constructor for updates.
-    if isinstance(etype, tp.ParameterizedType):
-        new_type_args = [update_type(ta, new_type) for ta in etype.type_args]
-        new_t_constructor = update_type(
-            etype.t_constructor, new_type, test_pred)
-        return new_t_constructor.new(new_type_args)
-    # Case 3: If etype is a type constructor recursively inspect is type
-    # parameters for updates.
-    if isinstance(etype, tp.TypeConstructor):
-        t_params = []
-        for t_param in etype.type_parameters:
-            if t_param.bound is not None:
-                t_param.bound = update_type(t_param.bound, new_type, test_pred)
-            t_params.append(t_param)
-        etype.type_parameters = t_params
-        return etype
-
-    # Case 4: If etype is a type parameter inspect its bound (if any) for
-    # updates
-    if isinstance(etype, tp.TypeParameter):
-        if etype.bound is not None:
-            etype.bound = update_type(etype.bound, new_type, test_pred)
-    return etype
 
 
 def _get_available_types(types, only_regular):
