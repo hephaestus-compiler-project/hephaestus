@@ -37,6 +37,7 @@ class GroovyTranslator(ASTVisitor):
     filename = "Main.groovy"
     incorrect_filename = "incorrect.groovy"
     executable = "Main.jar"
+    ident_value=" "
 
     def __init__(self, package=None):
         self._children_res = []
@@ -62,6 +63,9 @@ class GroovyTranslator(ASTVisitor):
         # immediately `()`.
         self._inside_is = False
         self._inside_is_function = False
+
+    def get_ident(self, difference=0):
+        return (self.ident + difference) * self.ident_value
 
     @staticmethod
     def get_filename():
@@ -129,16 +133,22 @@ class GroovyTranslator(ASTVisitor):
             else:
                 c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{\n" + "\n".join(children_res[:-1])
+        res = "{{\n{statements}".format(
+            statements=("\n" + self.get_ident()).join(children_res[:-1])
+        )
+        # Multiple statements in the block
         if children_res[:-1]:
             res += "\n"
         if children_res:
-            res += " " * self.ident +  \
-                   children_res[-1][self.ident:] + "\n" + \
-                   " " * (self.ident - 2) + "}"
-        else:
-            res += " " * self.ident +  "\n" + \
-                   " " * (self.ident - 2) + "}"
+            res += "{ident}{return_statement}\n{old_ident}}}".format(
+                ident=self.get_ident(),
+                return_statement=children_res[-1][self.ident:],
+                old_ident=self.get_ident(difference=-2)
+            )
+        else:  # empty block
+            res = "{ }"
+        # When block is inside is then it is recognised as closure, thus
+        # we must append () to call it.
         if self._inside_is and not self._inside_is_function:
             res += "()"
         self.is_func_block = prev
