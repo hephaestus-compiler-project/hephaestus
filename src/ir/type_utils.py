@@ -347,8 +347,7 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
             return _return_type_hint(expr.integer_type or kt.IntegerType)
 
         elif isinstance(expr, ast.RealConstant):
-            return _return_type_hint(
-                kt.Float if expr.literal.endswith('f') else kt.Double)
+            return _return_type_hint(expr.real_type)
 
         elif isinstance(expr, ast.BooleanConstant):
             return _return_type_hint(kt.Boolean)
