@@ -8,6 +8,13 @@ from src.transformations.base import change_namespace
 
 
 def append_to(visit):
+    """There are three scenarios:
+
+    1. The node is the main function => set _main_method
+    2. The node is a top level function or variable declaration => append the
+        result to _main_children (nodes to declared static in Main class)
+    3. All other nodes just append them to _children_res
+    """
     def inner(self, node):
         res = visit(self, node)
         if (self._namespace == ast.GLOBAL_NAMESPACE and
