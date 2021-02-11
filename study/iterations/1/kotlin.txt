@@ -1,10 +1,8 @@
 https://youtrack.jetbrains.com/issue/KT-1934
 https://youtrack.jetbrains.com/issue/KT-4814
-https://youtrack.jetbrains.com/issue/KT-8462
 https://youtrack.jetbrains.com/issue/KT-42175
 https://youtrack.jetbrains.com/issue/KT-10244
 https://youtrack.jetbrains.com/issue/KT-10472
-https://youtrack.jetbrains.com/issue/KT-31559
 https://youtrack.jetbrains.com/issue/KT-7485
 https://youtrack.jetbrains.com/issue/KT-23748
 https://youtrack.jetbrains.com/issue/KT-22728
@@ -18,3 +16,4 @@ https://youtrack.jetbrains.com/issue/KT-41693
 https://youtrack.jetbrains.com/issue/KT-44420
 https://youtrack.jetbrains.com/issue/KT-35602
 https://youtrack.jetbrains.com/issue/KT-6992
+https://youtrack.jetbrains.com/issue/KT-6014
