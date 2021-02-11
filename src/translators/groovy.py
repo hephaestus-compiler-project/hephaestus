@@ -64,8 +64,10 @@ class GroovyTranslator(ASTVisitor):
         self._inside_is = False
         self._inside_is_function = False
 
-    def get_ident(self, difference=0):
-        return (self.ident + difference) * self.ident_value
+    def get_ident(self, extra=0, old_ident=None):
+        if old_ident:
+            return old_ident * self.ident_value
+        return (self.ident + extra) * self.ident_value
 
     @staticmethod
     def get_filename():
@@ -143,7 +145,7 @@ class GroovyTranslator(ASTVisitor):
             res += "{ident}{return_statement}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 return_statement=children_res[-1][self.ident:],
-                old_ident=self.get_ident(difference=-2)
+                old_ident=self.get_ident(extra=-2)
             )
         else:  # empty block
             res = "{ }"
@@ -190,12 +192,14 @@ class GroovyTranslator(ASTVisitor):
                       get_constructor_params().items()]
             constructor_params = ",".join(params)
             fields = ["this." + f.name + ' = ' + f.name for f in node.fields]
-            constructor_fields = "\n".join(fields)
-            return "{}public {}({}) {{\n{}\n}}".format(
-                self.ident * ' ',
-                node.name,
-                constructor_params,
-                constructor_fields
+            constructor_fields = "\n" + self.get_ident(extra=2) if fields \
+                else ""
+            constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
+            return "{ident}public {name}({params}) {{{fields}\n{ident}}}".format(
+                ident=self.get_ident(),
+                name=node.name,
+                params=constructor_params,
+                fields=constructor_fields
             )
 
         old_ident = self.ident
@@ -233,14 +237,15 @@ class GroovyTranslator(ASTVisitor):
         body = " {"
         if function_res or field_res:
             body += "\n"
-            spaces = "\n\n" + self.ident * '\t'
+            join_separator = "\n" + self.get_ident()
             if field_res:
-                body += spaces.join(field_res)
+                body += join_separator
+                body += join_separator.join(field_res)
             if superclasses or field_res:
                 body += "\n\n" + construct_constructor() + "\n\n"
             if function_res:
-                body +=  spaces.join(function_res)
-            body += "\n" + " " * old_ident + "}"
+                body += "\n".join(function_res)
+            body += "\n" + self.get_ident(extra=-4) + "}"
         else:
             body += "}"
         res += body
