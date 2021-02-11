@@ -144,7 +144,7 @@ class GroovyTranslator(ASTVisitor):
         if children_res:
             res += "{ident}{return_statement}\n{old_ident}}}".format(
                 ident=self.get_ident(),
-                return_statement=children_res[-1][self.ident:],
+                return_statement=children_res[-1],
                 old_ident=self.get_ident(extra=-2)
             )
         else:  # empty block
@@ -254,9 +254,9 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_type_param(self, node):
-        return "{}{}".format(
-            node.name,
-            ' extends ' + node.bound.get_name()
+        return "{name}{bound}".format(
+            name=node.name,
+            bound=' extends ' + node.bound.get_name()
             if node.bound is not None else ''
         )
 
@@ -265,33 +265,38 @@ class GroovyTranslator(ASTVisitor):
         old_ident = self.ident
         prev_cast_number = self._cast_number
         self._cast_number = True
-        prefix = " " * self.ident
         self.ident = 0
         children = node.children()
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        var_type = "final " if node.is_final else ""
-        res = prefix + var_type
         # Global variables declared as fields in Main, thus we must specify
         # their type.
+        var_type = ""
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE):
-            res += node.inferred_type.get_name() + " "
+            var_type = node.inferred_type.get_name() + " "
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
-        res += main_prefix + node.name
-        res += " = " + children_res[0]
+        res = "{ident}{final}{var_type}{main_prefix}{name} = {expr}".format(
+            ident=self.get_ident(),
+            final="final " if node.is_final else "",
+            var_type=var_type,
+            main_prefix=main_prefix,
+            name=node.name,
+            expr=children_res[0]
+        )
         self._cast_number = prev_cast_number
         self.ident = old_ident
         return res
 
     @append_to
     def visit_field_decl(self, node):
-        prefix = "public "
-        prefix += 'final ' if node.is_final else ''
-        res = prefix + node.field_type.get_name() + ' ' + node.name
-        return res
+        return "public {final}{field_type} {name}".format(
+            final="final " if node.is_final else "",
+            field_type=node.field_type.get_name(),
+            name=node.name
+        )
 
     @append_to
     def visit_param_decl(self, node):
@@ -325,26 +330,25 @@ class GroovyTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1] if node.body else ''
-        prefix = " " * old_ident
-        prefix += "final " if node.is_final else ""
         body = ""
         if body_res:
             body = "{\n" + body_res + "\n}" if is_expression else body_res
         if is_closure():
-            res = "{}def {} = {{ {} -> {}}}".format(
-                " " * old_ident,
-                node.name,
-                ", ".join(param_res),
-                body_res,
+            res = "{ident}def {name} = {{ {params} -> {body}}}".format(
+                ident=self.get_ident(old_ident=old_ident),
+                name=node.name,
+                params=", ".join(param_res),
+                body=body_res
             )
         else:
-            res = "{}{}{} {}({}) {}".format(
-                prefix,
-                "abstract " if body == "" else "",
-                node.inferred_type.get_name(),
-                node.name,
-                ", ".join(param_res),
-                body
+            res = "{ident}{final}{abstract}{ret_type} {name}({params}) {body}".format(
+                ident=self.get_ident(old_ident=old_ident),
+                final="final " if node.is_final else "",
+                abstract="abstract " if body == "" else "",
+                ret_type=node.inferred_type.get_name(),
+                name=node.name,
+                params=", ".join(param_res),
+                body=body
             )
         self.ident = old_ident
         self.is_func_block = prev
@@ -356,7 +360,10 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     def visit_integer_constant(self, node):
         if not self._cast_number:
-            return " " * self.ident + str(node.literal)
+            return "{ident}{literal}".format(
+                ident=self.get_ident(),
+                literal=str(node.literal)
+            )
         integer_types = {
             gt.Long: "(Long) ",
             gt.Short: "(Short) ",
@@ -364,36 +371,59 @@ class GroovyTranslator(ASTVisitor):
             gt.Number: "(Number) ",
         }
         cast = integer_types.get(node.integer_type, "")
-        return " " * self.ident + cast + str(node.literal)
+        return "{ident}{cast}{literal}".format(
+            ident=self.get_ident(),
+            cast=cast,
+            literal=str(node.literal)
+        )
 
     @append_to
     def visit_real_constant(self, node):
         if not self._cast_number:
-            return " " * self.ident + str(node.literal)
+            return "{ident}{literal}".format(
+                ident=self.get_ident(),
+                literal=str(node.literal)
+            )
         real_types = {
             gt.Double: "(Double) ",
             gt.Float: "(Float) ",
             gt.Number: "(Number) ",
         }
         cast = real_types.get(node.real_type, "")
-        return " " * self.ident + cast + str(node.literal)
+        return "{ident}{cast}{literal}".format(
+            ident=self.get_ident(),
+            cast=cast,
+            literal=str(node.literal)
+        )
 
     @append_to
     def visit_char_constant(self, node):
-        return "{}(Character) '{}'".format(" " * self.ident, node.literal)
+        return "{ident}(Character) '{literal}'".format(
+            ident=self.get_ident(),
+            literal=node.literal
+        )
 
     @append_to
     def visit_string_constant(self, node):
-        return '{}"{}"'.format(" " * self.ident, node.literal)
+        return "{ident}\"{literal}\"".format(
+            ident=self.get_ident(),
+            literal=node.literal
+        )
 
     @append_to
     def visit_boolean_constant(self, node):
-        return " " * self.ident + str(node.literal)
+        return "{ident}{literal}".format(
+            ident=self.get_ident(),
+            literal=str(node.literal)
+        )
 
     @append_to
     def visit_variable(self, node):
-        main_prefix = self._get_main_prefix('vars', node.name)
-        return " " * self.ident + main_prefix + node.name
+        return "{ident}{main_prefix}{name}".format(
+            ident=self.get_ident(),
+            main_prefix=self._get_main_prefix('vars', node.name),
+            name=node.name
+        )
 
     @append_to
     def visit_binary_op(self, node):
@@ -403,9 +433,12 @@ class GroovyTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}({} {} {})".format(
-            " " * old_ident, children_res[0], node.operator,
-            children_res[1])
+        res = "{ident}({left} {operator} {right})".format(
+            ident=self.get_ident(old_ident=old_ident),
+            left=children_res[0],
+            operator=node.operator,
+            right=children_res[1]
+        )
         self.ident = old_ident
         return res
 
@@ -431,11 +464,12 @@ class GroovyTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}(({}) ?\n{} : \n{})".format(
-            " " * old_ident,
-            children_res[0][self.ident:],
-            children_res[1],
-            children_res[2])
+        res = "{ident}(({if_condition}) ?\n{body} : \n {else_body})".format(
+            ident=self.get_ident(old_ident=old_ident),
+            if_condition=children_res[0][self.ident:],
+            body=children_res[1],
+            else_body=children_res[2]
+        )
         self.ident = old_ident
         self._inside_is = prev_inside_is
         return res
@@ -448,11 +482,11 @@ class GroovyTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}{} {} {}".format(
-            " " * old_ident,
-            children_res[0],
-            "!instanceof" if node.operator.is_not else "instanceof",
-            node.rexpr.get_name())
+        res = "{ident}{expr} {is_lit} {type_to_check}".format(
+            ident=self.get_ident(old_ident=old_ident),
+            expr=children_res[0],
+            is_lit="!instanceof" if node.operator.is_not else "instanceof",
+            type_to_check=node.rexpr.get_name())
         self.ident = old_ident
         return res
 
@@ -469,13 +503,14 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         # Remove type arguments from Parameterized Type
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
-            res = "{}({})".format(
-                " " * self.ident + "new " + node.class_type.name,
-                ", ".join(children_res))
+            cls = node.class_type.name
         else:
-            res = "{}({})".format(
-            " " * self.ident + "new " + node.class_type.get_name(),
-            ", ".join(children_res))
+            cls = node.class_type.get_name()
+        res = "{ident}new {cls}({args})".format(
+            ident=self.get_ident(),
+            cls=cls,
+            args=", ".join(children_res)
+        )
         self._cast_number = prev_cast_number
         return res
 
@@ -488,8 +523,11 @@ class GroovyTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        res = "{}{}.{}".format(" " * self.ident, children_res[0], node.field)
-        return res
+        return "{ident}{expr}.{field}".format(
+            ident=self.get_ident(),
+            expr=children_res[0],
+            field=node.field
+        )
 
     @append_to
     def visit_func_call(self, node):
@@ -503,17 +541,14 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
-        if node.receiver:
-            res = "{}{}.{}({})".format(
-                " " * self.ident,
-                children_res[0],
-                func,
-                ", ".join(children_res[1:]))
-        else:
-            res = "{}{}({})".format(
-            " " * self.ident,
-            func,
-            ", ".join(children_res))
+        receiver = children_res[0] if node.receiver else None
+        args = children_res[1:] if node.receiver else children_res
+        res = "{ident}{receiver}{name}({args})".format(
+            ident=self.get_ident(),
+            receiver=receiver + "." if receiver else "",
+            name=func,
+            args=", ".join(args)
+        )
         self._cast_number = prev_cast_number
         return res
 
@@ -529,12 +564,14 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         name = self._get_main_prefix('vars', node.name) + node.name
-        if node.receiver:
-            res = "{}{}.{} = {}".format(" " * old_ident, children_res[0],
-                                        name, children_res[1])
-        else:
-            res = "{}{} = {}".format(" " * old_ident, name,
-                                     children_res[0])
+        receiver = children_res[0] if node.receiver else None
+        expr = children_res[1] if node.receiver else children_res[0]
+        res = "{ident}{receiver}{name} = {expr}".format(
+            ident=self.get_ident(old_ident=old_ident),
+            receiver=receiver + "." if receiver else "",
+            name=name,
+            expr=expr
+        )
         self.ident = old_ident
         self._cast_number = prev_cast_number
         return res
