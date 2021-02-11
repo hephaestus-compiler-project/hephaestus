@@ -498,6 +498,11 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         self.error_injected = None
 
     def replace_value_node(self, node, exclude=[]):
+        # Due to groovy truth there is not effect if we do the transformation
+        # somewhere where we expect a boolean value
+        if (self.language == "groovy" and
+                self._expected_type == self.bt_factory.get_boolean_type()):
+            return node
         # We have already performed a transformation or the value is included
         # in a simple expression.
         if self.is_transformed or self.depth < self.min_expr_depth or (
