@@ -4,7 +4,6 @@ https://issues.apache.org/jira/browse/GROOVY-5217
 https://issues.apache.org/jira/browse/GROOVY-7211
 https://issues.apache.org/jira/browse/GROOVY-9420
 https://issues.apache.org/jira/browse/GROOVY-5232
-https://issues.apache.org/jira/browse/GROOVY-7145
 https://issues.apache.org/jira/browse/GROOVY-8330
 https://issues.apache.org/jira/browse/GROOVY-7721
 https://issues.apache.org/jira/browse/GROOVY-6021

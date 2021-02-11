@@ -10,3 +10,4 @@ https://github.com/scala/bug/issues/2613,duplicate
 https://github.com/scala/bug/issues/7750,warning
 https://github.com/scala/bug/issues/11435,no concrete fix available
 https://github.com/lampepfl/dotty/pull/10327,unrelated
+https://issues.apache.org/jira/browse/GROOVY-7145,related to code generation
