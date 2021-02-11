@@ -1,8 +1,8 @@
-# pylint: disable=protected-access
+# pylint: disable=protected-access,too-many-instance-attributes,too-many-locals
+# pylint: disable=too-many-statements
 from collections import OrderedDict
-from copy import deepcopy
 
-from src.ir import ast, types, groovy_types as gt
+from src.ir import ast, groovy_types as gt
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
 
@@ -200,7 +200,8 @@ class GroovyTranslator(ASTVisitor):
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
-            return "{ident}public {name}({params}) {{{fields}{new_line}{close_ident}}}".format(
+            return ("{ident}public {name}({params}) {{{fields}{new_line}"
+                    "{close_ident}}}").format(
                 ident=self.get_ident(),
                 name=node.name,
                 params=constructor_params,
@@ -358,7 +359,8 @@ class GroovyTranslator(ASTVisitor):
                 body=body_res
             )
         else:
-            res = "{ident}{final}{abstract}{ret_type} {name}({params}) {body}".format(
+            res = ("{ident}{final}{abstract}{ret_type} "
+                   "{name}({params}) {body}").format(
                 ident=self.get_ident(old_ident=old_ident),
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
