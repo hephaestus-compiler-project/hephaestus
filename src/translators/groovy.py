@@ -37,7 +37,7 @@ class GroovyTranslator(ASTVisitor):
     filename = "Main.groovy"
     incorrect_filename = "incorrect.groovy"
     executable = "Main.jar"
-    ident_value=" "
+    ident_value = " "
 
     def __init__(self, package=None):
         self._children_res = []
@@ -106,15 +106,22 @@ class GroovyTranslator(ASTVisitor):
             package_str = 'package ' + self.package + '\n\n'
         else:
             package_str = ''
-        main_decls = ["static " + d for d in self._main_children]
-        main_cls = "class Main {{\n{}\n{}\n}}".format(
-            "\n".join(main_decls),
-            "public static " + self._main_method if self._main_method else '')
-        res = "\n\n".join(self.pop_children_res(children))
-        self.program = "{}{}{}".format(
-            package_str,
-            main_cls,
-            "\n\n" + res if res else '')
+        self.ident = 2
+        main_decls = [
+            self.get_ident() + "static " + d.lstrip()
+            for d in self._main_children]
+        main_method = self.get_ident() + "public static " + \
+            self._main_method.lstrip() if self._main_method else None
+        main_cls = "class Main {{\n{main_decls}{main_method}\n}}".format(
+            main_decls="\n\n".join(main_decls),
+            main_method="\n\n" + main_method if main_method else ""
+        )
+        other_classes = "\n\n".join(self.pop_children_res(children))
+        self.program = "{package}{main}{other_classes}".format(
+            package=package_str,
+            main=main_cls,
+            other_classes="\n\n" + other_classes if other_classes else ''
+        )
         # Clear the state
         self._main_method = ""
         self._main_children = []
@@ -135,20 +142,19 @@ class GroovyTranslator(ASTVisitor):
             else:
                 c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{{\n{statements}".format(
-            statements=("\n" + self.get_ident()).join(children_res[:-1])
-        )
-        # Multiple statements in the block
-        if children_res[:-1]:
-            res += "\n"
-        if children_res:
-            res += "{ident}{return_statement}\n{old_ident}}}".format(
+        if len(children_res) == 0:  # empty block
+            res = "{ }"
+        elif len(children_res) == 1:  # single statement
+            res = "{{\n{ident}{stmt}\n{old_ident}}}".format(
                 ident=self.get_ident(),
-                return_statement=children_res[-1],
+                stmt=children_res[0],
                 old_ident=self.get_ident(extra=-2)
             )
-        else:  # empty block
-            res = "{ }"
+        else:
+            res = "{{\n{stmts}\n{old_ident}}}".format(
+                stmts="\n".join(children_res),
+                old_ident=self.get_ident(extra=-2)
+            )
         # When block is inside is then it is recognised as closure, thus
         # we must append () to call it.
         if self._inside_is and not self._inside_is_function:
@@ -158,7 +164,6 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_super_instantiation(self, node):
-        self.ident = 0
         return node.class_type.get_name()
 
     @append_to
@@ -195,11 +200,13 @@ class GroovyTranslator(ASTVisitor):
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
-            return "{ident}public {name}({params}) {{{fields}\n{ident}}}".format(
+            return "{ident}public {name}({params}) {{{fields}{new_line}{close_ident}}}".format(
                 ident=self.get_ident(),
                 name=node.name,
                 params=constructor_params,
-                fields=constructor_fields
+                fields=constructor_fields,
+                new_line="\n" if fields else "",
+                close_ident=self.get_ident() if fields else ""
             )
 
         old_ident = self.ident
@@ -239,12 +246,15 @@ class GroovyTranslator(ASTVisitor):
             body += "\n"
             join_separator = "\n" + self.get_ident()
             if field_res:
-                body += join_separator
+                body += self.get_ident()
                 body += join_separator.join(field_res)
+                body += "\n\n"
             if superclasses or field_res:
-                body += "\n\n" + construct_constructor() + "\n\n"
+                body += construct_constructor()
+                if function_res:
+                    body += "\n\n"
             if function_res:
-                body += "\n".join(function_res)
+                body += "\n\n".join(function_res)
             body += "\n" + self.get_ident(extra=-4) + "}"
         else:
             body += "}"
@@ -262,10 +272,8 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_var_decl(self, node):
-        old_ident = self.ident
         prev_cast_number = self._cast_number
         self._cast_number = True
-        self.ident = 0
         children = node.children()
         for c in children:
             c.accept(self)
@@ -278,16 +286,16 @@ class GroovyTranslator(ASTVisitor):
             var_type = node.inferred_type.get_name() + " "
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
+        expr = children_res[0].lstrip()
         res = "{ident}{final}{var_type}{main_prefix}{name} = {expr}".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
             var_type=var_type,
             main_prefix=main_prefix,
             name=node.name,
-            expr=children_res[0]
+            expr=expr
         )
         self._cast_number = prev_cast_number
-        self.ident = old_ident
         return res
 
     @append_to
@@ -317,6 +325,9 @@ class GroovyTranslator(ASTVisitor):
             prev_inside_is_function = self._inside_is_function
             self._inside_is_function = True
         old_ident = self.ident
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident += 2
+            self.ident += 2
         self.ident += 2
         prev_cast_number = self._cast_number
         children = node.children()
@@ -332,7 +343,13 @@ class GroovyTranslator(ASTVisitor):
         body_res = children_res[-1] if node.body else ''
         body = ""
         if body_res:
-            body = "{\n" + body_res + "\n}" if is_expression else body_res
+            if is_expression:
+                body = "{{\n{body}\n{ident}}}".format(
+                    body=body_res,
+                    ident=self.get_ident(old_ident=old_ident)
+                )
+            else:
+                body = body_res
         if is_closure():
             res = "{ident}def {name} = {{ {params} -> {body}}}".format(
                 ident=self.get_ident(old_ident=old_ident),
@@ -350,6 +367,8 @@ class GroovyTranslator(ASTVisitor):
                 params=", ".join(param_res),
                 body=body
             )
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident -= 2
         self.ident = old_ident
         self.is_func_block = prev
         self._cast_number = prev_cast_number
@@ -466,7 +485,7 @@ class GroovyTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         res = "{ident}(({if_condition}) ?\n{body} : \n {else_body})".format(
             ident=self.get_ident(old_ident=old_ident),
-            if_condition=children_res[0][self.ident:],
+            if_condition=children_res[0].lstrip(),
             body=children_res[1],
             else_body=children_res[2]
         )
