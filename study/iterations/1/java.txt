@@ -1,7 +1,6 @@
 https://bugs.openjdk.java.net/browse/JDK-8258972
 https://bugs.openjdk.java.net/browse/JDK-8254557
 https://bugs.openjdk.java.net/browse/JDK-8244559
-https://bugs.openjdk.java.net/browse/JDK-8038788
 https://bugs.openjdk.java.net/browse/JDK-8191802
 https://bugs.openjdk.java.net/browse/JDK-8231461
 https://bugs.openjdk.java.net/browse/JDK-8012238
@@ -18,3 +17,4 @@ https://bugs.openjdk.java.net/browse/JDK-8144832
 https://bugs.openjdk.java.net/browse/JDK-8169091
 https://bugs.openjdk.java.net/browse/JDK-6996914
 https://bugs.openjdk.java.net/browse/JDK-8154180
+https://bugs.openjdk.java.net/browse/JDK-8015809
