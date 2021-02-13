@@ -302,11 +302,13 @@ def gen_program(pid, dirname, packages):
 
 
 def gen_program_mul(pid, dirname, packages):
+    global STOP_COND
+    if STOP_COND:
+        return
     try:
         utils.random.r.seed()
         return gen_program(pid, dirname, packages)
     except KeyboardInterrupt:
-        global STOP_COND
         STOP_COND = True
 
 
@@ -423,10 +425,12 @@ def check_oracle(dirname, oracles):
 
 
 def check_oracle_mul(dirname, oracles):
+    global STOP_COND
+    if STOP_COND:
+        return {}
     try:
         return check_oracle(dirname, oracles)
     except KeyboardInterrupt:
-        global STOP_COND
         STOP_COND = True
         return {}
 
@@ -509,13 +513,16 @@ def run_parallel():
             global STOP_COND
             STOP_COND = True
 
-    _run(process_program, process_res)
     try:
+        _run(process_program, process_res)
         pool.close()
         pool.join()
     except KeyboardInterrupt:
-        pool.terminate()
-        pool.join()
+        try:
+            pool.terminate()
+            pool.join()
+        except Exception:
+            pass
     path = os.path.join(cli_args.test_directory, 'tmp')
     if os.path.exists(path):
         shutil.rmtree(path)
