@@ -181,7 +181,11 @@ class TypeUpdater():
 
     def _update_type(self, etype, new_type,
                      test_pred=lambda x, y: x.name == y.name):
-        if isinstance(etype, tp.TypeParameter):
+        if isinstance(etype, tp.TypeParameter) or (
+            isinstance(etype, tp.ParameterizedType)) or (
+                isinstance(etype, tp.TypeConstructor)):
+            # We must re-compute parameterized types, as they may involve
+            # different type arguments or type constructors.
             return self.update_type(etype, new_type, test_pred)
         key = (
             (etype.name, True)
@@ -189,9 +193,7 @@ class TypeUpdater():
             else (etype.name, False)
         )
         updated_type = self._cache.get(key)
-        # We must re-compute parameterized types, as they may involve different
-        # type arguments of type constructors.
-        if not updated_type or isinstance(updated_type, tp.ParameterizedType):
+        if not updated_type:
             new_type = self.update_type(etype, new_type, test_pred)
             self._cache[key] = new_type
             return new_type
