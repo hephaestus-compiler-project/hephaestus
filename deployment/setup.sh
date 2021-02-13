@@ -34,6 +34,13 @@ install_java() {
     sdk install java 8.0.265-open
 }
 
+install_groovy() {
+    install_java
+    sdk install groovy 4.0.0-alpha-2
+    echo "PATH=\"\$PATH:/root/.sdkman/candidates/kotlin/current/bin/\"" >> $HOME/.bash_profile
+}
+
+
 install_kotlin_from_source() {
     sdk install java 9.0.4-open
     sdk install java 8.0.265-open
@@ -146,7 +153,7 @@ then
         exit 0
 fi
 
-while getopts "hska" OPTION; do
+while getopts "hskag" OPTION; do
         case $OPTION in
 
                 k)
@@ -170,15 +177,24 @@ while getopts "hska" OPTION; do
                         add_run_script_to_path
                         ;;
 
+                g)
+                        install_deps
+                        install_groovy
+                        install_check_type_systems
+                        add_run_script_to_path
+                        ;;
+
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
                         echo "init.sh -s "
                         echo "init.sh -a "
+                        echo "init.sh -g "
                         echo ""
                         echo "   -k     Install latest kotlin version"
                         echo "   -s     Install kotlin from source"
                         echo "   -a     Install all kotlin versions"
+                        echo "   -g     Install latest groovy version"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;

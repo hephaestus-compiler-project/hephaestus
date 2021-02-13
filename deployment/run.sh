@@ -9,6 +9,14 @@ source /root/.bashrc
 source /root/.bash_profile
 
 
+simple_run_groovy() {
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    sdk install kotlin
+    cd $CHECK_TYPE_SYSTEMS
+    git pull
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 --language groovy 
+}
+
 simple_run() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     sdk install kotlin
@@ -63,15 +71,21 @@ while getopts "hksa" OPTION; do
                         run_multiple_versions
                         ;;
 
+                g)
+                        simple_run_groovy
+                        ;;
+
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
                         echo "init.sh -s "
                         echo "init.sh -a "
+                        echo "init.sh -g "
                         echo ""
                         echo "   -k     Simple run"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
+                        echo "   -g     Simple run groovy"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;
