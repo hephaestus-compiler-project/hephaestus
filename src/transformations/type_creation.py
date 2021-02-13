@@ -303,16 +303,16 @@ class SubtypeCreation(TypeCreation):
         functions = []
         # We need to override all abstract function defined in the supertype.
         for func in abstract_functions:
+            expr_type = self._type_params_map.get(func.get_type(),
+                                                  func.get_type())
             # If the return type of the function is Unit, then choose a random
             # type, and generate an expression of this type.
             expr_type = (
-                func.get_type()
-                if func.get_type() != self.program.bt_factory.get_void_type()
+                expr_type
+                if expr_type != self.program.bt_factory.get_void_type()
                 else utils.random.choice(self.types)
             )
-            expr = self.generator.generate_expr(
-                self._type_params_map.get(expr_type, func.get_type()),
-                only_leaves=True)
+            expr = self.generator.generate_expr(expr_type, only_leaves=True)
             if func.get_type() == self.program.bt_factory.get_void_type():
                 # We must create a block, if functions returns Unit.
                 expr = ast.Block([expr])
