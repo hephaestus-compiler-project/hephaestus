@@ -20,6 +20,7 @@ from src.translators.groovy import GroovyTranslator
 from src.modules.processor import ProgramProcessor
 
 
+STOP_COND = False
 TRANSLATORS = {
     'kotlin': KotlinTranslator,
     'groovy': GroovyTranslator
@@ -168,6 +169,9 @@ def save_stats():
 
 
 def stop_condition(iteration, time_passed):
+    global STOP_COND
+    if STOP_COND:
+        return False
     if cli_args.seconds:
         return time_passed < cli_args.seconds
     if cli_args.iterations:
@@ -295,13 +299,15 @@ def gen_program(pid, dirname, packages):
             'program': None
         }
         return ProgramRes(True, stats)
-    except KeyboardInterrupt:
-        return None
 
 
 def gen_program_mul(pid, dirname, packages):
-    utils.random.r.seed()
-    return gen_program(pid, dirname, packages)
+    try:
+        utils.random.r.seed()
+        return gen_program(pid, dirname, packages)
+    except KeyboardInterrupt:
+        global STOP_COND
+        STOP_COND = True
 
 
 def _report_failed(pid, tid, compiler, oracle):
@@ -416,13 +422,22 @@ def check_oracle(dirname, oracles):
     return output
 
 
+def check_oracle_mul(dirname, oracles):
+    try:
+        return check_oracle(dirname, oracles)
+    except KeyboardInterrupt:
+        global STOP_COND
+        STOP_COND = True
+        return {}
+
+
 def _run(process_program, process_res):
     logging()
     iteration = 1
     time_passed = 0
     start_time = time.time()
-    try:
-        while stop_condition(iteration, time_passed):
+    while stop_condition(iteration, time_passed):
+        try:
             utils.random.reset_word_pool()
             tmpdir = tempfile.mkdtemp()
             res = []
@@ -438,8 +453,8 @@ def _run(process_program, process_res):
 
             time_passed = time.time() - start_time
             iteration += batches
-    except KeyboardInterrupt:
-        pass
+        except KeyboardInterrupt:
+            return
 
 
 def run():
@@ -458,7 +473,9 @@ def run():
         _run(process_program, process_res)
     except KeyboardInterrupt:
         pass
-    shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp'))
+    path = os.path.join(cli_args.test_directory, 'tmp')
+    if os.path.exists(path):
+        shutil.rmtree(path)
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
@@ -468,20 +485,29 @@ def run_parallel():
     pool = mp.Pool(cli_args.workers)
 
     def process_program(pid, dirname, packages):
-        return pool.apply_async(gen_program_mul, args=(pid, dirname, packages))
+        try:
+            return pool.apply_async(gen_program_mul, args=(pid, dirname,
+                                                           packages))
+        except KeyboardInterrupt:
+            global STOP_COND
+            STOP_COND = True
 
     def process_res(start_index, res, testdir, batch):
         def update(res):
             update_stats(res, batch)
 
-        res = [r.get() for r in res]
-        oracles = OrderedDict()
-        for i, r in enumerate(res):
-            oracles[start_index + i] = r
-        if cli_args.dry_run:
-            return update({})
-        pool.apply_async(check_oracle, args=(testdir, oracles),
-                         callback=update)
+        try:
+            res = [r.get() for r in res]
+            oracles = OrderedDict()
+            for i, r in enumerate(res):
+                oracles[start_index + i] = r
+            if cli_args.dry_run:
+                return update({})
+            pool.apply_async(check_oracle_mul, args=(testdir, oracles),
+                             callback=update)
+        except KeyboardInterrupt:
+            global STOP_COND
+            STOP_COND = True
 
     _run(process_program, process_res)
     try:
@@ -490,7 +516,9 @@ def run_parallel():
     except KeyboardInterrupt:
         pool.terminate()
         pool.join()
-    shutil.rmtree(os.path.join(cli_args.test_directory, 'tmp'))
+    path = os.path.join(cli_args.test_directory, 'tmp')
+    if os.path.exists(path):
+        shutil.rmtree(path)
     print()
     print("Total faults: " + str(STATS['totals']['failed']))
 
