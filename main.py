@@ -252,15 +252,16 @@ def gen_program(pid, dirname, packages):
     utils.random.reset_word_pool()
     translator = TRANSLATORS[cli_args.language]('src.' + packages[0])
     proc = ProgramProcessor(pid, cli_args)
-    program, oracle = proc.get_program()
-    if cli_args.keep_all:
-        # Save the initial program.
-        save_program(
-            program,
-            utils.translate_program(translator, program),
-            os.path.join(get_generator_dir(pid), translator.get_filename())
-        )
     try:
+        # FIXME this may cause MaximumRecursionError
+        program, oracle = proc.get_program()
+        if cli_args.keep_all:
+            # Save the initial program.
+            save_program(
+                program,
+                utils.translate_program(translator, program),
+                os.path.join(get_generator_dir(pid), translator.get_filename())
+            )
         correct_program = process_cp_transformations(
             pid, dirname, translator, proc, program, packages[0])
         stats = {
