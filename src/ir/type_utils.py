@@ -189,14 +189,12 @@ class TypeUpdater():
             else (etype.name, False)
         )
         updated_type = self._cache.get(key)
-        if not updated_type:
+        # We must re-compute parameterized types, as they may involve different
+        # type arguments of type constructors.
+        if not updated_type or isinstance(updated_type, tp.ParameterizedType):
             new_type = self.update_type(etype, new_type, test_pred)
             self._cache[key] = new_type
             return new_type
-        if isinstance(etype, tp.ParameterizedType):
-            new_type_args = [self._update_type(ta, new_type)
-                             for ta in etype.type_args]
-            updated_type = updated_type.t_constructor.new(new_type_args)
         return updated_type
 
     def update_type(self, etype, new_type,
