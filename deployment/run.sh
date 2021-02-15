@@ -14,7 +14,8 @@ simple_run_groovy() {
     # sdk install groovy
     cd $CHECK_TYPE_SYSTEMS
     git pull
-    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 --language groovy
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 \
+        --language groovy --only-preserve-correctness-substitutions
 }
 
 simple_run() {
