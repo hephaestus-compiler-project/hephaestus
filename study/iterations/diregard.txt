@@ -12,3 +12,5 @@ https://github.com/scala/bug/issues/11435,no concrete fix available
 https://github.com/lampepfl/dotty/pull/10327,unrelated
 https://issues.apache.org/jira/browse/GROOVY-7145,related to code generation
 https://youtrack.jetbrains.com/issue/KT-8462,no fix available
+https://bugs.openjdk.java.net/browse/JDK-8038788,unrelated
+https://bugs.openjdk.java.net/browse/JDK-6999067,warning
