@@ -11,10 +11,10 @@ source /root/.bash_profile
 
 simple_run_groovy() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
-    sdk install kotlin
+    # sdk install groovy
     cd $CHECK_TYPE_SYSTEMS
     git pull
-    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 --language groovy 
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 --language groovy
 }
 
 simple_run() {
@@ -56,7 +56,7 @@ then
         exit 0
 fi
 
-while getopts "hksa" OPTION; do
+while getopts "hksag" OPTION; do
         case $OPTION in
 
                 k)
