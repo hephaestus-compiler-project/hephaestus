@@ -307,6 +307,29 @@ def choose_type(types: List[tp.Type], only_regular=True):
     return cls_type
 
 
+def get_parameterized_type_instantiation(etype):
+    if not isinstance(etype, tp.ParameterizedType):
+        return {}
+    return {
+        t_param: etype.type_args[i]
+        for i, t_param in enumerate(etype.t_constructor.type_parameters)
+    }
+
+
+def find_nearest_supertype(etype, types, pred=lambda x, y: x in y):
+    stack = [etype]
+    visited = {etype}
+    while stack:
+        source = stack.pop()
+        for supertype in source.supertypes:
+            if pred(supertype, types):
+                return supertype
+            if supertype not in visited:
+                visited.add(supertype)
+                stack.append(supertype)
+    return None
+
+
 def get_decl_from_inheritance(receiver_t: tp.Type,
                               decl_name: str,
                               context: ctx.Context) -> ast.Declaration:

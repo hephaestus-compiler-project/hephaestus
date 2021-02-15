@@ -745,3 +745,11 @@ def test_type_hint_field_access_inheritance():
     expr = ast.FieldAccess(cond3, "f")
     assert tutils.get_type_hint(expr, context, tuple()) is None
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+
+
+def test_find_nearest_supertype():
+    t1 = tp.SimpleClassifier("Foo", [])
+    t2 = tp.SimpleClassifier("Bar", [t1])
+    t3 = tp.SimpleClassifier("Baz", [t2])
+    assert tutils.find_nearest_supertype(t3, [kt.Any]) == None
+    assert tutils.find_nearest_supertype(t3, [t2, t1, t3]) == t2
