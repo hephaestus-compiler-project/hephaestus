@@ -312,6 +312,10 @@ class SubtypeCreation(TypeCreation):
                 if expr_type != self.program.bt_factory.get_void_type()
                 else utils.random.choice(self.types)
             )
+            if hasattr(expr_type, 'get_type'):
+                # The expr_type is actually a class, so we must derive the
+                # type from the class declaration.
+                expr_type = self._get_class_type(expr_type, self.types)
             expr = self.generator.generate_expr(expr_type, only_leaves=True)
             if func.get_type() == self.program.bt_factory.get_void_type():
                 # We must create a block, if functions returns Unit.
