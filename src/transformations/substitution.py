@@ -124,7 +124,7 @@ class TypeSubstitution(Transformation):
         self._defs = defaultdict(bool)
         self._namespace = ('global',)
         self._cached_type_widenings = {}
-        self._func_decls = defaultdict(set)
+        self._func_decls = {}
         self._calls = None
         self.disable_params_type_widening = self.options.get(
             "disable_params_type_widening", False)
@@ -174,8 +174,9 @@ class TypeSubstitution(Transformation):
                            for st in current_cls.get_type().get_supertypes()]
 
         transform = True
+        # Class names where the overriden function is defined.
+        class_names = [f[0].name for f in funcs]
         for cls, p_fun in funcs:
-
             cls_sts = [st.name for st in cls.get_type().get_supertypes()]
 
             if current_cls.name in cls_sts:
@@ -192,9 +193,36 @@ class TypeSubstitution(Transformation):
                 child_param = param
                 child_namespace = self._namespace
             else:
-                # There is no parent-child relations between the current class
-                # and `cls`, so there is no restriction for the type of
-                # function's parameter.
+                # OK At this point, we must ensure that there is no any
+                # supertype of cls, which is also a supertype of the current
+                # class, for which we have reverted its parameter type.
+                nearest_supertype = tu.find_nearest_supertype(
+                    cls, class_names, lambda x, y: x.name in y)
+                if not nearest_supertype:
+                    # There is no parent-child relations between the current
+                    # class and `cls`, so there is no restriction for the type
+                    # of function's parameter.
+                    continue
+                parent_cls, parent_fun = [
+                    f for f in funcs
+                    if f[0].name == nearest_supertype.name][0]
+                parent_param = parent_fun.params[param_index]
+                child_namespace = ast.GLOBAL_NAMESPACE + (cls.name, p_fun.name)
+                child_param = p_fun.params[param_index]
+                if isinstance(parent_param.get_type(), tp.AbstractType):
+                    # The param type of the parent class is abstract, so take
+                    # the argument types of the instantiation of the supertype,
+                    # and set the type of the child class accordingly.
+                    type_map = tu.get_parameterized_type_instantiation(
+                        nearest_supertype)
+                    child_param.param_type = type_map[parent_param.get_type()]
+                    self.program.context.add_var(
+                        child_namespace, child_param.name, child_param)
+                else:
+                    child_param.param_type = deepcopy(parent_param.param_type)
+                    self.program.context.add_var(
+                        child_namespace, child_param.name, child_param)
+                transform = False
                 continue
 
             if child_param.get_type() == parent_param.get_type():
@@ -377,6 +405,14 @@ class TypeSubstitution(Transformation):
         return not self.is_decl_used(decl) or not transform or (
             node.body is None)
 
+    def _add_overriden_func(self, func, current_cls):
+        # XXX: It's very important to keep overriden methods in order.
+        # For example, the methods of parent classes should come first.
+        if func.name in self._func_decls:
+            self._func_decls[func.name].append((current_cls, func))
+        else:
+            self._func_decls[func.name] = [(current_cls, func)]
+
     def visit_func_decl(self, node):
         initial_namespace = self._namespace
         self._namespace += (node.name,)
@@ -468,7 +504,7 @@ class TypeSubstitution(Transformation):
         if use_var:
             new_node.body = ast.Block([var_decl, new_node.body.body[0]])
         if current_cls is not None:
-            self._func_decls[new_node.name].add((current_cls, new_node))
+            self._add_overriden_func(new_node, current_cls)
         self._namespace = initial_namespace
         self.program.context.add_func(self._namespace, new_node.name,
                                       new_node)
