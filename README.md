@@ -6,8 +6,7 @@ Reported Bugs
 
 #### Kotlin
 
-* <https://youtrack.jetbrains.com/issues?q=%23theosotr%20>
-* <https://youtrack.jetbrains.com/issues?q=%23stefanoshaliassos%20>
+* <https://youtrack.jetbrains.com/issues?q=%23theosotr%20%23stefanoshaliassos%20>
 
 #### Groovy
 
