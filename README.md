@@ -11,8 +11,7 @@ Reported Bugs
 
 #### Groovy
 
-* <https://issues.apache.org/jira/browse/GROOVY-9907?filter=-2&jql=reporter%20%3D%20%22Thodoris%20Sotiropoulos%22%20>
-* <https://issues.apache.org/jira/issues/?filter=-2&jql=reporter%20%3D%20schaliasos>
+* <https://issues.apache.org/jira/browse/GROOVY-9945?filter=-2&jql=reporter%20%3D%20%22Thodoris%20Sotiropoulos%22%20OR%20reporter%20%3D%20schaliasos>
 
 Installation
 ------------
