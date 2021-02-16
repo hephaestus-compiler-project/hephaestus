@@ -215,14 +215,16 @@ class TypeSubstitution(Transformation):
                     # and set the type of the child class accordingly.
                     type_map = tu.get_parameterized_type_instantiation(
                         nearest_supertype)
-                    child_param.param_type = type_map[parent_param.get_type()]
-                    self.program.context.add_var(
-                        child_namespace, child_param.name, child_param)
+                    new_type = type_map[parent_param.get_type()]
                 else:
-                    child_param.param_type = deepcopy(parent_param.param_type)
-                    self.program.context.add_var(
-                        child_namespace, child_param.name, child_param)
-                transform = False
+                    new_type = parent_param.param_type
+                if child_param.param_type != new_type:
+                    # Set transform to False, only if the type in the
+                    # parent is different than the type in the child.
+                    transform = False
+                child_param.param_type = deepcopy(new_type)
+                self.program.context.add_var(
+                    child_namespace, child_param.name, child_param)
                 continue
 
             if child_param.get_type() == parent_param.get_type():
