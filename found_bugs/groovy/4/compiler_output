@@ -1,0 +1,7 @@
+org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Main.groovy: 14: [Static type checking] - Cannot find matching method Bar#foo(java.lang.Float, java.lang.Integer). Please check if the declared type is correct and if the method exists.
+ @ line 14, column 5.
+       new Bar<Float, Integer>().foo((Float) 1.4, -1)
+       ^
+
+1 error
