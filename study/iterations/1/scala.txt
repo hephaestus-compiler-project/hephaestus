@@ -1,5 +1,5 @@
 https://github.com/scala/bug/issues/8675,https://github.com/scala/scala/pull/3828/commits/7a16f76673530f71bf1b8fa79b489b502ef504a8
-https://github.com/scala/bug/issues/11843,https://github.com/scala/scala/pull/8639/commits/dce1076ac281ad87d225c3c3f7d57bea938a2f09
+https://github.com/scala/bug/issues/11843,https://github.com/scala/scala/pull/8953/commits/96aa17712a4758a8f1f28902af3ec0fc7529763b
 https://github.com/lampepfl/dotty/issues/5636,https://github.com/lampepfl/dotty/pull/6746/commits/e3286bb8717370c9a9a2d4ba1278dc3ead44aa36
 https://github.com/lampepfl/dotty/issues/8802,https://github.com/lampepfl/dotty/commit/1c60fcf562026f2df0f44a670862e4a6319c0521
 https://github.com/lampepfl/dotty/issues/4509,https://github.com/lampepfl/dotty/commit/363050d2ba6488097c423113bd6f99b71757fd5c
