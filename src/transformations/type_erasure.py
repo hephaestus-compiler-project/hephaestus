@@ -119,7 +119,7 @@ class TypeArgumentErasureSubstitution(Transformation):
                     analysis.visit(parent_decl)
                     use_graph = analysis.result()
                     gnode = GNode(namespace, var_decl.name)
-                    if not use_graph[gnode] == {NONE_NODE}:
+                    if len(use_graph[gnode]) != 0:
                         return node
                 self.is_transformed = True
                 node.class_type.can_infer_type_args = True
