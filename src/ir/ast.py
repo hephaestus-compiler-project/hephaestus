@@ -11,6 +11,19 @@ from src.ir import BUILTIN_FACTORIES
 GLOBAL_NAMESPACE = ('global',)
 
 
+def check_list_eq(first, second):
+    if len(first) != len(second):
+        return False
+    return all(s.is_equal(o) for o, s in zip(first, second))
+
+
+def check_default_eq(first, second):
+    if not first is None:
+        return first.is_equal(second)
+    else:
+        return second is None
+
+
 class Expr(Node):
     pass
 
@@ -117,6 +130,10 @@ class Block(Node):
     def __str__(self):
         return "{{\n  {}\n}}".format("\n  ".join(map(str, self.body)))
 
+    def is_equal(self, other):
+        if isinstance(other, Block):
+            return check_list_eq(self.body, other.body)
+        return False
 
 class Declaration(Node):
     def get_type(self):
@@ -160,6 +177,15 @@ class VariableDeclaration(Declaration):
         return "{}{}: {} = {}".format(
             prefix, self.name, str(self.var_type), str(self.expr))
 
+    def is_equal(self, other):
+        if isinstance(other, VariableDeclaration):
+            return (self.name == other.name and
+                    self.expr.is_equal(other.expr) and
+                    self.is_final == other.is_final and
+                    self.var_type == other.var_type and
+                    self.inferred_type == other.inferred_type)
+        return False
+
 
 class FieldDeclaration(Declaration):
     def __init__(self, name: str, field_type: types.Type, is_final=True,
@@ -182,6 +208,15 @@ class FieldDeclaration(Declaration):
     def __str__(self):
         return str(self.name) + ": " + str(self.field_type)
 
+    def is_equal(self, other):
+        if isinstance(other, FieldDeclaration):
+            return (self.name == other.name and
+                    self.field_type == other.field_type and
+                    self.is_final == other.is_final and
+                    self.can_override == other.can_override and
+                    self.override == other.override)
+        return False
+
 
 class ObjectDecleration(Declaration):
     def __init__(self, name: str):
@@ -195,6 +230,11 @@ class ObjectDecleration(Declaration):
 
     def __str__(self):
         return "object " + self.name
+
+    def is_equal(self, other):
+        if isinstance(other, ObjectDecleration):
+            return self.name == other.name
+        return False
 
 
 class SuperClassInstantiation(Node):
@@ -216,6 +256,12 @@ class SuperClassInstantiation(Node):
             return self.class_type.name
         return "{}({})".format(
             self.class_type.name, ", ".join(map(str, self.args)))
+
+    def is_equal(self, other):
+        if isinstance(other, SuperClassInstantiation):
+            return (self.class_type == other.class_type and
+                    check_list_eq(self.args, other.args))
+        return False
 
 
 class ParameterDeclaration(Declaration):
@@ -240,6 +286,13 @@ class ParameterDeclaration(Declaration):
             return self.name + ": " + str(self.param_type)
         return "{}: {} = {}".format(
             self.name, str(self.param_type), str(self.default))
+
+    def is_equal(self, other):
+        if isinstance(other, ParameterDeclaration):
+            return (self.name == other.name and
+                    self.param_type == other.param_type and
+                    check_default_eq(self.default, other.default))
+        return False
 
 
 class FunctionDeclaration(Declaration):
@@ -292,6 +345,17 @@ class FunctionDeclaration(Declaration):
         return "fun {}({}): {} =\n  {}".format(
             self.name, ",".join(map(str, self.params)), str(self.ret_type),
             str(self.body))
+
+    def is_equal(self, other):
+        if isinstance(other, ):
+            return (self.name == other.name and
+                    self.ret_type == other.ret_type and
+                    self.body.is_equal(other.body) and
+                    self.func_type == other.func_type and
+                    self.is_final == other.is_final and
+                    check_list_eq(self.params, other.params) and
+                    self.inferred_type == other.inferred_type)
+        return False
 
 
 class ClassDeclaration(Declaration):
@@ -408,6 +472,17 @@ class ClassDeclaration(Declaration):
             "\n  ".join(map(str, self.functions))
         )
 
+    def is_equal(self, other):
+        if isinstance(other, ClassDeclaration):
+            return (self.name == other.name and
+                    check_list_eq(self.superclasses, other.superclasses) and
+                    self.class_type == other.class_type and
+                    check_list_eq(self.functions, other.functions) and
+                    self.is_final == other.is_final and
+                    check_list_eq(self.type_parameters, other.type_parameters)
+                    and self.supertypes == other.supertypes)
+        return False
+
 
 class ParameterizedFunctionDeclaration(FunctionDeclaration):
     CLASS_METHOD = 0
@@ -444,6 +519,18 @@ class ParameterizedFunctionDeclaration(FunctionDeclaration):
             self.name, ",".join(map(str, self.params)), str(self.ret_type),
             str(self.body))
 
+    def is_equal(self, other):
+        if isinstance(other, ParameterizedFunctionDeclaration):
+            return (self.name == other.name and
+                    check_list_eq(self.type_parameters, other.type_parameters)
+                    and check_list_eq(self.params, other.params) and
+                    self.ret_type == other.ret_type and
+                    self.body.is_equal(other.body) and
+                    self.func_type == other.func_type and
+                    self.is_final == other.is_final and
+                    self.override == other.override)
+        return False
+
 
 class Constant(Expr):
     def __init__(self, literal: str):
@@ -458,6 +545,11 @@ class Constant(Expr):
     def __str__(self):
         return str(self.literal)
 
+    def is_equal(self, other):
+        if isinstance(other, Constant):
+            return self.literal == other.literal
+        return False
+
 
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
@@ -465,6 +557,12 @@ class IntegerConstant(Constant):
         assert isinstance(literal, int), 'Integer literal must be int'
         super().__init__(literal)
         self.integer_type = integer_type
+
+    def is_equal(self, other):
+        if isinstance(other, IntegerConstant):
+            return (self.literal == other.literal and
+                    self.integer_type == other.integer_type)
+        return False
 
 
 class RealConstant(Constant):
@@ -474,6 +572,12 @@ class RealConstant(Constant):
             'Real literal is not valid')
         super().__init__(literal)
         self.real_type = real_type
+
+    def is_equal(self, other):
+        if isinstance(other, RealConstant):
+            return (self.literal == other.literal and
+                    self.real_type == other.real_type)
+        return False
 
 
 class BooleanConstant(Constant):
@@ -515,6 +619,11 @@ class Variable(Expr):
     def __repr__(self):
         return str(self.name)
 
+    def is_equal(self, other):
+        if isinstance(other, Variable):
+            return self.name == other.name
+        return False
+
 
 class Conditional(Expr):
     def __init__(self, cond: Expr, true_branch: Block, false_branch: Block):
@@ -534,6 +643,13 @@ class Conditional(Expr):
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
             str(self.cond), str(self.true_branch), str(self.false_branch))
+
+    def is_equal(self, other):
+        if isinstance(other, Conditional):
+            return (self.cond.is_equal(other.cond) and
+                    self.true_branch.is_equal(other.true_branch) and
+                    self.false_branch.is_equal(other.false_branch))
+        return False
 
 
 class Operator(Node):
@@ -560,6 +676,11 @@ class Operator(Node):
             return "!" + self.name
         return self.name
 
+    def is_equal(self, other):
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                self.is_not == other.is_not)
+
 
 class BinaryOp(Expr):
     VALID_OPERATORS = None
@@ -584,6 +705,13 @@ class BinaryOp(Expr):
     def __str__(self):
         return "{} {} {}".format(
             str(self.lexpr), str(self.operator), str(self.rexpr))
+
+    def is_equal(self, other):
+        if isinstance(other, BinaryOp):
+            return (self.lexpr.is_equal(other.lexpr) and
+                    self.rexpr.is_equal(other.rexpr) and
+                    self.operator == other.operator)
+        return False
 
 
 class LogicalExpr(BinaryOp):
@@ -658,6 +786,12 @@ class New(Expr):
         return "new " + self.class_type.name + "(" + \
             ", ".join(map(str, self.args)) + ")"
 
+    def is_equal(self, other):
+        if isinstance(other, New):
+            return (self.class_type == other.class_type and
+                    check_list_eq(self.args, other.args))
+        return False
+
 
 class FieldAccess(Expr):
     def __init__(self, expr: Expr, field: str):
@@ -673,6 +807,12 @@ class FieldAccess(Expr):
 
     def __str__(self):
         return str(self.expr) + "." + self.field
+
+    def is_equal(self, other):
+        if isinstance(other, FieldAccess):
+            return (self.expr.is_equal(other.expr) and
+                    self.field == other.field)
+        return False
 
 
 class FunctionCall(Expr):
@@ -700,6 +840,13 @@ class FunctionCall(Expr):
         return "{}.{}({})".format(
             str(self.receiver), self.func, ", ".join(map(str, self.args)))
 
+    def is_equal(self, other):
+        if isinstance(other, FunctionCall):
+            return (self.func == other.func and
+                    check_list_eq(self.args, other.args) and
+                    check_default_eq(self.receiver, other.receiver))
+        return False
+
 
 class Assignment(Expr):
     def __init__(self, name: str, expr: Expr, receiver: Expr = None):
@@ -725,3 +872,10 @@ class Assignment(Expr):
             return "{}.{} = {}".format(str(self.receiver), str(self.name),
                                        str(self.expr))
         return "{} = {}".format(str(self.name), str(self.expr))
+
+    def is_equal(self, other):
+        if isinstance(other, Assignment):
+            return (self.name == other.name and
+                    self.expr.is_equal(other.expr) and
+                    check_default_eq(self.receiver, other.receiver))
+        return False
