@@ -32,8 +32,8 @@ class GroovyCompiler(BaseCompiler):
             error_msg = match[1]
             failed[filename].append(error_msg)
 
-        match = re.search(self.CRASH_REGEX, output)
-        if match:
+        crash_match = re.search(self.CRASH_REGEX, output)
+        if crash_match and not matches:
             self.crash_msg = ':'.join(match.groups())
             return None
         return failed
