@@ -438,3 +438,16 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
 
         else:
             return kt.Unit
+
+
+def node_in_expr(node: ast.Node, expr: ast.Expr):
+    """Check if node is expr or is inside expr
+    """
+    to_visit = [expr]
+
+    while len(to_visit) > 0:
+        expression = to_visit.pop()
+        if node.is_equal(expression):
+            return True
+        to_visit.extend(expression.children())
+    return False
