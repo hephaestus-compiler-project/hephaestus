@@ -4,6 +4,7 @@ from typing import Tuple
 
 from src.ir import ast
 from src.ir import types
+from src.ir import type_utils as tp
 from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis, GNode, NONE_NODE
 
@@ -37,6 +38,12 @@ class TypeArgumentErasureSubstitution(Transformation):
         # belongs.
         # (namespace, var_decl)
         self._var_decl: Tuple[Tuple, ast.VariableDeclaration] = None
+
+        # We use this variable to find the return statements of function
+        # declarations. We don't want to infer type arguments for `New` nodes
+        # that are in return statements. We select to infer type arguments for
+        # such statements in _check_func_decl_infer
+        self._ret_stmt: ast.Expr = None
 
     def get_parent_decl(self, namespace):
         if namespace == ast.GLOBAL_NAMESPACE:
@@ -78,21 +85,33 @@ class TypeArgumentErasureSubstitution(Transformation):
                         any(ta in self.program.bt_factory.get_number_types()
                             for ta in node.class_type.type_args)):
                     return node
+                # If the node is the return statement of a function or if it is
+                # in the return statement of a function, then we cannot infer
+                # its type arguments in case the function hasn't ret_type
+                # declared.
+                # For example consider the following scenario.
+                #   open class A
+                #   open class B<T: A>(var x: T)
+                #   class C: A()
+                #   fun foo() = B(C())
+                #   val y: B<A> = foo()  // error
+                if self._ret_stmt and tp.node_in_expr(node, self._ret_stmt):
+                    return node
+                # In next case we should check if there is a flow from the
+                # variable to another variable, or function call, or New,
+                # that has a different type than the new inferred type.
+                # Example:
+                #
+                #  class A<T>(val x: T)
+                #  fun foo(x: A<Any>) {}
+                #  var a = A<Any>('x') // We cannot infer type arguments
+                #  foo(a)              // because it will break here
+                #
+                # Currently, we cannot find the inferred type if we remove
+                # the type arguments, thus; we simple check if there is a
+                # flow from the variable to anywhere.
                 if (self._var_decl is not None and
                         not self._var_decl[1].var_type):
-                    # In this case we should check if there is a flow from the
-                    # variable to another variable, or function call, or New,
-                    # that has a different type than the new inferred type.
-                    # Example:
-                    #
-                    #  class A<T>(val x: T)
-                    #  fun foo(x: A<Any>) {}
-                    #  var a = A<Any>('x') // We cannot infer type arguments
-                    #  foo(a)              // because it will break here
-                    #
-                    # Currently, we cannot find the inferred type if we remove
-                    # the type arguments, thus; we simple check if there is a
-                    # flow from the variable to anywhere.
                     namespace, var_decl = self._var_decl
                     analysis = UseAnalysis(self.program)
                     parent_decl = self.get_parent_decl(namespace)
@@ -204,8 +223,16 @@ class TypeArgumentErasureSubstitution(Transformation):
 
     @change_namespace
     def visit_func_decl(self, node):
+        old_ret_stmt = self._ret_stmt
+        if (not node.ret_type and
+                node.inferred_type != self.program.bt_factory.get_void_type()):
+            self._ret_stmt = node.body.body[-1] \
+                if isinstance(node.body, ast.Block) else node.body
+
         new_node = super().visit_func_decl(node)
         new_node = self._check_func_decl_infer(new_node)
+
+        self._ret_stmt = old_ret_stmt
         return new_node
 
     def visit_new(self, node):
