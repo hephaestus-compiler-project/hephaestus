@@ -61,6 +61,23 @@ class TypeArgumentErasureSubstitution(Transformation):
             cdecl = self.program.context.get_classes(
                 self._namespace, glob=True)[node.class_type.name]
             if cdecl.all_type_params_in_fields():
+                # Check if type argument are number-related types and if we are
+                # in a var_decl of a number-related type.
+                # For example, we can't infer the type argument in the
+                # following case.
+                #   class A<T>(T a)
+                #   val x: Long = A<Long>(43).a
+                # We will miss some cases when there is a cast. Maybe we can
+                # handle such cases in the translator.
+                #   class A<T>(T a)
+                #   class B(A<Long> b)
+                #   val x: Long = B(A<Long>(43).toLong()).b.a
+                if (self._var_decl is not None and
+                        self._var_decl[1].inferred_type in
+                        self.program.bt_factory.get_number_types() and
+                        any(ta in self.program.bt_factory.get_number_types()
+                            for ta in node.class_type.type_args)):
+                    return node
                 if (self._var_decl is not None and
                         not self._var_decl[1].var_type):
                     # In this case we should check if there is a flow from the
