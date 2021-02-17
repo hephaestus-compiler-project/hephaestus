@@ -524,7 +524,7 @@ class GroovyTranslator(ASTVisitor):
         self.ident = old_ident
         # Remove type arguments from Parameterized Type
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
-            cls = node.class_type.name
+            cls = node.class_type.name + "<>"
         else:
             cls = node.class_type.get_name()
         res = "{ident}new {cls}({args})".format(
