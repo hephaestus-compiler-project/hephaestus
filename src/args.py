@@ -122,6 +122,11 @@ parser.add_argument(
     help="Option for TypeSubstitution"
 )
 parser.add_argument(
+    "--disable-inverted-smart-cast",
+    action="store_true",
+    help="Option for TypeSubstitution"
+)
+parser.add_argument(
     "--find-classes-blacklist",
     action="store_true",
     default=True,
@@ -230,4 +235,4 @@ args.options = {
 
 # FIXME
 if args.language == "groovy":
-    args.options["TypeSubstitution"]["disable_params_type_widening"] = True
+    args.options["TypeSubstitution"]["disable_inverted_smart_cast"] = True

@@ -129,6 +129,10 @@ class TypeSubstitution(Transformation):
         self.disable_params_type_widening = self.options.get(
             "disable_params_type_widening", False)
 
+        self.disable_inverted_smart_cast = self.options.get(
+            'disable_inverted_smart_cast', False
+        )
+
         if self.bt_factory.get_any_type() in self.types:
             self.types.remove(self.bt_factory.get_any_type())
 
@@ -348,8 +352,9 @@ class TypeSubstitution(Transformation):
     def _add_is_expr(self, node, var_decl, param, old_type):
         bool_expr = self.generator.generate_expr(
             self.bt_factory.get_boolean_type(), only_leaves=True)
+        is_not = not self.disable_inverted_smart_cast and utils.random.bool()
         is_expr = ast.Is(ast.Variable(param.name), old_type,
-                         utils.random.bool())
+                         is_not=is_not)
         and_expr = ast.LogicalExpr(
             bool_expr, is_expr,
             ast.Operator('&&')
@@ -469,6 +474,7 @@ class TypeSubstitution(Transformation):
                     new_node, param, i, old_type, current_cls)
                 continue
 
+            # We cannot perform type widening in abstract types.
             if isinstance(param.param_type, tp.AbstractType):
                 self._check_param_overriden_fun(
                     new_node, param, i, old_type, current_cls)
@@ -480,7 +486,6 @@ class TypeSubstitution(Transformation):
             transform2 = self._check_param_overriden_fun(
                 new_node, param, i, old_type, current_cls)
             transform = transform and transform2
-            # We cannot perform type widening in abstract types.
             if self.no_smart_cast(new_node, param, transform, old_type):
                 # We are done, if one of the following applies:
                 #
