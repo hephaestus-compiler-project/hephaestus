@@ -652,6 +652,13 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         return new_node
 
     @change_depth
+    def visit_super_instantiation(self, node):
+        if self.language == 'groovy':
+            # FIXME
+            return node
+        return super().visit_super_instantiation(node)
+
+    @change_depth
     def visit_integer_constant(self, node):
         return self.replace_value_node(
             node, exclude=[
@@ -765,8 +772,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             }
             field_types = []
             for f in cls.fields:
-                if isinstance(f.get_type(), tp.AbstractType) and (
-                        node.class_type.can_infer_type_args):
+                if node.class_type.can_infer_type_args:
                     field_types.append(self.bt_factory.get_any_type())
                 else:
                     field_types.append(type_param_map.get(f.get_type(),
