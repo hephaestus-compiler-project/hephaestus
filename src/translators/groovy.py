@@ -64,6 +64,17 @@ class GroovyTranslator(ASTVisitor):
         self._inside_is = False
         self._inside_is_function = False
 
+    def _reset_state(self):
+        # Clear the state
+        self._main_method = ""
+        self._main_children = []
+        self._inside_is = False
+        self._inside_is_function = False
+        self.context = None
+        self._cast_number = False
+        self.ident = 0
+        self.is_func_block = False
+
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
             return old_ident * self.ident_value
@@ -122,9 +133,7 @@ class GroovyTranslator(ASTVisitor):
             main=main_cls,
             other_classes="\n\n" + other_classes if other_classes else ''
         )
-        # Clear the state
-        self._main_method = ""
-        self._main_children = []
+        self._reset_state()
 
     @append_to
     def visit_block(self, node):
