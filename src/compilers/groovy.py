@@ -9,7 +9,7 @@ class GroovyCompiler(BaseCompiler):
     # Match (example.groovy):(error message until empty line)
     ERROR_REGEX = re.compile(r'([a-zA-Z0-9\\/_]+.groovy):([\s\S]*?(?=\n{2,}))')
 
-    CRASH_REGEX = re.compile(r'(.*Exception)(.*)')
+    CRASH_REGEX = re.compile(r'(.*[eE]xception)(.*)')
 
     def __init__(self, input_name):
         input_name = os.path.join(input_name, '*', '*.groovy')
