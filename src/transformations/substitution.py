@@ -674,6 +674,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
                 self.bt_factory.get_byte_type(),
                 self.bt_factory.get_short_type(),
                 self.bt_factory.get_integer_type(),
+                self.bt_factory.get_long_type(),
             ]
             if self._expected_type == self.bt_factory.get_double_type():
                 exclude.append(self.bt_factory.get_float_type())
