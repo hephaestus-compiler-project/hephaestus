@@ -60,6 +60,23 @@ install_kotlin_from_source() {
     source $HOME/.bash_profile
 }
 
+install_groovy_from_source() {
+    git clone https://github.com/apache/groovy
+    sdk install gradle
+    sdk install java 11.0.10-open
+    cd groovy
+    gradle -p bootstrap
+    ./gradlew --write-verification-metadata pgp,sha512 --dry-run
+    ./gradlew clean dist --continue
+    echo "#!/bin/bash" >> $HOME/bin/groovyc
+    echo "java -cp $HOME/groovy/build/libs/groovy-4.0.0-SNAPSHOT.jar org.codehaus.groovy.tools.FileSystemCompiler $@" >> $HOME/bin/groovyc
+    chmod +x $HOME/bin/groovyc
+    echo "PATH=$HOME/bin/:$PATH" >> .bash_profile
+    echo "GROOVY_INSTALLATION=$HOME/groovy" >> $HOME/.bash_profile
+    cd ..
+    source $HOME/.bash_profile
+}
+
 install_kotlin() {
     install_java
     sdk install kotlin
@@ -153,7 +170,7 @@ then
         exit 0
 fi
 
-while getopts "hskag" OPTION; do
+while getopts "hskagS" OPTION; do
         case $OPTION in
 
                 k)
@@ -184,17 +201,26 @@ while getopts "hskag" OPTION; do
                         add_run_script_to_path
                         ;;
 
+                g)
+                        install_deps
+                        install_groovy_from_source
+                        install_check_type_systems
+                        add_run_script_to_path
+                        ;;
+
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo "init.sh -g "
+                        echo "init.sh -S "
                         echo ""
                         echo "   -k     Install latest kotlin version"
                         echo "   -s     Install kotlin from source"
                         echo "   -a     Install all kotlin versions"
                         echo "   -g     Install latest groovy version"
+                        echo "   -S     Install groovy from source"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;

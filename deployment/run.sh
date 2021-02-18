@@ -36,6 +36,17 @@ run_from_source() {
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30
 }
 
+run_groovy_from_source() {
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    cd $GROOVY_INSTALLATION
+    git pull
+    ./gradlew clean dist --continue
+    cd $CHECK_TYPE_SYSTEMS
+    git pull
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 \
+        --language groovy --only-preserve-correctness-substitutions
+}
+
 run_multiple_versions() {
     cd $CHECK_TYPE_SYSTEMS
     git pull
@@ -57,7 +68,7 @@ then
         exit 0
 fi
 
-while getopts "hksag" OPTION; do
+while getopts "hksagS" OPTION; do
         case $OPTION in
 
                 k)
@@ -76,17 +87,23 @@ while getopts "hksag" OPTION; do
                         simple_run_groovy
                         ;;
 
+                S)
+                        run_groovy_from_source
+                        ;;
+
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo "init.sh -g "
+                        echo "init.sh -S "
                         echo ""
                         echo "   -k     Simple run"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
                         echo "   -g     Simple run groovy"
+                        echo "   -S     Run groovy from source"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;
