@@ -34,7 +34,7 @@ class KotlinCompiler(BaseCompiler):
             failed[filename].append(error_msg)
 
         match = re.search(self.CRASH_REGEX, output)
-        if match:
+        if match and not matches:
             self.crash_msg = ':'.join(match.groups())
             return None
         return failed

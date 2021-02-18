@@ -34,6 +34,6 @@ class GroovyCompiler(BaseCompiler):
 
         crash_match = re.search(self.CRASH_REGEX, output)
         if crash_match and not matches:
-            self.crash_msg = ':'.join(match.groups())
+            self.crash_msg = output
             return None
         return failed
