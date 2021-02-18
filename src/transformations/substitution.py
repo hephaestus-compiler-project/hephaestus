@@ -543,8 +543,11 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
     def replace_value_node(self, node, exclude=[]):
         # Due to groovy truth there is not effect if we do the transformation
         # somewhere where we expect a boolean value
-        if (self.language == "groovy" and
-                self._expected_type == self.bt_factory.get_boolean_type()):
+        is_string_or_bool = (
+            self._expected_type == self.bt_factory.get_boolean_type() or
+            self._expected_type == self.bt_factory.get_string_type()
+        )
+        if self.language == "groovy" and is_string_or_bool:
             return node
         # We have already performed a transformation or the value is included
         # in a simple expression.
@@ -653,7 +656,17 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_real_constant(self, node):
-        return self.replace_value_node(node, exclude=[])
+        if self.language == 'groovy':
+            exclude = [
+                self.bt_factory.get_byte_type(),
+                self.bt_factory.get_short_type(),
+                self.bt_factory.get_integer_type(),
+            ]
+            if self._expected_type == self.bt_factory.get_double_type():
+                exclude.append(self.bt_factory.get_float_type())
+        else:
+            exclude = []
+        return self.replace_value_node(node, exclude=exclude)
 
     @change_depth
     def visit_char_constant(self, node):
