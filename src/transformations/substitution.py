@@ -563,10 +563,16 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
         generate = self.generators.get(ir_type,
                                        lambda: self.generate_new(ir_type))
+        new_node = generate()
         self.is_transformed = True
-        self.error_injected = 'Expected type is {}, but {} was found'.format(
-            str(self._expected_type), str(ir_type))
-        return generate()
+        self.error_injected = (
+            'Expected type is {}, but {} was found.'
+            ' Replaced \'{}\' with \'{}\'.'
+        ).format(
+            str(self._expected_type), str(ir_type),
+            str(node), str(new_node)
+        )
+        return new_node
 
     def _get_attribute_types(self, node, name, attr_getter):
         if node.receiver is None:
