@@ -89,8 +89,8 @@ class RandomUtils():
     def reset_word_pool(self):
         self.WORDS = set(self.INITIAL_WORDS)
 
-    def bool(self):
-        return self.r.choice([True, False])
+    def bool(self, prob=0.5):
+        return self.r.random() < prob
 
     def word(self):
         # TODO: revisit regarding efficiency
