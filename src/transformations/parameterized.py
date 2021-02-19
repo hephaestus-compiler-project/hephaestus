@@ -249,6 +249,8 @@ class ParameterizedSubstitution(Transformation):
             if decl:
                 attr = types_lookup.get(type(decl))
                 setattr(decl, attr, type_param)
+                if hasattr(decl, 'inferred_type'):
+                    setattr(decl, 'inferred_type', type_param)
 
     def _use_type_parameter(self, namespace, node, old_type):
         """Select a node to replace its concrete type with a type parameter.
