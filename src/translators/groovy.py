@@ -74,6 +74,8 @@ class GroovyTranslator(ASTVisitor):
         self._cast_number = False
         self.ident = 0
         self.is_func_block = False
+        self._namespace = ast.GLOBAL_NAMESPACE
+        self._children_res = []
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
