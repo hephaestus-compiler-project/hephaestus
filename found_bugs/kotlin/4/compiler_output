@@ -1,3 +1,0 @@
-program.kt:11:18: error: return type of 'foo' is not a subtype of the return type of the overridden member 'public open fun foo(): A defined in C'
-    override fun foo() = if (true) B() else E()
-

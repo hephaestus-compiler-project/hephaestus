@@ -1,7 +1,0 @@
-org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
-Test.groovy: 5: [Static type checking] - Cannot return value of type int on method returning type java.lang.Number
- @ line 5, column 12.
-       return i
-              ^
-
-1 error

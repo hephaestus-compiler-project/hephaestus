@@ -1,2 +1,0 @@
-program.kt:9:9: error: type mismatch: inferred type is A but B was expected
-    foo(x) // does not compile

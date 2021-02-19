@@ -1,3 +1,0 @@
-program.kt:4:16: error: type mismatch: inferred type is Any but String was expected
-        return thunk()
-               ^

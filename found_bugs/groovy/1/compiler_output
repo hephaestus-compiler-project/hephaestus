@@ -1,8 +1,0 @@
-org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
-program.groovy: 10: [Static type checking] - Cannot return value of type java.lang.Object on method returning type java.lang.Integer
- @ line 10, column 14.
-         return bar();
-                ^
-
-1 error
-
