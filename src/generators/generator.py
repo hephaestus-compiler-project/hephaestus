@@ -1,4 +1,5 @@
 # pylint: disable=too-many-instance-attributes,too-many-arguments,dangerous-default-value
+from collections import defaultdict
 from typing import Tuple, List
 
 from src import utils as ut
@@ -29,9 +30,8 @@ class Generator():
         self.disable_inference_in_closures = options.get(
             "disable_inference_in_closures", False)
         self.depth = 1
-        self._vars_in_context = {}
+        self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
-        self._stop_var = False
         self.namespace = ('global',)
 
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
@@ -149,6 +149,22 @@ class Generator():
 
         return func_expr.name in {d.name for d in decls}
 
+    def _gen_side_effects(self):
+        # Generate a number of expressions with side-effects, e.g.,
+        # assignment, variable declaration, etc.
+        exprs = []
+        for _ in range(ut.random.integer(0, self.max_side_effects)):
+            expr = self.generate_expr(self.bt_factory.get_void_type())
+            if expr:
+                exprs.append(expr)
+        # These are the new declarations that we created as part of the side-
+        # effects.
+        decls = list(self.context.get_declarations(self.namespace,
+                                                   True).values())
+        decls = [d for d in decls
+                 if not isinstance(d, ast.ParameterDeclaration)]
+        return exprs, decls
+
     def gen_func_decl(self, etype=None, not_void=False):
         func_name = gu.gen_identifier('lower')
         initial_namespace = self.namespace
@@ -184,14 +200,7 @@ class Generator():
                 ret_type = None
         else:
             inferred_type = None
-            # Generate a number of expressions with side-effects.
-            exprs = [self.generate_expr(self.bt_factory.get_void_type())
-                     for _ in range(ut.random.integer(
-                         0, self.max_side_effects))]
-            decls = list(self.context.get_declarations(
-                self.namespace, True).values())
-            decls = [d for d in decls
-                     if not isinstance(d, ast.ParameterDeclaration)]
+            exprs, decls = self._gen_side_effects()
             body = ast.Block(decls + exprs + [expr])
         self.depth = initial_depth
         self.namespace = initial_namespace
@@ -247,16 +256,6 @@ class Generator():
             builtins = self.ret_builtin_types if ret_types \
                 else self.builtin_types
             return ut.random.choice(builtins)
-        # Get all class declarations in the current namespace
-        if not class_decls:
-            # Not class declaration are available in the current namespace
-            # so create a new one.
-            initial_namespace = self.namespace
-            self.namespace = ('global',)
-            decl = self.gen_class_decl()
-            self.context.add_class(self.namespace, decl.name, decl)
-            self.namespace = initial_namespace
-            return decl.get_type()
         cls_type = ut.random.choice(list(class_decls.values())).get_type()
         if not isinstance(cls_type, types.TypeConstructor):
             return cls_type
@@ -267,11 +266,12 @@ class Generator():
             t_args.append(ut.random.choice(self.ret_builtin_types))
         return cls_type.new(t_args)
 
-    def gen_variable_decl(self, etype=None, only_leaves=False):
+    def gen_variable_decl(self, etype=None, only_leaves=False,
+                          expr=None):
         var_type = etype if etype else self.gen_type()
         initial_depth = self.depth
         self.depth += 1
-        expr = self.generate_expr(var_type, only_leaves)
+        expr = expr or self.generate_expr(var_type, only_leaves)
         self.depth = initial_depth
         is_final = ut.random.bool()
         # We never omit type in non-final variables.
@@ -289,7 +289,7 @@ class Generator():
 
     def gen_conditional(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
-        self.depth += 1
+        self.depth += 3
         cond = self.generate_expr(self.bt_factory.get_boolean_type(),
                                   only_leaves)
         true_expr = self.generate_expr(etype, only_leaves, subtype)
@@ -510,17 +510,8 @@ class Generator():
             fun = lambda v, t: v.get_type() == t
         variables = [v for v in variables.values() if fun(v, etype)]
         if not variables:
-            if self.namespace in self._vars_in_context:
-                self._vars_in_context[self.namespace] += 1
-            else:
-                self._vars_in_context[self.namespace] = 1
-            self._stop_var = True
-            # If there are not variable declarations that match our criteria,
-            # we have to create a new variable declaration.
-            var_decl = self.gen_variable_decl(etype, only_leaves)
-            self._stop_var = False
-            self.context.add_var(self.namespace, var_decl.name, var_decl)
-            return ast.Variable(var_decl.name)
+            return self.generate_expr(etype, only_leaves=only_leaves,
+                                      subtype=subtype, exclude_var=True)
         varia = ut.random.choice([v.name for v in variables])
         return ast.Variable(varia)
 
@@ -573,17 +564,12 @@ class Generator():
             # Nothing of the above worked, so generate a 'var' variable,
             # and perform the assignment
             etype = self.gen_type()
-            if self.namespace in self._vars_in_context:
-                self._vars_in_context[self.namespace] += 1
-            else:
-                self._vars_in_context[self.namespace] = 1
-            self._stop_var = True
+            self._vars_in_context[self.namespace] += 1
             # If there are not variable declarations that match our criteria,
             # we have to create a new variable declaration.
             var_decl = self.gen_variable_decl(etype, only_leaves)
             var_decl.is_final = False
             var_decl.var_type = var_decl.get_type()
-            self._stop_var = False
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             self.depth = initial_depth
             return ast.Assignment(var_decl.name,
@@ -615,7 +601,8 @@ class Generator():
         self.namespace = initial_namespace
         return main_func
 
-    def get_generators(self, expr_type, only_leaves, subtype):
+    def get_generators(self, expr_type, only_leaves, subtype,
+                       exclude_var):
         def gen_variable(etype):
             return self.gen_variable(etype, only_leaves, subtype)
 
@@ -662,9 +649,10 @@ class Generator():
             gen_con = constant_candidates.get(expr_type)
             if gen_con is not None:
                 return [gen_con]
-            gen_var = self._vars_in_context.get(
-                self.namespace, 0) < self.max_var_decls and not (
-                    self._stop_var or only_leaves)
+            gen_var = (
+                self._vars_in_context.get(
+                    self.namespace, 0) < self.max_var_decls and not
+                only_leaves and not exclude_var)
             if gen_var:
                 # Decide if we can generate a variable.
                 # If the maximum numbers of variables in a specific context
@@ -674,16 +662,34 @@ class Generator():
             return leaf_canidates
         con_candidate = constant_candidates.get(expr_type)
         if con_candidate is not None:
-            candidates = [gen_variable, con_candidate] + binary_ops.get(
-                expr_type, [])
+            candidates = [con_candidate] + binary_ops.get(expr_type, [])
+            if not exclude_var:
+                candidates.append(gen_variable)
         else:
             candidates = leaf_canidates
         return other_candidates + candidates
 
-    def generate_expr(self, expr_type=None, only_leaves=False, subtype=True):
+    def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
+                      exclude_var=False):
         expr_type = expr_type or self.gen_type()
-        gens = self.get_generators(expr_type, only_leaves, subtype)
-        return ut.random.choice(gens)(expr_type)
+        gens = self.get_generators(expr_type, only_leaves, subtype,
+                                   exclude_var)
+        expr = ut.random.choice(gens)(expr_type)
+        # Make a probablistic choice, and assign the generated expr
+        # into a variable, and return that variable reference.
+        gen_var = (
+            not only_leaves and
+            expr_type != self.bt_factory.get_void_type() and
+            self._vars_in_context[self.namespace] < self.max_var_decls and
+            ut.random.bool()
+        )
+        if gen_var:
+            self._vars_in_context[self.namespace] += 1
+            var_decl = self.gen_variable_decl(expr_type, only_leaves,
+                                              expr=expr)
+            self.context.add_var(self.namespace, var_decl.name, var_decl)
+            expr = ast.Variable(var_decl.name)
+        return expr
 
     def gen_top_level_declaration(self):
         candidates = [
