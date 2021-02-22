@@ -8,7 +8,7 @@ class KotlinCompiler(BaseCompiler):
     ERROR_REGEX = re.compile(
         r'([a-zA-Z0-9\/_]+.kt):\d+:\d+:[ ]+error:[ ]+(.*)')
     CRASH_REGEX = re.compile(
-        r'(org\.jetbrains\..*)\nFile being compiled: .* in (.*\.kt)',
+        r'(org\.jetbrains\..*)\n(.*)',
         re.MULTILINE
     )
 
