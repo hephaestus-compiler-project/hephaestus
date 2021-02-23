@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from characteristics import CharacteristicCategory
 
 def print_characteristics():
     def get_name(characteristic):
@@ -28,7 +29,10 @@ def print_stats(bugs):
         "Bugs": defaultdict(lambda: 0),
         "Characteristics": {
             "Categories": defaultdict(
-                lambda: {"total": 0, "subcategories": defaultdict(lambda: 0)}),
+                lambda: {"total": 0, 
+                         "subcategories": defaultdict(lambda: {"total": 0,
+                                                      "subcategories": defaultdict(
+                                                          lambda: 0)})}),
             "Types": defaultdict(lambda: 0),
             "Commons": {"True": 0, "False": 0}},
         "Correctness": {"Correct": 0, "Incorrect": 0},
@@ -39,17 +43,19 @@ def print_stats(bugs):
     for b in bugs:
         stats['Bugs'][b.language] += 1
         for c in b.characteristics:
-            cat = stats["Characteristics"]["Categories"][c.category.name]
-            cat["total"] += 1
-            if c.characteristic_type:
-                cat["subcategories"][c.characteristic_type.name] += 1
+            if isinstance(c.category, CharacteristicCategory):
+                cat = stats["Characteristics"]["Categories"][c.category.name]
+                cat["total"] += 1
+                cat["subcategories"][c.name]["total"] += 1
+            else:
+                cat = stats["Characteristics"]["Categories"][c.category.category.name]
+                cat["total"] += 1
+                cat["subcategories"][c.category.name]["total"] += 1
+                subs = cat["subcategories"][c.category.name]["subcategories"]
+                subs[c.name] += 1
             stats["Characteristics"]["Commons"][str(c.is_common)] += 1
             if c.characteristic_type:
                 stats["Characteristics"]["Types"][c.characteristic_type.name] += 1
-        #for c in b.characteristics:
-        #    stats["Characteristics"][c.name]["total"] += 1
-        #    for s in c.specific_characteristics:
-        #        stats["Characteristics"][c.name]["specific"][s.name] += 1
         if b.test_case_correct:
             stats["Correctness"]["Correct"] += 1
         else:
