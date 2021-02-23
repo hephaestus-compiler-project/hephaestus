@@ -90,6 +90,13 @@ class Overriding(Characteristic):
     is_common = True
 
 
+class Overloading(Characteristic):
+    name = "Overloading"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
+
+
 class Subtyping(Characteristic):
     name = "Subtyping"
     category = StandardFeatures()
