@@ -490,7 +490,7 @@ class AlgebraicDataTypes(Characteristic):
 
 
 class FlexibleTypes(Characteristic):
-    name = "Primitive types"
+    name = "Flexible types"
     category = SpecialTypes()
     characteristic_type = Types()
     is_common = False
@@ -518,7 +518,7 @@ class HigherKindedTypes(Characteristic):
 
 
 class StaticMethod(Characteristic):
-    name = "Existential types"
+    name = "Static Method"
     category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = False
