@@ -1,469 +1,580 @@
-class GeneralCharacteristic():
-    name = ""
-
-    def __init__(self, *args):
-        self.specific_characteristics = args
-
+class CharacteristicCategory():
     def __repr__(self):
-        return "{}({})".format(
-            self.name,
-            ", ".join([str(s) for s in self.specific_characteristics])
-        )
-
-    def __str__(self):
-        return self.__repr__()
-
-
-class StandardFeatures(GeneralCharacteristic):
-    name = "Standard features of class-based languages"
-
-
-class Overriding(GeneralCharacteristic):
-    name = "Overriding"
-
-
-class HigherOrderProgramming(GeneralCharacteristic):
-    name = "Higher-order programming"
-
-
-class StandardLibrary(GeneralCharacteristic):
-    name = "Standard Library"
-
-
-class TypeInference(GeneralCharacteristic):
-    name = "Type Inference"
-
-
-class SpecialTypes(GeneralCharacteristic):
-    name = "Special Types"
-
-
-class Overloading(GeneralCharacteristic):
-    name = "Overloading"
-
-
-class ParametricPolymorphism(GeneralCharacteristic):
-    name = "Parametric Polymorphism"
-
-
-class Subtyping(GeneralCharacteristic):
-    name = "Subtyping"
-
-
-class SpecialLanguageFeatures(GeneralCharacteristic):
-    name = "Special Language Features"
-
-
-class JavaInterop(GeneralCharacteristic):
-    name = "Java Interop"
-
-
-### Specific Characteristics ###
-class SpecificCharacteristic:
-    general_characteristic = None
-    specific_category = None
-    is_category = False
-    name = ""
-
-    def __init__(self, *args):
-        self.specific_characteristics = args
-
-    def __repr__(self):
-        if self.specific_characteristics:
-            return self.name + "(" + ", ".join(
-                [str(s) for s in self.specific_characteristics]) + ")"
         return self.name
 
     def __str__(self):
         return self.__repr__()
 
 
-class Classes(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Classes"
+class StandardFeatures(CharacteristicCategory):
+    name = "Standard features"
 
 
-class AbstractClasses(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class OOPFeatures(CharacteristicCategory):
+    name = "OOP langauges"
+
+
+class ParametricPolymorphism(CharacteristicCategory):
+    name = "Parametric Polymorphism"
+
+
+class HigherOrderProgramming(CharacteristicCategory):
+    name = "Higher-Order Programming"
+
+
+class StandardLibrary(CharacteristicCategory):
+    name = "Standard Library"
+
+
+class TypeInference(CharacteristicCategory):
+    name = "Type Inference"
+
+
+class SpecialTypes(CharacteristicCategory):
+    name = "Special Types"
+
+
+class SpecialFeatures(CharacteristicCategory):
+    name = "Special features"
+
+
+class Other(CharacteristicCategory):
+    name = "Other"
+
+
+class CharacteristicType():
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class Declaration(CharacteristicType):
+    name = "Declarations"
+
+
+class Expressions(CharacteristicType):
+    name = "Expressions"
+
+
+class Types(CharacteristicType):
+    name = "Types"
+
+
+class Statements(CharacteristicType):
+    name = "Statements"
+
+
+class Misc(CharacteristicType):
+    name = "Misc"
+
+
+class Characteristic():
+    name: str = ""
+    category: CharacteristicCategory = None
+    characteristic_type: CharacteristicType = None
+    is_common: bool = False
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class Overriding(Characteristic):
+    name = "Overriding"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
+
+
+class Subtyping(Characteristic):
+    name = "Subtyping"
+    category = StandardFeatures()
+    characteristic_type = Types()
+    is_common = True
+
+
+class JavaInterop(Characteristic):
+    name = "Java Interop"
+    category = Other()
+    characteristic_type = None
+    is_common = True
+
+
+class AbstractClasses(Characteristic):
     name = "Abstract Classes"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Import(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Import(Characteristic):
     name = "Import"
+    category = StandardFeatures()
+    characteristic_type = Statements()
+    is_common = True
 
 
-class Enums(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Enums(Characteristic):
     name = "Enums"
+    category = StandardFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class SealedClasses(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
+class SealedClasses(Characteristic):
     name = "Sealed Classes"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class SAM(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "SAM"
+class SAM(Characteristic):
+    name = "Single Abstract Method"
+    category = HigherOrderProgramming()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Property(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
+class Property(Characteristic):
     name = "Property"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class ArithmeticExpressions(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class ArithmeticExpressions(Characteristic):
     name = "Arithmetic Expressions"
+    category = StandardFeatures()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class Lambdas(SpecificCharacteristic):
-    general_characteristic = HigherOrderProgramming
+class Lambdas(Characteristic):
     name = "Lambdas"
+    category = HigherOrderProgramming()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class TypeLambdas(SpecificCharacteristic):
-    general_characteristic = HigherOrderProgramming
-    name = "TypeLambdas"
+class TypeLambdas(Characteristic):
+    name = "Type Lambdas"
+    category = SpecialFeatures()
+    characteristic_type = Types()
+    is_common = False
 
 
-class FunctionReferences(SpecificCharacteristic):
-    general_characteristic = HigherOrderProgramming
-    name = "Function Reference"
+class FunctionReferences(Characteristic):
+    name = "Function references"
+    category = HigherOrderProgramming()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class ExtensionFunctions(SpecificCharacteristic):
-    general_characteristic = HigherOrderProgramming
-    name = "Extension Functions"
+class ExtensionFunctions(Characteristic):
+    name = "Extension Fucntions"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class This(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "This"
+class This(Characteristic):
+    name = "this"
+    category = OOPFeatures()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class IntersectionTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Intersection Types"
+class IntersectionTypes(Characteristic):
+    name = "Intersection types"
+    category = SpecialFeatures()
+    characteristic_type = Types()
+    is_common = True
 
 
-class FlowTyping(SpecificCharacteristic):
-    general_characteristic = TypeInference
-    name = "Flow Typing"
+class FlowTyping(Characteristic):
+    name = "Flow typing"
+    category = TypeInference()
+    characteristic_type = None
+    is_common = False
 
 
-class ParameterizedFunctions(SpecificCharacteristic):
-    general_characteristic = ParametricPolymorphism
-    name = "Parameterized Function"
+class ParameterizedFunctions(Characteristic):
+    name = "Parameterized Functions"
+    category = ParametricPolymorphism()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class ParameterizedClasses(SpecificCharacteristic):
-    general_characteristic = ParametricPolymorphism
+class ParameterizedClasses(Characteristic):
     name = "Parameterized Classes"
+    category = ParametricPolymorphism()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Varargs(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Varargs(Characteristic):
     name = "varargs"
+    category = StandardFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Nullables(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Nullables"
+class Nullables(Characteristic):
+    name = "Nullable types"
+    category = SpecialFeatures()
+    characteristic_type = Types()
+    is_common = False
 
 
-class BoundedPolymorphism(SpecificCharacteristic):
-    general_characteristic = ParametricPolymorphism
-    name = "Bounded Polymorphism"
-    is_category = True
+class BoundedPolymorphism(Characteristic):
+    name = "Bounded Quantification"
+    category = ParametricPolymorphism()
+    characteristic_type = Types()
+    is_common = True
 
 
-class Where(SpecificCharacteristic):
-    specific_category = BoundedPolymorphism
-    name = "Where"
+class Where(Characteristic):
+    name = "Multi-bounds"
+    category = BoundedPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class FBounded(SpecificCharacteristic):
-    specific_category = BoundedPolymorphism
-    name = "f-bounded"
+class FBounded(Characteristic):
+    name = "F-bounds"
+    category = BoundedPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class VarTypeInference(SpecificCharacteristic):
-    general_characteristic = TypeInference
-    name = "Variable Type Inference"
+class VarTypeInference(Characteristic):
+    name = "Variable type inference"
+    category = TypeInference()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class ParamTypeInference(SpecificCharacteristic):
-    general_characteristic = TypeInference
-    name = "Parameter Type Inference"
+class ParamTypeInference(Characteristic):
+    name = "Parameter type inference"
+    category = TypeInference()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class TypeArgsInference(SpecificCharacteristic):
-    general_characteristic = TypeInference
-    name = "Type Arguments Inference"
+class TypeArgsInference(Characteristic):
+    name = "Type argument type inference"
+    category = TypeInference()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class NamedArgs(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Named Args"
+class NamedArgs(Characteristic):
+    name = "Named args"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class Coroutines(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Coroutines"
+class Coroutines(Characteristic):
+    name = "Coroutines API"
+    category = StandardLibrary()
+    characteristic_type = Expressions()
+    is_common = False
 
 
-class OperatorOverloading(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Operator Overloading"
+class OperatorOverloading(Characteristic):
+    name = "Operator overloading"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class ElvisOperator(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Elvis Operator"
+class ElvisOperator(Characteristic):
+    name = "Elvis operator"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
 
 
-class PropertyReference(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Property Reference"
+class PropertyReference(Characteristic):
+    name = "Property reference"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
 
 
-class ExactAnnotation(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Exact Annotation"
+class Typedefs(Characteristic):
+    name = "Type definitions"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class Typealias(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Typealias"
+class DataClasses(Characteristic):
+    name = "Data classes"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class DataClasses(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Data Classes"
+class NullAssertion(Characteristic):
+    name = "Null assertion"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
 
 
-class NullAssertion(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Null Assertion"
-
-
-class WildCards(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Wildcards"
-
-
-class Inheritance(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Inheritance(Characteristic):
     name = "Inheritance"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Interfaces(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Interfaces(Characteristic):
     name = "Interfaces"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class AccessModifiers(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Access Modifiers"
+class AccessModifiers(Characteristic):
+    name = "Access modifiers"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class Cast(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Cast(Characteristic):
     name = "Cast"
+    category = StandardFeatures()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class Arrays(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Arrays(Characteristic):
     name = "Arrays"
+    category = StandardFeatures()
+    characteristic_type = Types()
+    is_common = True
 
 
-class Delegation(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "Delegation API"
+class Delegation(Characteristic):
+    name = "Delegation"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class Utils(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "Utils"
+class Utils(Characteristic):
+    name = "Utils API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = False
 
 
-class FunctionalInterface(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "Functional API"
+class FunctionalInterface(Characteristic):
+    name = "Function API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = False
 
 
-class Streams(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
+class Streams(Characteristic):
     name = "Stream API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = False
 
 
-class IO(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "IO API"
+class Collections(Characteristic):
+    name = "Collection API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = True
 
 
-class Events(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "Events API"
-
-
-class Collections(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
-    name = "Collections API"
-
-
-class Reflection(SpecificCharacteristic):
-    general_characteristic = StandardLibrary
+class Reflection(Characteristic):
     name = "Reflection API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = True
 
 
-class Inline(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
+class Inline(Characteristic):
     name = "Inline"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class ImplicitParameters(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
+class ImplicitParameters(Characteristic):
     name = "Implicit parameters"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class ImplicitDefs(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Implicit defs"
+class ImplicitDefs(Characteristic):
+    name = "Implicit definitions"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class PatMat(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Pattern Matching"
+class PatMat(Characteristic):
+    name = "Pattern matching"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
 
 
-class ErasedParameters(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Erased Parameters"
+class ErasedParameters(Characteristic):
+    name = "Erased parameters"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class CallByName(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
+class CallByName(Characteristic):
     name = "Call by name"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class WithMultipleAssignment(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "With Multiple Assignment"
+class WithMultipleAssignment(Characteristic):
+    name = "With"
+    category = SpecialFeatures()
+    characteristic_type = Statements()
+    is_common = False
 
 
-class PrimitiveTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Primitive Types"
+class PrimitiveTypes(Characteristic):
+    name = "Primitive types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
-class ParameterizedTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Parameterized Types"
+class ParameterizedTypes(Characteristic):
+    name = "Parameterized types"
+    category = ParametricPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class FunctionTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Function Types"
+class FunctionTypes(Characteristic):
+    name = "Function types"
+    category = HigherOrderProgramming()
+    characteristic_type = Types()
+    is_common = False
 
 
-class AlgebraicDataTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
+class AlgebraicDataTypes(Characteristic):
     name = "Algebraic Data Types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
-class FlexibleTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Flexible Types"
+class FlexibleTypes(Characteristic):
+    name = "Primitive types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
-class DependentTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Dependent Types"
+class DependentTypes(Characteristic):
+    name = "Dependent types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
-class Nothing(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Nothing Type"
+class ExistentialTypes(Characteristic):
+    name = "Existential types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
-class ExistentialTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Existential Types"
+class HigherKindedTypes(Characteristic):
+    name = "Higher-kinded types"
+    category = ParametricPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class HigherKindedTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Higher Kinded Types"
+class StaticMethod(Characteristic):
+    name = "Existential types"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class StaticMethod(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Static Method"
+class NestedDeclaration(Characteristic):
+    name = "Nested declarations"
+    category = StandardFeatures()
+    characteristic_type = Declaration()
+    is_common = True
 
 
-class NestedDeclaration(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Nested Declaration"
+class TypeAnnotations(Characteristic):
+    name = "Type annotations"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
 
 
-class TypeAnnotations(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "Type Annotations"
+class ReferenceTypes(Characteristic):
+    name = "Reference types"
+    category = SpecialFeatures()
+    characteristic_type = Types()
+    is_common = False
 
 
-class GString(SpecificCharacteristic):
-    general_characteristic = SpecialLanguageFeatures
-    name = "GString"
-
-
-class ReferenceTypes(SpecificCharacteristic):
-    general_characteristic = SpecialTypes
-    name = "Reference Types"
-
-
-class Variance(SpecificCharacteristic):
-    general_characteristic = ParametricPolymorphism
-    name = "Variance (use-site or decl-site)"
-
-
-class DeclVariance(SpecificCharacteristic):
-    specific_category = Variance
+class DeclVariance(Characteristic):
     name = "Declaration-site variance"
+    category = ParametricPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class UseVariance(SpecificCharacteristic):
-    specific_category = Variance
+class UseVariance(Characteristic):
     name = "Use-site variance"
+    category = ParametricPolymorphism()
+    characteristic_type = Types()
+    is_common = False
 
 
-class Throws(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Throws"
+class TryCatch(Characteristic):
+    name = "Try/Catch"
+    category = StandardFeatures()
+    characteristic_type = Statements()
+    is_common = True
 
 
-class MultiplePackages(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Multiple Packages"
-
-
-class TryCatch(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Try Catch"
-
-
-class Conditionals(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Conditionals(Characteristic):
     name = "Conditionals"
+    category = StandardFeatures()
+    characteristic_type = Expressions()
+    is_common = True
 
 
-class Loops(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
+class Loops(Characteristic):
     name = "Loops"
+    category = StandardFeatures()
+    characteristic_type = Statements()
+    is_common = True
 
 
-class AnonymousClass(SpecificCharacteristic):
-    general_characteristic = StandardFeatures
-    name = "Anonymous Class"
+class AnonymousClass(Characteristic):
+    name = "Anonymous classes"
+    category = OOPFeatures()
+    characteristic_type = Expressions()
+    is_common = True
