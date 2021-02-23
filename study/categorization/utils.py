@@ -1,27 +1,32 @@
 import json
 from collections import defaultdict
-from characteristics import CharacteristicCategory
+from characteristics import CharacteristicCategory, Characteristic
 
 def print_characteristics():
     def get_name(characteristic):
-        if characteristic.is_category:
+        if isinstance(characteristic(), Characteristic):
             sub_categories = [
-                s.name for s in SpecificCharacteristic.__subclasses__()
-                if s.specific_category == characteristic
+                get_name(s) for s in Characteristic.__subclasses__()
+                if s.category.__class__ == characteristic
             ]
-            return characteristic.name + "(" + ", ".join(sub_categories) + ")"
-        return characteristic.name
-    print("======Characteristic======")
+            if len(sub_categories) > 0:
+                return characteristic.name + \
+                    " -- " + characteristic.characteristic_type.name + \
+                    " (" + ", ".join(sub_categories) + ")" 
+        if getattr(characteristic, "characteristic_type", None):
+            return characteristic.name + " -- " + characteristic.characteristic_type.name
+        return characteristic.name 
+    print("======Characteristics======")
     chars = {
-        g.name: [get_name(s) for s in SpecificCharacteristic.__subclasses__() 
-        if s.general_characteristic == g] 
-        for g in GeneralCharacteristic.__subclasses__()
+        g.name: [get_name(s) for s in Characteristic.__subclasses__() 
+        if s.category.__class__ == g] 
+        for g in CharacteristicCategory.__subclasses__()
     }
     for g, s in chars.items():
         print(g)
         if s:
             print("\t" + "\n\t".join(s))
-    print("==========================")
+    print("===========================")
 
 def print_stats(bugs):
     print("======Statistics======")
