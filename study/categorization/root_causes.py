@@ -32,5 +32,25 @@ class InsufficientFunctionality(RootCause):
     name = "Insufficient Functionality"
 
 
+class IncorrectSequence(RootCause):
+    name = "Incorrect sequence of operations"
+
+
+class IncorrectDataType(RootCause):
+    name = "Incorrect Data Type"
+
+
+class WrongDataReference(RootCause):
+    name = "WrongDataReference"
+
+
 class DesignIssue(RootCause):
     name = "Design Issue"
+
+
+class ExtremeConditionNeglected(RootCause):
+    name = "Extreme Condition Neglected"
+
+
+class FunctionalSpecificationMismatch(RootCause):
+    name = "Functional Specification Mismatch"

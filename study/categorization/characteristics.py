@@ -398,6 +398,13 @@ class Streams(Characteristic):
     is_common = False
 
 
+class DelegationAPI(Characteristic):
+    name = "Delegation API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = False
+
+
 class Collections(Characteristic):
     name = "Collection API"
     category = StandardLibrary()
