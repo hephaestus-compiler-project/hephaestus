@@ -231,7 +231,7 @@ kotlin_iter2 = [
         [pc.Overriding()],
         False,
         sy.MisleadingReport(),
-        pc.IncorrectCondition(),
+        rc.IncorrectCondition(),
         ct.Resolution()  # Misc
     ),
     KotlinBug(
@@ -331,7 +331,7 @@ kotlin_iter2 = [
         "12.KT-11280",
         [pc.Overriding(),
          pc.Subtyping(),
-         pc.SmartCast()],
+         pc.FlowTyping()],
         False,
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
@@ -344,7 +344,7 @@ kotlin_iter2 = [
          pc.UseVariance(),
          pc.FlexibleTypes(), pc.Nullables(),
          pc.JavaInterop(),
-         pc.SmartCast()],
+         pc.FlowTyping()],
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
@@ -367,7 +367,7 @@ kotlin_iter2 = [
         False,  # change final field
         sy.Runtime(sy.IllegalAccessError()),
         rc.InsufficientFunctionality(),
-        rc.OtherSemanticChecking(),
+        ct.OtherSemanticChecking(),
     ),
     KotlinBug(
         "16.KT-12738",
@@ -376,7 +376,7 @@ kotlin_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.ResolutionRelated()
+        ct.Resolution()
     ),
     KotlinBug(
         "17.KT-37628",
