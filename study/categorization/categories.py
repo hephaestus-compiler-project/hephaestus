@@ -12,6 +12,14 @@ class Misc(Category):
     name = "Misc"
 
 
+class Mechanics(Category):
+    name = "Compiler Mechanics"
+
+
+class Environment(Category):
+    name = "Environment"
+
+
 class TypeExpression(Category):
     name = "Expression Type Checking / Attribution"
 
@@ -21,7 +29,7 @@ class Resolution(Category):
 
 
 class SubtypingRelated(Category):
-    name = "Subtyping-related"
+    name = "Subtyping- and Bound-related"
 
 
 class Inference(Category):

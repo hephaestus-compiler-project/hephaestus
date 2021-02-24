@@ -599,3 +599,10 @@ class Nothing(Characteristic):
     category = SpecialTypes()
     characteristic_type = Types()
     is_common = False
+
+
+class DefaultInitializer(Characteristic):
+    name = "Default Initializer"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
