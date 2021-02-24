@@ -585,3 +585,10 @@ class AnonymousClass(Characteristic):
     category = OOPFeatures()
     characteristic_type = Expressions()
     is_common = True
+
+
+class Nothing(Characteristic):
+    name = "Nothing"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False

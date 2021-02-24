@@ -141,7 +141,7 @@ kotlin_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Misc()
+        ct.OtherSemanticChecking()
     ),
     KotlinBug(
         "15.KT-32184",
@@ -202,5 +202,230 @@ kotlin_iter1 = [
         sy.MisleadingReport(),
         rc.MissingCase(),
         ct.Resolution()
+    )
+]
+
+
+kotlin_iter2 = [
+    KotlinBug(
+        "1.KT-31102",
+        [pc.Lambdas(), pc.FunctionReferences(),
+         pc.ParameterizedFunctions()],
+        True,
+        sy.CompileTimeError(),
+        rc.InsufficientFunctionality(),
+        ct.Inference()  # constraint solving
+    ),
+    KotlinBug(
+        "2.KT-3112",
+        [pc.NestedDeclaration(),
+         pc.ParameterizedClasses(),
+         pc.TypeArgsInference()],
+        False,
+        sy.MisleadingReport(),
+        rc.InsufficientFunctionality(),
+        ct.Inference()
+    ),
+    KotlinBug(
+        "3.KT-11721",
+        [pc.Overriding()],
+        False,
+        sy.MisleadingReport(),
+        pc.IncorrectCondition(),
+        ct.Resolution()  # Misc
+    ),
+    KotlinBug(
+        "4.KT-39461",
+        [pc.Coroutines(), pc.OperatorOverloading(),
+         pc.Lambdas(),
+         pc.ParameterizedFunctions(),
+         pc.FunctionTypes()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Resolution()
+    ),
+    KotlinBug(
+        "5.KT-15226",
+        [pc.JavaInterop(),
+         pc.Overriding(),
+         pc.Delegation()],
+        True,
+        sy.Runtime(sy.WrongMethodCalled()),
+        rc.DesignIssue(),
+        ct.Declarations(),
+    ),
+    KotlinBug(
+        "6.KT-6720",
+        [pc.Overriding(),
+         pc.JavaInterop()],
+        False,
+        sy.Runtime(sy.AbstractMethodError()),
+        rc.IncorrectComputation(),
+        ct.Resolution()
+    ),
+    KotlinBug(
+        "7.KT-37644",
+        [pc.ElvisOperator(),
+         pc.Collections(),
+         pc.ParameterizedTypes()
+         ],
+        True,
+        sy.InternalCompilerError(),
+        rc.ExtraneousComputation(),
+        ct.Inference(),  # contraint solving
+    ),
+    KotlinBug(
+        "8.KT-18129",
+        [pc.Reflection(),
+         pc.OperatorOverloading(),
+         pc.Delegation(),
+         pc.ParameterizedTypes(),
+         pc.Nullables(),
+         pc.FlowTyping()],
+        False,
+        sy.Runtime(sy.NullPointerException()),
+        rc.DesignIssue(),
+        ct.Misc(),  # Mechanics (Smart casts)
+    ),
+    KotlinBug(
+        "9.KT-18522",
+        [pc.Conditionals(), pc.Import(),
+         pc.ParameterizedClasses(),
+         pc.ParameterizedTypes()
+         ],
+        False,
+        sy.InternalCompilerError(),
+        rc.IncorrectCondition(),  # Wrong loop iteration
+        ct.SubtypingRelated()
+    ),
+    KotlinBug(
+        "10.KT-8320",
+        [pc.ParameterizedFunctions(),
+         pc.TryCatch()],
+        False,
+        sy.Runtime(sy.ClassCastException()),
+        rc.MissingCase(),
+        ct.Declarations()
+    ),
+    KotlinBug(
+        "11.KT-32081",
+        [pc.ParameterizedClasses(),
+         pc.ParameterizedFunctions(),
+         pc.ParameterizedTypes(),
+         pc.Conditionals(),
+         pc.AnonymousClass(),
+         pc.Nothing(),
+         pc.Subtyping(),
+         pc.This(),
+         pc.DataClasses(),
+         pc.OperatorOverloading(),
+         pc.ExtensionFunctions()],
+        True,
+        sy.CompileTimeError(),
+        rc.WrongParams(),
+        ct.Inference()  # constraint solving
+    ),
+    KotlinBug(
+        "12.KT-11280",
+        [pc.Overriding(),
+         pc.Subtyping(),
+         pc.SmartCast()],
+        False,
+        sy.Runtime(sy.RuntimeSymptom()),
+        rc.DesignIssue(),
+        ct.Misc()  # Mechanics -- smart cast
+    ),
+    KotlinBug(
+        "13.KT-42825",
+        [pc.Conditionals(),
+         pc.ParameterizedClasses(),
+         pc.UseVariance(),
+         pc.FlexibleTypes(), pc.Nullables(),
+         pc.JavaInterop(),
+         pc.SmartCast()],
+        True,
+        sy.CompileTimeError(),
+        rc.WrongParams(),
+        ct.SubtypingRelated()
+    ),
+    KotlinBug(
+        "14.KT-17597",
+        [pc.Collections(), pc.AccessModifiers(),
+         pc.StaticMethod(),
+         pc.JavaInterop(),
+         pc.FunctionReferences()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Resolution(),
+    ),
+    KotlinBug(
+        "15.KT-13597",
+        [pc.AnonymousClass()],
+        False,  # change final field
+        sy.Runtime(sy.IllegalAccessError()),
+        rc.InsufficientFunctionality(),
+        rc.OtherSemanticChecking(),
+    ),
+    KotlinBug(
+        "16.KT-12738",
+        [pc.ParameterizedFunctions(),
+         pc.FunctionReferences()],
+        True,
+        sy.CompileTimeError(),
+        rc.InsufficientFunctionality(),
+        ct.ResolutionRelated()
+    ),
+    KotlinBug(
+        "17.KT-37628",
+        [pc.Collections(),
+         pc.Conditionals(),
+         pc.Nullables(),
+         pc.Subtyping(),
+         pc.Lambdas()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference(),  # constraint solving
+    ),
+    KotlinBug(
+        "18.KT-12286",
+        [pc.ParameterizedFunctions(),
+         pc.FBounded(),
+         pc.Conditionals(),
+         pc.FunctionReferences()],
+        True,
+        sy.CompileTimeError(),
+        rc.InsufficientFunctionality(),
+        ct.Inference(),  # constraint solving
+    ),
+    KotlinBug(
+        "19.KT-9630",
+        [pc.ParameterizedClasses(),
+         pc.Inheritance(),
+         pc.ParameterizedFunctions(),
+         pc.ParameterizedTypes(),
+         pc.FBounded(),
+         pc.Where(),
+         pc.IntersectionTypes(),
+         pc.ExtensionFunctions()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Approximation()
+    ),
+    KotlinBug(
+        "20.KT-25302",
+        [pc.ParameterizedFunctions(),
+         pc.ParameterizedClasses(),
+         pc.UseVariance(),
+         pc.ParameterizedTypes(),
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference()  # constraint solving
     )
 ]

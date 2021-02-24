@@ -16,10 +16,6 @@ class TypeExpression(Category):
     name = "Expression Type Checking / Attribution"
 
 
-class Declarations(Category):
-    name = "Declaration-related"
-
-
 class Resolution(Category):
     name = "Resolution-related"
 
@@ -36,3 +32,12 @@ class Approximation(Category):
     # We have a type (e.g. Union Type) and we convert it to a type that can be
     # used in the program
     name = "Approximation / Coercion"
+
+
+class OtherSemanticChecking(Category):
+    name = "Other Semantic Checking"
+
+
+class Declarations(Category):
+    # Note that this category is sub-category of OtherSemanticChecking
+    name = "Declaration-related"

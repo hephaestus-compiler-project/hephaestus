@@ -35,6 +35,14 @@ class WrongMethodCalled(RuntimeSymptom):
     name = "Wrong Method Called"
 
 
+class ClassCastException(RuntimeSymptom):
+    name = "ClastCastException"
+
+
+class IllegalAccessError(RuntimeSymptom):
+    name = "IllegalAccessError"
+
+
 class Runtime(Symptom):
     name = "Runtime"
 

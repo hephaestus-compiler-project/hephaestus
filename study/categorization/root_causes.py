@@ -16,6 +16,14 @@ class IncorrectComputation(RootCause):
     name = "Incorrect Computation / Wrong Algorithm Used"
 
 
+class IncorrectCondition(RootCause):
+    name = "Incorrect / Missing Condition"
+
+
+class ExtraneousComputation(RootCause):
+    name = "Extraneous Computation / Condition"
+
+
 class WrongParams(RootCause):
     name = "Incorrect / Insufficient parameters passed"
 
