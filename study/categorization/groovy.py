@@ -177,7 +177,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Misc(),  # mechanics -- transformation
+        ct.Mechanics()
     ),
     GroovyBug(
         "20.GROOVY-8310",

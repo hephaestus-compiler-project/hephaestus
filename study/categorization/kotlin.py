@@ -89,7 +89,7 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.Misc()  # mechanics
+        ct.Mechanics()
     ),
     KotlinBug(
         "9.KT-10711",
@@ -287,7 +287,7 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.DesignIssue(),
-        ct.Misc(),  # Mechanics (Smart casts)
+        ct.Environment(),  # XXX
     ),
     KotlinBug(
         "9.KT-18522",
@@ -335,7 +335,7 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
-        ct.Misc()  # Mechanics -- smart cast
+        ct.Environment()  # XXX
     ),
     KotlinBug(
         "13.KT-42825",
