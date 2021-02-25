@@ -197,9 +197,16 @@ class This(Characteristic):
 
 class IntersectionTypes(Characteristic):
     name = "Intersection types"
-    category = SpecialFeatures()
+    category = SpecialTypes()
     characteristic_type = Types()
-    is_common = True
+    is_common = False
+
+
+class UnionTypes(Characteristic):
+    name = "Union types"
+    category = SpecialTypes()
+    characteristic_type = Types()
+    is_common = False
 
 
 class FlowTyping(Characteristic):
@@ -605,4 +612,11 @@ class DefaultInitializer(Characteristic):
     name = "Default Initializer"
     category = SpecialFeatures()
     characteristic_type = Expressions()
+    is_common = False
+
+
+class TypeProjections(Characteristic):
+    name = "Type Projection"
+    category = SpecialTypes()
+    characteristic_type = Types()
     is_common = False

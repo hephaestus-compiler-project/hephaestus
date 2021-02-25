@@ -46,6 +46,10 @@ class InsufficientFunctionality(RootCause):
     name = "Insufficient Functionality"
 
 
+class AlgorithmImproperlyImplemented(RootCause):
+    name = "Algorithm Improperly Implemented"
+
+
 # Programming Errors
 class IncorrectDataType(RootCause):
     name = "Incorrect Data Type"

@@ -243,3 +243,237 @@ scala_iter1 = [
     )
 
 ]
+
+
+scala_iter2 = [
+    ScalaBug(
+        "1.Scala2-8763",
+        [
+            pc.Collections(), pc.PatMat(),
+            pc.Arrays()
+        ],
+        False,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Mechanics()  # error reporting
+    ),
+    ScalaBug(
+        "2.Scala2-5231",
+        [
+            pc.AccessModifiers(), pc.ImplicitDefs()
+        ],
+        False,
+        sy.InternalCompilerError(),
+        rc.IncorrectCondition(),
+        ct.TypeExpression()
+    ),
+    ScalaBug(
+        "3.Scala2-11239",
+        [
+            pc.ParameterizedClasses(), pc.Typedefs(),
+            pc.HigherKindedTypes(), pc.DataClasses(),
+            pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
+            pc.TypeProjections()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.SubtypingRelated()
+    ),
+    ScalaBug(
+        "4.Dotty-9735",
+        [
+            pc.Typedefs(), pc.TypeLambdas(),
+            pc.ParameterizedTypes()
+        ],
+        False,
+        sy.MisleadingReport(),
+        rc.IncorrectCondition(),
+        ct.OtherSemanticChecking()
+    ),
+    ScalaBug(
+        "5.Scala2-10886",
+        [
+            pc.Import(),
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.WrongParams(),
+        ct.TypeExpression(),  # wrong information from context
+    ),
+    ScalaBug(
+        "6.Dotty-9803",
+        [
+            pc.Overloading(), pc.Import()
+        ],
+        False,
+        sy.MisleadingReport(),
+        rc.WrongParams(),
+        ct.Resolution()
+    ),
+    ScalaBug(
+        "7.Dotty-5140",
+        [
+            pc.JavaInterop(), pc.Arrays(),
+            pc.Import(), pc.Varargs()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Approximation()
+    ),
+    ScalaBug(
+        "8.Dotty-4487",
+        [
+            pc.Inheritance(), pc.FunctionTypes()
+        ],
+        False,
+        sy.InternalCompilerError(),
+        rc.DesignIssue(),
+        ct.TypeExpression()
+    ),
+    ScalaBug(
+        "9.Dotty-3585",
+        [
+            pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
+            pc.CallByName(),
+            pc.ImplicitDefs(),
+            pc.ImplicitParameters()
+        ],
+        True,
+        sy.InternalCompilerError(),
+        rc.WrongParams(),
+        ct.Resolution()
+    ),
+    ScalaBug(
+        "10.Dotty-9631",
+        [
+            pc.ParameterizedTypes(),
+            pc.ParameterizedFunctions(),
+            pc.FBounded(),
+            pc.NestedDeclaration(),
+            pc.Inheritance(),
+            pc.ParameterizedFunctions(),
+            pc.ImplicitParameters(),
+            pc.ExistentialTypes(),
+            pc.PatMat()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.SubtypingRelated()
+    ),
+    ScalaBug(
+        "11.Dotty-10217",
+        [
+            pc.UnionTypes(), pc.ParameterizedClasses(),
+            pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompilationPerformance(),
+        rc.AlgorithmImproperlyImplemented(),
+        ct.SubtypingRelated()
+    ),
+    ScalaBug(
+        "12.Scala2-7482",
+        [
+            pc.JavaInterop(), pc.Collections(),
+            pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Approximation()
+    ),
+    ScalaBug(
+        "13.Scala2-5454",
+        [
+            pc.ImplicitDefs(), pc.ImplicitParameters(),
+            pc.Inheritance(), pc.ParameterizedClasses()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.DesignIssue(),
+        ct.Environment()
+    ),
+    ScalaBug(
+        "14.Scala2-6714",
+        [
+            pc.Overriding(), pc.ImplicitDefs(),
+            pc.ImplicitParameters(), pc.ArithmeticExpressions()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Mechanics()  # transformation
+    ),
+    ScalaBug(
+        "15.Dotty-3917",
+        [
+            pc.Inheritance()
+        ],
+        True,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Mechanics()  # transformation
+    ),
+    ScalaBug(
+        "16.Dotty-2723",
+        [
+            pc.Inline(), pc.ImplicitParameters(), pc.FunctionTypes()
+        ],
+        True,
+        sy.InternalCompilerError(),
+        rc.IncorrectDataType(),
+        ct.Mechanics()  # Transformation
+    ),
+    ScalaBug(
+        "17.Dotty-4030",
+        [
+            pc.Inheritance(), pc.AlgebraicDataTypes(),
+            pc.ParameterizedClasses(), pc.ParameterizedTypes(),
+            pc.BoundedPolymorphism(), pc.FunctionTypes(),
+            pc.UnionTypes(), pc.ExistentialTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.TypeExpression()
+    ),
+    ScalaBug(
+        "18.Scala2-10536",
+        [
+            pc.ParameterizedClasses(), pc.ImplicitParameters(),
+            pc.FBounded(), pc.BoundedPolymorphism(),
+            pc.AlgebraicDataTypes(), pc.Overloading(),
+            pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Approximation()
+    ),
+    ScalaBug(
+        "19.Dotty-9749",
+        [
+            pc.Varargs()
+        ],
+        False,
+        sy.Runtime(sy.WrongMethodCalled()),
+        rc.MissingCase(),
+        ct.Declarations()
+    ),
+    ScalaBug(
+        "20.Dotty-3422",
+        [
+            pc.HigherKindedTypes(), pc.NestedDeclaration(),
+            pc.ParameterizedClasses(),
+            pc.DependentTypes(), pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.SubtypingRelated()
+    )
+]

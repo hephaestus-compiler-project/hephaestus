@@ -72,3 +72,7 @@ class InternalCompilerError(Symptom):
 
 class MisleadingReport(Symptom):
     name = "Misleading Report"
+
+
+class CompilationPerformance(Symptom):
+    name = "Compilation Performance"
