@@ -13,6 +13,10 @@ class MissingCase(RootCause):
     name = "Missing Case / Forgotten Step"
 
 
+class MissingMethod(RootCause):
+    name = "Missing Method"
+
+
 class IncorrectCondition(RootCause):
     name = "Incorrect / Missing Condition"
 
