@@ -12,7 +12,8 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.WrongMethodCalled()),
         rc.MissingCase(),
-        ct.Declarations()
+        ct.Declarations(), # -- During Override Resolution
+        4
     ),
     KotlinBug(
         "2.KT-4814",
@@ -20,7 +21,8 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.VerifyError()),
         rc.MissingCase(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        4
     ),
     KotlinBug(
         "3.KT-42175",
@@ -32,28 +34,31 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference()  # "type variable substitution"
+        ct.Inference(),  # "type variable substitution"
+        8
     ),
     KotlinBug(
         "4.KT-10244",
         [pc.FlowTyping(),
-         pc.IntersectionTypes(),
+         pc.IntersectionTypes(), # -- Implicit -- Inferred, should we keep it?
          pc.Conditionals()],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(),
-        ct.Declarations()
+        rc.MissingCase(), # Design issue -- InsufficientFunctionality -- MissingCase, all makes sense to me
+        ct.Declarations(), # -- During Decleration Checker
+        4
     ),
     KotlinBug(
         "5.KT-10472",
-        [pc.Overloading(), pc.Varargs(),
+        [pc.Overloading(), pc.Varargs(), 
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
-         pc.ParameterizedTypes()],
+         pc.ParameterizedTypes()], # -- Do we really need to keep track of Parameterized Types?
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(),
-        ct.Resolution()
+        rc.MissingCase(), # IncorrectSequence, definitely not a missing case but some other logic error 
+        ct.Resolution(),
+        8
     ),
     KotlinBug(
         "6.KT-7485",
@@ -65,8 +70,9 @@ kotlin_iter1 = [
          pc.Subtyping()],
         False,
         sy.Runtime(sy.NullPointerException()),
-        rc.IncorrectComputation(),
-        ct.SubtypingRelated()
+        rc.IncorrectComputation(), # IncorrectCondition
+        ct.SubtypingRelated(), # Declarations -- Similar to KT-10244
+        11
     ),
     KotlinBug(
         "7.KT-23748",
@@ -76,30 +82,38 @@ kotlin_iter1 = [
          pc.ElvisOperator()],
         True,
         sy.CompileTimeError(),
-        rc.DesignIssue(),
-        ct.Inference()  # constraint solving
+        # This is not a Design Issue but something is going wrong with elvis operator
+        # and exact Annotation, it could be a logic error or an algorithmic error.
+        # I propose to remove this bug because we don't have the fix for it.
+        rc.DesignIssue(), 
+        ct.Inference(),  # constraint solving
+        9
     ),
     KotlinBug(
         "8.KT-22728",
         [pc.Lambdas(),
          pc.ExtensionFunctions(),
          pc.Typedefs(),
-         pc.Import(),
+         pc.Import(), # -- It means multiple packages?
          pc.FunctionTypes()],
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.Mechanics()
+        ct.Mechanics(), # -- serialization
+        11
     ),
     KotlinBug(
         "9.KT-10711",
+        # FunctionTypes?
+        # Remove Collections?
         [pc.ParameterizedFunctions(),
          pc.Collections(),
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
+        rc.MissingCase(), # InsufficientFunctionality or IncorrectSequence
         ct.Inference(),  # constraint solving
+        6
     ),
     KotlinBug(
         "10.KT-37249",
@@ -107,7 +121,8 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Inference()  # constraint solving
+        ct.Inference(),  # constraint solving
+        7
     ),
     KotlinBug(
         "11.KT-11468",
@@ -117,7 +132,8 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(), # Why not Decleration? Maybe TypeApproximation?
+        6
     ),
     KotlinBug(
         "12.KT-6014",
@@ -125,15 +141,18 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        7
     ),
     KotlinBug(
         "13.KT-12044",
+        # Pair -> Collections? otherwise Generic with properties?
         [pc.Conditionals(), pc.PropertyReference()],
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.Resolution()
+        ct.Resolution(),
+        8
     ),
     KotlinBug(
         "14.KT-4334",
@@ -141,44 +160,50 @@ kotlin_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking()
+        ct.OtherSemanticChecking(), # -- BREAK_OR_CONTINUE_JUMPS_ACROSS_FUNCTION_BOUNDARY
+        7
     ),
     KotlinBug(
         "15.KT-32184",
+        # FunctionType?
         [pc.Lambdas(), pc.DataClasses()],
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Resolution()
+        ct.Resolution(), 
+        12
     ),
     KotlinBug(
         "16.KT-10197",
         [pc.Overriding(), pc.Inheritance(), pc.Delegation()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
-        rc.MissingCase(),
-        ct.Declarations(),
+        rc.MissingCase(), # InsufficientFunctionality
+        ct.Declarations(), # -- During Override Resolution
+        12
     ),
     KotlinBug(
         "17.KT-41693",
         [pc.Conditionals(), pc.Import(),
-         pc.FlexibleTypes(),
+         pc.FlexibleTypes(), # Java Types are loaded as flexible types
          pc.JavaInterop()],
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(),
-        ct.Approximation()
+        rc.MissingCase(), # IncorrectComputation
+        ct.Approximation(),
+        16
     ),
     KotlinBug(
         "18.KT-44420",
-        [pc.FlexibleTypes(),
+        [pc.FlexibleTypes(), 
          pc.Collections(),
          pc.VarTypeInference(),
          pc.JavaInterop()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
+        rc.MissingCase(), #InsufficientFunctionality
         ct.Approximation(),
+        9
     ),
     KotlinBug(
         "19.KT-35602",
@@ -190,19 +215,21 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        6
     ),
     KotlinBug(
         "20.KT-6992",
         [pc.Overloading(),
          pc.ParameterizedClasses(),
-         pc.Delegation(),
+         pc.Delegation(), # ?
          pc.This()],
         False,
         sy.MisleadingReport(),
-        rc.MissingCase(),
+        rc.MissingCase(), #InsufficientFunctionality
         ct.Resolution()
-    )
+    ),
+    3
 ]
 
 
