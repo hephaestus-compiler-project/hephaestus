@@ -539,6 +539,32 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._expected_type = None
         self.error_injected = None
+        self._excluded_types = self._get_excluded_types()
+
+    def _get_excluded_types(self):
+        # These are types that although there is not subtyping relation between
+        # them, they are compatible. For example, in Groovy, Byte is not
+        # subtype of Long. However, you can still assign a byte value to a Long
+        # variable.
+        if self.language == 'kotlin':
+            return {}
+        byte = self.bt_factory.get_byte_type()
+        short = self.bt_factory.get_short_type()
+        integer = self.bt_factory.get_integer_type()
+        longt = self.bt_factory.get_long_type()
+        floatt = self.bt_factory.get_float_type()
+        double = self.bt_factory.get_double_type()
+        big_decimal = self.bt_factory.get_big_decimal_type()
+        numbert = self.bt_factory.get_number_type()
+        return {
+            byte: [],
+            short: [byte],
+            integer: [byte, short],
+            longt: [byte, short, integer],
+            floatt: [byte, short, integer, longt],
+            double: [byte, short, integer, longt, floatt],
+            big_decimal: [byte, short, integer, longt, floatt, double, numbert]
+        }
 
     def replace_value_node(self, node, exclude=[]):
         # Due to groovy truth there is not effect if we do the transformation
@@ -549,11 +575,17 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         )
         if self.language == "groovy" and is_string_or_bool:
             return node
+
+        # We can't find an irrelevant type of Any.
+        if self._expected_type == self.bt_factory.get_any_type():
+            return node
         # We have already performed a transformation or the value is included
         # in a simple expression.
         if self.is_transformed or self.depth < self.min_expr_depth or (
               not self._expected_type or utils.random.bool()):
             return node
+
+        exclude.extend(self._excluded_types.get(self._expected_type, []))
         types = [tt for tt in self.types if tt not in exclude]
         ir_type = tu.find_irrelevant_type(self._expected_type, types)
         if ir_type is None:
@@ -669,18 +701,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_real_constant(self, node):
-        if self.language == 'groovy':
-            exclude = [
-                self.bt_factory.get_byte_type(),
-                self.bt_factory.get_short_type(),
-                self.bt_factory.get_integer_type(),
-                self.bt_factory.get_long_type(),
-            ]
-            if self._expected_type == self.bt_factory.get_double_type():
-                exclude.append(self.bt_factory.get_float_type())
-        else:
-            exclude = []
-        return self.replace_value_node(node, exclude=exclude)
+        return self.replace_value_node(node, exclude=[])
 
     @change_depth
     def visit_char_constant(self, node):
