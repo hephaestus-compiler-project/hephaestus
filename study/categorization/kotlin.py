@@ -40,12 +40,11 @@ kotlin_iter1 = [
     KotlinBug(
         "4.KT-10244",
         [pc.FlowTyping(),
-         pc.IntersectionTypes(), # -- Implicit -- Inferred, should we keep it?
          pc.Conditionals()],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(), # Design issue -- InsufficientFunctionality -- MissingCase, all makes sense to me
-        ct.Declarations(), # -- During Decleration Checker
+        rc.MissingCase(), 
+        ct.TypeExpression(), # -- TypeChecking
         4
     ),
     KotlinBug(
@@ -53,10 +52,10 @@ kotlin_iter1 = [
         [pc.Overloading(), pc.Varargs(), 
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
-         pc.ParameterizedTypes()], # -- Do we really need to keep track of Parameterized Types?
+         pc.ParameterizedTypes()], 
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(), # IncorrectSequence, definitely not a missing case but some other logic error 
+        rc.IncorrectSequence(), 
         ct.Resolution(),
         8
     ),
@@ -71,7 +70,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectComputation(), # IncorrectCondition
-        ct.SubtypingRelated(), # Declarations -- Similar to KT-10244
+        ct.SubtypingRelated(), # Declarations 
         11
     ),
     KotlinBug(
@@ -82,10 +81,7 @@ kotlin_iter1 = [
          pc.ElvisOperator()],
         True,
         sy.CompileTimeError(),
-        # This is not a Design Issue but something is going wrong with elvis operator
-        # and exact Annotation, it could be a logic error or an algorithmic error.
-        # I propose to remove this bug because we don't have the fix for it.
-        rc.DesignIssue(), 
+        rc.IncorrectComputation(), 
         ct.Inference(),  # constraint solving
         9
     ),
@@ -94,7 +90,7 @@ kotlin_iter1 = [
         [pc.Lambdas(),
          pc.ExtensionFunctions(),
          pc.Typedefs(),
-         pc.Import(), # -- It means multiple packages?
+         pc.Import(), 
          pc.FunctionTypes()],
         True,
         sy.CompileTimeError(),
@@ -104,14 +100,12 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "9.KT-10711",
-        # FunctionTypes?
-        # Remove Collections?
         [pc.ParameterizedFunctions(),
          pc.Collections(),
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), # InsufficientFunctionality or IncorrectSequence
+        rc.InsufficientFunctionality(), # InsufficientAlgorithmImplementation
         ct.Inference(),  # constraint solving
         6
     ),
@@ -132,7 +126,7 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated(), # Why not Decleration? Maybe TypeApproximation?
+        ct.SubtypingRelated(), # Why not Decleration? 
         6
     ),
     KotlinBug(
@@ -146,8 +140,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "13.KT-12044",
-        # Pair -> Collections? otherwise Generic with properties?
-        [pc.Conditionals(), pc.PropertyReference()],
+        [pc.Conditionals(), pc.PropertyReference(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
@@ -165,8 +158,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "15.KT-32184",
-        # FunctionType?
-        [pc.Lambdas(), pc.DataClasses()],
+        [pc.Lambdas(), pc.DataClasses(), pc.FunctionTypes()],
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
@@ -178,7 +170,7 @@ kotlin_iter1 = [
         [pc.Overriding(), pc.Inheritance(), pc.Delegation()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
-        rc.MissingCase(), # InsufficientFunctionality
+        rc.MissingCase(), 
         ct.Declarations(), # -- During Override Resolution
         12
     ),
@@ -189,7 +181,7 @@ kotlin_iter1 = [
          pc.JavaInterop()],
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(), # IncorrectComputation
+        rc.MissingCase(), 
         ct.Approximation(),
         16
     ),
@@ -201,7 +193,7 @@ kotlin_iter1 = [
          pc.JavaInterop()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), #InsufficientFunctionality
+        rc.MissingCase(), 
         ct.Approximation(),
         9
     ),
@@ -222,11 +214,11 @@ kotlin_iter1 = [
         "20.KT-6992",
         [pc.Overloading(),
          pc.ParameterizedClasses(),
-         pc.Delegation(), # ?
+         pc.Delegation(), # ConstructorDelegation
          pc.This()],
         False,
         sy.MisleadingReport(),
-        rc.MissingCase(), #InsufficientFunctionality
+        rc.InsufficientFunctionality(),
         ct.Resolution()
     ),
     3
