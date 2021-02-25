@@ -192,3 +192,195 @@ groovy_iter1 = [
         ct.TypeExpression()
     )
 ]
+
+
+groovy_iter2 = [
+    GroovyBug(
+        "1.GROOVY-6489",
+        [pc.JavaInterop(),
+         pc.WithMultipleAssignment()
+         ],
+        True,
+        sy.InternalCompilerError(),
+        rc.WrongParams(),
+        ct.TypeExpression(),
+    ),
+    GroovyBug(
+        "2.Groovy-8686",
+        [pc.FlowTyping()],
+        False,
+        sy.Runtime(sy.AbstractMethodError()),
+        rc.MissingMethod(),
+        ct.Environment(),
+    ),
+    GroovyBug(
+        "3.Groovy-6415",
+        [pc.ParameterizedFunctions()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Environment()  # XXX
+    ),
+    GroovyBug(
+        "4.Groovy-8590",
+        [pc.Cast(), pc.Subtyping()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.TypeExpression()
+    ),
+    GroovyBug(
+        "5.Groovy-6761",
+        [pc.ParameterizedFunctions(),
+         pc.ParameterizedTypes(),
+         pc.UseVariance()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Resolution()
+    ),
+    GroovyBug(
+        "6.Groovy-6034",
+        [pc.PrimitiveTypes()],
+        False,  # At the time was false
+        sy.Runtime(sy.VerifyError()),
+        rc.DesignIssue(),
+        ct.TypeExpression(),
+    ),
+    GroovyBug(
+        "7.Groovy-6195",
+        [pc.Collections(), pc.VarTypeInference()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Resolution()
+    ),
+    GroovyBug(
+        "8.Groovy-5873",
+        [pc.Inheritance(), pc.ParameterizedClasses(),
+         pc.ParameterizedTypes(), pc.Property()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.InsufficientFunctionality(),
+        ct.Inference()
+    ),
+    GroovyBug(
+        "9.Groovy-5415",
+        [pc.JavaInterop(),
+         pc.ParameterizedClasses(),
+         pc.ParameterizedTypes(),
+         pc.ParameterizedFunctions(),
+         pc.Reflection()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.ExtraneousComputation(),
+        ct.SubtypingRelated()  # XXX
+    ),
+    GroovyBug(
+        "10.Groovy-9328",
+        [pc.AccessModifiers(), pc.AnonymousClass(),
+         pc.Overriding()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Environment()
+    ),
+    GroovyBug(
+        "11.Groovy-5175",
+        [pc.Arrays(),
+         pc.Subtyping()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.SubtypingRelated()
+    ),
+    GroovyBug(
+        "12.Groovy-7922",
+        [pc.Overloading(), pc.Inheritance()],
+        False,
+        sy.Runtime(sy.AmbiguousMethodError()),
+        rc.IncorrectComputation(),
+        ct.Resolution()
+    ),
+    GroovyBug(
+        "13.Groovy-6129",
+        [pc.Collections(),
+         pc.ParameterizedTypes(),
+         pc.TypeArgsInference()],
+        True,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Inference()
+    ),
+    GroovyBug(
+        "14.Groovy-8090",
+        [pc.Collections(),
+         pc.ParameterizedTypes(),
+         pc.ParameterizedFunctions()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference()
+    ),
+    GroovyBug(
+        "15.Groovy-5742",
+        [pc.Import(), pc.ParameterizedClasses(),
+         pc.FBounded(), pc.ParameterizedFunctions(),
+         pc.ParameterizedTypes(), pc.Inheritance()
+         ],
+        True,
+        sy.InternalCompilerError(),
+        rc.IncorrectComputation(),
+        ct.Inference()
+    ),
+    GroovyBug(
+        "16.Groovy-7307",
+        [pc.Subtyping(),
+         pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
+         ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.SubtypingRelated()
+    ),
+    GroovyBug(
+        "17.Groovy-7618",
+        [
+         pc.Lambdas(),
+         pc.ParamTypeInference(),
+         pc.SAM()],
+        True,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Approximation()
+    ),
+    GroovyBug(
+        "18.Groovy-5580",
+        [pc.Inheritance(), pc.Property()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Resolution()
+    ),
+    GroovyBug(
+        "19.Groovy-7061",
+        [pc.Collections(), pc.ParamTypeInference(),
+         pc.Lambdas()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Inference()
+    ),
+    GroovyBug(
+        "20.Groovy-5240",
+        [pc.Reflection()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.TypeExpression()
+    )
+]

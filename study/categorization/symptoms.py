@@ -43,6 +43,10 @@ class IllegalAccessError(RuntimeSymptom):
     name = "IllegalAccessError"
 
 
+class AmbiguousMethodError(RuntimeSymptom):
+    name = "AmbiguousMethodError"
+
+
 class Runtime(Symptom):
     name = "Runtime"
 
