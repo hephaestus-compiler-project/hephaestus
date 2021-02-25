@@ -16,6 +16,7 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Inference(),  # type variable substitution
+        5
     ),
     GroovyBug(
         "2.GROOVY-7364",
@@ -26,7 +27,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution()
+        ct.Resolution(), # Inference 
+        9
     ),
     GroovyBug(
         "3.GROOVY-5217",
@@ -34,7 +36,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
-        ct.Resolution()
+        ct.Resolution(),
+        7
     ),
     GroovyBug(
         "4.GROOVY-7211",
@@ -44,7 +47,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference()  # type variable substitution
+        ct.Inference(),  # type variable substitution
+        13
     ),
     GroovyBug(
         "5.GROOVY-9420",
@@ -55,7 +59,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),  # Or maybe programming error
-        ct.TypeExpression(),
+        ct.TypeExpression(), # Inference
+        14
     ),
     GroovyBug(
         "6.GROOVY-5232",
@@ -63,7 +68,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution()
+        ct.Resolution(),
+        9
     ),
     GroovyBug(
         "7.GROOVY-8330",
@@ -71,7 +77,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.OtherSemanticChecking(), # Why not subtyping-related? 
+        7
     ),
     GroovyBug(
         "8.GROOVY-7721",
@@ -80,6 +87,7 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Resolution(),
+        13
     ),
     GroovyBug(
         "9.GROOVY-6021",
@@ -90,7 +98,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Misc()
+        ct.Misc(), # Mechanics?
+        12
     ),
     GroovyBug(
         "10.GROOVY-8247",
@@ -102,16 +111,19 @@ groovy_iter1 = [
         sy.InternalCompilerError(),
         rc.WrongDataReference(),  # Programming error
         ct.Inference(),  # type variable substitution
+        9
     ),
     GroovyBug(
         "11.GROOVY-7333",
-        [pc.FlowTyping(),
+        # Smart cast?
+        [pc.FlowTyping(), # Where?
          pc.PrimitiveTypes(),
          pc.Arrays()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Approximation(),
+        7
     ),
     GroovyBug(
         "12.GROOVY-7987",
@@ -119,7 +131,8 @@ groovy_iter1 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.OtherSemanticChecking()
+        ct.OtherSemanticChecking(), # Resolution
+        7
     ),
     GroovyBug(
         "13.GROOVY-8445",
@@ -127,7 +140,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        11
     ),
     GroovyBug(
         "14.GROOVY-7316",
@@ -136,7 +150,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        2
     ),
     GroovyBug(
         "15.GROOVY-7420",
@@ -144,7 +159,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.Resolution()
+        ct.Resolution(),
+        10
     ),
     GroovyBug(
         "16.GROOVY-7315",
@@ -153,15 +169,18 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
         ct.OtherSemanticChecking(),
+        9
     ),
     GroovyBug(
         "17.GROOVY-6030",
+        # Subtyping?
         [pc.Collections(), pc.Overriding(), pc.Overloading(),
          pc.Subtyping(), pc.Lambdas()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
-        ct.Resolution()
+        ct.Resolution(),
+        4
     ),
     GroovyBug(
         "18.GROOVY-7711",
@@ -169,7 +188,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        13
     ),
     GroovyBug(
         "19.GROOVY-6119",
@@ -177,7 +197,8 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Mechanics()
+        ct.Mechanics(),
+        8
     ),
     GroovyBug(
         "20.GROOVY-8310",
@@ -189,7 +210,8 @@ groovy_iter1 = [
         False,
         sy.Runtime(),
         rc.IncorrectCondition(),
-        ct.TypeExpression()
+        ct.TypeExpression(), # Inference
+        10
     )
 ]
 
