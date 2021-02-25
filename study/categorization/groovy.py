@@ -27,7 +27,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution(), # Inference 
+        ct.Resolution(), 
         9
     ),
     GroovyBug(
@@ -59,7 +59,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),  # Or maybe programming error
-        ct.TypeExpression(), # Inference
+        ct.TypeExpression(), 
         14
     ),
     GroovyBug(
@@ -77,7 +77,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(), # Why not subtyping-related? 
+        ct.SubtypingRelated(), 
         7
     ),
     GroovyBug(
@@ -98,7 +98,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Misc(), # Mechanics?
+        ct.Mechanics(), # Code Generation
         12
     ),
     GroovyBug(
@@ -115,8 +115,7 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "11.GROOVY-7333",
-        # Smart cast?
-        [pc.FlowTyping(), # Where?
+        [pc.FlowTyping(), 
          pc.PrimitiveTypes(),
          pc.Arrays()],
         True,
@@ -173,7 +172,6 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "17.GROOVY-6030",
-        # Subtyping?
         [pc.Collections(), pc.Overriding(), pc.Overloading(),
          pc.Subtyping(), pc.Lambdas()],
         True,
@@ -210,7 +208,7 @@ groovy_iter1 = [
         False,
         sy.Runtime(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(), # Inference
+        ct.TypeExpression(), 
         10
     )
 ]
