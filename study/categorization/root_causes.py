@@ -8,12 +8,9 @@ class RootCause():
         return self.__repr__()
 
 
+# Logic Errors
 class MissingCase(RootCause):
     name = "Missing Case / Forgotten Step"
-
-
-class IncorrectComputation(RootCause):
-    name = "Incorrect Computation / Wrong Algorithm Used"
 
 
 class IncorrectCondition(RootCause):
@@ -24,18 +21,28 @@ class ExtraneousComputation(RootCause):
     name = "Extraneous Computation / Condition"
 
 
-class WrongParams(RootCause):
-    name = "Incorrect / Insufficient parameters passed"
-
-
-class InsufficientFunctionality(RootCause):
-    name = "Insufficient Functionality"
+class ExtremeConditionNeglected(RootCause):
+    name = "Extreme Condition Neglected"
 
 
 class IncorrectSequence(RootCause):
     name = "Incorrect sequence of operations"
 
 
+class WrongParams(RootCause):
+    name = "Incorrect / Insufficient parameters passed"
+
+
+# Algorithmic
+class IncorrectComputation(RootCause):
+    name = "Incorrect Computation / Wrong Algorithm Used"
+
+
+class InsufficientFunctionality(RootCause):
+    name = "Insufficient Functionality"
+
+
+# Programming Errors
 class IncorrectDataType(RootCause):
     name = "Incorrect Data Type"
 
@@ -44,12 +51,9 @@ class WrongDataReference(RootCause):
     name = "WrongDataReference"
 
 
+# Design Issues
 class DesignIssue(RootCause):
     name = "Design Issue"
-
-
-class ExtremeConditionNeglected(RootCause):
-    name = "Extreme Condition Neglected"
 
 
 class FunctionalSpecificationMismatch(RootCause):
