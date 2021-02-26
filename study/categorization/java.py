@@ -16,20 +16,20 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.FunctionalSpecificationMismatch(),  # incorrect computation | IncorrectCondition
+        rc.FunctionalSpecificationMismatch(), 
         ct.SubtypingRelated(),
         9
     ),
     JavaBug(
         "2.JDK-8254557",
-        # TypeArgsInference : new Iterator<>() 
         [pc.Streams(), pc.FunctionalInterface(),
          pc.ParameterizedFunctions(), pc.AnonymousClass(),
-         pc.Lambdas(), pc.Conditionals(), pc.Reflection()
+         pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
+         pc.TypeArgsInference()
          ],
         False,
         sy.InternalCompilerError(),
-        rc.MissingMethod(),  # XXX Missing case | I think missing case is fine
+        rc.MissingCase(),  
         ct.TypeExpression(),
         34
     ),
@@ -128,7 +128,7 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Environment(), # TypeExprssion?
+        ct.Environment(), # TypeExpression
         9
     ),
     JavaBug(
@@ -138,7 +138,7 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), # WrongParams
+        rc.MissingCase(),  # missing step
         ct.Approximation(),
         10
     ),
@@ -149,7 +149,7 @@ java_iter1 = [
          ],
         True,
         sy.InternalCompilerError(),
-        rc.MissingMethod(),  # missing case | I believe missing method is redundant 
+        rc.MissingCase(),  
         ct.Mechanics(),  # transformation
         9
     ),
@@ -211,7 +211,7 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Environment(), # Inference
+        ct.Environment(),
         8
     ),
     JavaBug(
