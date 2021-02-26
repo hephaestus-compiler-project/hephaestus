@@ -16,19 +16,22 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.FunctionalSpecificationMismatch(),  # incorrect computation
-        ct.SubtypingRelated()
+        rc.FunctionalSpecificationMismatch(),  # incorrect computation | IncorrectCondition
+        ct.SubtypingRelated(),
+        9
     ),
     JavaBug(
         "2.JDK-8254557",
+        # TypeArgsInference : new Iterator<>() 
         [pc.Streams(), pc.FunctionalInterface(),
          pc.ParameterizedFunctions(), pc.AnonymousClass(),
          pc.Lambdas(), pc.Conditionals(), pc.Reflection()
          ],
         False,
         sy.InternalCompilerError(),
-        rc.MissingMethod(),  # XXX Missing case
-        ct.TypeExpression()
+        rc.MissingMethod(),  # XXX Missing case | I think missing case is fine
+        ct.TypeExpression(),
+        34
     ),
     JavaBug(
         "3.JDK-8244559",
@@ -40,7 +43,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics()  # transformation
+        ct.Mechanics(),  # transformation
+        17
     ),
     JavaBug(
         "4.JDK-8191802",
@@ -51,7 +55,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.Inference()
+        ct.Inference(),
+        8
     ),
     JavaBug(
         "5.JDK-8231461",
@@ -61,7 +66,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution()
+        ct.Resolution(),
+        8
     ),
     JavaBug(
         "6.JDK-8012238",
@@ -74,7 +80,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Inference()  # constraint solving
+        ct.Inference(),  # constraint solving
+        16
     ),
     JavaBug(
         "7.JDK-8006749",
@@ -84,7 +91,8 @@ java_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        6
     ),
     JavaBug(
         "8.JDK-6995200",
@@ -95,7 +103,8 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        8
     ),
     JavaBug(
         "9.JDK-7040883",
@@ -106,7 +115,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.Inference()  # type variable substitution
+        ct.Inference(),  # type variable substitution
+        6
     ),
     JavaBug(
         "10.JDK-8029721",
@@ -118,7 +128,8 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Environment()
+        ct.Environment(), # TypeExprssion?
+        9
     ),
     JavaBug(
         "11.JDK-8129214",
@@ -127,8 +138,9 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
-        ct.Approximation()
+        rc.MissingCase(), # WrongParams
+        ct.Approximation(),
+        10
     ),
     JavaBug(
         "12.JDK-8203277",
@@ -137,8 +149,9 @@ java_iter1 = [
          ],
         True,
         sy.InternalCompilerError(),
-        rc.MissingMethod(),  # missing case
-        ct.Mechanics()  # transformation
+        rc.MissingMethod(),  # missing case | I believe missing method is redundant 
+        ct.Mechanics(),  # transformation
+        9
     ),
     JavaBug(
         "13.JDK-8195598",
@@ -149,7 +162,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Resolution()
+        ct.Resolution(),
+        14
     ),
     JavaBug(
         "14.JDK-8202597",
@@ -161,6 +175,7 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Approximation(),
+        9
     ),
     JavaBug(
         "15.JDK-8144832",
@@ -170,7 +185,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        5
     ),
     JavaBug(
         "16.JDK-8169091",
@@ -183,7 +199,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        7
     ),
     JavaBug(
         "17.JDK-6996914",
@@ -194,7 +211,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Environment()
+        ct.Environment(), # Inference
+        8
     ),
     JavaBug(
         "18.JDK-8154180",
@@ -207,6 +225,7 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
+        16
     ),
     JavaBug(
         "19.JDK-7034511",
@@ -217,7 +236,8 @@ java_iter1 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.WrongParams(),
-        ct.Inference()  # type variable substitution
+        ct.Inference(),  # type variable substitution
+        8
     ),
     JavaBug(
         "20.JDK-8148354",
@@ -230,7 +250,8 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Approximation()
+        ct.Approximation(),
+        8
     ),
 ]
 
