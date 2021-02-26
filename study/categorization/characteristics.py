@@ -1,4 +1,21 @@
 class CharacteristicCategory():
+    """
+    This is a base class for describing a general category that includes.
+    many program characteristics.
+
+    The main general categories of program characteristics are:
+
+      * Standard features of programming languages
+      * Features of object-oriented programming languages
+      * Features related to parametric polymorphism
+      * Features related to higher-order programming,
+        and functional programming
+      * Use of standard library
+      * Features related to type inference
+      * Advanced features of type system
+      * Other special features
+    """
+
     def __repr__(self):
         return self.name
 
@@ -7,39 +24,79 @@ class CharacteristicCategory():
 
 
 class StandardFeatures(CharacteristicCategory):
+    """
+    This category includes features that can be found in every modern
+    programming language (e.g., method calls, arithmetic expressions, binary
+    operations, assignments, type casting, etc.).
+    """
+
     name = "Standard features"
 
 
 class OOPFeatures(CharacteristicCategory):
+    """
+    This category includes features that are related to object-oriented
+    programming, e.g., classes, fields, methods, inheritance, object
+    initialization, overriding, etc.
+    """
+
     name = "OOP langauges"
 
 
 class ParametricPolymorphism(CharacteristicCategory):
+    """
+    This category includes features related to parametric polymorphism,
+    e.g., declaration of parameterized classes / functions, use of
+    parameterized types, etc.
+    """
     name = "Parametric Polymorphism"
 
 
-class HigherOrderProgramming(CharacteristicCategory):
-    name = "Higher-Order Programming"
+class FunctionalProgramming(CharacteristicCategory):
+    """
+    This category includes features related to functional programming and
+    the use of functions as first-class citizens. For example, use of lambdas,
+    declaration of higher-order functions, use of function types, etc.
+    """
+
+    name = "Functional Programming"
 
 
 class StandardLibrary(CharacteristicCategory):
+    """
+    This category indicates that the input program uses the standard library
+    of the language, e.g., collection API (lists, map, sets, etc.).
+    """
+
     name = "Standard Library"
 
 
 class TypeInference(CharacteristicCategory):
+    """
+    This category includes related to type inference. For example, the
+    input program declares a function whose return type is omitted and inferred
+    by the compiler.
+    """
+
     name = "Type Inference"
 
 
 class SpecialTypes(CharacteristicCategory):
-    name = "Special Types"
+    """
+    This category includes features associated with advanced topics of
+    the type system of the language. For example, intersection types,
+    dependent types, type projections, etc.
+    """
+
+    name = "Special features of type systems"
 
 
 class SpecialFeatures(CharacteristicCategory):
+    """
+    This category includes other language features that are not related to
+    any of the categories above.
+    """
     name = "Special features"
-
-
-class Other(CharacteristicCategory):
-    name = "Other"
 
 
 class CharacteristicType():
@@ -106,7 +163,7 @@ class Subtyping(Characteristic):
 
 class JavaInterop(Characteristic):
     name = "Java Interop"
-    category = Other()
+    category = SpecialTypes()
     characteristic_type = None
     is_common = True
 
@@ -141,7 +198,7 @@ class SealedClasses(Characteristic):
 
 class SAM(Characteristic):
     name = "Single Abstract Method"
-    category = HigherOrderProgramming()
+    category = FunctionalProgramming()
     characteristic_type = Declaration()
     is_common = True
 
@@ -162,7 +219,7 @@ class ArithmeticExpressions(Characteristic):
 
 class Lambdas(Characteristic):
     name = "Lambdas"
-    category = HigherOrderProgramming()
+    category = FunctionalProgramming()
     characteristic_type = Expressions()
     is_common = True
 
@@ -176,7 +233,7 @@ class TypeLambdas(Characteristic):
 
 class FunctionReferences(Characteristic):
     name = "Function references"
-    category = HigherOrderProgramming()
+    category = FunctionalProgramming()
     characteristic_type = Expressions()
     is_common = True
 
@@ -491,7 +548,7 @@ class ParameterizedTypes(Characteristic):
 
 class FunctionTypes(Characteristic):
     name = "Function types"
-    category = HigherOrderProgramming()
+    category = FunctionalProgramming()
     characteristic_type = Types()
     is_common = False
 
