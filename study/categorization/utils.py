@@ -1,6 +1,9 @@
 import json
+import inspect
 from collections import defaultdict
+import symptoms
 from characteristics import CharacteristicCategory, Characteristic
+
 
 def print_characteristics():
     def get_name(characteristic):
@@ -70,3 +73,26 @@ def print_stats(bugs):
         stats["Root Causes"][b.root_cause.name] += 1
     print(json.dumps(stats, indent=4))
     print("======================")
+
+
+def print_symptoms():
+    def print_s(name, doc, symbol="-"):
+        l = len(name)
+        print(name)
+        print(l * symbol)
+        print(doc)
+
+    syms = [obj for name, obj in inspect.getmembers(symptoms) if inspect.isclass(obj)]
+    top_level = {tp: [] for tp in syms if not any(s for s in tp.mro() if s in syms and s != tp)}
+    for s in syms:
+        tp = [i for i in s.mro() if i in syms and i != s]
+        if len(tp) == 1:
+            top_level[tp[0]].append(s)
+        elif len(tp) > 1:
+            raise
+    for tp, syms in top_level.items():
+        print_s(tp.__name__, tp.__doc__, "=")
+        for s in syms:
+            name = s.__name__ + " (" + tp.__name__ + ")"
+            print_s(name, s.__doc__)
+print_symptoms()
