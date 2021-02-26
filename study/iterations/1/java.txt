@@ -1,6 +1,6 @@
 https://bugs.openjdk.java.net/browse/JDK-8258972,https://github.com/openjdk/jdk16/commit/acdd90b6
 https://bugs.openjdk.java.net/browse/JDK-8254557,https://github.com/openjdk/jdk/commit/cb6167b2
-https://bugs.openjdk.java.net/browse/JDK-8244559,https://github.com/openjdk/jdk/commit/cb6167b2
+https://bugs.openjdk.java.net/browse/JDK-8244559,https://github.com/openjdk/valhalla/commit/e586cdbe
 https://bugs.openjdk.java.net/browse/JDK-8191802,http://hg.openjdk.java.net/jdk/jdk/rev/5dd899009525
 https://bugs.openjdk.java.net/browse/JDK-8231461,https://github.com/openjdk/jdk16/commit/ac4cd2e3
 https://bugs.openjdk.java.net/browse/JDK-8012238,http://hg.openjdk.java.net/jdk8/jdk8/langtools/rev/a204cf7aab7e
