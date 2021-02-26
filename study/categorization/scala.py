@@ -12,7 +12,8 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics()  # error reporting
+        ct.Mechanics(), # error reporting
+        9
     ),
     ScalaBug(
         "2.Scala2-11843",
@@ -20,10 +21,12 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Environment()
+        ct.Environment(),
+        1
     ),
     ScalaBug(
         "3.Dotty-5636",
+        # Subtyping? foo is a.type
         [pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
          pc.DependentTypes(),
@@ -33,6 +36,7 @@ scala_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
         ct.TypeExpression(),
+        7
     ),
     ScalaBug(
         "4.Dotty-8802",
@@ -47,8 +51,9 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.DesignIssue(),
-        ct.Approximation()
+        rc.DesignIssue(), # InsufficientFunctionality?
+        ct.Approximation(),
+        11
     ),
     ScalaBug(
         "5.Dotty-4509",
@@ -61,7 +66,8 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics()  # transformation /desugaring
+        ct.Mechanics(),  # transformation /desugaring
+        4
     ),
     ScalaBug(
         "6.Scala2-5878",
@@ -72,7 +78,8 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        pc.Declaration()
+        pc.Declaration(),
+        2
     ),
     ScalaBug(
         "7.Scala2-5886",
@@ -84,11 +91,13 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        8
     ),
     ScalaBug(
         "8.Scala2-7928",
         [
+            # Do we need ParameterizedTypes, we have Collections
             pc.Inheritance(), pc.NestedDeclaration(),
             pc.Collections(), pc.ParameterizedTypes(),
             pc.Overriding(), pc.DependentTypes(), pc.Typedefs(),
@@ -97,7 +106,8 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics()  # transformation
+        ct.Mechanics(),  # transformation
+        13
     ),
     ScalaBug(
         "9.Dotty-1757",
@@ -109,12 +119,14 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(),
-        ct.Inference()  # type variable substitution
+        rc.DesignIssue(), # InsufficientFunctionality
+        ct.Inference(),  # type variable substitution
+        4
     ),
     ScalaBug(
         "10.Dotty-6146",
         [
+            # Existential?
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.FBounded(),
@@ -124,8 +136,9 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
+        rc.MissingCase(), # IncorrectSequence
         ct.SubtypingRelated(),
+        9
     ),
     ScalaBug(
         "11.Scala2-9542",
@@ -134,7 +147,8 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Mechanics()  # transformation
+        ct.Mechanics(),  # transformation
+        24
     ),
     ScalaBug(
         "12.Dotty-2234",
@@ -145,8 +159,9 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
-        ct.Approximation()
+        rc.MissingCase(), # InsufficientFunctionality, not a logic bug in the code but in the algorithm
+        ct.Approximation(),
+        3
     ),
     ScalaBug(
         "13.Scala-9361",
@@ -159,7 +174,8 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics()  # error reporting
+        ct.Mechanics(),  # error reporting
+        5
     ),
     ScalaBug(
         "14.Scala2-4098",
@@ -169,11 +185,13 @@ scala_iter1 = [
         False,
         sy.Runtime(sy.VerifyError()),
         rc.MissingCase(),
-        ct.OtherSemanticChecking()
+        ct.OtherSemanticChecking(),
+        6
     ),
     ScalaBug(
         "15.Dotty-10325",
         [
+            # Do we need PArameterizedTypes?
             pc.ParameterizedFunctions(),
             pc.Collections(),
             pc.Overloading(),
@@ -183,7 +201,8 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression()
+        ct.TypeExpression(), 
+        7
     ),
     ScalaBug(
         "16.Dotty-9044",
@@ -196,7 +215,8 @@ scala_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.DesignIssue(),
-        ct.Approximation()
+        ct.Approximation(),
+        9
     ),
     ScalaBug(
         "17.Dotty-4470",
@@ -205,8 +225,9 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.ExtremeConditionNeglected(),
-        ct.Mechanics()  # transformation / desugaring
+        rc.ExtremeConditionNeglected(), # Missing Case? Do we need ExtremeConditionNeglected as a root cause?
+        ct.Mechanics(),  # transformation / desugaring
+        6
     ),
     ScalaBug(
         "18.Dotty-8752",
@@ -216,8 +237,9 @@ scala_iter1 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.MissingCase(),
-        ct.OtherSemanticChecking()
+        rc.MissingCase(), # FunctionalSpecificationMismatch
+        ct.OtherSemanticChecking(),
+        2
     ),
     ScalaBug(
         "19.Scala2-10185",
@@ -229,7 +251,8 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        8
     ),
     ScalaBug(
         "20.Dotty-5188",
@@ -239,7 +262,8 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.TypeExpression()
+        ct.TypeExpression(), # Declaration?
+        4
     )
 
 ]
