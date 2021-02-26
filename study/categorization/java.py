@@ -231,5 +231,219 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
         ct.Approximation()
+    ),
+]
+
+
+java_iter2 = [
+    JavaBug(
+        "1.JDK-8152832",  # regression
+        [
+            pc.Streams(), pc.Collections(), pc.Lambdas(),
+            pc.FunctionalInterface(), pc.BoundedPolymorphism(),
+            pc.UseVariance(), pc.ParameterizedTypes(),
+            pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.Subtyping()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference(),  # Contraint solving
+    ),
+    JavaBug(
+        "2.JDK-7042566",
+        [
+            pc.Overloading(), pc.Varargs()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.WrongParams(),
+        rc.AlgorithmImproperlyImplemented(),
+        ct.Resolution()
+    ),
+    JavaBug(
+        "3.JDK-6476118",
+        [
+            pc.Overriding(), pc.Overloading(),
+            pc.ParameterizedClasses(),
+            pc.ParameterizedTypes()
+        ],
+        False,
+        sy.Runtime(sy.ClassCastException()),
+        rc.MissingCase(),
+        ct.Declarations()
+    ),
+    JavaBug(
+        "4.JDK-8029569",
+        [pc.Cast(), pc.Varargs(), pc.Overloading()],
+        False,
+        sy.InternalCompilerError(),
+        rc.IncorrectDataType(),
+        ct.Resolution()
+    ),
+    JavaBug(
+        "5.JDK-JDK-8075793",
+        [
+            pc.Collections(), pc.ParameterizedFunctions(),
+            pc.UseVariance(), pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.DesignIssue(),
+        ct.Inference(),  # constraint solving
+    ),
+    JavaBug(
+        "6.JDK-8016081",
+        [pc.TypeAnnotations(), pc.Lambdas(), pc.Conditionals(), pc.SAM()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Environment()
+    ),
+    JavaBug(
+        "7.JDK-8226510",
+        [pc.Conditionals(), pc.TryCatch()],
+        True,
+        sy.Runtime(),
+        rc.MissingCase(),
+        ct.OtherSemanticChecking()
+    ),
+    JavaBug(
+        "8.JDK-8039214",
+        [
+            pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.ParameterizedTypes(), pc.UseVariance(),
+            pc.Inheritance(), pc.Subtyping()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.DesignIssue(),
+        ct.SubtypingRelated()
+    ),
+    JavaBug(
+        "9.JDK-8029017",
+        [pc.TypeAnnotations()],
+        True,
+        sy.CompileTimeError(),
+        rc.DesignIssue(),
+        ct.SubtypingRelated()
+    ),
+    JavaBug(
+        "10.JDK-7041730",
+        [pc.Cast()],
+        False,
+        sy.Runtime(sy.ClassCastException()),
+        rc.IncorrectComputation(),
+        ct.SubtypingRelated()
+    ),
+    JavaBug(
+        "11.JDK-8020804",
+        [
+            pc.FunctionalInterface(),
+            pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.Arrays(), pc.BoundedPolymorphism(),
+            pc.ParameterizedTypes(), pc.Overloading(),
+            pc.FunctionReferences()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Approximation()
+    ),
+    JavaBug(
+        "12.JDK-7062745",  # regression
+        [
+            pc.Overloading(), pc.Collections(),
+            pc.Inheritance(), pc.ParameterizedTypes(),
+            pc.Subtyping()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.DesignIssue(),
+        ct.Resolution()
+    ),
+    JavaBug(
+        "13.JDK-8189838",
+        [
+            pc.BoundedPolymorphism(), pc.ParameterizedClasses(),
+            pc.Collections(), pc.ParameterizedTypes(),
+            pc.TypeArgsInference(), pc.IntersectionTypes()
+        ],
+        True,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Approximation()
+    ),
+    JavaBug(
+        "14.JDK-8011376",
+        [
+            pc.Lambdas(), pc.TryCatch(), pc.ParameterizedFunctions(),
+            pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.WrongParams(),
+        ct.TypeExpression()
+    ),
+    JavaBug(
+        "15.JDK-8008537",
+        [pc.FunctionReferences(), pc.Overloading()],
+        False,
+        sy.Runtime(),
+        rc.MissingCase(),
+        ct.OtherSemanticChecking()
+    ),
+    JavaBug(
+        "16.JDK-8188144",  # regression
+        [pc.FunctionReferences(), pc.FunctionalInterface()],
+        True,
+        sy.Runtime(sy.WrongMethodCalled()),
+        rc.IncorrectComputation(),
+        ct.Resolution()
+    ),
+    JavaBug(
+        "17.JDK-8171993",
+        [
+            pc.Varargs(), pc.TypeArgsInference(), pc.ParameterizedClasses(),
+            pc.FunctionReferences(), pc.FunctionalInterface()
+        ],
+        True,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.Mechanics()
+    ),
+    JavaBug(
+        "18.JDK-8010303",
+        [pc.ParameterizedFunctions(), pc.ParameterizedClasses(),
+         pc.ParameterizedTypes()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Inference()
+    ),
+    JavaBug(
+        "19.JDK-6835428",
+        [
+            pc.UseVariance(), pc.Subtyping(),
+            pc.ParameterizedFunctions(), pc.Collections(),
+            pc.BoundedPolymorphism()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.ExtraneousComputation(),
+        ct.Inference(),  # constraint solving
+    ),
+    JavaBug(
+        "20.JDK-8029002",
+        [
+            pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.BoundedPolymorphism(), pc.UseVariance(),
+            pc.Subtyping(), pc.Inheritance(),
+            pc.ParameterizedTypes()
+        ],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference()  # constraint solving
     )
 ]
