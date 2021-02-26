@@ -26,7 +26,6 @@ scala_iter1 = [
     ),
     ScalaBug(
         "3.Dotty-5636",
-        # Subtyping? foo is a.type
         [pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
          pc.DependentTypes(),
@@ -51,7 +50,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.DesignIssue(), # InsufficientFunctionality?
+        rc.DesignIssue(), 
         ct.Approximation(),
         11
     ),
@@ -97,7 +96,6 @@ scala_iter1 = [
     ScalaBug(
         "8.Scala2-7928",
         [
-            # Do we need ParameterizedTypes, we have Collections
             pc.Inheritance(), pc.NestedDeclaration(),
             pc.Collections(), pc.ParameterizedTypes(),
             pc.Overriding(), pc.DependentTypes(), pc.Typedefs(),
@@ -119,14 +117,13 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(), # InsufficientFunctionality
+        rc.IncorrectComputation(), 
         ct.Inference(),  # type variable substitution
         4
     ),
     ScalaBug(
         "10.Dotty-6146",
         [
-            # Existential?
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.FBounded(),
@@ -136,7 +133,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), # IncorrectSequence
+        rc.IncorrectSequence(), 
         ct.SubtypingRelated(),
         9
     ),
@@ -159,7 +156,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), # InsufficientFunctionality, not a logic bug in the code but in the algorithm
+        rc.MissingCase(), 
         ct.Approximation(),
         3
     ),
@@ -191,7 +188,6 @@ scala_iter1 = [
     ScalaBug(
         "15.Dotty-10325",
         [
-            # Do we need PArameterizedTypes?
             pc.ParameterizedFunctions(),
             pc.Collections(),
             pc.Overloading(),
@@ -225,7 +221,7 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.ExtremeConditionNeglected(), # Missing Case? Do we need ExtremeConditionNeglected as a root cause?
+        rc.MissingCase(), 
         ct.Mechanics(),  # transformation / desugaring
         6
     ),
@@ -237,7 +233,7 @@ scala_iter1 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.MissingCase(), # FunctionalSpecificationMismatch
+        rc.MissingCase(), 
         ct.OtherSemanticChecking(),
         2
     ),
@@ -262,7 +258,7 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.TypeExpression(), # Declaration?
+        ct.Declarations(), 
         4
     )
 
