@@ -228,9 +228,8 @@ kotlin_iter1 = [
 kotlin_iter2 = [
     KotlinBug(
         "1.KT-31102",
-        # FunctionTypes
         [pc.Lambdas(), pc.FunctionReferences(),
-         pc.ParameterizedFunctions()],
+         pc.ParameterizedFunctions(), pc.FunctionTypes],
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
@@ -253,8 +252,8 @@ kotlin_iter2 = [
         [pc.Overriding()],
         False,
         sy.MisleadingReport(),
-        rc.IncorrectCondition(), # WrongParams or IncorrectSequence
-        ct.Resolution(),  # Misc -- Why Misc?
+        rc.IncorrectSequence(), 
+        ct.Resolution(),  
         3
     ),
     KotlinBug(
@@ -341,22 +340,15 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "11.KT-32081",
-        # Not Conditionals, AnonymousClasses, This?, Data classes, Operator Overloading in 
-        # compiler/testData/diagnostics/tests/inference/nothingType/kt32081.kt
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
-         pc.Conditionals(),
-         pc.AnonymousClass(),
          pc.Nothing(),
          pc.Subtyping(),
-         pc.This(),
-         pc.DataClasses(),
-         pc.OperatorOverloading(),
          pc.ExtensionFunctions()],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(), # MissingCase
+        rc.MissingCase(), 
         ct.Inference(),  # constraint solving
         5
     ),
@@ -368,7 +360,7 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
-        ct.Environment(),  # XXX TypeExpression
+        ct.Inference(),  
         13
     ),
     KotlinBug(
@@ -381,13 +373,12 @@ kotlin_iter2 = [
          pc.FlowTyping()],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(), # InsufficientFunctionality
+        rc.MissingCase(), 
         ct.SubtypingRelated(),
         15
     ),
     KotlinBug(
         "14.KT-17597",
-        # Collections? (Check test case)
         [pc.Collections(), pc.AccessModifiers(),
          pc.StaticMethod(),
          pc.JavaInterop(),
@@ -419,12 +410,12 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "17.KT-37628",
-        # VarTypeInference
         [pc.Collections(),
          pc.Conditionals(),
          pc.Nullables(),
          pc.Subtyping(),
-         pc.Lambdas()],
+         pc.Lambdas(),
+         pc.VarTypeInference()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),

@@ -217,8 +217,7 @@ groovy_iter1 = [
 groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
-        # ParameterizedTypes
-        [pc.JavaInterop(),
+        [pc.ParameterizedTypes, pc.JavaInterop(),
          pc.WithMultipleAssignment()
          ],
         True,
@@ -238,18 +237,16 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "3.Groovy-6415",
-        # TypeArgsInference
         [pc.ParameterizedFunctions()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Environment(),  # XXX Inference
+        ct.Environment(),  # TypeExpression
         12
     ),
     GroovyBug(
         "4.Groovy-8590",
-        # PrimitiveTypes?
-        [pc.Cast(), pc.Subtyping()],
+        [pc.PrimitiveTypes(), pc.Cast(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
@@ -273,7 +270,7 @@ groovy_iter2 = [
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
-        rc.DesignIssue(), # IncorrectComputation
+        rc.DesignIssue(), 
         ct.TypeExpression(),
         5
     ),
@@ -308,7 +305,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.SubtypingRelated(),  # XXX Inference
+        ct.SubtypingRelated(),  
         11
     ),
     GroovyBug(
@@ -342,7 +339,6 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "13.Groovy-6129",
-        # Why ParameterizedTypes()?
         [pc.Collections(),
          pc.ParameterizedTypes(),
          pc.TypeArgsInference()],
@@ -384,7 +380,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(), # TypeExpression
+        ct.SubtypingRelated(), 
         11
     ),
     GroovyBug(

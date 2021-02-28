@@ -294,14 +294,12 @@ java_iter2 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Declarations(), # Resolution | It has to do with the overriding mechanism
+        ct.Resolution(), 
         13
     ),
     JavaBug(
         "4.JDK-8029569",
-        # Remove cast
-        # Uncomment the cast of null to Long in order to compile without the crash. 
-        [pc.Cast(), pc.Varargs(), pc.Overloading()],
+        [pc.Varargs(), pc.Overloading()],
         False,
         sy.InternalCompilerError(),
         rc.IncorrectDataType(),
@@ -310,10 +308,10 @@ java_iter2 = [
     ),
     JavaBug(
         "5.JDK-8075793",
-        # VarTypeInference?
         [
             pc.Collections(), pc.ParameterizedFunctions(),
-            pc.UseVariance(), pc.ParameterizedTypes()
+            pc.UseVariance(), pc.ParameterizedTypes(),
+            pc.TypeArgsInference()
         ],
         True,
         sy.CompileTimeError(),
@@ -327,7 +325,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Environment(), # TypeExpression?
+        ct.Environment(), 
         5
     ),
     JavaBug(
@@ -357,7 +355,7 @@ java_iter2 = [
         [pc.TypeAnnotations()],
         True,
         sy.CompileTimeError(),
-        rc.DesignIssue(), # FunctionalSpecificationMismatch?
+        rc.DesignIssue(),
         ct.SubtypingRelated(),
         10
     ),
@@ -381,8 +379,8 @@ java_iter2 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectCondition(), # MissingCase // lack of support for arrays in ...
-        ct.Approximation(), # Inference
+        rc.MissingCase(), 
+        ct.Approximation(), 
         12
     ),
     JavaBug(
@@ -401,7 +399,7 @@ java_iter2 = [
     JavaBug(
         "13.JDK-8189838",
         [
-            # F-Bounded
+            pc.FBounded(),
             pc.BoundedPolymorphism(), pc.ParameterizedClasses(),
             pc.Collections(), pc.ParameterizedTypes(),
             pc.TypeArgsInference(), pc.IntersectionTypes()
@@ -409,39 +407,37 @@ java_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Approximation(), # Inference
+        ct.Approximation(), 
         5
     ),
     JavaBug(
         "14.JDK-8011376",
         [
-            # Subtyping?
             pc.Lambdas(), pc.TryCatch(), pc.ParameterizedFunctions(),
-            pc.ParameterizedTypes()
+            pc.ParameterizedTypes(), pc.Subtyping()
         ],
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.TypeExpression(), # OtherSemanticCheck
+        ct.OtherSemanticCheck(), 
         6
     ),
     JavaBug(
         "15.JDK-8008537",
         # Subtyping
-        [pc.FunctionReferences(), pc.Overloading()],
+        [pc.FunctionReferences(), pc.Overloading(), pc.Subtyping()],
         False,
         sy.Runtime(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(), #Resolution
+        ct.OtherSemanticChecking(), 
         17
     ),
     JavaBug(
         "16.JDK-8188144",  # regression
-        # pc.ParameterizedTypes()?
-        [pc.FunctionReferences(), pc.FunctionalInterface()],
+        [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionalInterface()],
         True,
         sy.Runtime(sy.WrongResult()),
-        rc.IncorrectComputation(), # I agree, but why not missing case?
+        rc.IncorrectComputation(), # MissingCase
         ct.Resolution(),
         9
     ),
@@ -471,7 +467,7 @@ java_iter2 = [
     JavaBug(
         "19.JDK-6835428",
         [
-            # F-Bounded
+            pc.FBounded(),
             pc.UseVariance(), pc.Subtyping(),
             pc.ParameterizedFunctions(), pc.Collections(),
             pc.BoundedPolymorphism()

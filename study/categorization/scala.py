@@ -268,7 +268,6 @@ scala_iter1 = [
 scala_iter2 = [
     ScalaBug(
         "1.Scala2-8763",
-        # PatMat?
         [
             pc.Collections(), pc.PatMat(),
             pc.Arrays()
@@ -281,14 +280,13 @@ scala_iter2 = [
     ),
     ScalaBug(
         "2.Scala2-5231",
-        # VarTypeInference?
         [
             pc.AccessModifiers(), pc.ImplicitDefs()
         ],
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(), # Environment
+        ct.TypeExpression(), 
         6
     ),
     ScalaBug(
@@ -313,7 +311,7 @@ scala_iter2 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.IncorrectCondition(), # DesignIssue | They changed the docs
+        rc.DesignIssue(), 
         ct.OtherSemanticChecking(),
         3
     ),
@@ -325,7 +323,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.TypeExpression(),  # wrong information from context | Environment?
+        ct.TypeExpression(),  
         9
     ),
     ScalaBug(
@@ -342,14 +340,12 @@ scala_iter2 = [
     ScalaBug(
         "7.Dotty-5140",
         [
-            # I think that JavaInterop means that we also have import. 
-            # Hence, I believe that Import is redundant.
             pc.JavaInterop(), pc.Arrays(),
-            pc.Import(), pc.Varargs()
+            pc.Varargs()
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), # FunctionalSpecificationMismatch?
+        rc.MissingCase(), 
         ct.Approximation(),
         10
     ),
@@ -360,7 +356,7 @@ scala_iter2 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(), # Why Design and not Algorithmic?
+        rc.DesignIssue(), 
         ct.TypeExpression(),
         1
     ),
@@ -412,7 +408,6 @@ scala_iter2 = [
     ScalaBug(
         "12.Scala2-7482",
         [
-            # I think that we don't need JavaInterop
             pc.JavaInterop(), pc.Collections(),
             pc.ParameterizedTypes()
         ],
@@ -471,7 +466,6 @@ scala_iter2 = [
     ScalaBug(
         "17.Dotty-4030",
         [
-            # Sealed?
             pc.Inheritance(), pc.AlgebraicDataTypes(),
             pc.ParameterizedClasses(), pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(), pc.FunctionTypes(),
@@ -486,7 +480,7 @@ scala_iter2 = [
     ScalaBug(
         "18.Scala2-10536",
         [
-            # OperatorOverloading?
+            pc.OperatorOverloading(),
             pc.ParameterizedClasses(), pc.ImplicitParameters(),
             pc.FBounded(), pc.BoundedPolymorphism(),
             pc.AlgebraicDataTypes(), pc.Overloading(),
