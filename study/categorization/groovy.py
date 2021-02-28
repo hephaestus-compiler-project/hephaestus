@@ -217,6 +217,7 @@ groovy_iter1 = [
 groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
+        # ParameterizedTypes
         [pc.JavaInterop(),
          pc.WithMultipleAssignment()
          ],
@@ -224,30 +225,36 @@ groovy_iter2 = [
         sy.InternalCompilerError(),
         rc.WrongParams(),
         ct.TypeExpression(),
+        17
     ),
     GroovyBug(
         "2.Groovy-8686",
         [pc.FlowTyping()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
-        rc.MissingMethod(),
+        rc.MissingCase(),
         ct.Environment(),
+        4
     ),
     GroovyBug(
         "3.Groovy-6415",
+        # TypeArgsInference
         [pc.ParameterizedFunctions()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Environment()  # XXX
+        ct.Environment(),  # XXX Inference
+        12
     ),
     GroovyBug(
         "4.Groovy-8590",
+        # PrimitiveTypes?
         [pc.Cast(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        7
     ),
     GroovyBug(
         "5.Groovy-6761",
@@ -258,15 +265,17 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        8
     ),
     GroovyBug(
         "6.Groovy-6034",
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
-        rc.DesignIssue(),
+        rc.DesignIssue(), # IncorrectComputation
         ct.TypeExpression(),
+        5
     ),
     GroovyBug(
         "7.Groovy-6195",
@@ -274,7 +283,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution()
+        ct.Resolution(),
+        7
     ),
     GroovyBug(
         "8.Groovy-5873",
@@ -284,7 +294,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Inference()
+        ct.Inference(),
+        10
     ),
     GroovyBug(
         "9.Groovy-5415",
@@ -297,7 +308,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.SubtypingRelated()  # XXX
+        ct.SubtypingRelated(),  # XXX Inference
+        11
     ),
     GroovyBug(
         "10.Groovy-9328",
@@ -306,7 +318,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Environment()
+        ct.Environment(),
+        14
     ),
     GroovyBug(
         "11.Groovy-5175",
@@ -315,7 +328,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        7
     ),
     GroovyBug(
         "12.Groovy-7922",
@@ -323,17 +337,20 @@ groovy_iter2 = [
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        9
     ),
     GroovyBug(
         "13.Groovy-6129",
+        # Why ParameterizedTypes()?
         [pc.Collections(),
          pc.ParameterizedTypes(),
          pc.TypeArgsInference()],
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Inference()
+        ct.Inference(),
+        2
     ),
     GroovyBug(
         "14.Groovy-8090",
@@ -343,8 +360,9 @@ groovy_iter2 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
-        ct.Inference()
+        rc.MissingCase(), 
+        ct.Inference(),
+        7
     ),
     GroovyBug(
         "15.Groovy-5742",
@@ -355,7 +373,8 @@ groovy_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Inference()
+        ct.Inference(),
+        12
     ),
     GroovyBug(
         "16.Groovy-7307",
@@ -365,7 +384,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(), # TypeExpression
+        11
     ),
     GroovyBug(
         "17.Groovy-7618",
@@ -376,7 +396,8 @@ groovy_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        10
     ),
     GroovyBug(
         "18.Groovy-5580",
@@ -384,7 +405,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution()
+        ct.Resolution(),
+        14
     ),
     GroovyBug(
         "19.Groovy-7061",
@@ -393,7 +415,8 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Inference()
+        ct.Inference(),
+        5
     ),
     GroovyBug(
         "20.Groovy-5240",
@@ -401,6 +424,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        7
     )
 ]

@@ -228,12 +228,14 @@ kotlin_iter1 = [
 kotlin_iter2 = [
     KotlinBug(
         "1.KT-31102",
+        # FunctionTypes
         [pc.Lambdas(), pc.FunctionReferences(),
          pc.ParameterizedFunctions()],
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Inference()  # constraint solving
+        ct.Inference(),  # constraint solving
+        8
     ),
     KotlinBug(
         "2.KT-3112",
@@ -243,15 +245,17 @@ kotlin_iter2 = [
         False,
         sy.MisleadingReport(),
         rc.InsufficientFunctionality(),
-        ct.Inference()
+        ct.Inference(),
+        4
     ),
     KotlinBug(
         "3.KT-11721",
         [pc.Overriding()],
         False,
         sy.MisleadingReport(),
-        rc.IncorrectCondition(),
-        ct.Resolution()  # Misc
+        rc.IncorrectCondition(), # WrongParams or IncorrectSequence
+        ct.Resolution(),  # Misc -- Why Misc?
+        3
     ),
     KotlinBug(
         "4.KT-39461",
@@ -263,7 +267,8 @@ kotlin_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        11
     ),
     KotlinBug(
         "5.KT-15226",
@@ -274,6 +279,7 @@ kotlin_iter2 = [
         sy.Runtime(sy.WrongResult()),
         rc.DesignIssue(),
         ct.Declarations(),
+        15
     ),
     KotlinBug(
         "6.KT-6720",
@@ -282,7 +288,8 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.IncorrectComputation(),
-        ct.Resolution()
+        ct.Resolution(),
+        8
     ),
     KotlinBug(
         "7.KT-37644",
@@ -294,6 +301,7 @@ kotlin_iter2 = [
         sy.InternalCompilerError(),
         rc.ExtraneousComputation(),
         ct.Inference(),  # contraint solving
+        3
     ),
     KotlinBug(
         "8.KT-18129",
@@ -307,6 +315,7 @@ kotlin_iter2 = [
         sy.Runtime(sy.NullPointerException()),
         rc.DesignIssue(),
         ct.Environment(),  # XXX
+        10
     ),
     KotlinBug(
         "9.KT-18522",
@@ -317,7 +326,8 @@ kotlin_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),  # Wrong loop iteration
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        9
     ),
     KotlinBug(
         "10.KT-8320",
@@ -326,10 +336,13 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Declarations()
+        ct.Declarations(),
+        11
     ),
     KotlinBug(
         "11.KT-32081",
+        # Not Conditionals, AnonymousClasses, This?, Data classes, Operator Overloading in 
+        # compiler/testData/diagnostics/tests/inference/nothingType/kt32081.kt
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
@@ -343,8 +356,9 @@ kotlin_iter2 = [
          pc.ExtensionFunctions()],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(),
-        ct.Inference()  # constraint solving
+        rc.WrongParams(), # MissingCase
+        ct.Inference(),  # constraint solving
+        5
     ),
     KotlinBug(
         "12.KT-11280",
@@ -354,7 +368,8 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
-        ct.Environment()  # XXX
+        ct.Environment(),  # XXX TypeExpression
+        13
     ),
     KotlinBug(
         "13.KT-42825",
@@ -366,11 +381,13 @@ kotlin_iter2 = [
          pc.FlowTyping()],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(),
-        ct.SubtypingRelated()
+        rc.WrongParams(), # InsufficientFunctionality
+        ct.SubtypingRelated(),
+        15
     ),
     KotlinBug(
         "14.KT-17597",
+        # Collections? (Check test case)
         [pc.Collections(), pc.AccessModifiers(),
          pc.StaticMethod(),
          pc.JavaInterop(),
@@ -379,6 +396,7 @@ kotlin_iter2 = [
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
         ct.Resolution(),
+        9
     ),
     KotlinBug(
         "15.KT-13597",
@@ -387,6 +405,7 @@ kotlin_iter2 = [
         sy.Runtime(sy.IllegalAccessError()),
         rc.InsufficientFunctionality(),
         ct.OtherSemanticChecking(),
+        15
     ),
     KotlinBug(
         "16.KT-12738",
@@ -395,10 +414,12 @@ kotlin_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
-        ct.Resolution()
+        ct.Resolution(),
+        3
     ),
     KotlinBug(
         "17.KT-37628",
+        # VarTypeInference
         [pc.Collections(),
          pc.Conditionals(),
          pc.Nullables(),
@@ -408,6 +429,7 @@ kotlin_iter2 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Inference(),  # constraint solving
+        7
     ),
     KotlinBug(
         "18.KT-12286",
@@ -419,6 +441,7 @@ kotlin_iter2 = [
         sy.CompileTimeError(),
         rc.InsufficientFunctionality(),
         ct.Inference(),  # constraint solving
+        2
     ),
     KotlinBug(
         "19.KT-9630",
@@ -433,7 +456,8 @@ kotlin_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        8
     ),
     KotlinBug(
         "20.KT-25302",
@@ -445,6 +469,7 @@ kotlin_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference()  # constraint solving
+        ct.Inference(),  # constraint solving
+        12
     )
 ]

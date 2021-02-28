@@ -268,6 +268,7 @@ scala_iter1 = [
 scala_iter2 = [
     ScalaBug(
         "1.Scala2-8763",
+        # PatMat?
         [
             pc.Collections(), pc.PatMat(),
             pc.Arrays()
@@ -275,17 +276,20 @@ scala_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics()  # error reporting
+        ct.Mechanics(),  # error reporting
+        4
     ),
     ScalaBug(
         "2.Scala2-5231",
+        # VarTypeInference?
         [
             pc.AccessModifiers(), pc.ImplicitDefs()
         ],
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression()
+        ct.TypeExpression(), # Environment
+        6
     ),
     ScalaBug(
         "3.Scala2-11239",
@@ -298,7 +302,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        4
     ),
     ScalaBug(
         "4.Dotty-9735",
@@ -308,8 +313,9 @@ scala_iter2 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.IncorrectCondition(),
-        ct.OtherSemanticChecking()
+        rc.IncorrectCondition(), # DesignIssue | They changed the docs
+        ct.OtherSemanticChecking(),
+        3
     ),
     ScalaBug(
         "5.Scala2-10886",
@@ -319,7 +325,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.TypeExpression(),  # wrong information from context
+        ct.TypeExpression(),  # wrong information from context | Environment?
+        9
     ),
     ScalaBug(
         "6.Dotty-9803",
@@ -329,18 +336,22 @@ scala_iter2 = [
         False,
         sy.MisleadingReport(),
         rc.WrongParams(),
-        ct.Resolution()
+        ct.Resolution(), 
+        11
     ),
     ScalaBug(
         "7.Dotty-5140",
         [
+            # I think that JavaInterop means that we also have import. 
+            # Hence, I believe that Import is redundant.
             pc.JavaInterop(), pc.Arrays(),
             pc.Import(), pc.Varargs()
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
-        ct.Approximation()
+        rc.MissingCase(), # FunctionalSpecificationMismatch?
+        ct.Approximation(),
+        10
     ),
     ScalaBug(
         "8.Dotty-4487",
@@ -349,8 +360,9 @@ scala_iter2 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(),
-        ct.TypeExpression()
+        rc.DesignIssue(), # Why Design and not Algorithmic?
+        ct.TypeExpression(),
+        1
     ),
     ScalaBug(
         "9.Dotty-3585",
@@ -364,7 +376,8 @@ scala_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Resolution()
+        ct.Resolution(),
+        13
     ),
     ScalaBug(
         "10.Dotty-9631",
@@ -374,7 +387,6 @@ scala_iter2 = [
             pc.FBounded(),
             pc.NestedDeclaration(),
             pc.Inheritance(),
-            pc.ParameterizedFunctions(),
             pc.ImplicitParameters(),
             pc.ExistentialTypes(),
             pc.PatMat()
@@ -382,7 +394,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        15
     ),
     ScalaBug(
         "11.Dotty-10217",
@@ -393,18 +406,21 @@ scala_iter2 = [
         True,
         sy.CompilationPerformance(),
         rc.AlgorithmImproperlyImplemented(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        27
     ),
     ScalaBug(
         "12.Scala2-7482",
         [
+            # I think that we don't need JavaInterop
             pc.JavaInterop(), pc.Collections(),
             pc.ParameterizedTypes()
         ],
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Approximation()
+        ct.Approximation(),
+        2
     ),
     ScalaBug(
         "13.Scala2-5454",
@@ -415,7 +431,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
-        ct.Environment()
+        ct.Environment(),
+        7
     ),
     ScalaBug(
         "14.Scala2-6714",
@@ -426,7 +443,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics()  # transformation
+        ct.Mechanics(),  # transformation
+        10
     ),
     ScalaBug(
         "15.Dotty-3917",
@@ -436,7 +454,8 @@ scala_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics()  # transformation
+        ct.Mechanics(),  # transformation
+        8
     ),
     ScalaBug(
         "16.Dotty-2723",
@@ -446,11 +465,13 @@ scala_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectDataType(),
-        ct.Mechanics()  # Transformation
+        ct.Mechanics(),  # Transformation
+        3
     ),
     ScalaBug(
         "17.Dotty-4030",
         [
+            # Sealed?
             pc.Inheritance(), pc.AlgebraicDataTypes(),
             pc.ParameterizedClasses(), pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(), pc.FunctionTypes(),
@@ -459,11 +480,13 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression()
+        ct.TypeExpression(),
+        11
     ),
     ScalaBug(
         "18.Scala2-10536",
         [
+            # OperatorOverloading?
             pc.ParameterizedClasses(), pc.ImplicitParameters(),
             pc.FBounded(), pc.BoundedPolymorphism(),
             pc.AlgebraicDataTypes(), pc.Overloading(),
@@ -472,7 +495,8 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Approximation()
+        ct.Approximation(),
+        6
     ),
     ScalaBug(
         "19.Dotty-9749",
@@ -482,7 +506,8 @@ scala_iter2 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.Declarations()
+        ct.Declarations(),
+        6
     ),
     ScalaBug(
         "20.Dotty-3422",
@@ -494,6 +519,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated()
+        ct.SubtypingRelated(),
+        7
     )
 ]
