@@ -307,6 +307,12 @@ class TypeSubstitution(Transformation):
             (decl.name, decl.get_type().name))
 
         if sup_t is None:
+            # Remove Any type from candidate supertypes to avoid creating
+            # methods that receive 'Any'.
+            if self.bt_factory.get_any_type() in superclasses:
+                superclasses.remove(self.bt_factory.get_any_type())
+                if not superclasses:
+                    return False
             sup_t = utils.random.choice(superclasses)
             self._cached_type_widenings[(decl.name, decl.get_type().name)] = \
                 sup_t
