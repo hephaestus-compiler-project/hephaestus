@@ -10,7 +10,7 @@ kotlin_iter1 = [
         "1.KT-1934",
         [pc.Inheritance()],
         False,
-        sy.Runtime(sy.WrongMethodCalled()),
+        sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
         ct.Declarations(), # -- During Override Resolution
         4
@@ -43,19 +43,19 @@ kotlin_iter1 = [
          pc.Conditionals()],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.TypeExpression(), # -- TypeChecking
         4
     ),
     KotlinBug(
         "5.KT-10472",
-        [pc.Overloading(), pc.Varargs(), 
+        [pc.Overloading(), pc.Varargs(),
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
-         pc.ParameterizedTypes()], 
+         pc.ParameterizedTypes()],
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.IncorrectSequence(), 
+        rc.IncorrectSequence(),
         ct.Resolution(),
         8
     ),
@@ -70,7 +70,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectComputation(), # IncorrectCondition
-        ct.SubtypingRelated(), # Declarations 
+        ct.SubtypingRelated(), # Declarations
         11
     ),
     KotlinBug(
@@ -81,7 +81,7 @@ kotlin_iter1 = [
          pc.ElvisOperator()],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectComputation(), 
+        rc.IncorrectComputation(),
         ct.Inference(),  # constraint solving
         9
     ),
@@ -90,7 +90,7 @@ kotlin_iter1 = [
         [pc.Lambdas(),
          pc.ExtensionFunctions(),
          pc.Typedefs(),
-         pc.Import(), 
+         pc.Import(),
          pc.FunctionTypes()],
         True,
         sy.CompileTimeError(),
@@ -126,7 +126,7 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated(), # Why not Decleration? 
+        ct.SubtypingRelated(), # Why not Decleration?
         6
     ),
     KotlinBug(
@@ -162,7 +162,7 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Resolution(), 
+        ct.Resolution(),
         12
     ),
     KotlinBug(
@@ -170,7 +170,7 @@ kotlin_iter1 = [
         [pc.Overriding(), pc.Inheritance(), pc.Delegation()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Declarations(), # -- During Override Resolution
         12
     ),
@@ -181,19 +181,19 @@ kotlin_iter1 = [
          pc.JavaInterop()],
         True,
         sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Approximation(),
         16
     ),
     KotlinBug(
         "18.KT-44420",
-        [pc.FlexibleTypes(), 
+        [pc.FlexibleTypes(),
          pc.Collections(),
          pc.VarTypeInference(),
          pc.JavaInterop()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Approximation(),
         9
     ),
@@ -219,9 +219,9 @@ kotlin_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.InsufficientFunctionality(),
-        ct.Resolution()
+        ct.Resolution(),
+        3
     ),
-    3
 ]
 
 
@@ -271,7 +271,7 @@ kotlin_iter2 = [
          pc.Overriding(),
          pc.Delegation()],
         True,
-        sy.Runtime(sy.WrongMethodCalled()),
+        sy.Runtime(sy.WrongResult()),
         rc.DesignIssue(),
         ct.Declarations(),
     ),

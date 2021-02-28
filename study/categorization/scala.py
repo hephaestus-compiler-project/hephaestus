@@ -50,7 +50,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.DesignIssue(), 
+        rc.DesignIssue(),
         ct.Approximation(),
         11
     ),
@@ -117,7 +117,7 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.IncorrectComputation(), 
+        rc.IncorrectComputation(),
         ct.Inference(),  # type variable substitution
         4
     ),
@@ -133,7 +133,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectSequence(), 
+        rc.IncorrectSequence(),
         ct.SubtypingRelated(),
         9
     ),
@@ -156,7 +156,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Approximation(),
         3
     ),
@@ -197,7 +197,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression(), 
+        ct.TypeExpression(),
         7
     ),
     ScalaBug(
@@ -221,7 +221,7 @@ scala_iter1 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Mechanics(),  # transformation / desugaring
         6
     ),
@@ -233,7 +233,7 @@ scala_iter1 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.OtherSemanticChecking(),
         2
     ),
@@ -258,7 +258,7 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Declarations(), 
+        ct.Declarations(),
         4
     )
 
@@ -480,7 +480,7 @@ scala_iter2 = [
             pc.Varargs()
         ],
         False,
-        sy.Runtime(sy.WrongMethodCalled()),
+        sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
         ct.Declarations()
     ),

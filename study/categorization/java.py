@@ -16,7 +16,7 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.FunctionalSpecificationMismatch(), 
+        rc.FunctionalSpecificationMismatch(),
         ct.SubtypingRelated(),
         9
     ),
@@ -29,7 +29,7 @@ java_iter1 = [
          ],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(),  
+        rc.MissingCase(),
         ct.TypeExpression(),
         34
     ),
@@ -149,7 +149,7 @@ java_iter1 = [
          ],
         True,
         sy.InternalCompilerError(),
-        rc.MissingCase(),  
+        rc.MissingCase(),
         ct.Mechanics(),  # transformation
         9
     ),
@@ -418,7 +418,7 @@ java_iter2 = [
         "16.JDK-8188144",  # regression
         [pc.FunctionReferences(), pc.FunctionalInterface()],
         True,
-        sy.Runtime(sy.WrongMethodCalled()),
+        sy.Runtime(sy.WrongResult()),
         rc.IncorrectComputation(),
         ct.Resolution()
     ),
