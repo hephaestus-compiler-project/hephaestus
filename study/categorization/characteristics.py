@@ -162,13 +162,13 @@ class Overloading(Characteristic):
 
 class Subtyping(Characteristic):
     """
-    The test case contains uses types for which the subtyping relation holds.
+    The test case uses types for which the subtyping relation holds.
 
     Example:
       class A {}
       class B extends A {}
 
-      val A = new B() // here we have subtyping
+      val x: A = new B() // here we have subtyping
     """
     name = "Subtyping"
     category = TypeSystem()
