@@ -565,6 +565,16 @@ class Inheritance(Characteristic):
     is_common = True
 
 
+class MultipleImplements(Characteristic):
+    """
+    The test case contains a class that implements multiple interfaces.
+    """
+    name = "Multiple implements"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = True
+
+
 class AccessModifiers(Characteristic):
     """
     The test case makes use of access modifiers keywords (e.g., private).
