@@ -568,6 +568,11 @@ class Inheritance(Characteristic):
 class MultipleImplements(Characteristic):
     """
     The test case contains a class that implements multiple interfaces.
+
+    Example:
+      interface A {}
+      interface B {}
+      class C implements A, B {}
     """
     name = "Multiple implements"
     category = OOPFeatures()
