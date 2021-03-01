@@ -15,19 +15,23 @@ from src.args import args as cli_args
 from src import utils
 from src.compilers.kotlin import KotlinCompiler
 from src.compilers.groovy import GroovyCompiler
+from src.compilers.java import JavaCompiler
 from src.translators.kotlin import KotlinTranslator
 from src.translators.groovy import GroovyTranslator
+from src.translators.java import JavaTranslator
 from src.modules.processor import ProgramProcessor
 
 
 STOP_COND = False
 TRANSLATORS = {
     'kotlin': KotlinTranslator,
-    'groovy': GroovyTranslator
+    'groovy': GroovyTranslator,
+    'java': JavaTranslator
 }
 COMPILERS = {
     'kotlin': KotlinCompiler,
-    'groovy': GroovyCompiler
+    'groovy': GroovyCompiler,
+    'java': JavaCompiler
 }
 STATS = {
     "Info": {
