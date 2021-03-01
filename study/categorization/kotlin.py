@@ -105,7 +105,7 @@ kotlin_iter1 = [
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(), # InsufficientAlgorithmImplementation
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
         6
     ),
@@ -114,7 +114,7 @@ kotlin_iter1 = [
         [pc.Conditionals(), pc.TryCatch(), pc.Lambdas()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
         7
     ),
@@ -218,7 +218,7 @@ kotlin_iter1 = [
          pc.This()],
         False,
         sy.MisleadingReport(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Resolution(),
         3
     ),
@@ -232,7 +232,7 @@ kotlin_iter2 = [
          pc.ParameterizedFunctions(), pc.FunctionTypes],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
         8
     ),
@@ -243,7 +243,7 @@ kotlin_iter2 = [
          pc.TypeArgsInference()],
         False,
         sy.MisleadingReport(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),
         4
     ),
@@ -394,7 +394,7 @@ kotlin_iter2 = [
         [pc.AnonymousClass()],
         False,  # change final field
         sy.Runtime(sy.IllegalAccessError()),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.OtherSemanticChecking(),
         15
     ),
@@ -404,7 +404,7 @@ kotlin_iter2 = [
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Resolution(),
         3
     ),
@@ -430,7 +430,7 @@ kotlin_iter2 = [
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
         2
     ),

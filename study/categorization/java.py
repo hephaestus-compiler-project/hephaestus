@@ -79,7 +79,7 @@ java_iter1 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
         16
     ),

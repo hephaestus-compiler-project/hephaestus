@@ -166,7 +166,7 @@ groovy_iter1 = [
         [pc.NamedArgs(), pc.NestedDeclaration()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.OtherSemanticChecking(),
         9
     ),
@@ -194,7 +194,7 @@ groovy_iter1 = [
         [pc.Collections(), pc.NamedArgs()],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Mechanics(),
         8
     ),
@@ -290,7 +290,7 @@ groovy_iter2 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientFunctionality(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),
         10
     ),
