@@ -134,7 +134,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         9
     ),
     ScalaBug(
@@ -247,7 +247,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         8
     ),
     ScalaBug(
@@ -286,7 +286,7 @@ scala_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(), 
+        ct.TypeExpression(),
         6
     ),
     ScalaBug(
@@ -300,7 +300,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         4
     ),
     ScalaBug(
@@ -311,7 +311,7 @@ scala_iter2 = [
         ],
         False,
         sy.MisleadingReport(),
-        rc.DesignIssue(), 
+        rc.DesignIssue(),
         ct.OtherSemanticChecking(),
         3
     ),
@@ -323,7 +323,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.TypeExpression(),  
+        ct.TypeExpression(),
         9
     ),
     ScalaBug(
@@ -334,7 +334,7 @@ scala_iter2 = [
         False,
         sy.MisleadingReport(),
         rc.WrongParams(),
-        ct.Resolution(), 
+        ct.Resolution(),
         11
     ),
     ScalaBug(
@@ -345,7 +345,7 @@ scala_iter2 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Approximation(),
         10
     ),
@@ -356,7 +356,7 @@ scala_iter2 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(), 
+        rc.DesignIssue(),
         ct.TypeExpression(),
         1
     ),
@@ -390,7 +390,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         15
     ),
     ScalaBug(
@@ -402,7 +402,7 @@ scala_iter2 = [
         True,
         sy.CompilationPerformance(),
         rc.AlgorithmImproperlyImplemented(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         27
     ),
     ScalaBug(
@@ -513,7 +513,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         7
     )
 ]

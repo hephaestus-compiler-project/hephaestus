@@ -70,7 +70,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectComputation(), # IncorrectCondition
-        ct.SubtypingRelated(), # Declarations
+        ct.TypeComparison(), # Declarations
         11
     ),
     KotlinBug(
@@ -126,7 +126,7 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated(), # Why not Decleration?
+        ct.TypeComparison(), # Why not Decleration?
         6
     ),
     KotlinBug(
@@ -252,8 +252,8 @@ kotlin_iter2 = [
         [pc.Overriding()],
         False,
         sy.MisleadingReport(),
-        rc.IncorrectSequence(), 
-        ct.Resolution(),  
+        rc.IncorrectSequence(),
+        ct.Resolution(),
         3
     ),
     KotlinBug(
@@ -325,7 +325,7 @@ kotlin_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),  # Wrong loop iteration
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         9
     ),
     KotlinBug(
@@ -348,7 +348,7 @@ kotlin_iter2 = [
          pc.ExtensionFunctions()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Inference(),  # constraint solving
         5
     ),
@@ -360,7 +360,7 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
-        ct.Inference(),  
+        ct.Inference(),
         13
     ),
     KotlinBug(
@@ -373,8 +373,8 @@ kotlin_iter2 = [
          pc.FlowTyping()],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
-        ct.SubtypingRelated(),
+        rc.MissingCase(),
+        ct.TypeComparison(),
         15
     ),
     KotlinBug(

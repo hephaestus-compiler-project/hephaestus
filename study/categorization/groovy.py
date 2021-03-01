@@ -27,7 +27,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution(), 
+        ct.Resolution(),
         9
     ),
     GroovyBug(
@@ -59,7 +59,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),  # Or maybe programming error
-        ct.TypeExpression(), 
+        ct.TypeExpression(),
         14
     ),
     GroovyBug(
@@ -77,7 +77,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(), 
+        ct.TypeComparison(),
         7
     ),
     GroovyBug(
@@ -115,7 +115,7 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "11.GROOVY-7333",
-        [pc.FlowTyping(), 
+        [pc.FlowTyping(),
          pc.PrimitiveTypes(),
          pc.Arrays()],
         True,
@@ -208,7 +208,7 @@ groovy_iter1 = [
         False,
         sy.Runtime(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(), 
+        ct.TypeExpression(),
         10
     )
 ]
@@ -270,7 +270,7 @@ groovy_iter2 = [
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
-        rc.DesignIssue(), 
+        rc.DesignIssue(),
         ct.TypeExpression(),
         5
     ),
@@ -305,7 +305,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.SubtypingRelated(),  
+        ct.TypeComparison(),
         11
     ),
     GroovyBug(
@@ -325,7 +325,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         7
     ),
     GroovyBug(
@@ -356,7 +356,7 @@ groovy_iter2 = [
          ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
+        rc.MissingCase(),
         ct.Inference(),
         7
     ),
@@ -380,7 +380,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(), 
+        ct.TypeComparison(),
         11
     ),
     GroovyBug(

@@ -17,7 +17,7 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         9
     ),
     JavaBug(
@@ -103,7 +103,7 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         8
     ),
     JavaBug(
@@ -199,7 +199,7 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         7
     ),
     JavaBug(
@@ -294,7 +294,7 @@ java_iter2 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Resolution(), 
+        ct.Resolution(),
         13
     ),
     JavaBug(
@@ -325,7 +325,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Environment(), 
+        ct.Environment(),
         5
     ),
     JavaBug(
@@ -347,7 +347,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         7
     ),
     JavaBug(
@@ -356,7 +356,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         10
     ),
     JavaBug(
@@ -365,7 +365,7 @@ java_iter2 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.IncorrectComputation(),
-        ct.SubtypingRelated(),
+        ct.TypeComparison(),
         3
     ),
     JavaBug(
@@ -379,8 +379,8 @@ java_iter2 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(), 
-        ct.Approximation(), 
+        rc.MissingCase(),
+        ct.Approximation(),
         12
     ),
     JavaBug(
@@ -407,7 +407,7 @@ java_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Approximation(), 
+        ct.Approximation(),
         5
     ),
     JavaBug(
@@ -419,7 +419,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.OtherSemanticCheck(), 
+        ct.OtherSemanticCheck(),
         6
     ),
     JavaBug(
@@ -429,7 +429,7 @@ java_iter2 = [
         False,
         sy.Runtime(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(), 
+        ct.OtherSemanticChecking(),
         17
     ),
     JavaBug(
