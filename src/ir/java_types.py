@@ -58,7 +58,7 @@ class JavaBuiltin(Builtin):
         return str(self.name) + "(java-builtin)"
 
 
-class ObjectType(GroovyBuiltin):
+class ObjectType(JavaBuiltin):
     def __init__(self, name="Object"):
         super().__init__(name)
 
