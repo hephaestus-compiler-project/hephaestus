@@ -2,7 +2,7 @@ https://issues.apache.org/jira/browse/GROOVY-8609,https://github.com/apache/groo
 https://issues.apache.org/jira/browse/GROOVY-7364,https://github.com/apache/groovy/commit/e8ebfd8794a4a6d8bf7c46b1f5a4bd13cf6fdc47
 https://issues.apache.org/jira/browse/GROOVY-5217,https://github.com/apache/groovy/commit/95ca5d64e3e6cb34f783c2acbcfafb09dad4aa4d
 https://issues.apache.org/jira/browse/GROOVY-7211,https://github.com/apache/groovy/commit/d1ab4539ab92b4c85b29de0243017c8125478607
-https://issues.apache.org/jira/browse/GROOVY-9420,https://github.com/apache/groovy/pull/1175/commits/d852fc781ad858505d401e704e7c0bc6dac35db8
+https://issues.apache.org/jira/browse/GROOVY-9420,https://github.com/apache/groovy/pull/1175
 https://issues.apache.org/jira/browse/GROOVY-5232,https://github.com/apache/groovy/commit/4f2b9b3e93927f92b20ffb51fda0645c4a634385
 https://issues.apache.org/jira/browse/GROOVY-8330,https://github.com/apache/groovy/commit/6ee3977fc88a68e0b5b04b8f775e014296a118c0
 https://issues.apache.org/jira/browse/GROOVY-7721,https://github.com/apache/groovy/commit/8ad6e770ab2a6c6968ae02ddc5d49d7d6e6f79f3
