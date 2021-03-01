@@ -81,14 +81,14 @@ class TypeInference(CharacteristicCategory):
     name = "Type Inference"
 
 
-class SpecialTypes(CharacteristicCategory):
+class TypeSystem(CharacteristicCategory):
     """
-    This category includes features associated with advanced topics of
-    the type system of the language. For example, intersection types,
+    This category includes features associated with the type system of
+    the language. For example, subtyping, intersection types,
     dependent types, type projections, etc.
     """
 
-    name = "Special features of type systems"
+    name = "Type system features"
 
 
 class SpecialFeatures(CharacteristicCategory):
@@ -141,6 +141,9 @@ class Characteristic():
 
 
 class Overriding(Characteristic):
+    """
+    The test case contains a class that overrides a specific method or field.
+    """
     name = "Overriding"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -148,6 +151,9 @@ class Overriding(Characteristic):
 
 
 class Overloading(Characteristic):
+    """
+    The test case contains overloaded methods.
+    """
     name = "Overloading"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -155,27 +161,37 @@ class Overloading(Characteristic):
 
 
 class Subtyping(Characteristic):
+    """
+    The test case contains uses types for which the subtyping relation holds.
+
+    Example:
+      class A {}
+      class B extends A {}
+
+      val A = new B() // here we have subtyping
+    """
     name = "Subtyping"
-    category = StandardFeatures()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = True
 
 
 class JavaInterop(Characteristic):
+    """
+    The test case is written in a language other than Java, but uses part of
+    code written in Java (e.g., a library, imports a Java class, uses the
+    standard library of Java, etc.)
+    """
     name = "Java Interop"
-    category = SpecialTypes()
+    category = SpecialFeatures()
     characteristic_type = None
     is_common = True
 
 
-class AbstractClasses(Characteristic):
-    name = "Abstract Classes"
-    category = OOPFeatures()
-    characteristic_type = Declaration()
-    is_common = True
-
-
 class Import(Characteristic):
+    """
+    The test cases imports another source file.
+    """
     name = "Import"
     category = StandardFeatures()
     characteristic_type = Statements()
@@ -183,6 +199,9 @@ class Import(Characteristic):
 
 
 class Enums(Characteristic):
+    """
+    The test case declares an enumeration.
+    """
     name = "Enums"
     category = StandardFeatures()
     characteristic_type = Declaration()
@@ -190,6 +209,9 @@ class Enums(Characteristic):
 
 
 class SealedClasses(Characteristic):
+    """
+    The test case declares a sealed class.
+    """
     name = "Sealed Classes"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -197,6 +219,13 @@ class SealedClasses(Characteristic):
 
 
 class SAM(Characteristic):
+    """
+    The test case defines a Single Abstract Method (SAM) type.
+
+    For more details see:
+
+    https://stackoverflow.com/questions/17913409/what-is-a-sam-type-in-java
+    """
     name = "Single Abstract Method"
     category = FunctionalProgramming()
     characteristic_type = Declaration()
@@ -204,6 +233,9 @@ class SAM(Characteristic):
 
 
 class Property(Characteristic):
+    """
+    The test case defines a property.
+    """
     name = "Property"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -211,6 +243,9 @@ class Property(Characteristic):
 
 
 class ArithmeticExpressions(Characteristic):
+    """
+    The test case contains arithmetic expressions (e.g., a + b).
+    """
     name = "Arithmetic Expressions"
     category = StandardFeatures()
     characteristic_type = Expressions()
@@ -218,6 +253,9 @@ class ArithmeticExpressions(Characteristic):
 
 
 class Lambdas(Characteristic):
+    """
+    The test case contains a lambda expression.
+    """
     name = "Lambdas"
     category = FunctionalProgramming()
     characteristic_type = Expressions()
@@ -225,13 +263,23 @@ class Lambdas(Characteristic):
 
 
 class TypeLambdas(Characteristic):
+    """
+    The test case contains a type lambda expression (Scala only).
+    """
     name = "Type Lambdas"
-    category = SpecialFeatures()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class FunctionReferences(Characteristic):
+    """
+    The test contains a function reference expression.
+
+    Example:
+       class X { static String foo() }
+       bar(X::foo) // here we have the function reference
+    """
     name = "Function references"
     category = FunctionalProgramming()
     characteristic_type = Expressions()
@@ -239,6 +287,13 @@ class FunctionReferences(Characteristic):
 
 
 class ExtensionFunctions(Characteristic):
+    """
+    The test case defines an extension function.
+
+    For more details:
+
+    https://kotlinlang.org/docs/extensions.html
+    """
     name = "Extension Fucntions"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -246,6 +301,9 @@ class ExtensionFunctions(Characteristic):
 
 
 class This(Characteristic):
+    """
+    The test contains a 'this' expression.
+    """
     name = "this"
     category = OOPFeatures()
     characteristic_type = Expressions()
@@ -253,20 +311,32 @@ class This(Characteristic):
 
 
 class IntersectionTypes(Characteristic):
+    """
+    The test case makes use of intersection types.
+    """
     name = "Intersection types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class UnionTypes(Characteristic):
+    """
+    The test case makes use of union types.
+    """
     name = "Union types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class FlowTyping(Characteristic):
+    """
+    The test case makes use of implicit casts made by the compiler.
+
+    For more details see:
+    https://en.wikipedia.org/wiki/Flow-sensitive_typing
+    """
     name = "Flow typing"
     category = TypeInference()
     characteristic_type = None
@@ -274,6 +344,9 @@ class FlowTyping(Characteristic):
 
 
 class ParameterizedFunctions(Characteristic):
+    """
+    The test case declares a parameterized function.
+    """
     name = "Parameterized Functions"
     category = ParametricPolymorphism()
     characteristic_type = Declaration()
@@ -281,6 +354,9 @@ class ParameterizedFunctions(Characteristic):
 
 
 class ParameterizedClasses(Characteristic):
+    """
+    The test case declares a parameterized class.
+    """
     name = "Parameterized Classes"
     category = ParametricPolymorphism()
     characteristic_type = Declaration()
@@ -288,6 +364,12 @@ class ParameterizedClasses(Characteristic):
 
 
 class Varargs(Characteristic):
+    """
+    The test case contains a method that takes variable arguments.
+
+    Example:
+      String foo(String x, Integer... y) // The '...' in Java denotes a vararg.
+    """
     name = "varargs"
     category = StandardFeatures()
     characteristic_type = Declaration()
@@ -295,6 +377,9 @@ class Varargs(Characteristic):
 
 
 class Nullables(Characteristic):
+    """
+    The test case uses nullable types (Kotlin only).
+    """
     name = "Nullable types"
     category = SpecialFeatures()
     characteristic_type = Types()
@@ -302,6 +387,12 @@ class Nullables(Characteristic):
 
 
 class BoundedPolymorphism(Characteristic):
+    """
+    The test case defines a type parameter with a bound.
+
+    Example:
+       class X<T extends Object> {}
+    """
     name = "Bounded Quantification"
     category = ParametricPolymorphism()
     characteristic_type = Types()
@@ -309,6 +400,9 @@ class BoundedPolymorphism(Characteristic):
 
 
 class Where(Characteristic):
+    """
+    The test case defines a type parameter with multiple bounds.
+    """
     name = "Multi-bounds"
     category = BoundedPolymorphism()
     characteristic_type = Types()
@@ -316,6 +410,12 @@ class Where(Characteristic):
 
 
 class FBounded(Characteristic):
+    """
+    The test case contains a type parameter with a recursive bound.
+
+    Example:
+      class X<T extends X<T>> {}
+    """
     name = "F-bounds"
     category = BoundedPolymorphism()
     characteristic_type = Types()
@@ -323,6 +423,12 @@ class FBounded(Characteristic):
 
 
 class VarTypeInference(Characteristic):
+    """
+    The test contains a variable declaration whose declared type is omitted.
+
+    Example:
+       val x = "foo" // The inferred type is String.
+    """
     name = "Variable type inference"
     category = TypeInference()
     characteristic_type = Declaration()
@@ -330,6 +436,10 @@ class VarTypeInference(Characteristic):
 
 
 class ParamTypeInference(Characteristic):
+    """
+    The test case contains a function or lambda whose parameter types are
+    omitted.
+    """
     name = "Parameter type inference"
     category = TypeInference()
     characteristic_type = Declaration()
@@ -337,6 +447,14 @@ class ParamTypeInference(Characteristic):
 
 
 class TypeArgsInference(Characteristic):
+    """
+    The test case instantiates a type constructor whose type arguments
+    are omitted.
+
+    Example:
+      class X<T> {}
+      X<String> x = new X<>(); // Here 'X<>', we have type argument inference.
+    """
     name = "Type argument type inference"
     category = TypeInference()
     characteristic_type = Expressions()
@@ -344,6 +462,12 @@ class TypeArgsInference(Characteristic):
 
 
 class NamedArgs(Characteristic):
+    """
+    The test case contains a function that takes named arguments.
+
+    Example:
+       String foo(String x, String y = "foo")
+    """
     name = "Named args"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -351,6 +475,9 @@ class NamedArgs(Characteristic):
 
 
 class Coroutines(Characteristic):
+    """
+    The test case uses the Coroutines API (Kotlin only).
+    """
     name = "Coroutines API"
     category = StandardLibrary()
     characteristic_type = Expressions()
@@ -358,13 +485,19 @@ class Coroutines(Characteristic):
 
 
 class OperatorOverloading(Characteristic):
+    """
+    The test case overloads an operator.
+    """
     name = "Operator overloading"
-    category = SpecialFeatures()
+    category = Overloading()
     characteristic_type = Declaration()
     is_common = False
 
 
 class ElvisOperator(Characteristic):
+    """
+    The test case contains an elvis expression (Kotlin, Groovy only).
+    """
     name = "Elvis operator"
     category = SpecialFeatures()
     characteristic_type = Expressions()
@@ -372,27 +505,50 @@ class ElvisOperator(Characteristic):
 
 
 class PropertyReference(Characteristic):
+    """
+    The test case contains a property reference.
+    Note this is the same as function references, but it's for properties
+    (Kotlin only).
+    """
     name = "Property reference"
-    category = SpecialFeatures()
+    category = OOPFeatures()
     characteristic_type = Expressions()
     is_common = False
 
 
 class Typedefs(Characteristic):
+    """
+    The test case defines a type (Scala, Kotlin only).
+
+    Example:
+      type MyType = List[(Int, Double)]
+    """
     name = "Type definitions"
-    category = SpecialFeatures()
+    category = TypeSystem()
     characteristic_type = Declaration()
     is_common = False
 
 
 class DataClasses(Characteristic):
+    """
+    The test case declares a data class (Kotlin only)
+
+    For more details:
+      https://kotlinlang.org/docs/data-classes.html
+    """
     name = "Data classes"
-    category = SpecialFeatures()
+    category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = False
 
 
 class NullAssertion(Characteristic):
+    """
+    The test case contains a null assertion expression (Kotlin only).
+
+    For more details:
+      https://www.baeldung.com/kotlin/not-null-assertion
+    """
     name = "Null assertion"
     category = SpecialFeatures()
     characteristic_type = Expressions()
@@ -400,20 +556,19 @@ class NullAssertion(Characteristic):
 
 
 class Inheritance(Characteristic):
+    """
+    The test case declares a class that inherits from another.
+    """
     name = "Inheritance"
     category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = True
 
 
-class Interfaces(Characteristic):
-    name = "Interfaces"
-    category = OOPFeatures()
-    characteristic_type = Declaration()
-    is_common = True
-
-
 class AccessModifiers(Characteristic):
+    """
+    The test case makes use of access modifiers keywords (e.g., private).
+    """
     name = "Access modifiers"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -421,6 +576,9 @@ class AccessModifiers(Characteristic):
 
 
 class Cast(Characteristic):
+    """
+    The test case contains a cast expression.
+    """
     name = "Cast"
     category = StandardFeatures()
     characteristic_type = Expressions()
@@ -428,27 +586,35 @@ class Cast(Characteristic):
 
 
 class Arrays(Characteristic):
+    """
+    The test case declares a variable/parameter whose type is Array.
+
+    Example:
+      String foo(String[] args)
+    """
     name = "Arrays"
-    category = StandardFeatures()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = True
 
 
 class Delegation(Characteristic):
+    """
+    The test case uses the delegation functionality (Kotlin only).
+
+    For more details:
+    https://kotlinlang.org/docs/delegation.html
+    """
     name = "Delegation"
     category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = False
 
 
-class Utils(Characteristic):
-    name = "Utils API"
-    category = StandardLibrary()
-    characteristic_type = None
-    is_common = False
-
-
 class FunctionalInterface(Characteristic):
+    """
+    The test case uses the function API from the standard library of Java.
+    """
     name = "Function API"
     category = StandardLibrary()
     characteristic_type = None
@@ -456,6 +622,9 @@ class FunctionalInterface(Characteristic):
 
 
 class Streams(Characteristic):
+    """
+    The test case uses the Stream API from the standard library of Java.
+    """
     name = "Stream API"
     category = StandardLibrary()
     characteristic_type = None
@@ -463,6 +632,9 @@ class Streams(Characteristic):
 
 
 class DelegationAPI(Characteristic):
+    """
+    The test case uses the Delegation API from the standard library of Groovy.
+    """
     name = "Delegation API"
     category = StandardLibrary()
     characteristic_type = None
@@ -470,6 +642,10 @@ class DelegationAPI(Characteristic):
 
 
 class Collections(Characteristic):
+    """
+    The test case uses the collection API (e.g., it uses list types, it)
+    creates sets, and more).
+    """
     name = "Collection API"
     category = StandardLibrary()
     characteristic_type = None
@@ -477,6 +653,15 @@ class Collections(Characteristic):
 
 
 class Reflection(Characteristic):
+    """
+    The test case us the reflection API.
+
+    Example:
+
+      class A {}
+      val x = new A()
+      x.getClass() // here we are using the reflection API.
+    """
     name = "Reflection API"
     category = StandardLibrary()
     characteristic_type = None
@@ -484,6 +669,9 @@ class Reflection(Characteristic):
 
 
 class Inline(Characteristic):
+    """
+    The test case uses the inline keyword (Scala and Kotlin only).
+    """
     name = "Inline"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -491,6 +679,9 @@ class Inline(Characteristic):
 
 
 class ImplicitParameters(Characteristic):
+    """
+    The test case contains implicit parameters (Scala only).
+    """
     name = "Implicit parameters"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -498,6 +689,9 @@ class ImplicitParameters(Characteristic):
 
 
 class ImplicitDefs(Characteristic):
+    """
+    The test case contains implicit definitions (Scala only).
+    """
     name = "Implicit definitions"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -505,6 +699,12 @@ class ImplicitDefs(Characteristic):
 
 
 class PatMat(Characteristic):
+    """
+    The test case contains pattern matching (Scala only).
+
+    For more details:
+    https://docs.scala-lang.org/tour/pattern-matching.html
+    """
     name = "Pattern matching"
     category = SpecialFeatures()
     characteristic_type = Expressions()
@@ -512,6 +712,9 @@ class PatMat(Characteristic):
 
 
 class ErasedParameters(Characteristic):
+    """
+    The test case contains erased parameters (Scala only).
+    """
     name = "Erased parameters"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -519,6 +722,9 @@ class ErasedParameters(Characteristic):
 
 
 class CallByName(Characteristic):
+    """
+    The test case contains call-by-name arguments (Scala only).
+    """
     name = "Call by name"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -526,6 +732,10 @@ class CallByName(Characteristic):
 
 
 class WithMultipleAssignment(Characteristic):
+    """
+    The test case performs multiple assignments through the with pattern
+    (Groovy only).
+    """
     name = "With"
     category = SpecialFeatures()
     characteristic_type = Statements()
@@ -533,13 +743,20 @@ class WithMultipleAssignment(Characteristic):
 
 
 class PrimitiveTypes(Characteristic):
+    """
+    The test case declares a variable/parameter whose type is primitive
+    (Java and Groovy only).
+    """
     name = "Primitive types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class ParameterizedTypes(Characteristic):
+    """
+    The test case declares a variable/parameter whose type is parameterized.
+    """
     name = "Parameterized types"
     category = ParametricPolymorphism()
     characteristic_type = Types()
@@ -547,6 +764,9 @@ class ParameterizedTypes(Characteristic):
 
 
 class FunctionTypes(Characteristic):
+    """
+    The test case declares a variable/parameter whose type is a function type.
+    """
     name = "Function types"
     category = FunctionalProgramming()
     characteristic_type = Types()
@@ -554,34 +774,54 @@ class FunctionTypes(Characteristic):
 
 
 class AlgebraicDataTypes(Characteristic):
+    """
+    The test contains algebraic data types (Scala only).
+
+    For more details:
+    https://alvinalexander.com/scala/fp-book/algebraic-data-types-adts-in-scala/
+    """
     name = "Algebraic Data Types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class FlexibleTypes(Characteristic):
+    """
+    The test case contains flexible types (Kotlin only).
+    """
     name = "Flexible types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class DependentTypes(Characteristic):
+    """
+    The test case declares a variable/parameter whose type is a dependent type
+    (Scala only).
+    """
     name = "Dependent types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class ExistentialTypes(Characteristic):
+    """
+    The test declares a variable/parameter whose type is an existential type
+    (Scala only).
+    """
     name = "Existential types"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class HigherKindedTypes(Characteristic):
+    """
+    The test cases uses higher-kinded types (Scala only).
+    """
     name = "Higher-kinded types"
     category = ParametricPolymorphism()
     characteristic_type = Types()
@@ -589,6 +829,9 @@ class HigherKindedTypes(Characteristic):
 
 
 class StaticMethod(Characteristic):
+    """
+    The test case declares a static method (Groovy and Kotlin only).
+    """
     name = "Static Method"
     category = OOPFeatures()
     characteristic_type = Declaration()
@@ -596,6 +839,15 @@ class StaticMethod(Characteristic):
 
 
 class NestedDeclaration(Characteristic):
+    """
+    The test case contains nested declarations (e.g., a class is declared
+    inside another class).
+
+    Example:
+       class X {
+         class Y {}
+       }
+    """
     name = "Nested declarations"
     category = StandardFeatures()
     characteristic_type = Declaration()
@@ -603,6 +855,9 @@ class NestedDeclaration(Characteristic):
 
 
 class TypeAnnotations(Characteristic):
+    """
+    The test case contains type annotations (Java only).
+    """
     name = "Type annotations"
     category = SpecialFeatures()
     characteristic_type = Declaration()
@@ -610,6 +865,9 @@ class TypeAnnotations(Characteristic):
 
 
 class ReferenceTypes(Characteristic):
+    """
+    The test case contains reference types (Java only).
+    """
     name = "Reference types"
     category = SpecialFeatures()
     characteristic_type = Types()
@@ -617,6 +875,13 @@ class ReferenceTypes(Characteristic):
 
 
 class DeclVariance(Characteristic):
+    """
+    The test case declares a type constructor with variant type arguments
+    (Kotlin and Scala only).
+
+    Example:
+       class X<out T> // covariant type parameter 'T'.
+    """
     name = "Declaration-site variance"
     category = ParametricPolymorphism()
     characteristic_type = Types()
@@ -624,6 +889,14 @@ class DeclVariance(Characteristic):
 
 
 class UseVariance(Characteristic):
+    """
+    The test cases uses a parameterized type with variant type arguments
+    (Kotlin, Groovy and Scala only).
+
+    Example:
+        class X<T> {}
+        String foo(X<? extends Number> arg)
+    """
     name = "Use-site variance"
     category = ParametricPolymorphism()
     characteristic_type = Types()
@@ -631,6 +904,9 @@ class UseVariance(Characteristic):
 
 
 class TryCatch(Characteristic):
+    """
+    The test case contains try/catch statements or handles exceptions.
+    """
     name = "Try/Catch"
     category = StandardFeatures()
     characteristic_type = Statements()
@@ -638,6 +914,9 @@ class TryCatch(Characteristic):
 
 
 class Conditionals(Characteristic):
+    """
+    The test case contains conditionals (e.g., if, switch, ternary operators).
+    """
     name = "Conditionals"
     category = StandardFeatures()
     characteristic_type = Expressions()
@@ -645,6 +924,9 @@ class Conditionals(Characteristic):
 
 
 class Loops(Characteristic):
+    """
+    The test case contains loops (e.g., for, while).
+    """
     name = "Loops"
     category = StandardFeatures()
     characteristic_type = Statements()
@@ -652,6 +934,9 @@ class Loops(Characteristic):
 
 
 class AnonymousClass(Characteristic):
+    """
+    The test cases declares an anonymous class.
+    """
     name = "Anonymous classes"
     category = OOPFeatures()
     characteristic_type = Expressions()
@@ -659,13 +944,22 @@ class AnonymousClass(Characteristic):
 
 
 class Nothing(Characteristic):
+    """
+    The test case handles the special type 'Nothing' (Scala, Kotlin only).
+    """
     name = "Nothing"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
 
 class DefaultInitializer(Characteristic):
+    """
+    The test case contains a default initializer (Scala only).
+
+    Example:
+      val x: String = _
+    """
     name = "Default Initializer"
     category = SpecialFeatures()
     characteristic_type = Expressions()
@@ -673,7 +967,13 @@ class DefaultInitializer(Characteristic):
 
 
 class TypeProjections(Characteristic):
+    """
+    The test case contains type projections (Scala only).
+
+    For more details:
+    https://docs.scala-lang.org/overviews/quasiquotes/type-details.html
+    """
     name = "Type Projection"
-    category = SpecialTypes()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
