@@ -424,3 +424,56 @@ groovy_iter2 = [
         7
     )
 ]
+
+groovy_iter3 = [
+    GroovyBug(
+        "1.GROOVY-5411",
+        [],
+        False,
+        sy.Runtime(), # MissingMethodException
+        rc.MissingCase(),
+        ct.Environment(),
+        8
+    ),
+    GroovyBug(
+        "2.GROOVY-8961",
+        [pc.Collections(), pc.ParameterizedTypes()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.Inference(),
+        6
+    ),
+    GroovyBug(
+        "3.GROOVY-7145",
+        [pc.SafeNavigationOperator()],
+        True,
+        sy.Runtime(sy.NullPointerException()),
+        rc.MissingCase(),
+        ct.Mechanics(),
+        11
+    ),
+    GroovyBug(
+        "4.GROOVY-7327",
+        [pc.JavaInterop(),
+         pc.ParameterizedFunctions(),
+         pc.Collections(),
+         pc.ParameterizedTypes(),
+         pc.Arrays(),
+         pc.Enums()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.TypeComparison(),
+        6
+    ),
+    GroovyBug(
+        "5.GROOVY-5332",
+        [pc.Collections(), pc.ParameterizedTypes()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Inference(),
+        2
+    ),
+]

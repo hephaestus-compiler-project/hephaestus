@@ -504,6 +504,17 @@ class ElvisOperator(Characteristic):
     is_common = False
 
 
+class SafeNavigationOperator(Characteristic):
+    """
+    Or Safe Call Operator.
+    The test case contains an safe navigation operator (Kotlin, Groovy only).
+    """
+    name = "Safe navigation operator"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
+
+
 class PropertyReference(Characteristic):
     """
     The test case contains a property reference.

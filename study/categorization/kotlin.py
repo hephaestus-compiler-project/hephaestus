@@ -464,3 +464,62 @@ kotlin_iter2 = [
         12
     )
 ]
+
+kotlin_iter3 = [
+    KotlinBug(
+        "1.KT-31620",
+        [pc.ParameterizedClasses(),
+         pc.ParameterizedFunctions(),
+         pc.Lambdas(),
+         pc.FunctionTypes()],
+        True,
+        sy.CompileTimeError(),
+        rc.IncorrectComputation(),
+        ct.Environment(),
+        11
+    ),
+    KotlinBug(
+        "2.KT-2277",
+        [pc.Overloading(), pc.NestedDeclaration()],
+        False,
+        sy.Runtime(sy.AmbiguousMethodError()),
+        rc.MissingCase(),
+        ct.Environment(),
+        5
+    ),
+    KotlinBug(
+        "3.KT-9134",
+        [pc.Nullables(), pc.Lambdas()],
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
+        ct.TypeExpression(),
+        6
+    ),
+    KotlinBug(
+        "4.KT-35172",
+        [pc.Nullables(), pc.ParameterizedFunctions(), pc.Cast(),
+         pc.ExtensionFunctions(), pc.Lambdas(), pc.ElvisOperator(),
+         pc.SafeNavigationOperator()],
+        True,
+        sy.CompileTimeError(),
+        rc.ExtraneousComputation(),
+        ct.TypeExpression(),
+        5
+    ),
+    KotlinBug(
+        "5.KT-41644",
+        [
+            pc.ParameterizedClasses(),
+            pc.BoundedPolymorphism(),
+            pc.FBounded(),
+            pc.SealedClasses(),
+            pc.Cast()
+        ],
+        True,
+        sy.CompilationPerformance(),
+        rc.InsufficientAlgorithmImplementation(),
+        ct.Inference(),
+        41
+    ),
+]
