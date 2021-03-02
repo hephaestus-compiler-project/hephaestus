@@ -845,7 +845,7 @@ class HigherKindedTypes(Characteristic):
 
 class StaticMethod(Characteristic):
     """
-    The test case declares a static method (Groovy and Kotlin only).
+    The test case declares a static method (Groovy and Java only).
     """
     name = "Static Method"
     category = OOPFeatures()
