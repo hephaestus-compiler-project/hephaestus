@@ -304,16 +304,16 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+        var_type = "var"
         # Global variables declared as fields in Main, thus we must specify
         # their type.
-        var_type = ""
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE):
-            var_type = node.inferred_type.get_name() + " "
+            var_type = node.inferred_type.get_name()
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
-        res = "{ident}{final}{var_type}{main_prefix}{name} = {expr};".format(
+        res = "{ident}{final}{var_type} {main_prefix}{name} = {expr};".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
             var_type=var_type,
