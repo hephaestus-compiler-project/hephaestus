@@ -906,7 +906,7 @@ class DeclVariance(Characteristic):
 class UseVariance(Characteristic):
     """
     The test cases uses a parameterized type with variant type arguments
-    (Kotlin, Groovy and Scala only).
+    (Kotlin, Groovy and Java only).
 
     Example:
         class X<T> {}
