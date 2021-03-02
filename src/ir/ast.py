@@ -718,12 +718,15 @@ class Operator(Node):
 
 
 class BinaryOp(Expr):
+    ALL_OPERATORS = None
     VALID_OPERATORS = None
 
     def __init__(self, lexpr: Expr, rexpr: Expr, operator: Operator):
         if self.VALID_OPERATORS is not None:
             # pylint: disable=unsupported-membership-test
-            assert operator in self.VALID_OPERATORS, (
+            # @theosotr should we keep this check? If we ant to keep it we may
+            # want to check if the operator is valid for a given language
+            assert operator in self.ALL_OPERATORS, (
                 'Binary operator ' + operator + ' is not valid')
         self.lexpr = lexpr
         self.rexpr = rexpr
@@ -750,37 +753,109 @@ class BinaryOp(Expr):
 
 
 class LogicalExpr(BinaryOp):
-    VALID_OPERATORS = [
+    ALL_OPERATORS = [
         Operator('&&'),
         Operator('||')
     ]
+    VALID_OPERATORS = {
+        "kotlin": [
+            Operator('&&'),
+            Operator('||')
+        ],
+        "groovy": [
+            Operator('&&'),
+            Operator('||')
+        ],
+        "java": [
+            Operator('&&'),
+            Operator('||')
+        ]
+    }
 
 
 class EqualityExpr(BinaryOp):
-    VALID_OPERATORS = [
+    ALL_OPERATORS = [
         Operator('=='),
         Operator('==='),
         Operator('=', is_not=True),
         Operator('==', is_not=True)
     ]
+    VALID_OPERATORS = {
+        "kotlin": [
+            Operator('=='),
+            Operator('==='),
+            Operator('=', is_not=True),
+            Operator('==', is_not=True)
+        ],
+        "groovy": [
+            Operator('=='),
+            Operator('==='),
+            Operator('=', is_not=True),
+            Operator('==', is_not=True)
+        ],
+        "java": [
+            Operator('=='),
+            Operator('=', is_not=True)
+        ]
+    }
 
 
 class ComparisonExpr(BinaryOp):
-    VALID_OPERATORS = [
+    ALL_OPERATORS = [
         Operator('>'),
         Operator('>='),
         Operator('<'),
         Operator('<=')
     ]
+    VALID_OPERATORS = {
+        "kotlin": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
+        ],
+        "groovy": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
+        ],
+        "java": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
+        ]
+    }
 
 
 class ArithExpr(BinaryOp):
-    VALID_OPERATORS = [
+    ALL_OPERATORS = [
         Operator('+'),
         Operator('-'),
         Operator('/'),
         Operator('*')
     ]
+    VALID_OPERATORS = {
+        "kotlin": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ],
+        "groovy": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ],
+        "java": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ]
+    }
 
 
 class Is(BinaryOp):
