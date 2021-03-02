@@ -116,7 +116,7 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         if self.package:
-            package_str = 'package ' + self.package + '\n\n'
+            package_str = 'package ' + self.package + ';\n\n'
         else:
             package_str = ''
         self.ident = 2
@@ -156,12 +156,13 @@ class JavaTranslator(ASTVisitor):
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
-            res = "{{\n{ident}{stmt}\n{old_ident}}}".format(
+            res = "{{\n{ident}{stmt};\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0],
                 old_ident=self.get_ident(extra=-2)
             )
         else:
+            children_res[-1] += ";"
             res = "{{\n{stmts}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
                 old_ident=self.get_ident(extra=-2)
@@ -207,7 +208,8 @@ class JavaTranslator(ASTVisitor):
                       for name, tname in
                       get_constructor_params().items()]
             constructor_params = ",".join(params)
-            fields = ["this." + f.name + ' = ' + f.name for f in node.fields]
+            fields = ["this." + f.name + ' = ' + f.name + ";"
+                      for f in node.fields]
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
@@ -299,7 +301,7 @@ class JavaTranslator(ASTVisitor):
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
-        res = "{ident}{final}{var_type}{main_prefix}{name} = {expr}".format(
+        res = "{ident}{final}{var_type}{main_prefix}{name} = {expr};".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
             var_type=var_type,
@@ -312,7 +314,7 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_field_decl(self, node):
-        return "public {final}{field_type} {name}".format(
+        return "public {final}{field_type} {name};".format(
             final="final " if node.is_final else "",
             field_type=node.field_type.get_name(),
             name=node.name
@@ -356,7 +358,7 @@ class JavaTranslator(ASTVisitor):
         body = ""
         if body_res:
             if is_expression:
-                body = "{{\n{body}\n{ident}}}".format(
+                body = "{{\n{body};\n{ident}}}".format(
                     body=body_res,
                     ident=self.get_ident(old_ident=old_ident)
                 )
@@ -598,7 +600,7 @@ class JavaTranslator(ASTVisitor):
         name = self._get_main_prefix('vars', node.name) + node.name
         receiver = children_res[0] if node.receiver else None
         expr = children_res[1] if node.receiver else children_res[0]
-        res = "{ident}{receiver}{name} = {expr}".format(
+        res = "{ident}{receiver}{name} = {expr};".format(
             ident=self.get_ident(old_ident=old_ident),
             receiver=receiver + "." if receiver else "",
             name=name,
