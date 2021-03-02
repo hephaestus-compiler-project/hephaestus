@@ -50,7 +50,7 @@ class Generator():
             # constructor.
             class_decl = self._get_subclass(etype)
             self._new_from_class = (etype, class_decl)
-        op = ut.random.choice(ast.EqualityExpr.VALID_OPERATORS)
+        op = ut.random.choice(ast.EqualityExpr.VALID_OPERATORS[self.language])
         e1 = self.generate_expr(etype, only_leaves, subtype=False)
         e2 = self.generate_expr(etype, only_leaves, subtype=False)
         self._new_from_class = prev
@@ -61,7 +61,7 @@ class Generator():
     def gen_logical_expr(self, expr_type=None, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
-        op = ut.random.choice(ast.LogicalExpr.VALID_OPERATORS)
+        op = ut.random.choice(ast.LogicalExpr.VALID_OPERATORS[self.language])
         e1 = self.generate_expr(self.bt_factory.get_boolean_type(),
                                 only_leaves)
         e2 = self.generate_expr(self.bt_factory.get_boolean_type(),
@@ -106,7 +106,8 @@ class Generator():
         }
         initial_depth = self.depth
         self.depth += 1
-        op = ut.random.choice(ast.ComparisonExpr.VALID_OPERATORS)
+        op = ut.random.choice(
+            ast.ComparisonExpr.VALID_OPERATORS[self.language])
         e1_type = ut.random.choice(valid_types)
         e2_type = ut.random.choice(e2_types[e1_type])
         e1 = self.generate_expr(e1_type, only_leaves)
