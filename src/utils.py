@@ -26,6 +26,16 @@ def lst_get(lst, index=0, default=None):
         return default
 
 
+def leading_spaces(input_string):
+    """Count leading spaces of a string"""
+    return len(input_string) - len(input_string.lstrip(' '))
+
+
+def add_string_at(input_string, substring, pos):
+    """Add a substring to the given position of the string"""
+    return input_string[:pos] + substring + input_string[pos:]
+
+
 def read_lines(path):
     lines = []
     with open(path, 'r') as infile:

@@ -2,6 +2,7 @@
 # pylint: disable=too-many-statements
 from collections import OrderedDict
 
+import src.utils as ut
 from src.ir import ast, java_types as jt
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
@@ -43,7 +44,8 @@ class JavaTranslator(ASTVisitor):
         self._children_res = []
         self.program = None
         self.ident = 0
-        self.is_func_block = False
+        # Keep track if a block is in a function that has non-void return type
+        self.is_func_non_void_block = False
         self.package = package
         self.context = None
         self._cast_number = False
@@ -73,7 +75,7 @@ class JavaTranslator(ASTVisitor):
         self.context = None
         self._cast_number = False
         self.ident = 0
-        self.is_func_block = False
+        self.is_func_non_void_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
 
@@ -140,8 +142,8 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_block(self, node):
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = False
+        prev = self.is_func_non_void_block
+        self.is_func_non_void_block = False
         children_len = len(children)
         for i, c in enumerate(children):
             # Cast return statement if it's a number literal
@@ -153,16 +155,27 @@ class JavaTranslator(ASTVisitor):
             else:
                 c.accept(self)
         children_res = self.pop_children_res(children)
+        self.is_func_non_void_block = prev
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
+            if self.is_func_non_void_block:
+                children_res[0] = ut.add_string_at(
+                    children_res[0],
+                    "return ",
+                    ut.leading_spaces(children_res[0]))
             res = "{{\n{ident}{stmt};\n{old_ident}}}".format(
                 ident=self.get_ident(),
-                stmt=children_res[0],
+                stmt=children_res[0].strip(),
                 old_ident=self.get_ident(extra=-2)
             )
         else:
             children_res[-1] += ";"
+            if self.is_func_non_void_block:
+                children_res[-1] = ut.add_string_at(
+                    children_res[-1],
+                    "return ",
+                    ut.leading_spaces(children_res[-1]))
             res = "{{\n{stmts}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
                 old_ident=self.get_ident(extra=-2)
@@ -171,7 +184,6 @@ class JavaTranslator(ASTVisitor):
         # we must append () to call it.
         if self._inside_is and not self._inside_is_function:
             res += "()"
-        self.is_func_block = prev
         return res
 
     @append_to
@@ -345,8 +357,8 @@ class JavaTranslator(ASTVisitor):
         self.ident += 2
         prev_cast_number = self._cast_number
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = node.get_type() != jt.Void
+        prev = self.is_func_non_void_block
+        self.is_func_non_void_block = node.get_type() != jt.Void
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
             self._cast_number = True
@@ -358,6 +370,9 @@ class JavaTranslator(ASTVisitor):
         body = ""
         if body_res:
             if is_expression:
+                if node.get_type() != jt.Void:
+                    body_res = ut.add_string_at(
+                        body_res, "return ", ut.leading_spaces(body_res))
                 body = "{{\n{body};\n{ident}}}".format(
                     body=body_res,
                     ident=self.get_ident(old_ident=old_ident)
@@ -385,7 +400,7 @@ class JavaTranslator(ASTVisitor):
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
-        self.is_func_block = prev
+        self.is_func_non_void_block = prev
         self._cast_number = prev_cast_number
         if self._inside_is:
             self._inside_is_function = prev_inside_is_function
