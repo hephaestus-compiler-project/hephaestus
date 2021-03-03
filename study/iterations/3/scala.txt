@@ -1,0 +1,5 @@
+https://github.com/lampepfl/dotty/issues/10123,https://github.com/lampepfl/dotty/pull/10205
+https://github.com/scala/bug/issues/5399,https://github.com/scala/scala/commit/fc24db4c
+https://github.com/lampepfl/dotty/issues/7597,https://github.com/lampepfl/dotty/pull/8332
+https://github.com/scala/bug/issues/5958,https://github.com/scala/scala/pull/991/files
+https://github.com/scala/bug/issues/7872,https://github.com/scala/scala/pull/3178
