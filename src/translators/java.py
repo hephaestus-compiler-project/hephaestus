@@ -66,6 +66,10 @@ class JavaTranslator(ASTVisitor):
         self._inside_is = False
         self._inside_is_function = False
 
+        # A set of numbers where numbers is the number of type parameters that
+        # an interface for a function should have.
+        self._function_interfaces = set()
+
     def _reset_state(self):
         # Clear the state
         self._main_method = ""
@@ -340,7 +344,7 @@ class JavaTranslator(ASTVisitor):
     @append_to
     @change_namespace
     def visit_func_decl(self, node):
-        def is_closure():
+        def is_nested_func():
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
@@ -379,7 +383,10 @@ class JavaTranslator(ASTVisitor):
                 )
             else:
                 body = body_res
-        if is_closure():
+        if is_nested_func():
+            # We should declare an Interface for this function with apply
+            type_args =
+            self._function_interfaces.add(len(node.params) + 1)  # +1 for ret_type
             res = "{ident}def {name} = {{ {params} -> {body}}}".format(
                 ident=self.get_ident(old_ident=old_ident),
                 name=node.name,
