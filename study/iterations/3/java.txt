@@ -1,0 +1,5 @@
+https://bugs.openjdk.java.net/browse/JDK-8031967,https://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/ca2bc0c46552
+https://bugs.openjdk.java.net/browse/JDK-6880344,https://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/e9ef849ae0ed
+https://bugs.openjdk.java.net/browse/JDK-7142086,https://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/84b61130cbed
+https://bugs.openjdk.java.net/browse/JDK-8131915,https://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/7eef740c1482
+https://bugs.openjdk.java.net/browse/JDK-7148242,https://bugs.openjdk.java.net/browse/JDK-7148242
