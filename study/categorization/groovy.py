@@ -428,16 +428,16 @@ groovy_iter2 = [
 groovy_iter3 = [
     GroovyBug(
         "1.GROOVY-5411",
-        [],
+        [pc.StandardFeatures()],
         False,
-        sy.Runtime(), # MissingMethodException
+        sy.Runtime(sy.MissingMethodException()),
         rc.MissingCase(),
-        ct.Environment(),
+        ct.OtherSemanticChecking(),
         8
     ),
     GroovyBug(
         "2.GROOVY-8961",
-        [pc.Collections(), pc.ParameterizedTypes()],
+        [pc.Collections(), pc.ParameterizedTypes(), pc.Property()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -445,12 +445,16 @@ groovy_iter3 = [
         6
     ),
     GroovyBug(
-        "3.GROOVY-7145",
-        [pc.SafeNavigationOperator()],
+        "3.GROOVY-6787",
+        [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
+         pc.BoundedPolymorphism(),
+         pc.ParameterizedTypes(),
+         pc.Collections()],
         True,
-        sy.Runtime(sy.NullPointerException()),
-        rc.MissingCase(),
-        ct.Mechanics(),
+        sy.Runtime(sy.ClassCastException()),
+        rc.IncorrectComputation(),
+        ct.Inference(),
         11
     ),
     GroovyBug(
@@ -458,6 +462,7 @@ groovy_iter3 = [
         [pc.JavaInterop(),
          pc.ParameterizedFunctions(),
          pc.Collections(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(),
          pc.Arrays(),
          pc.Enums()],
@@ -472,7 +477,7 @@ groovy_iter3 = [
         [pc.Collections(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectComputation(),
+        rc.MissingCase(), # IncorrectComputation
         ct.Inference(),
         2
     ),

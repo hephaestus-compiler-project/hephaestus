@@ -435,6 +435,19 @@ class VarTypeInference(Characteristic):
     is_common = True
 
 
+class BuilderInference(Characteristic):
+    """
+    The test contains BuilderInference annotations (kotlin only).
+
+    Example:
+       fun <K> foo(@BuilderInference block: Inv<K>.() -> Unit) {}
+    """
+    name = "Variable type inference"
+    category = TypeInference()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class ParamTypeInference(Characteristic):
     """
     The test case contains a function or lambda whose parameter types are

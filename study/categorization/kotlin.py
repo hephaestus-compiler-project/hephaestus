@@ -471,11 +471,15 @@ kotlin_iter3 = [
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.Lambdas(),
+         pc.VarTypeInference(),
+         pc.BuilderInference(),
+         pc.TypeArgsInference(),
+         pc.ExtensionFunctions(),
          pc.FunctionTypes()],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectComputation(),
-        ct.Environment(),
+        rc.WrongParams(),
+        ct.Inference(),
         11
     ),
     KotlinBug(
@@ -484,12 +488,12 @@ kotlin_iter3 = [
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
         rc.MissingCase(),
-        ct.Environment(),
+        ct.Declarations(),
         5
     ),
     KotlinBug(
         "3.KT-9134",
-        [pc.Nullables(), pc.Lambdas()],
+        [pc.Nullables(), pc.Lambdas(), pc.FlowTyping()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -498,27 +502,29 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "4.KT-35172",
-        [pc.Nullables(), pc.ParameterizedFunctions(), pc.Cast(),
+        [pc.Nullables(), pc.ParameterizedFunctions(),
          pc.ExtensionFunctions(), pc.Lambdas(), pc.ElvisOperator(),
-         pc.SafeNavigationOperator()],
+         pc.SafeNavigationOperator(), pc.TypeArgsInference()],
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression(),
+        ct.Inference(),
         5
     ),
     KotlinBug(
         "5.KT-41644",
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(),
             pc.FBounded(),
             pc.SealedClasses(),
+            pc.NestedDeclaration(),
             pc.Cast()
         ],
         True,
         sy.CompilationPerformance(),
-        rc.InsufficientAlgorithmImplementation(),
+        rc.IncorrectComputation(),
         ct.Inference(),
         41
     ),
