@@ -371,7 +371,7 @@ class TypeSubstitution(Transformation):
         if var_decl:
             # This function has already declared a ret variable.
             if isinstance(node.body.body[0], ast.VariableDeclaration) and \
-                    node.body.body[0].name == 'ret':
+                    node.body.body[0].name == var_decl.name:
                 if_body = ast.Block(deepcopy(node.body.body[1:]))
                 ret_var = [var_decl]
             else:
@@ -456,7 +456,7 @@ class TypeSubstitution(Transformation):
             # return type
             if not isinstance(new_node.get_type(), tp.AbstractType):
                 var_decl = self.generate_variable_declaration(
-                    "ret", new_node.get_type())
+                    utils.random.word(), new_node.get_type())
                 self.program.context.add_var(self._namespace, var_decl.name,
                                              var_decl)
         use_var = False
