@@ -39,3 +39,9 @@ def gen_bool_constant(expr_type=None):
 # pylint: disable=unused-argument
 def gen_char_constant(expr_type=None):
     return ast.CharConstant(utils.random.char())
+
+
+def gen_empty_array(expr_type=None):
+    if expr_type is None:
+        import pdb; pdb.set_trace()
+    return ast.ArrayExpr(expr_type)

@@ -1,7 +1,7 @@
 # pylint: disable=abstract-method
 from abc import ABC, abstractmethod
 
-from src.ir.types import Builtin
+from src.ir.types import Builtin, TypeConstructor, TypeParameter, Type
 
 
 class BuiltinFactory(ABC):
@@ -65,6 +65,9 @@ class BuiltinFactory(ABC):
     def get_string_type(self):
         pass
 
+    def get_array_type(self):
+        pass
+
     def get_non_nothing_types(self):
         return [
             self.get_any_type(),
@@ -78,7 +81,8 @@ class BuiltinFactory(ABC):
             self.get_big_decimal_type(),
             self.get_boolean_type(),
             self.get_char_type(),
-            self.get_string_type()
+            self.get_string_type(),
+            # FIXME self.get_array_type()
         ]
 
     def get_number_types(self):
@@ -181,6 +185,12 @@ class BooleanType(AnyType):
         self.supertypes.append(AnyType())
 
 
+class ArrayType(TypeConstructor):
+    def __init__(self, name="Array"):
+        super().__init__(name, [TypeParameter("T")])
+        self.supertypes.append(AnyType())
+
+
 ### WARNING: use them only for testing ###
 Any = AnyType()
 Nothing = NothingType()
@@ -196,5 +206,6 @@ BigDecimal = BigDecimalType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
+Array = ArrayType()
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
                    Double, Char, String, Boolean, BigDecimal]

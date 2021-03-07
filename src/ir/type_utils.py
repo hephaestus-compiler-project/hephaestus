@@ -125,6 +125,12 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
     if etype == kt.Any:
         return None
 
+    if isinstance(etype, tp.TypeParameter):
+        if etype.bound is None or etype.bound == kt.Any:
+            return choose_type(types, only_regular=True)
+        else:
+            etype = etype.bound
+
     types = [_cls2type(t) for t in types]
     supertypes = find_supertypes(etype, types, include_self=True,
                                  concrete_only=True)
@@ -451,3 +457,9 @@ def node_in_expr(node: ast.Node, expr: ast.Expr):
             return True
         to_visit.extend(expression.children())
     return False
+
+
+def is_builtin(t, builtin_factory):
+    return isinstance(t, tp.Builtin) or (
+        t.name == builtin_factory.get_array_type().name
+    )

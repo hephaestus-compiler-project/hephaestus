@@ -20,6 +20,7 @@ class ASTVisitor():
             ast.RealConstant: self.visit_real_constant,
             ast.CharConstant: self.visit_char_constant,
             ast.StringConstant: self.visit_string_constant,
+            ast.ArrayExpr: self.visit_array_expr,
             ast.BooleanConstant: self.visit_boolean_constant,
             ast.Variable: self.visit_variable,
             ast.LogicalExpr: self.visit_logical_expr,
@@ -82,6 +83,10 @@ class ASTVisitor():
     def visit_string_constant(self, node):
         raise NotImplementedError(
             'visit_string_constant() must be implemented')
+
+    def visit_array_expr(self, node):
+        raise NotImplementedError(
+            'visit_array_expr() must be implemented')
 
     def visit_boolean_constant(self, node):
         raise NotImplementedError(
@@ -171,6 +176,9 @@ class DefaultVisitor(ASTVisitor):
     def visit_string_constant(self, node):
         return self._visit_node(node)
 
+    def visit_array_expr(self, node):
+        return self._visit_node(node)
+
     def visit_boolean_constant(self, node):
         return self._visit_node(node)
 
@@ -217,6 +225,8 @@ class DefaultVisitorUpdate(DefaultVisitor):
         children = node.children()
         new_children = []
         for c in children:
+            if not c:
+                import pdb; pdb.set_trace()
             new_children.append(c.accept(self))
         node.update_children(new_children)
         return node

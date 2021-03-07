@@ -603,6 +603,25 @@ class StringConstant(Constant):
         return '"{}"'.format(self.literal)
 
 
+class ArrayExpr(Expr):
+    def __init__(self, array_type):
+        self.array_type = array_type
+
+    def children(self):
+        return []
+
+    def update_children(self, children):
+        pass
+
+    def __str__(self):
+        return "{}[]".format(str(self.array_type))
+
+    def is_equal(self, other):
+        if isinstance(other, ArrayExpr):
+            return self.literal == other.literal
+        return False
+
+
 class Variable(Expr):
     def __init__(self, name: str):
         self.name = name
