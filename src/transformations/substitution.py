@@ -42,19 +42,19 @@ class ValueSubstitution(Transformation):
         if self.bt_factory.get_any_type() in self.types:
             self.types.remove(self.bt_factory.get_any_type())
         self.generators = {
-            self.bt_factory.get_boolean_type(): gu.gen_bool_constant,
-            self.bt_factory.get_char_type(): gu.gen_char_constant,
-            self.bt_factory.get_string_type(): gu.gen_string_constant,
-            self.bt_factory.get_number_type(): gu.gen_integer_constant,
-            self.bt_factory.get_integer_type(): gu.gen_integer_constant,
-            self.bt_factory.get_byte_type(): gu.gen_integer_constant,
-            self.bt_factory.get_short_type(): gu.gen_integer_constant,
-            self.bt_factory.get_long_type(): gu.gen_integer_constant,
-            self.bt_factory.get_float_type(): \
+            self.bt_factory.get_boolean_type().name: gu.gen_bool_constant,
+            self.bt_factory.get_char_type().name: gu.gen_char_constant,
+            self.bt_factory.get_string_type().name: gu.gen_string_constant,
+            self.bt_factory.get_number_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_integer_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_byte_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_short_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_long_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_float_type().name: \
                 lambda: gu.gen_real_constant(
                     self.bt_factory.get_float_type()),
-            self.bt_factory.get_double_type(): gu.gen_real_constant,
-            self.bt_factory.get_big_decimal_type(): gu.gen_real_constant,
+            self.bt_factory.get_double_type().name: gu.gen_real_constant,
+            self.bt_factory.get_big_decimal_type().name: gu.gen_real_constant,
         }
 
     def _generate_new(self, class_decl, class_type, params_map):
@@ -65,9 +65,9 @@ class ValueSubstitution(Transformation):
                   for f in class_decl.fields])
 
     def generate_new(self, etype):
-        class_decl = self.generator.context.get_decl(
-            ast.GLOBAL_NAMESPACE, etype.name)
         if isinstance(etype, tp.ParameterizedType):
+            class_decl = self.generator.context.get_decl(
+                ast.GLOBAL_NAMESPACE, etype.name)
             # The etype is a parameterized type, so this case comes from
             # variance. Therefore, we first need to get the class_declaration
             # of this type, and initialize the map of type parameters.
@@ -85,6 +85,13 @@ class ValueSubstitution(Transformation):
                 etype, self.types)
         else:
             class_type, params_map = etype, {}
+
+        if tu.is_builtin(class_type, self.bt_factory):
+            # Now, we support only builtin Arrays.
+            return gu.gen_empty_array(class_type)
+
+        class_decl = self.generator.context.get_decl(
+            ast.GLOBAL_NAMESPACE, etype.name)
         return self._generate_new(class_decl, class_type, params_map)
 
     def visit_equality_expr(self, node):
@@ -106,7 +113,8 @@ class ValueSubstitution(Transformation):
             return node
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
-        generate = self.generators.get(sub_c, lambda: self.generate_new(sub_c))
+        generate = self.generators.get(
+            sub_c.name, lambda: self.generate_new(sub_c))
         return generate()
 
 

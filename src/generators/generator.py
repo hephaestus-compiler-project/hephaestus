@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 from src import utils as ut
 from src.generators import utils as gu
-from src.ir import ast, types
+from src.ir import ast, types, type_utils as tu
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
@@ -44,7 +44,7 @@ class Generator():
         self.depth += 1
         etype = self.gen_type()
         prev = self._new_from_class
-        if not isinstance(etype, types.Builtin):
+        if not tu.is_builtin(etype, self.bt_factory):
             # We need this because if are going to create two
             # 'New' expressions, they must stem from the same
             # constructor.
@@ -255,16 +255,19 @@ class Generator():
         if not class_decls or ut.random.bool():
             builtins = self.ret_builtin_types if ret_types \
                 else self.builtin_types
-            return ut.random.choice(builtins)
-        cls_type = ut.random.choice(list(class_decls.values())).get_type()
-        if not isinstance(cls_type, types.TypeConstructor):
-            return cls_type
+            etype = ut.random.choice(builtins)
+        else:
+            etype = ut.random.choice(list(class_decls.values())).get_type()
+        if not isinstance(etype, types.TypeConstructor):
+            return etype
         # We have to instantiate type constructor with random type arguments.
         t_args = []
-        for _ in cls_type.type_parameters:
+        for _ in etype.type_parameters:
             # FIXME: use user-defined types too.
-            t_args.append(ut.random.choice(self.ret_builtin_types))
-        return cls_type.new(t_args)
+            candiate_types = list(self.ret_builtin_types)
+            candiate_types.remove(self.bt_factory.get_array_type())
+            t_args.append(ut.random.choice(candiate_types))
+        return etype.new(t_args)
 
     def gen_variable_decl(self, etype=None, only_leaves=False,
                           expr=None):
@@ -303,7 +306,7 @@ class Generator():
         for var in self.context.get_vars(self.namespace).values():
             var_type = var.get_type()
             # We are only interested in variables of class types.
-            if isinstance(var_type, types.Builtin):
+            if tu.is_builtin(var_type, self.bt_factory):
                 continue
             cls = self._get_class(var_type)
             assert cls is not None
@@ -522,7 +525,7 @@ class Generator():
                 variables.append((None, var))
                 continue
             var_type = var.get_type()
-            if isinstance(var_type, types.Builtin):
+            if tu.is_builtin(var_type, self.bt_factory):
                 continue
             cls = self._get_class(var_type)
             for field in cls.fields:
@@ -614,17 +617,18 @@ class Generator():
             lambda x: self.gen_new(x, only_leaves, subtype),
         ]
         constant_candidates = {
-            self.bt_factory.get_number_type(): gu.gen_integer_constant,
-            self.bt_factory.get_integer_type(): gu.gen_integer_constant,
-            self.bt_factory.get_byte_type(): gu.gen_integer_constant,
-            self.bt_factory.get_short_type(): gu.gen_integer_constant,
-            self.bt_factory.get_long_type(): gu.gen_integer_constant,
-            self.bt_factory.get_float_type(): gu.gen_real_constant,
-            self.bt_factory.get_double_type(): gu.gen_real_constant,
-            self.bt_factory.get_big_decimal_type(): gu.gen_real_constant,
-            self.bt_factory.get_char_type(): gu.gen_char_constant,
-            self.bt_factory.get_string_type(): gu.gen_string_constant,
-            self.bt_factory.get_boolean_type(): gu.gen_bool_constant
+            self.bt_factory.get_number_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_integer_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_byte_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_short_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_long_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_float_type().name: gu.gen_real_constant,
+            self.bt_factory.get_double_type().name: gu.gen_real_constant,
+            self.bt_factory.get_big_decimal_type().name: gu.gen_real_constant,
+            self.bt_factory.get_char_type().name: gu.gen_char_constant,
+            self.bt_factory.get_string_type().name: gu.gen_string_constant,
+            self.bt_factory.get_boolean_type().name: gu.gen_bool_constant,
+            self.bt_factory.get_array_type().name: gu.gen_empty_array,
         }
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
@@ -646,7 +650,7 @@ class Generator():
                     lambda x: self.gen_assignment(x, only_leaves)]
 
         if self.depth >= self.max_depth or only_leaves:
-            gen_con = constant_candidates.get(expr_type)
+            gen_con = constant_candidates.get(expr_type.name)
             if gen_con is not None:
                 return [gen_con]
             gen_var = (
@@ -660,7 +664,7 @@ class Generator():
                 # of a specific type, then we should avoid variable creation.
                 leaf_canidates.append(gen_variable)
             return leaf_canidates
-        con_candidate = constant_candidates.get(expr_type)
+        con_candidate = constant_candidates.get(expr_type.name)
         if con_candidate is not None:
             candidates = [con_candidate] + binary_ops.get(expr_type, [])
             if not exclude_var:

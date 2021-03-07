@@ -32,6 +32,17 @@ def append_to(visit):
     return inner
 
 
+def get_name(t):
+    t_constructor = getattr(t, 't_constructor', None)
+    if not t_constructor:
+        return t.get_name()
+    if isinstance(t_constructor, gt.ArrayType):
+        return "{}[]".format(get_name(t.type_args[0]))
+    else:
+        return "{}<{}>".format(t.name, ",".join([get_name(ta)
+                                                 for ta in t.type_args]))
+
+
 class GroovyTranslator(ASTVisitor):
 
     filename = "Main.groovy"
@@ -175,7 +186,7 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_super_instantiation(self, node):
-        return node.class_type.get_name()
+        return get_name(node.class_type)
 
     @append_to
     @change_namespace
@@ -186,7 +197,7 @@ class GroovyTranslator(ASTVisitor):
             interfaces = []
             for cls_inst in node.superclasses:
                 cls_name = cls_inst.class_type.name
-                cls_inst = cls_inst.class_type.get_name()
+                cls_inst = get_name(cls_inst.class_type)
                 cls_decl = self.context.get_classes(
                     self._namespace, glob=True)[cls_name]
                 if cls_decl.class_type == ast.ClassDeclaration.INTERFACE:
@@ -199,7 +210,7 @@ class GroovyTranslator(ASTVisitor):
             # Maybe we have to do for the transitive closure
             constructor_fields = OrderedDict()
             for field in node.fields:
-                constructor_fields[field.name] = field.field_type.get_name()
+                constructor_fields[field.name] = get_name(field.field_type)
             return constructor_fields
 
         def construct_constructor():
@@ -278,7 +289,7 @@ class GroovyTranslator(ASTVisitor):
     def visit_type_param(self, node):
         return "{name}{bound}".format(
             name=node.name,
-            bound=' extends ' + node.bound.get_name()
+            bound=' extends ' + get_name(node.bound)
             if node.bound is not None else ''
         )
 
@@ -295,7 +306,7 @@ class GroovyTranslator(ASTVisitor):
         var_type = ""
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE):
-            var_type = node.inferred_type.get_name() + " "
+            var_type = get_name(node.inferred_type) + " "
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
@@ -314,13 +325,13 @@ class GroovyTranslator(ASTVisitor):
     def visit_field_decl(self, node):
         return "public {final}{field_type} {name}".format(
             final="final " if node.is_final else "",
-            field_type=node.field_type.get_name(),
+            field_type=get_name(node.field_type),
             name=node.name
         )
 
     @append_to
     def visit_param_decl(self, node):
-        res = node.param_type.get_name() + " " + node.name
+        res = get_name(node.param_type) + " " + node.name
         return res
 
     @append_to
@@ -375,7 +386,7 @@ class GroovyTranslator(ASTVisitor):
                 ident=self.get_ident(old_ident=old_ident),
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
-                ret_type=node.inferred_type.get_name(),
+                ret_type=get_name(node.inferred_type),
                 name=node.name,
                 params=", ".join(param_res),
                 body=body
@@ -440,6 +451,13 @@ class GroovyTranslator(ASTVisitor):
         return "{ident}\"{literal}\"".format(
             ident=self.get_ident(),
             literal=node.literal
+        )
+
+    @append_to
+    def visit_array_expr(self, node):
+        return "{ident}new {array}[0]".format(
+            ident=self.get_ident(),
+            array=get_name(node.array_type.type_args[0])
         )
 
     @append_to
@@ -518,7 +536,7 @@ class GroovyTranslator(ASTVisitor):
             ident=self.get_ident(old_ident=old_ident),
             expr=children_res[0],
             is_lit="!instanceof" if node.operator.is_not else "instanceof",
-            type_to_check=node.rexpr.get_name())
+            type_to_check=get_name(node.rexpr))
         self.ident = old_ident
         return res
 
@@ -537,7 +555,7 @@ class GroovyTranslator(ASTVisitor):
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
             cls = node.class_type.name + "<>"
         else:
-            cls = node.class_type.get_name()
+            cls = get_name(node.class_type)
         res = "{ident}new {cls}({args})".format(
             ident=self.get_ident(),
             cls=cls,
