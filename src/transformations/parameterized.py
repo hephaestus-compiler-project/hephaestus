@@ -200,14 +200,6 @@ class ParameterizedSubstitution(Transformation):
                 possible_types = \
                     self.program.bt_factory.get_non_nothing_types()
             else:
-                possible_types = []
-                if tp.variance == CONTRAVARIANT:
-                    possible_types = tu.find_supertypes(
-                        tp.constraint, self.types, include_self=True,
-                        concrete_only=True)
-                if tp.variance == COVARIANT:
-                    possible_types = tu.find_subtypes(
-                        tp.constraint, self.types, True, concrete_only=True)
                 # To preserve correctness, the only possible type is
                 # tp.constraint. For example,
                 #
