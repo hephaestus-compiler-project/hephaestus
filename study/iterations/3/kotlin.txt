@@ -3,3 +3,8 @@ https://youtrack.jetbrains.com/issue/KT-2277,https://github.com/jetbrains/kotlin
 https://youtrack.jetbrains.com/issue/KT-9134,https://github.com/jetbrains/kotlin/commit/7dbd5b75cc4ccac096558386e36e021d742bf0ed
 https://youtrack.jetbrains.com/issue/KT-35172,https://github.com/jetbrains/kotlin/commit/775eb6721993974598d6a3e5be9f975a0ca6ddb1
 https://youtrack.jetbrains.com/issue/KT-41644,https://github.com/jetbrains/kotlin/commit/0857b9c9e750ed606ed9d1dd0a10c9d9efb35068
+https://youtrack.jetbrains.com/issue/KT-30953,https://github.com/jetbrains/kotlin/commit/cf82efb49fde621ffde123a4094a3ebdd72d1070
+https://youtrack.jetbrains.com/issue/KT-39470,https://github.com/jetbrains/kotlin/commit/1f9a5834c3c660d3f9ebd48a5ad058167a93c2f8
+https://youtrack.jetbrains.com/issue/KT-6999,https://github.com/JetBrains/kotlin/commit/66023e6f319bfdacee69996526be9fc0bd68487a
+https://youtrack.jetbrains.com/issue/KT-13685,https://github.com/jetbrains/kotlin/commit/c8b30d3310c990193414d7f82bedd50189e0109c
+https://youtrack.jetbrains.com/issue/KT-5511,https://github.com/jetbrains/kotlin/commit/b9e45bcd54c90a5a7b70ee4cfecba9d06079f4d4
