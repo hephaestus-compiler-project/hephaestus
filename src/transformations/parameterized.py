@@ -24,6 +24,13 @@ def get_type_params_names(total):
     return random_caps
 
 
+def find_type_param_info(type_params, type_param_name):
+    for i, tp in enumerate(type_params):
+        if tp.name == type_param_name:
+            return i, tp
+    return None
+
+
 def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
                           variance, builtin_types):
     def bounds_filter(bound):
@@ -141,6 +148,9 @@ class ParameterizedSubstitution(Transformation):
         self._selected_class_decl: ast.ClassDeclaration = None
         self._type_constructor_decl: ast.ClassDeclaration = None
         self._parameterized_type: types.ParameterizedType = None
+        # We may have different instantiations based on context.
+        self._parameterized_supers: dict = {}
+        self._current_cls: ast.ClassDeclaration = None
 
         self._type_params: List[TP] = []
 
@@ -280,13 +290,13 @@ class ParameterizedSubstitution(Transformation):
                 return tp.type_param
         return old_type
 
-    def _update_type(self, node, attr):
+    def _update_type(self, node, attr, new_type):
         """Replace _selected_class type occurrences with _parameterized_type
         """
         attr_type = getattr(node, attr, None)
         if not attr_type:
             return node
-        new_type = self.tupd.update_type(attr_type, self._parameterized_type)
+        new_type = self.tupd.update_type(attr_type, new_type)
         setattr(node, attr, new_type)
         return node
 
@@ -367,7 +377,10 @@ class ParameterizedSubstitution(Transformation):
 
     @change_namespace
     def visit_class_decl(self, node):
+        prev = self._current_cls
+        self._current_cls = node
         new_node = super().visit_class_decl(node)
+        self._current_cls = prev
         self.program.context.add_class(ast.GLOBAL_NAMESPACE, new_node.name,
                                        new_node)
         return new_node
@@ -376,7 +389,7 @@ class ParameterizedSubstitution(Transformation):
         if self._discard_node():
             return node
         new_node = super().visit_type_param(node)
-        return self._update_type(new_node, 'bound')
+        return self._update_type(new_node, 'bound', self._parameterized_type)
 
     def visit_field_decl(self, node):
         # Note that we cannot parameterize a field having the keyword
@@ -390,7 +403,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return node
         new_node = super().visit_field_decl(node)
-        new_node = self._update_type(new_node, 'field_type')
+        new_node = self._update_type(new_node, 'field_type',
+                                     self._parameterized_type)
         self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
@@ -402,7 +416,8 @@ class ParameterizedSubstitution(Transformation):
         if self._in_find_classes_blacklist:
             return node
         new_node = super().visit_param_decl(node)
-        new_node = self._update_type(new_node, 'param_type')
+        new_node = self._update_type(new_node, 'param_type',
+                                     self._parameterized_type)
         self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
@@ -412,10 +427,25 @@ class ParameterizedSubstitution(Transformation):
         new_node = super().visit_var_decl(node)
         if self._in_find_classes_blacklist:
             return new_node
-        new_node = self._update_type(new_node, 'var_type')
-        new_node = self._update_type(new_node, 'inferred_type')
+        new_node = self._update_type(new_node, 'var_type',
+                                     self._parameterized_type)
+        new_node = self._update_type(new_node, 'inferred_type',
+                                     self._parameterized_type)
         self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
+
+    def _update_super_instantiations(self, source_cls, new_argument, index):
+        if not source_cls:
+            return
+        classes = list(self.program.context.get_classes(
+            ast.GLOBAL_NAMESPACE, only_current=True).values())
+        for cls in classes:
+            if cls.superclasses:
+                super_cls = cls.superclasses[0]
+                if super_cls.class_type.name == source_cls.name:
+                    new_type = deepcopy(self._parameterized_type)
+                    new_type.type_args[index] = new_argument
+                    self._parameterized_supers[cls.name] = new_type
 
     @change_namespace
     def visit_func_decl(self, node):
@@ -433,12 +463,60 @@ class ParameterizedSubstitution(Transformation):
         ret_type = get_connected_type_param(
             self._use_graph, self._type_params, return_gnode)
         if ret_type:
+            tparam_info = find_type_param_info(self._type_params,
+                                               ret_type.name)
+            if tparam_info:
+                i, tp = tparam_info
+                # The initial return type of a function (which is going to be
+                # a type parameter now) is supertype of the current contraint.
+                #
+                # Consider the following program
+                # class X(val x: Int) {
+                #    fun foo(): Any {
+                #      return x;
+                #    }
+                # }
+                # class Y(override val x: Int): X(1) {
+                #   override fun foo(): Any = 1
+                # }
+
+                # After this mutation, we have
+                # class X<T>(val x: T) {
+                #    fun foo(): T {
+                #      return x;
+                #    }
+                # }
+                # class Y(override val x: Int): X<Int>(1) {
+                #   override fun foo(): Any = 1 // here we have the error!!!!
+                # }
+
+                # Therefore, the following code proceeds as follows:
+                # if we have a function whose return type is supertype of the
+                # current constraint, update the current constraint to
+                # equal with the type of this declaration.
+                if tp.constraint and tp.constraint.is_subtype(
+                        new_node.get_type()):
+                    tp.constraint = new_node.get_type()
+                    type_param = self._type_constructor_decl.type_parameters[i]
+                    # We also need to update the bound of the type parameter
+                    # found in the declaration of parameterized class
+                    # (in case we find a conflict).
+                    if type_param.bound and not new_node.get_type().is_subtype(
+                            type_param.bound):
+                        type_param.bound = new_node.get_type()
+                    self._update_super_instantiations(
+                        self._current_cls, new_node.get_type(), i)
             copied_t = deepcopy(ret_type)
             new_node.ret_type = copied_t
             new_node.inferred_type = copied_t
+            self.program.context.add_func(self._namespace[:-1], new_node.name,
+                                          new_node)
+            return new_node
 
-        new_node = self._update_type(new_node, 'ret_type')
-        new_node = self._update_type(new_node, 'inferred_type')
+        new_node = self._update_type(new_node, 'ret_type',
+                                     self._parameterized_type)
+        new_node = self._update_type(new_node, 'inferred_type',
+                                     self._parameterized_type)
         self.program.context.add_func(self._namespace[:-1], new_node.name,
                                       new_node)
         return new_node
@@ -449,7 +527,8 @@ class ParameterizedSubstitution(Transformation):
         new_node = super().visit_new(node)
         if self._in_find_classes_blacklist:
             return new_node
-        new_node = self._update_type(new_node, 'class_type')
+        new_node = self._update_type(new_node, 'class_type',
+                                     self._parameterized_type)
         return new_node
 
     def visit_super_instantiation(self, node):
@@ -458,7 +537,10 @@ class ParameterizedSubstitution(Transformation):
         new_node = super().visit_super_instantiation(node)
         if self._in_find_classes_blacklist:
             return new_node
-        return self._update_type(new_node, 'class_type')
+
+        new_type = self._parameterized_supers.get(self._current_cls.name,
+                                                  self._parameterized_type)
+        return self._update_type(new_node, 'class_type', new_type)
 
     def visit_is(self, node):
         if self._in_select_type_params:
