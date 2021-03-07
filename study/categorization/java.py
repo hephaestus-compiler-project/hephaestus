@@ -279,7 +279,6 @@ java_iter2 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(),
         rc.AlgorithmImproperlyImplemented(),
         ct.Resolution(),
         8
@@ -419,7 +418,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.OtherSemanticCheck(),
+        ct.OtherSemanticChecking(),
         6
     ),
     JavaBug(

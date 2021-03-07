@@ -211,7 +211,7 @@ scala_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.DesignIssue(),
-        ct.Approximation(),
+        ct.Inference(),
         9
     ),
     ScalaBug(

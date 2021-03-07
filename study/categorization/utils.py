@@ -15,14 +15,14 @@ def print_characteristics():
             if len(sub_categories) > 0:
                 return characteristic.name + \
                     " -- " + characteristic.characteristic_type.name + \
-                    " (" + ", ".join(sub_categories) + ")" 
+                    " (" + ", ".join(sub_categories) + ")"
         if getattr(characteristic, "characteristic_type", None):
             return characteristic.name + " -- " + characteristic.characteristic_type.name
-        return characteristic.name 
+        return characteristic.name
     print("======Characteristics======")
     chars = {
-        g.name: [get_name(s) for s in Characteristic.__subclasses__() 
-        if s.category.__class__ == g] 
+        g.name: [get_name(s) for s in Characteristic.__subclasses__()
+        if s.category.__class__ == g]
         for g in CharacteristicCategory.__subclasses__()
     }
     for g, s in chars.items():
@@ -37,7 +37,7 @@ def print_stats(bugs):
         "Bugs": defaultdict(lambda: 0),
         "Characteristics": {
             "Categories": defaultdict(
-                lambda: {"total": 0, 
+                lambda: {"total": 0,
                          "subcategories": defaultdict(lambda: {"total": 0,
                                                       "subcategories": defaultdict(
                                                           lambda: 0)})}),
@@ -50,14 +50,19 @@ def print_stats(bugs):
     }
     for b in bugs:
         stats['Bugs'][b.language] += 1
+        visited = set()
         for c in b.characteristics:
             if isinstance(c.category, CharacteristicCategory):
                 cat = stats["Characteristics"]["Categories"][c.category.name]
-                cat["total"] += 1
+                if c.category.name not in visited:
+                    cat["total"] += 1
+                    visited.add(c.category.name)
                 cat["subcategories"][c.name]["total"] += 1
             else:
                 cat = stats["Characteristics"]["Categories"][c.category.category.name]
-                cat["total"] += 1
+                if c.category.category.name not in visited:
+                    cat["total"] += 1
+                    visited.add(c.category.category.name)
                 cat["subcategories"][c.category.name]["total"] += 1
                 subs = cat["subcategories"][c.category.name]["subcategories"]
                 subs[c.name] += 1
@@ -96,3 +101,12 @@ def print_symptoms():
             name = s.__name__ + " (" + tp.__name__ + ")"
             print_s(name, s.__doc__)
 print_symptoms()
+
+
+from kotlin import *
+from java import *
+from scala import *
+from groovy import *
+
+
+print_stats(java_iter1 + java_iter2 + scala_iter1 + scala_iter2 + kotlin_iter1 + kotlin_iter2 + groovy_iter1 + groovy_iter2)
