@@ -303,7 +303,7 @@ kotlin_iter2 = [
         3
     ),
     KotlinBug(
-        "8.KT-18129",
+        "8.KT-22517",
         [pc.Reflection(),
          pc.OperatorOverloading(),
          pc.Delegation(),
@@ -409,7 +409,7 @@ kotlin_iter2 = [
         3
     ),
     KotlinBug(
-        "17.KT-37628",
+        "17.KT-37627",
         [pc.Collections(),
          pc.Conditionals(),
          pc.Nullables(),
@@ -420,7 +420,7 @@ kotlin_iter2 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Inference(),  # constraint solving
-        7
+        5
     ),
     KotlinBug(
         "18.KT-12286",

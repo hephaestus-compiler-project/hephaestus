@@ -228,7 +228,7 @@ java_iter1 = [
         16
     ),
     JavaBug(
-        "19.JDK-7034511",
+        "19.JDK-7041019",
         [pc.Arrays(), pc.ParameterizedClasses(),
          pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
          pc.Overriding(), pc.Subtyping()
