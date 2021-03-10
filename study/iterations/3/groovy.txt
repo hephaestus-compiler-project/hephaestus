@@ -3,3 +3,8 @@ https://issues.apache.org/jira/browse/GROOVY-8961,https://github.com/apache/groo
 https://issues.apache.org/jira/browse/GROOVY-6787,https://github.com/apache/groovy/pull/221
 https://issues.apache.org/jira/browse/GROOVY-7327,https://github.com/apache/groovy/commit/f677e21bee3c66562dd58bd81d4b9a59fd552519
 https://issues.apache.org/jira/browse/GROOVY-5332,https://github.com/apache/groovy/commit/bc726169ee4422954e613776ab0f98b2c00fd7c8
+https://issues.apache.org/jira/browse/GROOVY-9327,https://github.com/apache/groovy/pull/1130
+https://issues.apache.org/jira/browse/GROOVY-6742,https://github.com/apache/groovy/commit/a466ec1894d48f107081857051c03420853d417b
+https://issues.apache.org/jira/browse/GROOVY-6504,https://github.com/groovy/groovy-core/commit/4e00a0122ce64db5287869cb97388c3b1b8b746f
+https://issues.apache.org/jira/browse/GROOVY-9518,https://github.com/apache/groovy/commit/b7ad32403f902f1ab9dc5964aab0420bfe6b8193
+https://issues.apache.org/jira/browse/GROOVY-5172,https://github.com/apache/groovy/commit/1f3302a0772be0d4d7f21a1c2bad3eceff06cce1
