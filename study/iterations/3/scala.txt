@@ -3,3 +3,8 @@ https://github.com/scala/bug/issues/5399,https://github.com/scala/scala/commit/f
 https://github.com/lampepfl/dotty/issues/7597,https://github.com/lampepfl/dotty/pull/8332
 https://github.com/scala/bug/issues/5958,https://github.com/scala/scala/pull/991/files
 https://github.com/scala/bug/issues/7872,https://github.com/scala/scala/pull/3178
+https://github.com/scala/bug/issues/2038,https://github.com/scala/scala/pull/981
+https://github.com/scala/bug/issues/5378,https://github.com/scala/scala/pull/2000
+https://github.com/scala/bug/issues/5687,https://github.com/scala/scala/pull/1087
+https://github.com/scala/bug/issues/11252,https://github.com/scala/scala/pull/9162/files
+https://github.com/scala/bug/issues/8344,https://github.com/scala/scala/pull/7680
