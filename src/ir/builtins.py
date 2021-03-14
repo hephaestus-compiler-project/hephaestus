@@ -82,7 +82,7 @@ class BuiltinFactory(ABC):
             self.get_boolean_type(),
             self.get_char_type(),
             self.get_string_type(),
-            # FIXME self.get_array_type()
+            self.get_array_type()
         ]
 
     def get_number_types(self):
@@ -208,4 +208,4 @@ String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean, BigDecimal]
+                   Double, Char, String, Boolean, BigDecimal, Array]

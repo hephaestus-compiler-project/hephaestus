@@ -259,6 +259,8 @@ def _get_available_types(types, only_regular):
         if isinstance(ptype, ast.ClassDeclaration) and (
                 ptype.class_type != ast.ClassDeclaration.REGULAR):
             continue
+        if isinstance(ptype, tp.TypeConstructor):
+            continue
         available_types.append(ptype)
     return available_types
 

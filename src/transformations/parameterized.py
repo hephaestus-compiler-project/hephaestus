@@ -202,13 +202,11 @@ class ParameterizedSubstitution(Transformation):
             type_arg = None
             if tp.variance == INVARIANT:
                 type_arg = tp.constraint if tp.constraint else \
-                    utils.random.choice(
-                        self.program.bt_factory.get_non_nothing_types())
+                    utils.random.choice(self._get_builtin_types())
                 type_args.append(type_arg)
                 continue
             if tp.constraint is None:
-                possible_types = \
-                    self.program.bt_factory.get_non_nothing_types()
+                possible_types = self._get_builtin_types()
             else:
                 # To preserve correctness, the only possible type is
                 # tp.constraint. For example,
@@ -233,7 +231,7 @@ class ParameterizedSubstitution(Transformation):
             if tp.type_param.bound:
                 possible_types = [t for t in possible_types
                                   if t.is_subtype(tp.type_param.bound)]
-            type_args.append(utils.random.choice(list(possible_types)))
+            type_args.append(utils.random.choice(possible_types))
         return self._type_constructor_decl.get_type().new(type_args)
 
     def _propagate_type_parameter(self, gnode: GNode,
@@ -253,6 +251,19 @@ class ParameterizedSubstitution(Transformation):
                 setattr(decl, attr, type_param)
                 if hasattr(decl, 'inferred_type'):
                     setattr(decl, 'inferred_type', type_param)
+
+    def _get_builtin_types(self):
+        builtin_types = list(self.program.bt_factory.get_non_nothing_types())
+        if self.language in ['groovy', 'java']:
+            # In Java and Groovy, it is not allowed to create a type parameter
+            # whose bound is an Array.
+            new_types = []
+            for t in builtin_types:
+                if t.name != 'Array':
+                    new_types.append(t)
+
+            return new_types
+        return builtin_types
 
     def _use_type_parameter(self, namespace, node, old_type):
         """Select a node to replace its concrete type with a type parameter.
@@ -285,7 +296,7 @@ class ParameterizedSubstitution(Transformation):
                     old_type,
                     self.types,
                     tp.variance,
-                    self.program.bt_factory.get_non_nothing_types())
+                    self._get_builtin_types())
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return old_type
@@ -308,7 +319,7 @@ class ParameterizedSubstitution(Transformation):
                     None,
                     self.types,
                     self._get_random_variance(),
-                    self.program.bt_factory.get_non_nothing_types())
+                    self._get_builtin_types())
 
     def _select_type_params(self, node) -> ast.Node:
         self._in_select_type_params = True
