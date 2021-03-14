@@ -55,8 +55,6 @@ class Program(Node):
                                              only_current=True)
 
     def get_types(self):
-        # FIXME: Fix circular import
-
         usr_types = [d for d in self.declarations
                      if isinstance(d, ClassDeclaration)]
         ttypes = usr_types + self.bt_factory.get_non_nothing_types()
