@@ -227,6 +227,11 @@ class TypeCreation(Transformation):
         self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
+    def visit_array_expr(self, node):
+        new_node = super().visit_array_expr(node)
+        self.update_type(new_node, 'array_type')
+        return new_node
+
     def visit_type_param(self, node):
         new_node = super().visit_type_param(node)
         self.update_type(new_node, 'bound')

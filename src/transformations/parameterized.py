@@ -218,21 +218,24 @@ class ParameterizedSubstitution(Transformation):
 
     def _get_builtin_types(self):
         builtin_types = list(self.program.bt_factory.get_non_nothing_types())
-        if self.language in ['groovy', 'java']:
-            # In Java and Groovy, it is not allowed to create a type parameter
-            # whose bound is an Array.
-            new_types = []
-            for t in builtin_types:
-                if t.name != 'Array':
-                    new_types.append(t)
+        new_types = []
+        for t in builtin_types:
+            # In Java, Groovy and Kotlin, it is not allowed to create a type
+            # parameter whose bound is an Array.
+            if self.language in ['groovy', 'java', 'kotlin'] and (
+                    t.name == 'Array'):
+                continue
 
-            return new_types
-        return builtin_types
+            if t.name == 'Array':
+                t, _ = tu.instantiate_type_constructor(t, self.types)
+            new_types.append(t)
+        return new_types
 
     def _create_type_parameter(self, name: str, type_constraint: types.Type,
                                ptypes, variance, builtin_types):
         def bounds_filter(bound):
-            if self.language in ['groovy', 'java'] and bound.name == 'Array':
+            if self.language in ['groovy', 'java', 'kotlin'] and (
+                    bound.name == 'Array'):
                 return False
             # In case the constraint is a parameterized type, then we should
             # check that the bound confronts to the constraints of
@@ -431,6 +434,16 @@ class ParameterizedSubstitution(Transformation):
         new_node = self._update_type(new_node, 'param_type',
                                      self._parameterized_type)
         self.program.context.add_var(self._namespace, new_node.name, new_node)
+        return new_node
+
+    def visit_array_expr(self, node):
+        if self._in_select_type_params:
+            return node
+        if self._in_find_classes_blacklist:
+            return node
+        new_node = super().visit_array_expr(node)
+        new_node = self._update_type(new_node, 'array_type',
+                                     self._parameterized_type)
         return new_node
 
     def visit_var_decl(self, node):

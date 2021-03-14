@@ -227,6 +227,10 @@ class KotlinTranslator(ASTVisitor):
     def visit_boolean_constant(self, node):
         self._children_res.append(" " * self.ident + str(node.literal))
 
+    def visit_array_expr(self, node):
+        self._children_res.append("{}emptyArray<{}>()".format(
+            " " * self.ident, node.array_type.type_args[0].get_name()))
+
     def visit_variable(self, node):
         self._children_res.append(" " * self.ident + node.name)
 
