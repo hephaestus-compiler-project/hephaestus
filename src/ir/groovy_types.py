@@ -185,6 +185,7 @@ class BooleanType(ObjectType):
 
 class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
+        # In Groovy, arrays are covariant.
         super().__init__(name, [tp.TypeParameter(
             "T", variance=tp.TypeParameter.COVARIANT)])
         self.supertypes.append(ObjectType())

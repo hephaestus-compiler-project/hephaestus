@@ -455,9 +455,22 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_array_expr(self, node):
-        return "{ident}new {array}[0]".format(
+        if not node.length:
+            return "{ident}new {array}[0]".format(
+                ident=self.get_ident(),
+                array=get_name(node.array_type.type_args[0])
+            )
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+        return "{ident}new {etype}{{{exprs}}}".format(
             ident=self.get_ident(),
-            array=get_name(node.array_type.type_args[0])
+            exprs=", ".join(children_res),
+            etype=get_name(node.array_type)
         )
 
     @append_to

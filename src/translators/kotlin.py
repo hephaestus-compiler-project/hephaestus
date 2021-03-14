@@ -228,8 +228,21 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(" " * self.ident + str(node.literal))
 
     def visit_array_expr(self, node):
-        self._children_res.append("{}emptyArray<{}>()".format(
-            " " * self.ident, node.array_type.type_args[0].get_name()))
+        if not node.length:
+            self._children_res.append("{}emptyArray<{}>()".format(
+                " " * self.ident, node.array_type.type_args[0].get_name()))
+            return
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+        return self._children_res.append("{}arrayOf<{}>({})".format(
+            " " * self.ident,
+            node.array_type.type_args[0].get_name(),
+            ", ".join(children_res)))
 
     def visit_variable(self, node):
         self._children_res.append(" " * self.ident + node.name)

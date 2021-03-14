@@ -249,6 +249,15 @@ class Generator():
             functions=funcs
         )
 
+    def gen_array_expr(self, expr_type, only_leaves=False, subtype=True):
+        arr_len = ut.random.integer(0, 3)
+        etype = expr_type.type_args[0]
+        exprs = [
+            self.generate_expr(etype, only_leaves=only_leaves, subtype=subtype)
+            for _ in range(arr_len)
+        ]
+        return ast.ArrayExpr(expr_type, arr_len, exprs)
+
     def gen_type(self, ret_types=True):
         class_decls = self.context.get_classes(self.namespace)
         # Randomly choose whether we should generate a builtin type or not.
@@ -628,7 +637,9 @@ class Generator():
             self.bt_factory.get_char_type().name: gu.gen_char_constant,
             self.bt_factory.get_string_type().name: gu.gen_string_constant,
             self.bt_factory.get_boolean_type().name: gu.gen_bool_constant,
-            self.bt_factory.get_array_type().name: gu.gen_empty_array,
+            self.bt_factory.get_array_type().name: (
+                lambda x: self.gen_array_expr(x, only_leaves, subtype=subtype)
+            ),
         }
         binary_ops = {
             self.bt_factory.get_boolean_type(): [

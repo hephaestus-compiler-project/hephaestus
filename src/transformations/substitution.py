@@ -53,7 +53,9 @@ class ValueSubstitution(Transformation):
             self.bt_factory.get_float_type().name: gu.gen_real_constant,
             self.bt_factory.get_double_type().name: gu.gen_real_constant,
             self.bt_factory.get_big_decimal_type().name: gu.gen_real_constant,
-            self.bt_factory.get_array_type().name: gu.gen_empty_array,
+            self.bt_factory.get_array_type().name: (
+                lambda x: self.generator.gen_array_expr(x, only_leaves=True)
+            ),
         }
 
     def _generate_new(self, class_decl, class_type, params_map):
@@ -84,10 +86,6 @@ class ValueSubstitution(Transformation):
                 etype, self.types)
         else:
             class_type, params_map = etype, {}
-
-        if tu.is_builtin(class_type, self.bt_factory):
-            # Now, we support only builtin Arrays.
-            return gu.gen_empty_array(class_type)
 
         class_decl = self.generator.context.get_decl(
             ast.GLOBAL_NAMESPACE, etype.name)

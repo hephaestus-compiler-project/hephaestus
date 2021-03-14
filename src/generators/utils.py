@@ -1,9 +1,6 @@
 from src import utils
 from src.ir import ast
 
-import src.ir.types as tp
-import src.ir.builtins as bt
-
 
 def gen_identifier(ident_type=None):
     word = utils.random.word()
@@ -39,7 +36,3 @@ def gen_bool_constant(expr_type=None):
 # pylint: disable=unused-argument
 def gen_char_constant(expr_type=None):
     return ast.CharConstant(utils.random.char())
-
-
-def gen_empty_array(expr_type=None):
-    return ast.ArrayExpr(expr_type)

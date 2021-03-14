@@ -613,21 +613,26 @@ class StringConstant(Constant):
 
 
 class ArrayExpr(Expr):
-    def __init__(self, array_type):
+    def __init__(self, array_type: types.Type, length: int, exprs: List[Expr]):
+        self.length = length
         self.array_type = array_type
+        self.exprs = exprs
 
     def children(self):
-        return []
+        return self.exprs
 
     def update_children(self, children):
-        pass
+        super().update_children(children)
+        self.exprs = children
 
     def __str__(self):
         return "{}[]".format(str(self.array_type))
 
     def is_equal(self, other):
         if isinstance(other, ArrayExpr):
-            return self.array_type == other.array_type
+            return (self.array_type == other.array_type and
+                    self.length == other.length and
+                    self.exprs == other.exprs)
         return False
 
 
