@@ -1,11 +1,12 @@
 # pylint: disable=dangerous-default-value
 from typing import List
 
+import src.ir.type_utils as tu
+import src.ir.types as types
 from src import utils
-from src.ir.node import Node
-from src.ir import types
-from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
+from src.ir.builtins import BuiltinFactory
+from src.ir.node import Node
 
 
 GLOBAL_NAMESPACE = ('global',)
@@ -18,7 +19,7 @@ def check_list_eq(first, second):
 
 
 def check_default_eq(first, second):
-    if not first is None:
+    if first is not None:
         return first.is_equal(second)
     else:
         return second is None
@@ -55,7 +56,6 @@ class Program(Node):
 
     def get_types(self):
         # FIXME: Fix circular import
-        import src.ir.type_utils as tu
 
         usr_types = [d for d in self.declarations
                      if isinstance(d, ClassDeclaration)]

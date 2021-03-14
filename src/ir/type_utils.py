@@ -1,8 +1,11 @@
 import itertools
 from typing import List, Tuple
 
+import src.ir.ast as ast
+import src.ir.types as tp
+import src.ir.context as ctx
+import src.ir.kotlin_types as kt
 from src import utils
-from src.ir import ast, types as tp, context as ctx, kotlin_types as kt
 
 
 def _construct_related_types(etype, types, get_subtypes):
@@ -340,7 +343,7 @@ def find_nearest_supertype(etype, types, pred=lambda x, y: x in y):
 
 def get_decl_from_inheritance(receiver_t: tp.Type,
                               decl_name: str,
-                              context: ctx.Context) -> ast.Declaration:
+                              context: ctx.Context):
     """
     Inspect the inheritance chain until you find a declaration with a certain
     name.
@@ -364,7 +367,7 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
     return None
 
 
-def get_type_hint(expr: ast.Expr, context: ctx.Context,
+def get_type_hint(expr, context: ctx.Context,
                   namespace: Tuple[str]) -> tp.Type:
     """
     Get a hint of the type of the expression.
@@ -448,7 +451,7 @@ def get_type_hint(expr: ast.Expr, context: ctx.Context,
             return kt.Unit
 
 
-def node_in_expr(node: ast.Node, expr: ast.Expr):
+def node_in_expr(node, expr):
     """Check if node is expr or is inside expr
     """
     to_visit = [expr]

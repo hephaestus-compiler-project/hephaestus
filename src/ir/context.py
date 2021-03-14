@@ -1,17 +1,10 @@
-from typing import Tuple
 from copy import deepcopy
 from collections import OrderedDict
 
 from src import utils
-from src.ir import ast
 
 
 class Context():
-    TYPES = {ast.ClassDeclaration: 'classes',
-             ast.FunctionDeclaration: 'funcs',
-             ast.VariableDeclaration: 'vars',
-             ast.ParameterDeclaration: 'vars',
-             ast.FieldDeclaration: 'vars'}
 
     def __init__(self):
         self._context = {}
@@ -143,8 +136,7 @@ class Context():
         return type(self.get_decl(namespace, name))
 
 
-def get_decl(context, namespace, decl_name: str, limit=None) -> \
-        Tuple[str, ast.Declaration]:
+def get_decl(context, namespace, decl_name: str, limit=None):
     """
     We search the context for a declaration with the given name (`decl_name`).
 
