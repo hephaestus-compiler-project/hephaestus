@@ -56,6 +56,20 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
     def get_nothing(self):
         return NothingType()
 
+    def get_non_nothing_types(self):
+        types = super().get_non_nothing_types()
+        types.extend([
+            DoubleArray,
+            FloatArray,
+            LongArray,
+            IntegerArray,
+            ShortArray,
+            ByteArray,
+            CharArray,
+            BooleanArray
+        ])
+        return types
+
 
 class KotlinBuiltin(tp.Builtin):
     def __str__(self):
@@ -187,6 +201,13 @@ class ArrayType(tp.TypeConstructor, AnyType):
         self.supertypes.append(AnyType())
 
 
+class SpecializedArrayType(tp.TypeConstructor, AnyType):
+    def __init__(self, name="Array"):
+        # In Kotlin, arrays are invariant.
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(AnyType())
+
+
 ### WARNING: use them only for testing ###
 Any = AnyType()
 Nothing = NothingType()
@@ -202,5 +223,18 @@ Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
+
+# Specialized arrays, see https://kotlinlang.org/spec/type-system.html#array-types
+DoubleArray = SpecializedArrayType().new([Double])
+FloatArray = SpecializedArrayType().new([Float])
+LongArray = SpecializedArrayType().new([Long])
+IntegerArray = SpecializedArrayType().new([Integer])
+ShortArray = SpecializedArrayType().new([Short])
+ByteArray = SpecializedArrayType().new([Byte])
+CharArray = SpecializedArrayType().new([Char])
+BooleanArray = SpecializedArrayType().new([Boolean])
+
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean, Array]
+                   Double, Char, String, Boolean, Array,
+                   DoubleArray, FloatArray, LongArray, IntegerArray,
+                   ShortArray, ByteArray, CharArray, BooleanArray]

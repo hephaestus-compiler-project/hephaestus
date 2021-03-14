@@ -333,6 +333,7 @@ class ParameterizedType(SimpleClassifier):
             return False
         return (self.name == other.name and
                 self.supertypes == other.supertypes and
+                self.t_constructor.__class__ == other.t_constructor.__class__ and
                 self.t_constructor.type_parameters ==
                 other.t_constructor.type_parameters and
                 self.type_args == other.type_args)
