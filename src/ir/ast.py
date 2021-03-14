@@ -627,7 +627,7 @@ class ArrayExpr(Expr):
 
     def is_equal(self, other):
         if isinstance(other, ArrayExpr):
-            return self.literal == other.literal
+            return self.array_type == other.array_type
         return False
 
 
