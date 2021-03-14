@@ -31,42 +31,6 @@ def find_type_param_info(type_params, type_param_name):
     return None
 
 
-def create_type_parameter(name: str, type_constraint: types.Type, ptypes,
-                          variance, builtin_types):
-    def bounds_filter(bound):
-        # In case the constraint is a parameterized type, then we should check
-        # that the bound confronts to the constraints of type_constraint's
-        # type constructor.
-        if isinstance(bound, types.ParameterizedType):
-            type_params = bound.t_constructor.type_parameters
-            for targ, tparam in zip(bound.type_args, type_params):
-                # Handle case where targ is ParameterizedType recursively.
-                if (isinstance(targ, types.ParameterizedType) and
-                        not bounds_filter(targ)):
-                    return False
-                # In some odd/rare cases (~1/1000) targ is an abstract type.
-                # In those cases return False
-                if isinstance(targ, types.AbstractType):
-                    return False
-                if tparam.bound and not targ.is_subtype(tparam.bound):
-                    return False
-        return True
-    bound = None
-    if utils.random.bool():
-        if type_constraint is None:
-            bound = utils.random.choice(builtin_types)
-        else:
-            candidate_bounds = list(
-                filter(bounds_filter,
-                       tu.find_supertypes(type_constraint,
-                                          ptypes,
-                                          include_self=True,
-                                          concrete_only=True)))
-            if candidate_bounds:
-                bound = utils.random.choice(candidate_bounds)
-    return types.TypeParameter(name, variance, bound)
-
-
 def create_type_constructor_decl(class_decl, type_parameters):
     return ast.ClassDeclaration(
         class_decl.name, class_decl.superclasses,
@@ -265,6 +229,43 @@ class ParameterizedSubstitution(Transformation):
             return new_types
         return builtin_types
 
+    def _create_type_parameter(self, name: str, type_constraint: types.Type,
+                               ptypes, variance, builtin_types):
+        def bounds_filter(bound):
+            if self.language in ['groovy', 'java'] and bound.name == 'Array':
+                return False
+            # In case the constraint is a parameterized type, then we should
+            # check that the bound confronts to the constraints of
+            # type_constraint's type constructor.
+            if isinstance(bound, types.ParameterizedType):
+                type_params = bound.t_constructor.type_parameters
+                for targ, tparam in zip(bound.type_args, type_params):
+                    # Handle case where targ is ParameterizedType recursively.
+                    if (isinstance(targ, types.ParameterizedType) and
+                            not bounds_filter(targ)):
+                        return False
+                    # In some odd/rare cases (~1/1000) targ is an abstract
+                    # type. In those cases return False
+                    if isinstance(targ, types.AbstractType):
+                        return False
+                    if tparam.bound and not targ.is_subtype(tparam.bound):
+                        return False
+            return True
+        bound = None
+        if utils.random.bool():
+            if type_constraint is None:
+                bound = utils.random.choice(builtin_types)
+            else:
+                candidate_bounds = list(
+                    filter(bounds_filter,
+                           tu.find_supertypes(type_constraint,
+                                              ptypes,
+                                              include_self=True,
+                                              concrete_only=True)))
+                if candidate_bounds:
+                    bound = utils.random.choice(candidate_bounds)
+        return types.TypeParameter(name, variance, bound)
+
     def _use_type_parameter(self, namespace, node, old_type):
         """Select a node to replace its concrete type with a type parameter.
 
@@ -291,7 +292,7 @@ class ParameterizedSubstitution(Transformation):
                 tp.constraint = old_type
                 tp.node = GNode(namespace, node.name)
                 tp.variance = self._get_variance(tp.node)
-                tp.type_param = create_type_parameter(
+                tp.type_param = self._create_type_parameter(
                     tp.name,
                     old_type,
                     self.types,
@@ -314,7 +315,7 @@ class ParameterizedSubstitution(Transformation):
     def _initialize_uninitialize_type_params(self):
         for tp in self._type_params:
             if tp.type_param is None:
-                tp.type_param = create_type_parameter(
+                tp.type_param = self._create_type_parameter(
                     tp.name,
                     None,
                     self.types,
