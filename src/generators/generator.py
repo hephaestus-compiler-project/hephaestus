@@ -271,10 +271,10 @@ class Generator():
             return etype
         # We have to instantiate type constructor with random type arguments.
         t_args = []
+        candiate_types = list(self.ret_builtin_types)
+        candiate_types.remove(self.bt_factory.get_array_type())
         for _ in etype.type_parameters:
             # FIXME: use user-defined types too.
-            candiate_types = list(self.ret_builtin_types)
-            candiate_types.remove(self.bt_factory.get_array_type())
             t_args.append(ut.random.choice(candiate_types))
         return etype.new(t_args)
 
