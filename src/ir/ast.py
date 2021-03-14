@@ -54,9 +54,18 @@ class Program(Node):
                                              only_current=True)
 
     def get_types(self):
+        # FIXME: Fix circular import
+        import src.ir.type_utils as tu
+
         usr_types = [d for d in self.declarations
                      if isinstance(d, ClassDeclaration)]
-        return usr_types + self.bt_factory.get_non_nothing_types()
+        ttypes = usr_types + self.bt_factory.get_non_nothing_types()
+        new_types = []
+        for t in ttypes:
+            if isinstance(t, types.TypeConstructor):
+                t, _ = tu.instantiate_type_constructor(t, ttypes)
+            new_types.append(t)
+        return new_types
 
     def update_declarations(self, decls):
         self.context._context[GLOBAL_NAMESPACE]['decls'] = decls

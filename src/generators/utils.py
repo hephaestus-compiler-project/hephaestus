@@ -42,6 +42,4 @@ def gen_char_constant(expr_type=None):
 
 
 def gen_empty_array(expr_type=None):
-    if expr_type is None:
-        import pdb; pdb.set_trace()
     return ast.ArrayExpr(expr_type)

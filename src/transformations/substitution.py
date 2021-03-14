@@ -50,11 +50,10 @@ class ValueSubstitution(Transformation):
             self.bt_factory.get_byte_type().name: gu.gen_integer_constant,
             self.bt_factory.get_short_type().name: gu.gen_integer_constant,
             self.bt_factory.get_long_type().name: gu.gen_integer_constant,
-            self.bt_factory.get_float_type().name: \
-                lambda: gu.gen_real_constant(
-                    self.bt_factory.get_float_type()),
+            self.bt_factory.get_float_type().name: gu.gen_real_constant,
             self.bt_factory.get_double_type().name: gu.gen_real_constant,
             self.bt_factory.get_big_decimal_type().name: gu.gen_real_constant,
+            self.bt_factory.get_array_type().name: gu.gen_empty_array,
         }
 
     def _generate_new(self, class_decl, class_type, params_map):
@@ -114,8 +113,8 @@ class ValueSubstitution(Transformation):
         self.is_transformed = True
         sub_c = utils.random.choice(subclasses)
         generate = self.generators.get(
-            sub_c.name, lambda: self.generate_new(sub_c))
-        return generate()
+            sub_c.name, lambda x: self.generate_new(x))
+        return generate(sub_c)
 
 
 class TypeSubstitution(Transformation):
