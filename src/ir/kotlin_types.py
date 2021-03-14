@@ -1,6 +1,5 @@
 # pylint: disable=abstract-method, useless-super-delegation,too-many-ancestors
-from src.ir.types import Builtin
-
+import src.ir.types as tp
 
 import src.ir.builtins as bt
 
@@ -51,11 +50,14 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
     def get_string_type(self):
         return StringType()
 
+    def get_array_type(self):
+        return ArrayType()
+
     def get_nothing(self):
         return NothingType()
 
 
-class KotlinBuiltin(Builtin):
+class KotlinBuiltin(tp.Builtin):
     def __str__(self):
         return str(self.name) + "(kotlin-builtin)"
 
@@ -178,6 +180,13 @@ class BooleanType(AnyType):
         return bt.Boolean
 
 
+class ArrayType(tp.TypeConstructor, AnyType):
+    def __init__(self, name="Array"):
+        # In Kotlin, arrays are invariant.
+        super().__init__(name, [tp.TypeParameter("T")])
+        self.supertypes.append(AnyType())
+
+
 ### WARNING: use them only for testing ###
 Any = AnyType()
 Nothing = NothingType()
@@ -192,5 +201,6 @@ Double = DoubleType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
+Array = ArrayType()
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean]
+                   Double, Char, String, Boolean, Array]
