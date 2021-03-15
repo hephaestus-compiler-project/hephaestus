@@ -273,8 +273,13 @@ class Generator():
         t_args = []
         candiate_types = list(self.ret_builtin_types)
         candiate_types.remove(self.bt_factory.get_array_type())
+        usr_types = [
+            c.get_type()
+            for c in self.context.get_classes(self.namespace).values()
+        ]
+        candiate_types.extend(usr_types)
+
         for _ in etype.type_parameters:
-            # FIXME: use user-defined types too.
             t_args.append(ut.random.choice(candiate_types))
         return etype.new(t_args)
 
