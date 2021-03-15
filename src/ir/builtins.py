@@ -65,6 +65,7 @@ class BuiltinFactory(ABC):
     def get_string_type(self):
         pass
 
+    @abstractmethod
     def get_array_type(self):
         pass
 

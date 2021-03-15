@@ -166,11 +166,11 @@ class ParameterizedSubstitution(Transformation):
             type_arg = None
             if tp.variance == INVARIANT:
                 type_arg = tp.constraint if tp.constraint else \
-                    utils.random.choice(self._get_builtin_types())
+                    utils.random.choice(self._get_candidate_bounds())
                 type_args.append(type_arg)
                 continue
             if tp.constraint is None:
-                possible_types = self._get_builtin_types()
+                possible_types = self._get_candidate_bounds()
             else:
                 # To preserve correctness, the only possible type is
                 # tp.constraint. For example,
@@ -216,7 +216,7 @@ class ParameterizedSubstitution(Transformation):
                 if hasattr(decl, 'inferred_type'):
                     setattr(decl, 'inferred_type', type_param)
 
-    def _get_builtin_types(self):
+    def _get_candidate_bounds(self):
         builtin_types = list(self.program.bt_factory.get_non_nothing_types())
         new_types = []
         for t in builtin_types:
@@ -300,7 +300,7 @@ class ParameterizedSubstitution(Transformation):
                     old_type,
                     self.types,
                     tp.variance,
-                    self._get_builtin_types())
+                    self._get_candidate_bounds())
                 self._propagate_type_parameter(gnode, tp.type_param)
                 return tp.type_param
         return old_type
@@ -323,7 +323,7 @@ class ParameterizedSubstitution(Transformation):
                     None,
                     self.types,
                     self._get_random_variance(),
-                    self._get_builtin_types())
+                    self._get_candidate_bounds())
 
     def _select_type_params(self, node) -> ast.Node:
         self._in_select_type_params = True
