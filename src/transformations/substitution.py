@@ -69,6 +69,9 @@ class ValueSubstitution(Transformation):
         if isinstance(etype, tp.ParameterizedType):
             class_decl = self.generator.context.get_decl(
                 ast.GLOBAL_NAMESPACE, etype.name)
+            assert class_decl is not None, (
+                'Class declaration for type {} was not found'.format(
+                    str(etype)))
             # The etype is a parameterized type, so this case comes from
             # variance. Therefore, we first need to get the class_declaration
             # of this type, and initialize the map of type parameters.

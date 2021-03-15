@@ -10,5 +10,5 @@ def get_type_name(t):
     elif isinstance(t_constructor, kt.SpecializedArrayType):
         return "{}Array".format(get_type_name(t.type_args[0]))
     else:
-        return "{}<{}>".format(t.name, ",".join([get_type_name(ta)
-                                                 for ta in t.type_args]))
+        return "{}<{}>".format(t.name, ", ".join([get_type_name(ta)
+                                                  for ta in t.type_args]))
