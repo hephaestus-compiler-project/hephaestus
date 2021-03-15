@@ -607,9 +607,9 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # the given node.
             return node
 
-        generate = self.generators.get(ir_type,
-                                       lambda: self.generate_new(ir_type))
-        new_node = generate()
+        generate = self.generators.get(ir_type.name,
+                                       lambda x: self.generate_new(x))
+        new_node = generate(ir_type)
         self.is_transformed = True
         self.error_injected = (
             'Expected type is {}, but {} was found.'
