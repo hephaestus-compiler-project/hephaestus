@@ -171,7 +171,7 @@ class CompileTimeError(Symptom):
 
     """
 
-    name = "Unexpected compile-time error"
+    name = "Unexpected Compile-Time Error"
 
 
 class InternalCompilerError(Symptom):

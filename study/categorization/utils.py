@@ -78,6 +78,7 @@ def print_stats(bugs):
         stats["Root Causes"][b.root_cause.name] += 1
     print(json.dumps(stats, indent=4))
     print("======================")
+    return stats
 
 
 def print_symptoms():
@@ -109,4 +110,8 @@ from scala import *
 from groovy import *
 
 
-print_stats(java_iter1 + java_iter2 + scala_iter1 + scala_iter2 + kotlin_iter1 + kotlin_iter2 + groovy_iter1 + groovy_iter2)
+stats = print_stats(
+    java_iter1 + java_iter2 + \
+    scala_iter1 + scala_iter2 + \
+    kotlin_iter1 + kotlin_iter2 + \
+    groovy_iter1 + groovy_iter2)
