@@ -140,7 +140,7 @@ class Runtime(Symptom):
       generated JAR, the developer gets a `VerifyError` exception.
     """
 
-    name = "Runtime Error"
+    name = "Unexpected Runtime Behavior"
 
     def __init__(self, failure=None):
         self.failure = failure
