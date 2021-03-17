@@ -140,7 +140,7 @@ class Runtime(Symptom):
       generated JAR, the developer gets a `VerifyError` exception.
     """
 
-    name = "Runtime"
+    name = "Runtime Error"
 
     def __init__(self, failure=None):
         self.failure = failure
@@ -218,4 +218,4 @@ class CompilationPerformance(Symptom):
         of code.
     """
 
-    name = "Compilation Performance"
+    name = "Compilation Performance Issue"
