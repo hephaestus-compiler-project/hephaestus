@@ -8,6 +8,7 @@ import root_causes as rc
 kotlin_iter1 = [
     KotlinBug(
         "1.KT-1934",
+        # pc.Overriding() maybe becasue we erroneously create a trait inheriting 2 overriding functions  and should yield an error because of that
         [pc.Inheritance()],
         False,
         sy.Runtime(sy.WrongResult()),
@@ -17,6 +18,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "2.KT-4814",
+         # pc.AugmentedAssignmentOperator()
         [pc.ArithmeticExpressions()],
         False,
         sy.Runtime(sy.VerifyError()),
@@ -26,6 +28,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "3.KT-42175",
+         # pc.AugmentedAssignmentOperator()
         [
             pc.Lambdas(),
             pc.Collections(),
@@ -34,7 +37,10 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # could also be resolution both fit, inference fits more to the general problem, the fix fits better to resolution
+        # Resolve leaves incorrect information about this: it is resolved to an unrelated descriptor with type MutableList<NonFixed: TypeVariable(E)>.
         ct.Inference(),  # "type variable substitution"
+        #10
         8
     ),
     KotlinBug(
@@ -44,19 +50,25 @@ kotlin_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # could also be ct.Declaration because the bug is not on the type check of the expression but mostly on the validity of the function declaration (return type) to support this in fix we see major change in DeclarationsChecker.kt
+        #  for instance in the fix we add if (!function.hasDeclaredReturnType()) { do some semantic checks
         ct.TypeExpression(), # -- TypeChecking
+        # 5
         4
     ),
     KotlinBug(
         "5.KT-10472",
+        # no pc.ParameteriedClasses()
         [pc.Overloading(), pc.Varargs(),
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.ParameterizedTypes()],
         True,
+        # sy.Runtime(sy.WrongResult())
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectSequence(),
         ct.Resolution(),
+        # 10
         8
     ),
     KotlinBug(
@@ -71,10 +83,12 @@ kotlin_iter1 = [
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectComputation(), # IncorrectCondition
         ct.TypeComparison(), # Declarations
+        # 12
         11
     ),
     KotlinBug(
         "7.KT-23748",
+        # pc.Collections()
         [pc.ParameterizedFunctions(),
          pc.Subtyping(),
          pc.Nullables(),
@@ -83,6 +97,7 @@ kotlin_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
         ct.Inference(),  # constraint solving
+        # 11
         9
     ),
     KotlinBug(
@@ -95,11 +110,14 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
+         # maybe consider ct.Environment?(change in DeserializedMemberScope class)
         ct.Mechanics(), # -- serialization
+        #16
         11
     ),
     KotlinBug(
         "9.KT-10711",
+        # pc.ParameterizedClass()
         [pc.ParameterizedFunctions(),
          pc.Collections(),
          pc.FunctionReferences()],
@@ -116,6 +134,7 @@ kotlin_iter1 = [
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),  # constraint solving
+        #13
         7
     ),
     KotlinBug(
@@ -126,6 +145,8 @@ kotlin_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
+         # found it difficult, change the way we calculate the common supertype of 2 classes, no declaration because typecomparsion is more specific to this fix and declaration more broaden.
+#        # Also the fix is not in the semantic check of a declaration, and more it is about a computation of a type.
         ct.TypeComparison(), # Why not Decleration?
         6
     ),
@@ -135,11 +156,16 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
+        # agreed with resolution, maybe consider ct.Declaration because we do a semantic check of a class declaration (class B : C by A()) because it says
+        # Members declared in interface or overriding members declared in super-interfaces
+        # can be implemented by delegation even if they override members declared in super-class
         ct.Resolution(),
+        #9
         7
     ),
     KotlinBug(
         "13.KT-12044",
+        # do we consider it pc.FlowTyping()?
         [pc.Conditionals(), pc.PropertyReference(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
@@ -149,6 +175,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "14.KT-4334",
+        # pc.Collections()
         [pc.Lambdas(), pc.Loops()],
         False,
         sy.InternalCompilerError(),
@@ -158,11 +185,13 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "15.KT-32184",
+        # pc.Properties() pc.Nullables(), pc.VarTypeInference()
         [pc.Lambdas(), pc.DataClasses(), pc.FunctionTypes()],
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
         ct.Resolution(),
+        #24
         12
     ),
     KotlinBug(
@@ -172,10 +201,12 @@ kotlin_iter1 = [
         sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
         ct.Declarations(), # -- During Override Resolution
+        #16
         12
     ),
     KotlinBug(
         "17.KT-41693",
+#        #pc.Nullables()
         [pc.Conditionals(), pc.Import(),
          pc.FlexibleTypes(), # Java Types are loaded as flexible types
          pc.JavaInterop()],
@@ -199,6 +230,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "19.KT-35602",
+        #pc.Nullables() why pc.UseVariance()?  
         [pc.ParameterizedClasses(),
          pc.FBounded(),
          pc.ParameterizedTypes(),
@@ -208,6 +240,7 @@ kotlin_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Approximation(),
+        #10
         6
     ),
     KotlinBug(
