@@ -13,6 +13,7 @@ scala_iter1 = [
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
         ct.Mechanics(), # error reporting
+        #  10      
         9
     ),
     ScalaBug(
@@ -70,6 +71,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "6.Scala2-5878",
+                # Dataclasses are kotlin only maybe introduce value classes because that is a value class only bug, we see in comments if we remove extend anyval it works, maybe create new category
         [
          pc.DataClasses(),
          pc.Inheritance()
@@ -82,6 +84,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "7.Scala2-5886",
+    # pc.Reflection(), pc.This(), no Lamda , also pc.ParameterizedTypes(), maybe pc.ExistentialTypes() becasue this.getClass is resolved as an existential type 
         [
             pc.ParameterizedFunctions(),
             pc.Lambdas(),
@@ -90,7 +93,9 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
+        # maybe ct.TypeExpression remove a check, also has to do with  an expression f1(this.getClass)
         ct.Resolution(),
+        # 9
         8
     ),
     ScalaBug(
@@ -105,10 +110,12 @@ scala_iter1 = [
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
         ct.Mechanics(),  # transformation
+        # 16
         13
     ),
     ScalaBug(
         "9.Dotty-1757",
+        # pc.VarTypeInference()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -134,11 +141,13 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
+           # it is bound related but Is the fix really related to type comparsion? maybe consider inference
         ct.TypeComparison(),
         9
     ),
     ScalaBug(
         "11.Scala2-9542",
+        # pc.DependentTypes(), because I think type Mutation[C] is dependent, pc.Typedefs()
         [pc.Inheritance(), pc.NestedDeclaration(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes()],
         True,
@@ -149,6 +158,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "12.Dotty-2234",
+        # pc.Typefefs()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -158,10 +168,13 @@ scala_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Approximation(),
+        #4
         3
     ),
     ScalaBug(
         "13.Scala-9361",
+        #  pc.Typedefs(), pc.TypeArgsInference() It appears that in the absence of a type parameter to the new Foo instantiation,
+#       #the type inferencer looks to the expected type of foo to try to infer it.
         [
             pc.HigherKindedTypes(),
             pc.Overriding(),
@@ -197,7 +210,10 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
+      # agree with Expression, maybe consider ct.Approximation because `pretypeArgs` allows arguments of overloaded methods to be typed with a
+# more precise expected type 
         ct.TypeExpression(),
+        # 10
         7
     ),
     ScalaBug(
@@ -211,6 +227,8 @@ scala_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.DesignIssue(),
+        # maybe rc.Approximation() of gadt type 
+        # ApproximateGadtAccumulator   /** Approximates a type to get rid of as many GADT-constrained abstract types as possible. */
         ct.Inference(),
         9
     ),
@@ -223,10 +241,12 @@ scala_iter1 = [
         sy.InternalCompilerError(),
         rc.MissingCase(),
         ct.Mechanics(),  # transformation / desugaring
+        #7
         6
     ),
     ScalaBug(
         "18.Dotty-8752",
+        # pc.Collection()
         [
             pc.TypeLambdas(), pc.ParameterizedClasses(),
             pc.FBounded(), pc.ParameterizedTypes()
@@ -235,10 +255,12 @@ scala_iter1 = [
         sy.MisleadingReport(),
         rc.MissingCase(),
         ct.OtherSemanticChecking(),
+        # 3
         2
     ),
     ScalaBug(
         "19.Scala2-10185",
+        #  pc.TypeArgsInference() HK Types require an instantiation of a type contructor, and we pass no arguments
         [
             pc.ParameterizedTypes(), pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(), pc.HigherKindedTypes(),
@@ -246,8 +268,10 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.AlgorithmImproperlyImplemented() fix many issues  change the algorithm implementation first message of TomasMikula at https://github.com/scala/scala/pull/6069 
         rc.IncorrectComputation(),
         ct.TypeComparison(),
+        # 10
         8
     ),
     ScalaBug(
@@ -258,6 +282,8 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # CT.OtherSemanticChecking() i dont think we have a declaration check, we semantic check the args at def call
+        # the problem is that the varargs 1, 2, 3 are known values, but their translation SeqLiteral(1, 2, 3) is not.
         ct.Declarations(),
         4
     )
