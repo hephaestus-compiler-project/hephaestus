@@ -3,7 +3,7 @@ import categories as ct
 import characteristics as pc
 import symptoms as sy
 import root_causes as rc
-
+# Rename pc.FunctionApi() to pc.FunctionApi() because An informative annotation type used to indicate that an interface type declaration is intended to be a functional interface as defined by the Java Language Specification. Conceptually, a functional interface has exactly one abstract method
 
 java_iter1 = [
     JavaBug(
@@ -14,14 +14,16 @@ java_iter1 = [
          pc.NestedDeclaration(),
          pc.Subtyping()
          ],
-        True,
+         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.TypeComparison(),
+        # 12
         9
     ),
     JavaBug(
         "2.JDK-8254557",
+        # pc.Overriding(),
         [pc.Streams(), pc.FunctionalInterface(),
          pc.ParameterizedFunctions(), pc.AnonymousClass(),
          pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
@@ -30,11 +32,14 @@ java_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # RV agree, maybe consider ct.Declaration() a semantic check in declaration
         ct.TypeExpression(),
+        # 58
         34
     ),
-    JavaBug(
+     JavaBug(
         "3.JDK-8244559",
+        # pc.StaticMethod() 
         [pc.Collections(), pc.Streams(),
          pc.Inline(), pc.NestedDeclaration(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes(),
@@ -43,19 +48,30 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation
+        # ct.Expression()
+#         (1) Basically, the code to create AST nodes from a Type is not handling reference
+# projection types properly. Given a type V.ref<T>, it ends up creating AST that
+# look like V<T>.ref rather than V.ref<T>
+
+# (2) When V<T> is a nested static class, the construct V.ref<T> appears to
+# access a static member type of the parameterized type V which is usually an
+# error. But ref is not really a member and so this should be tolerated.
+        ct.Mechanics(),
+        # 21
         17
     ),
-    JavaBug(
+        JavaBug(
         "4.JDK-8191802",
+        # pc.UseVariance() (contravariance)
         [pc.ParameterizedClasses(), pc.BoundedPolymorphism(),
          pc.ParameterizedTypes(),
          pc.Subtyping(), pc.VarTypeInference()
          ],
-        True,
+         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Inference(),
+        # 9
         8
     ),
     JavaBug(
@@ -63,38 +79,44 @@ java_iter1 = [
         [pc.FunctionReferences(),
          pc.StaticMethod(), pc.Overloading(),
          ],
-        True,
-        sy.CompileTimeError(),
-        rc.MissingCase(),
+         True,
+         sy.CompileTimeError(),
+         rc.MissingCase(),
         ct.Resolution(),
+        # 10
         8
     ),
     JavaBug(
         "6.JDK-8012238",
+        #  pc.Cast() because we use  java.lang.Class.asSubclass() Class 
         [pc.Overriding(),
          pc.Reflection(),
          pc.ParameterizedFunctions(),
          pc.BoundedPolymorphism(),
          pc.ParameterizedTypes()
          ],
-        True,
-        sy.CompileTimeError(),
+         True,
+         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.Inference(),  # constraint solving
-        16
+        ct.Inference(),
+        18
     ),
     JavaBug(
         "7.JDK-8006749",
+        #  pc.ReferenceTypes() (Object type)
         [pc.SAM(),
          pc.Lambdas(), pc.ParamTypeInference()
          ],
+        #  True it compiles tested it and also it says compiler should accept it
         False,
+        # sy.CompileTimeError(),
         sy.MisleadingReport(),
         rc.MissingCase(),
         ct.TypeExpression(),
+        # 7
         6
     ),
-    JavaBug(
+   JavaBug(
         "8.JDK-6995200",
         [
             pc.ParameterizedFunctions(),
@@ -103,19 +125,24 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # to dame
+        # I agree but  Maybe consider also inference because the change is aiming to correct infer the type of i. But yes the specific lines are more related to type comparsion so its ok.
         ct.TypeComparison(),
+        # 9
         8
-    ),
+    ),      
     JavaBug(
         "9.JDK-7040883",
+        # pc.Import()
         [
             pc.ParameterizedFunctions(), pc.Arrays(),
             pc.Reflection(), pc.ParameterizedTypes()
          ],
-        True,
+         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.Inference(),  # type variable substitution
+        ct.Inference(), 
+        # 16
         6
     ),
     JavaBug(
@@ -128,42 +155,52 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Environment(), # TypeExpression
+        ct.Environment(),
+        # 10
         9
     ),
     JavaBug(
         "11.JDK-8129214",
+        #  ParameterizedTypes().  pc.PrimitiveTypes()
         [pc.Import(),
          pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
          ],
         True,
-        sy.CompileTimeError(),
-        rc.MissingCase(),  # missing step
+         sy.CompileTimeError(),
+        #  rc.WrongParams() wrong param can also mean a missing step
+        rc.MissingCase(),
+        #  could it be ct.Inference()?
         ct.Approximation(),
+        # 13
         10
     ),
     JavaBug(
         "12.JDK-8203277",
+        # pc.TypeArgsInference()
         [pc.Collections(), pc.FunctionalInterface(),
          pc.Overriding(), pc.Lambdas()
          ],
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation
+        # ct.TypeExpression()
+        ct.Mechanics(),
+        # 12
         9
     ),
     JavaBug(
         "13.JDK-8195598",
+        # pc.ParamTypeInference()
         [
             pc.ParameterizedFunctions(), pc.Overloading(),
             pc.Lambdas(), pc.FunctionalInterface()
         ],
         True,
         sy.CompileTimeError(),
+        #  rc.IncorrectComputation() The problem seems related to the most specific disambiguation logic for functional interfaces; if the second method is included, the speculative tree used during that logic is empty, hence the algorithm falls back to the standard subtype check (which produces the ambiguity).
         rc.IncorrectCondition(),
         ct.Resolution(),
-        14
+        14,
     ),
     JavaBug(
         "14.JDK-8202597",
@@ -175,21 +212,25 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Approximation(),
+        # 10
         9
     ),
     JavaBug(
         "15.JDK-8144832",
+        # pc.ParameterizedTypes() because valln is a declaration with a parameterized type
         [
             pc.ParameterizedClasses(), pc.Cast(), pc.PrimitiveTypes()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # if only one of them is Primitive, we call skipTypeVars so we dont take into consideration the type variable, si i think it is type inference because we dont instantiate a type variable but somehow we ignore it, but it still connects with type inference. Also could be typeexpression because the check and the skipTypeVars is a typechecking process
         ct.Approximation(),
         5
     ),
     JavaBug(
         "16.JDK-8169091",
+        # pc.FBounded(), maybe consider pc.Collections() because: Comperable interface is a member of the Java Collections Framework.
         [
             pc.IntersectionTypes(),
             pc.ParameterizedFunctions(), pc.UseVariance(),
@@ -200,10 +241,12 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.WrongParams(),
         ct.TypeComparison(),
+        # 17
         7
     ),
-    JavaBug(
+  JavaBug(
         "17.JDK-6996914",
+        # pc. AccessModifiers(),
         [
             pc.NestedDeclaration(), pc.Subtyping(), pc.ParameterizedClasses(),
             pc.TypeArgsInference()
@@ -211,10 +254,12 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # maybe consider Resolution or Inference, i think both match, i say resolution because as it says  special resolution scheme for diamond inference needs to open up protected constructors in anon inner class creation
         ct.Environment(),
+        # 19
         8
     ),
-    JavaBug(
+ JavaBug(
         "18.JDK-8154180",
         [
             pc.FunctionalInterface(),
@@ -225,22 +270,26 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
+        # 15,17
         16
     ),
     JavaBug(
         "19.JDK-7041019",
         [pc.Arrays(), pc.ParameterizedClasses(),
-         pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
-         pc.Overriding(), pc.Subtyping()
-         ],
+        pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
+        pc.Overriding(), pc.Subtyping()
+        ],
         False,
-        sy.Runtime(sy.ClassCastException()),
-        rc.WrongParams(),
-        ct.Inference(),  # type variable substitution
+        sy.Runtime(sy.ClassCastException())
+        rc.WrongParams()
+        # Inference also correct, but I think ct.TypeComparsion() fits better because  return new ArrayType(elemtype, t.tsym) is about capturing a type between 2 types. also we have subtyping and wrongly taken upper bound, thinga related to type comparsion
+        ct.Inference(),
+        # 24
         8
     ),
     JavaBug(
         "20.JDK-8148354",
+        # pc.IntersectionTypes()
         [
             pc.FunctionalInterface(),
             pc.FunctionReferences(),
@@ -250,7 +299,9 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
+        # approximation but also consider inference?
         ct.Approximation(),
+        # 17
         8
     ),
 ]
