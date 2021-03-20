@@ -53,7 +53,7 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Inference(),
-        # 20     
+        # 20
         13
     ),
     GroovyBug(
@@ -70,7 +70,8 @@ groovy_iter1 = [
         ct.TypeExpression(),
         # 26
         14
-    GroovyBug(  
+    ),
+    GroovyBug(
         "6.GROOVY-5232",
         [pc.Property(), pc.VarTypeInference()],
         rc.MissingCase(),
@@ -78,7 +79,7 @@ groovy_iter1 = [
         # 15
         9
     ),
-    GroovyBug(  
+    GroovyBug(
         "7.GROOVY-8330",
         [pc.Subtyping(), pc.Inheritance(), pc.Cast()],
         True,
@@ -87,7 +88,7 @@ groovy_iter1 = [
         ct.TypeComparison(),
         # 12
         7
-    ),  
+    ),
     GroovyBug(
         "8.GROOVY-7721",
         # pc.JavaInterop()
@@ -109,7 +110,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(), 
+        ct.Mechanics(),
         # 16
         12
     ),
@@ -126,12 +127,12 @@ groovy_iter1 = [
         # 10
         9
     ),
-    GroovyBug(  
+    GroovyBug(
         "11.GROOVY-7333",
         #pc.Subtyping()
         [pc.FlowTyping(),
          pc.PrimitiveTypes(),
-         pc.Arrays()],  
+         pc.Arrays()],
         True,
         sy.CompileTimeError(),
         # agreed also consider rc.IncorrectComputation()  Incorrect union type computed in case one of the types is Object
@@ -155,7 +156,7 @@ groovy_iter1 = [
      GroovyBug(
         "13.GROOVY-8445",
         # no pc.ParamTypeInference(), pc.Streams()
-        [pc.Lambdas(), pc.Collections(), pc.ParamTypeInference()],  
+        [pc.Lambdas(), pc.Collections(), pc.ParamTypeInference()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -224,7 +225,7 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
         # agreed, also consider ct.Declaration because we are checking if constructor with map type argument is semantically correct
-        #   If a class defines a constructor which takes a map as argument, then the type checker doesn't recognize it and will think that constructor calls with maps are the default groovy map-style constructor.     
+        #   If a class defines a constructor which takes a map as argument, then the type checker doesn't recognize it and will think that constructor calls with maps are the default groovy map-style constructor.
         ct.Mechanics(),
         8
     ),
@@ -521,39 +522,39 @@ groovy_iter3 = [
             pc.Overriding()
         ],
         False,
-        sy.Runtime(),
+        sy.Runtime(sy.MissingMethodException()),
         rc.MissingCase(),
-        ct.Environment(), # Mechanics
+        ct.Environment(),
         9
     ),
     GroovyBug(
         "7.GROOVY-6742",
         [
             pc.ParameterizedFunctions(),
+            pc.AnonymousClass(),
             pc.ParameterizedTypes(),
             pc.FunctionalInterface(),
-            pc.FunctionReferences(),
             pc.TypeArgsInference(),
             pc.Overriding()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Resolution(), # Environment
+        ct.Environment(),
         8
     ),
     GroovyBug(
         "8.GROOVY-6504",
         [
             pc.Lambdas(),
+            pc.PrimitiveTypes(),
             pc.Collections(),
             pc.TypeArgsInference(),
-            pc.ParamTypeInference()
         ],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientAlgorithmImplementation(), # MissingCase
-        ct.Inference(),
+        rc.MissingCase(),
+        ct.Inference(), # TypeExpression
         1
     ),
     GroovyBug(
@@ -561,6 +562,8 @@ groovy_iter3 = [
         [
             pc.JavaInterop(),
             pc.FunctionalInterface(),
+            pc.ParameterizedTypes(),
+            pc.ParamTypeInference(),
             pc.Collections(),
             pc.Lambdas(),
             pc.UseVariance()
@@ -568,21 +571,24 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(), # Environment -- wrong receiver
+        ct.TypeExpression(),
         28
     ),
     GroovyBug(
         "10.GROOVY-5172",
         [
+            pc.JavaInterop(),
             pc.Inheritance(),
+            pc.PrimitiveTypes(),
             pc.ParameterizedTypes(),
             pc.Lambdas(),
-            pc.TypeArgsInference()
+            pc.TypeArgsInference(),
+            pc.WildcardType() # TODO
         ],
-        False,
-        sy.Runtime(),
+        True,
+        sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference(),
+        ct.Approximation(),
         11
     ),
     GroovyBug(
@@ -604,18 +610,20 @@ groovy_iter3 = [
             pc.AnonymousClass(),
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
+            pc.TypeArgsInference(),
             pc.Overriding()
         ],
-        True,
+        False,
         sy.InternalCompilerError(),
-        rc.DesignIssue(), # Cannot use diamond with anonymous inner classes
-        ct.Inference(),
+        rc.DesignIssue(),
+        ct.OtherSemanticChecking(),
         18
     ),
     GroovyBug(
         "13.GROOVY-6757",
         [
             pc.Collections(),
+            pc.ParameterizedTypes()
         ],
         True,
         sy.CompileTimeError(),
@@ -626,9 +634,9 @@ groovy_iter3 = [
     GroovyBug(
         "14.GROOVY-8629",
         [
-            pc.Inheritance(),
             pc.Collections(),
             pc.ParameterizedTypes(),
+            pc.NestedDeclaration(),
             pc.ParameterizedClasses(),
             pc.Subtyping(),
             pc.Overriding()
@@ -636,7 +644,7 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Resolution(),
+        ct.Environment(),
         54
     ),
     GroovyBug(
@@ -644,12 +652,11 @@ groovy_iter3 = [
         [
             pc.ArithmeticExpressions(),
             pc.Lambdas(),
-            pc.FunctionTypes()
         ],
-        True,
+        False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Inference(),
+        ct.TypeExpression(),
         5
     ),
     GroovyBug(
@@ -662,7 +669,7 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference(),
+        ct.Environment(),
         13
     ),
     GroovyBug(
@@ -670,11 +677,12 @@ groovy_iter3 = [
         [
             pc.Collections(),
             pc.TypeArgsInference(),
+            pc.ParamTypeInference(),
             pc.Lambdas()
         ],
         True,
         sy.CompileTimeError(),
-        rc.MissingCase(),
+        rc.IncorrectComputation(),
         ct.Inference(),
         1
     ),
@@ -682,39 +690,42 @@ groovy_iter3 = [
         "18.GROOVY-6671",
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
+            pc.ParamTypeInference(),
             pc.ParameterizedFunctions(),
             pc.UseVariance(),
             pc.TypeArgsInference(),
-            pc.Lambdas()
+            pc.Lambdas(),
+            pc.SAM()
         ],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectComputation(),
+        rc.MissingCase(),
         ct.Inference(),
         25
     ),
     GroovyBug(
         "19.GROOVY-8319",
         [
-            pc.Arrays()
+            pc.Arrays(),
+            pc.VarTypeInference()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference(),
+        ct.Environment(),
         4
     ),
     GroovyBug(
         "20.GROOVY-7880",
         [
-            pc.NestedDeclaration(),
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference()
         ],
         True,
-        sy.InternalCompilerError(),
-        rc.MissingCase(),
+        sy.InternalCompilerError(sy.NullPointerException()),
+        rc.WrongDataReference(),
         ct.Inference(),
         27
     )

@@ -230,7 +230,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "19.KT-35602",
-        #pc.Nullables() why pc.UseVariance()?  
+        #pc.Nullables() why pc.UseVariance()?
         [pc.ParameterizedClasses(),
          pc.FBounded(),
          pc.ParameterizedTypes(),
@@ -566,11 +566,10 @@ kotlin_iter3 = [
         [
             pc.Conditionals(),
             pc.FunctionReferences(),
-            # pc.FlowTyping()
         ],
         False,
         sy.InternalCompilerError(),
-        rc.WrongDataReference(),
+        rc.WrongDataReference(), # Error Reporting
         ct.Mechanics(),
         3
     ),
@@ -580,23 +579,26 @@ kotlin_iter3 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.FunctionReferences(),
+            pc.Property(),
+            pc.ExtensionFunctions(),
             pc.TypeArgsInference()
         ],
         True,
-        sy.InternalCompilerError(),
-        rc.IncorrectSequence(),
-        ct.Resolution(), # Inference
+        sy.CompileTimeError(),
+        rc.IncorrectCondition(),
+        ct.Inference(),
         8
     ),
     KotlinBug(
         "8.KT-6999",
         [
-            #?
+            pc.SecondaryConstructor(), # TODO
+            pc.Annotation() # TODO
         ],
         False,
-        sy.InternalCompilerError(), # ?
+        sy.Runtime(sy.VerifyError()), # ?
         rc.IncorrectCondition(),
-        ct.Mechanics(),
+        ct.Declarations(),
         8
     ),
     KotlinBug(
@@ -619,20 +621,21 @@ kotlin_iter3 = [
         [
            pc.ParameterizedClasses(),
            pc.NestedDeclaration(),
-           pc.BoundedPolymorphism(),
+           pc.Inheritance(),
+           pc.ParameterizedTypes(),
            pc.Enums()
         ],
-        True,
+        False,
         sy.MisleadingReport(),
         rc.WrongParams(),
-        ct.Mechanics(),
+        ct.Mechanics(), # Error Reporting
         3
     ),
     KotlinBug(
         "11.KT-26816",
         [
             pc.TypeArgsInference(),
-            pc.VarTypeInference(),
+            pc.Lambdas(),
             pc.Collections()
         ],
         True,
@@ -648,61 +651,71 @@ kotlin_iter3 = [
             pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
+            pc.OperatorOverloading(),
+            pc.Inheritance(),
+            pc.BuilderInference(),
             pc.Collections(),
             pc.FunctionTypes(),
             pc.Lambdas(),
-            pc.ExtensionFunctions()
+            pc.ExtensionFunctions(),
+            pc.UseVariance(),
+            pc.AugmentedAssignmentOperator(),
         ],
         True,
         sy.InternalCompilerError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.Resolution(),
+        ct.TypeExpression(),
         12
     ),
     KotlinBug(
         "13.KT-7383",
         [
-            pc.FunctionTypes(),
+            pc.FunctionalInterface(),
+            pc.WildCardType(), # TODO
+            pc.ParameterizedTypes(),
             pc.Lambdas()
         ],
         False,
         sy.InternalCompilerError(),
         rc.ExtraneousComputation(),
-        ct.Mechanics(),
+        ct.Mechanics(), # Error Reporting
         3
     ),
     KotlinBug(
         "14.KT-33542",
         [
+            pc.Coroutines(),
             pc.ParameterizedClasses(),
             pc.DeclVariance(),
             pc.BoundedPolymorphism(),
-            pc.FBounded(),
+            pc.ParameterizedTypes(),
+            pc.BuilderInference(),
             pc.Overriding(),
             pc.Inheritance(),
             pc.FunctionTypes(),
             pc.ExtensionFunctions(),
             pc.Lambdas()
-            # suspend?
         ],
         False,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Resolution(), # Environment
+        ct.Environment()
         22
     ),
     KotlinBug(
         "15.KT-15391",
         [
-            # suspend?
+            pc.Coroutines(),
             pc.Inheritance(),
+            pc.FunctionTypes(),
+            pc.AnonymousClass(),
             pc.ParameterizedTypes(),
             pc.Overriding()
         ],
         False,
-        sy.InternalCompilerError(),
+        sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Declarations(),
         15
     ),
     KotlinBug(
@@ -712,51 +725,52 @@ kotlin_iter3 = [
             pc.AnonymousClass()
         ],
         True,
-        sy.Runtime(),
+        sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.TypeExpression(),
         5
     ),
     KotlinBug(
         "17.KT-13926",
         [
             pc.TypeAnnotations(),
-            pc.Nullables()
         ],
         False,
-        sy.Runtime(),
+        sy.MisleadingReport(),
         rc.MissingCase(),
-        ct.Environment(),
+        ct.OtherSemanticChecking(),
         6
     ),
     KotlinBug(
         "18.KT-9816",
         [
             pc.ParameterizedClasses(),
+            pc.Inheritance(),
             pc.TryCatch(),
             pc.ParameterizedTypes()
         ],
         False,
-        sy.Runtime(),
+        sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.TypeComparison(),
+        ct.OtherSemanticChecking(),
         10
     ),
     KotlinBug(
         "19.KT-4462",
         [
-            pc.Overriding()
+            pc.OperatorOverloading(),
         ],
         False,
-        sy.Runtime(),
+        sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Mechanics(),
+        ct.Mechanics(), # Desugaring
         14
     ),
     KotlinBug(
         "20.KT-11203",
         [
-            pc.OperatorOverloading()
+            pc.OperatorOverloading(),
+            pc.ExtensionFunctions()
         ],
         False,
         sy.Runtime(sy.VerifyError()),
