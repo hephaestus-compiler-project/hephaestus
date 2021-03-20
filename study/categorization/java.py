@@ -518,13 +518,7 @@ java_iter3 = [
     JavaBug(
         "1.JDK-8031967",
         [
-            pc.Collections(),
-            pc.Lambdas(),
-            pc.Cast(),
-            pc.Conditionals(),
-            pc.ParameterizedTypes(),
-            pc.Reflection() # Dynamic Invocation
-            # + File API?
+            pc.Overloading(),
         ],
         True,
         sy.CompilationPerformance(),
@@ -536,6 +530,7 @@ java_iter3 = [
         "2.JDK-6880344",
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.BoundedPolymorphism(),
             pc.FBounded()
@@ -543,33 +538,30 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Inference(),
+        ct.TypeComparison(),
         9
     ),
     JavaBug(
         "3.JDK-7142086",
         [
-            pc.Collections(),
-            pc.UseVariance(),
-            pc.ParameterizedTypes()
-            # + File API?
+            pc.Overloading(),
+            pc.Overriding()
         ],
         True,
         sy.CompilationPerformance(),
-        rc.MissingCase(),
-        ct.Resolution(),
+        rc.IncorrectComputation(),
+        ct.Declarations(),
         84
     ),
     JavaBug(
         "4.JDK-8131915",
         [
-            # Files API?
-            pc.Collections(),
-            pc.ParameterizedTypes()
+            pc.TypeAnnotations(),
+            pc.Import()
         ],
         False,
         sy.InternalCompilerError(),
-        rc.MissingCase(),
+        rc.WrongDataReference(),
         ct.Mechanics(),
         55
     ),
@@ -577,13 +569,14 @@ java_iter3 = [
         "5.JDK-7148242",
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
             pc.NestedDeclaration(),
             pc.BoundedPolymorphism()
         ],
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.Inference(),
+        ct.Declarations(),
         7
     ),
     JavaBug(
@@ -594,21 +587,18 @@ java_iter3 = [
         False,
         sy.Runtime(),
         rc.MissingCase(),
-        ct.Mechanics(), # But maybe it's more close to Environment
+        ct.OtherSemanticChecking(),
         5
     ),
     JavaBug(
         "7.JDK-8209173",
         [
-            # File API?
-            # Maybe we should include the code in Strings?
-            # pc.ParameterizedTypes(),
-            # pc.Collections(),
-            # pc.ParameterizedClasses()
+            pc.JavaInterop(),
+            pc.ParameterizedTypes()
         ],
         False,
         sy.InternalCompilerError(),
-        rc.IncorrectCondition(),
+        rc.WrongDataReference(),
         ct.Mechanics(),
         62
     ),
@@ -621,37 +611,33 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
-        ct.Environment(),
+        ct.OtherSemanticChecking(),
         16
     ),
     JavaBug(
         "9.JDK-8177933",
         [
-            pc.FunctionReferences(),
-            pc.ParameterizedTypes(),
-            pc.UseVariance(),
-            pc.Overriding()
+            pc.StandardFeatures()
         ],
         True,
         sy.InternalCompilerError(),
         rc.ExtraneousComputation(),
-        ct.Mechanics(),
+        ct.TypeExpression(),
         46
     ),
     JavaBug(
         "10.JDK-8013394",
         [
+            pc.Collections(),
             pc.ParameterizedClasses(),
-            pc.BoundedPolymorphism(),
-            pc.Import(),
-            pc.Overriding(),
+            pc.Inheritance(),
             pc.ParameterizedTypes(),
             pc.Loops()
         ],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(),
-        ct.Environment(), # During Environment building
+        rc.MissingCase(),
+        ct.Mechanics(), # Desugaring
         27
     ),
     JavaBug(
@@ -662,7 +648,7 @@ java_iter3 = [
             pc.Arrays()
         ],
         False,
-        sy.WrongResult(), #?
+        sy.Runtime(sy.WrongResult()),
         rc.FunctionalSpecificationMismatch(),
         ct.Declarations(),
         1
@@ -675,8 +661,8 @@ java_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.WrongDataReference(),
-        ct.OtherSemanticChecking(), # Analyze an expression..
+        rc.IncorrectCondition(),
+        ct.TypeExpression(),
         7
     ),
     JavaBug(
@@ -685,6 +671,7 @@ java_iter3 = [
             pc.ParameterizedFunctions(),
             pc.FunctionalInterface(),
             pc.Collections(),
+            pc.Subtyping(),
             pc.UseVariance(),
             pc.TypeArgsInference(),
             pc.ParameterizedTypes(),
@@ -693,7 +680,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Mechanics(), # Error Reporting
         26
     ),
     JavaBug(
@@ -702,23 +689,27 @@ java_iter3 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
+            pc.WildcardType(), #TODO
             pc.Cast()
         ],
         True,
         sy.Runtime(sy.ClassCastException()),
-        rc.IncorrectCondition(),
-        ct.Mechanics(),
+        rc.DesignIssue(),
+        ct.Approximation(),
         14
     ),
     JavaBug(
         "15.JDK-8009131",
         [
-            pc.Lambdas()
+            pc.Lambdas(),
+            pc.SAM(),
+            pc.ParamTypeInference(),
+            pc.Overloading()
         ],
         False,
-        sy.Runtime(), # Ambiguous?
+        sy.Runtime(sy.WrongResult()),
         rc.InsufficientAlgorithmImplementation(),
-        ct.Resolution(),
+        ct.Resolution(), # TypeExpression
         11
     ),
     JavaBug(
@@ -726,13 +717,14 @@ java_iter3 = [
         [
             pc.Collections(),
             pc.TypeArgsInference(),
+            pc.Overriding(),
             pc.ParameterizedTypes(),
             pc.AnonymousClass(),
             pc.Conditionals()
         ],
         True,
         sy.InternalCompilerError(),
-        rc.IncorrectSequence(), # ExtraneousComputation?
+        rc.MissingCase(),
         ct.OtherSemanticChecking(),
         7
     ),
@@ -740,12 +732,14 @@ java_iter3 = [
         "17.JDK-8161383",
         [
             pc.NestedDeclaration(),
-            pc.Inheritance()
+            pc.AugmentedAssignment(), #TODO
+            pc.Inheritance(),
+            pc.AccessModifiers()
         ],
         True,
         sy.InternalCompilerError(),
-        rc.IncorrectSequence(),
-        ct.Environment(),
+        rc.IncorrectComputation(),
+        ct.Resolution(),
         11
     ),
     JavaBug(
@@ -753,12 +747,13 @@ java_iter3 = [
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
+            pc.MultipleImplements(),
             pc.Overriding()
         ],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectCondition(),
-        ct.Resolution(),
+        rc.FunctionalSpecificationMismatch(),
+        ct.Declarations(),
         13
     ),
     JavaBug(
@@ -769,7 +764,7 @@ java_iter3 = [
             pc.ParameterizedFunctions(),
             pc.FunctionalInterface()
         ],
-        False,
+        True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
         ct.Approximation(),
@@ -780,6 +775,7 @@ java_iter3 = [
         [
             pc.FunctionalInterface(),
             pc.ParameterizedTypes(),
+            pc.AccessModifiers(),
             pc.Inheritance(),
             pc.FunctionReferences(),
             pc.NestedDeclaration()
@@ -787,7 +783,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.Resolution(),
         23
     ),
 ]
