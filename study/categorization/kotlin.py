@@ -261,6 +261,7 @@ kotlin_iter1 = [
 kotlin_iter2 = [
     KotlinBug(
         "1.KT-31102",
+        # pc.ParamTypeInference(), pc.This()
         [pc.Lambdas(), pc.FunctionReferences(),
          pc.ParameterizedFunctions(), pc.FunctionTypes],
         True,
@@ -271,6 +272,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "2.KT-3112",
+        # pc.ParameterizedTypes() ( C<String>.Inner or C.Inner)
         [pc.NestedDeclaration(),
          pc.ParameterizedClasses(),
          pc.TypeArgsInference()],
@@ -282,6 +284,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "3.KT-11721",
+        # pc.Property() (Property getter)
         [pc.Overriding()],
         False,
         sy.MisleadingReport(),
@@ -291,6 +294,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "4.KT-39461",
+        # pc.Cast() in Kotlin "foo as X: is the equivalent of "(X) foo" (null as T),pc.ParamTypeInference() (suspend () -> T)
         [pc.Coroutines(), pc.OperatorOverloading(),
          pc.Lambdas(),
          pc.ParameterizedFunctions(),
@@ -315,6 +319,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "6.KT-6720",
+        # pc.Inheritance() (MyTraitImpl: TraitJavaImpl() ), maybe not pc.Overriding()?
         [pc.Overriding(),
          pc.JavaInterop()],
         False,
@@ -325,6 +330,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "7.KT-37644",
+        # maybe pc.ArithmeticExpressions() ( because of +( Arithmetic Operator))
         [pc.ElvisOperator(),
          pc.Collections(),
          pc.ParameterizedTypes()
@@ -351,6 +357,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "9.KT-18522",
+        # pc.Nulllables (persistable1: Persistable?), no pc.ParameterizedClasses()
         [pc.Conditionals(), pc.Import(),
          pc.ParameterizedClasses(),
          pc.ParameterizedTypes()
@@ -363,6 +370,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "10.KT-8320",
+        # pc.ParameterizedTypes
         [pc.ParameterizedFunctions(),
          pc.TryCatch()],
         False,
@@ -373,6 +381,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "11.KT-32081",
+        # pc.This(), pc.VarTypeInference() (Either.Left(this)), no pc.ParameterizedClasses(),
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
@@ -386,11 +395,14 @@ kotlin_iter2 = [
         5
     ),
     KotlinBug(
+        #  The fix of KT-11280 triggers the bug on  KT-2311 so  maybe consider these 2 for the paper
         "12.KT-11280",
+        # pc.Nullables() Any? in all test cases it uses a nullable type, pc.Conditionals() if (x1 == x), Inheritance() class Derived1 : Base(), took the second example becasue it is more realistic
         [pc.Overriding(),
          pc.Subtyping(),
          pc.FlowTyping()],
         False,
+        # sy.Runtime(sy.ClassCastException())
         sy.Runtime(sy.RuntimeSymptom()),
         rc.DesignIssue(),
         ct.Inference(),
@@ -398,6 +410,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "13.KT-42825",
+        pc.ParameterizedTypes()
         [pc.Conditionals(),
          pc.ParameterizedClasses(),
          pc.UseVariance(),
@@ -411,19 +424,38 @@ kotlin_iter2 = [
         15
     ),
     KotlinBug(
+        # regression bug The regression appeared after  commit with url:
+        # https://github.com/JetBrains/kotlin/commit/b5a8ffaddc64b9862d8cf1173183df5e538e4c8e
         "14.KT-17597",
+        # pc.ParameterizedTypes(), pc.VarTypeInference()
         [pc.Collections(), pc.AccessModifiers(),
          pc.StaticMethod(),
          pc.JavaInterop(),
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
+        # maybe rc.MisingCase() because doesnt only change the condition but introduces a new method. Also see the following commit message
+        # The regression appeared after b5a8ffa
+        # when we started trying both static and member methods until
+        # first success and when there is no successful
+        # we were just leaving the last one (e.g. private member)
+
+        # But the actual problem is that we were commiting the trace
+        # in case of single (but incorrect) result in resolution mode of
+        # SHAPE_FUNCTION_ARGUMENTS when we couldn't yet choose the
+        # correct static method
+
+        # Also we shouldn't choose a shape for callable reference
+        # using only the knowledge that result is single:
+        # it may lead to the wrong inference result
+        # (see test with Pattern::compile)
         rc.IncorrectCondition(),
         ct.Resolution(),
         9
     ),
     KotlinBug(
         "15.KT-13597",
+        # pc.Property()
         [pc.AnonymousClass()],
         False,  # change final field
         sy.Runtime(sy.IllegalAccessError()),
@@ -433,16 +465,24 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "16.KT-12738",
+        # pc.Lambdas(), pc.ParamTypeInference()
         [pc.ParameterizedFunctions(),
          pc.FunctionReferences()],
         True,
         sy.CompileTimeError(),
+        # agreed its algorithmic, maybe consider rc.IncorrectComputation (wrong algorithm used, we simplify it, i think incorrect matches better to insufficient)
+        # Simplify and fix createReflectionTypeForCallableDescriptor
+        # Previously its call sites needed to determine if the receiver type should be
+        # ignored (e.g. if the reference is to static member or nested class constructor,
+        # or if it's a bound reference), and 3 of 4 callers did it incorrectly. Simplify
+        # this by passing the DoubleColonLHS instance everywhere.
         rc.InsufficientAlgorithmImplementation(),
         ct.Resolution(),
         3
     ),
     KotlinBug(
         "17.KT-37627",
+        # pc.ParamTypeInference(), pc.ParameterizedTypes(), pc.Nothing(), no pc.Subtyping()? "to" method creates a pair
         [pc.Collections(),
          pc.Conditionals(),
          pc.Nullables(),
@@ -451,12 +491,15 @@ kotlin_iter2 = [
          pc.VarTypeInference()],
         True,
         sy.CompileTimeError(),
+        # could be also  rc.IncorrectCondition but its also a missing case because its an additional check. Maybe change description of IncorrectCondition to only incorrect and not missing,
+        # because most of the time a missing condition is considered a missing case.
         rc.MissingCase(),
         ct.Inference(),  # constraint solving
         5
     ),
     KotlinBug(
         "18.KT-12286",
+        # pc.FunctionTypes() val f: (T, T) -> T = ::maxOf
         [pc.ParameterizedFunctions(),
          pc.FBounded(),
          pc.Conditionals(),
@@ -469,6 +512,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "19.KT-9630",
+        # pc.MultipleImplements() class Baz<T> : Foo<T>, Bar<T>,
         [pc.ParameterizedClasses(),
          pc.Inheritance(),
          pc.ParameterizedFunctions(),
@@ -479,12 +523,14 @@ kotlin_iter2 = [
          pc.ExtensionFunctions()],
         True,
         sy.CompileTimeError(),
+        #agreed, also consider rc.IncorrectComputation() Fix computation of erased receiver for intersection types, change computation of receiverTypeConstructor
         rc.MissingCase(),
         ct.Approximation(),
         8
     ),
     KotlinBug(
         "20.KT-25302",
+        # pc.Streams(), no pc.UseVariance() (direct use of Variance)
         [pc.ParameterizedFunctions(),
          pc.ParameterizedClasses(),
          pc.UseVariance(),
