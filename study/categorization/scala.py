@@ -13,7 +13,7 @@ scala_iter1 = [
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
         ct.Mechanics(), # error reporting
-        #  10      
+        #  10
         9
     ),
     ScalaBug(
@@ -84,7 +84,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "7.Scala2-5886",
-    # pc.Reflection(), pc.This(), no Lamda , also pc.ParameterizedTypes(), maybe pc.ExistentialTypes() becasue this.getClass is resolved as an existential type 
+    # pc.Reflection(), pc.This(), no Lamda , also pc.ParameterizedTypes(), maybe pc.ExistentialTypes() becasue this.getClass is resolved as an existential type
         [
             pc.ParameterizedFunctions(),
             pc.Lambdas(),
@@ -211,7 +211,7 @@ scala_iter1 = [
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
       # agree with Expression, maybe consider ct.Approximation because `pretypeArgs` allows arguments of overloaded methods to be typed with a
-# more precise expected type 
+# more precise expected type
         ct.TypeExpression(),
         # 10
         7
@@ -227,7 +227,7 @@ scala_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.DesignIssue(),
-        # maybe rc.Approximation() of gadt type 
+        # maybe rc.Approximation() of gadt type
         # ApproximateGadtAccumulator   /** Approximates a type to get rid of as many GADT-constrained abstract types as possible. */
         ct.Inference(),
         9
@@ -268,7 +268,7 @@ scala_iter1 = [
         ],
         True,
         sy.CompileTimeError(),
-        # rc.AlgorithmImproperlyImplemented() fix many issues  change the algorithm implementation first message of TomasMikula at https://github.com/scala/scala/pull/6069 
+        # rc.AlgorithmImproperlyImplemented() fix many issues  change the algorithm implementation first message of TomasMikula at https://github.com/scala/scala/pull/6069
         rc.IncorrectComputation(),
         ct.TypeComparison(),
         # 10
@@ -556,22 +556,23 @@ scala_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
-        rc.InsufficientAlgorithmImplementation(),
+        rc.MissingCase(),
         ct.Inference(),
         19
     ),
     ScalaBug(
         "2.Scala2-5399",
         [
-            pc.ExistentialTypes(),
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
+            pc.AlgebraicDataTypes(),
+            pc.WildcardType(), # TODO
             pc.PatMat()
         ],
         True,
         sy.CompileTimeError(),
-        rc.WrongDataReference(),
+        rc.MissingCase(), #WrongDataReference(),
         ct.TypeExpression(),
         19
     ),
@@ -581,56 +582,63 @@ scala_iter3 = [
             pc.ParameterizedFunctions(),
             pc.BoundedPolymorphism(),
             pc.TypeArgsInference(),
+            pc.Overloading(),
+            pc.FunctionalInterface(),
             pc.AnonymousClass()
         ],
         False,
-        sy.Runtime(),
+        sy.Runtime(sy.AbstractMethodError()),
         rc.IncorrectComputation(),
-        ct.Resolution(),
+        ct.Declarations(),
         2
     ),
     ScalaBug(
         "4.Scala2-5958",
         [
+            pc.This(),
             pc.DependentTypes(),
             pc.NestedDeclaration()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # Environment (build)
+        ct.TypeExpression(), # Attribution
         12
     ),
     ScalaBug(
         "5.Scala2-7872",
         [
-            pc.TypeLambdas(),
+            pc.TypeProjections(),
+            pc.HigherKindedTypes(),
+            pc.Collections(),
+            pc.Typedefs(),
+            pc.FunctionTypes(),
+            pc.Subtyping(),
             pc.DeclVariance(),
             pc.ParameterizedFunctions(),
             pc.TypeArgsInference(),
             pc.ParameterizedTypes()
         ],
         False,
-        sy.Runtime(sy.AmbiguousMethodError()),
+        sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Approximation(),
+        ct.Declarations(),
         13
     ),
     ScalaBug(
         "6.Scala2-2038",
         [
             pc.Collections(),
+            pc.WildcardType(), #TODO
             pc.Reflection(),
             pc.PatMat(),
-            pc.Cast(),
-            pc.DependentTypes(),
             pc.TypeArgsInference(),
+            pc.FunctionalInterface(),
             pc.ParameterizedTypes()
-            # Some?
         ],
         False,
         sy.InternalCompilerError(),
-        rc.WrongParams(),
+        rc.MissingCase(),
         ct.Approximation(),
         5
     ),
@@ -638,8 +646,10 @@ scala_iter3 = [
         "7.Scala2-5378",
         [
             pc.ParameterizedClasses(),
+            pc.FunctionalInterface(),
             pc.DeclVariance(),
             pc.AnonymousClass(),
+            pc.Overriding(),
             pc.VarTypeInference(),
             pc.ParameterizedFunctions(),
             pc.TypeArgsInference(),
@@ -647,9 +657,9 @@ scala_iter3 = [
             pc.ParameterizedTypes()
         ],
         False,
-        sy.InternalCompilerError(),
+        sy.Runtime(sy.MissingMethodException()),
         rc.IncorrectComputation(),
-        ct.Approximation(),
+        ct.TypeExpression(), # OtherSemanticChecking
         12
     ),
     ScalaBug(
@@ -658,23 +668,26 @@ scala_iter3 = [
             pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(),
             pc.Typedefs(),
+            pc.Cast(),
+            pc.This(),
             pc.ParameterizedTypes(),
-            pc.Inheritance()
+            pc.Inheritance(),
+            pc.Overriding()
         ],
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Mechanics(), # Error Reporting
         18
     ),
     ScalaBug(
         "9.Scala2-11252",
         [
             pc.PatMat(),
+            pc.FunctionalInterface(),
             pc.Overriding(),
             pc.Conditionals(),
             pc.AlgebraicDataTypes()
-            # Option?
         ],
         True,
         sy.CompileTimeError(),
@@ -689,7 +702,7 @@ scala_iter3 = [
             pc.Varargs()
         ],
         False,
-        sy,
+        sy.Runtime(sy.WrongResult()),
         rc.DesignIssue(),
         ct.Resolution(),
         5
@@ -698,28 +711,29 @@ scala_iter3 = [
         "11.Scala2-2509",
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
+            pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.DeclVariance(),
             pc.Inheritance(),
-            pc.AnonymousClass(),
+            pc.Overriding(),
+            pc.Subtyping(),
             pc.ImplicitDefs(),
             pc.ImplicitParameters()
         ],
         True,
-        sy.WrongResult(),
+        sy.Runtime(sy.WrongResult()),
         rc.DesignIssue(),
-        ct.Inference(),
+        ct.Resolution(),
         28
     ),
     ScalaBug(
         "12.Scala2-4775",
         [
-            pc.JavaInterop(),
-            pc.StaticMethod(),
             pc.Overloading(),
             pc.ParameterizedFunctions(),
             pc.TypeArgsInference(),
             pc.Varargs(),
-            pc.UseVariance()
         ],
         True,
         sy.CompileTimeError(),
@@ -731,6 +745,7 @@ scala_iter3 = [
         "13.Scala2-8862",
         [
             pc.ImplicitDefs(),
+            pc.Import(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.Overriding(),
@@ -739,7 +754,7 @@ scala_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.Environment(),
+        ct.Environment(), # Resolution
         25
     ),
     ScalaBug(
@@ -749,33 +764,40 @@ scala_iter3 = [
             pc.ImplicitDefs(),
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
-            pc.TypeArgsInference(),
             pc.ImplicitParameters()
         ],
         False,
         sy.MisleadingReport(),
         rc.IncorrectCondition(),
-        ct.Declarations(),
+        ct.Resolution(),
         9
     ),
     ScalaBug(
         "15.Dotty-7041",
         [
             pc.Inline(),
+            pc.CallByName(),
+            pc.BoundedPolymorphism(),
+            pc.ParameterizedFunctions(),
+            pc.WildcardType(), # TODO
+            pc.TypeArgsInference(),
             pc.TryCatch(),
-            pc.PatMat(),
+            pc.FunctionalInterface(),
+            pc.Lambdas(),
             pc.ParameterizedTypes()
         ],
         True,
         sy.InternalCompilerError(),
-        rc.WrongDataReference(),
-        ct.Mechanics(),
+        rc.IncorrectComputation(),
+        ct.Approximation(),
         13
     ),
     ScalaBug(
         "16.Dotty-4754",
         [
             pc.Import(),
+            pc.AccessModifiers(),
+            pc.Singleton(), #TODO
             pc.Inline()
         ],
         True,
@@ -789,12 +811,14 @@ scala_iter3 = [
         [
             pc.Inheritance(),
             pc.PatMat(),
+            pc.AlgebraicDataTypes(),
+            pc.Overriding(),
+            pc.FunctionalInterface(),
             pc.ParameterizedTypes(),
-            pc.SealedClasses()
         ],
         False,
-        sy.Runtime(sy.AmbiguousMethodError()),
-        rc.IncorrectComputation(),
+        sy.Runtime(sy.CaseNotFound()), #TODO
+        rc.DesignIssue(),
         ct.OtherSemanticChecking(),
         18
     ),
@@ -805,7 +829,6 @@ scala_iter3 = [
             pc.Typedefs(),
             pc.HigherKindedTypes(),
             pc.Collections(),
-            pc.TypeArgsInference(),
             pc.ParameterizedTypes()
         ],
         True,
@@ -817,20 +840,20 @@ scala_iter3 = [
     ScalaBug(
         "19.Scala2-9760",
         [
-            pc.SealedClasses(),
             pc.HigherKindedTypes(),
             pc.AlgebraicDataTypes(),
             pc.ParameterizedTypes(),
             pc.ParameterizedClasses(),
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.Inheritance(),
             pc.PatMat(),
             pc.Collections()
         ],
         True,
         sy.CompileTimeError(),
-        rc.IncorrectCondition(),
-        ct.Approximation(),
+        rc.ExtraneousComputation(),
+        ct.Inference(),
         18
     ),
     ScalaBug(
@@ -840,12 +863,12 @@ scala_iter3 = [
             pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
-            pc.TypeArgsInference()
+            pc.Typedefs()
         ],
         True,
         sy.CompileTimeError(),
-        rc.WrongParams(),
-        ct.Mechanics(),
+        rc.IncorrectCondition(),
+        ct.TypeComparison(),
         12
     )
 ]
