@@ -2,7 +2,6 @@
 import time
 import threading
 import sys
-from copy import deepcopy
 
 from src.ir.visitors import DefaultVisitorUpdate
 
@@ -23,7 +22,6 @@ def visitor_logging_and_timeout_with_args(*args):
             entity = transformation_name + "-" + visitor_name
             self.log("{}: Begin".format(entity))
 
-            old_node = deepcopy(node)
             timeouted = [False]
             start = time.time()
             try:
@@ -36,7 +34,7 @@ def visitor_logging_and_timeout_with_args(*args):
                 timer.cancel()
             end = time.time()
             if timeouted[0]:
-                new_node = old_node
+                new_node = node
             self.log("{}: {} elapsed time".format(entity, str(end - start)))
             self.log("{}: End".format(entity))
             return new_node

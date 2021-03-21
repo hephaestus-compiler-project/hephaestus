@@ -1,6 +1,5 @@
 # pylint: disable=too-few-public-methods
 import sys
-from copy import deepcopy
 
 from src.generators.generator import Generator
 from src.transformations.substitution import (
@@ -50,7 +49,6 @@ class ProgramProcessor():
                             transformation_number)
         else:
             logger = None
-        prev_p = deepcopy(program)
         transformer = transformation_cls(
             program, self.args.language, logger,
             self.args.options[transformation_cls.get_name()])
@@ -59,8 +57,6 @@ class ProgramProcessor():
                   transformer.get_name())
         transformer.transform()
         program = transformer.result()
-        if not transformer.is_transformed:
-            program = prev_p
         return program, transformer
 
     def _get_transformation_schedule(self):
