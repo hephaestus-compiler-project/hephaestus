@@ -4,7 +4,6 @@ https://youtrack.jetbrains.com/issue/KT-41470,https://github.com/JetBrains/kotli
 https://youtrack.jetbrains.com/issue/KT-12477,https://github.com/JetBrains/kotlin/commit/d84c3030294a08044d7299097bfb5082b7d26b1f
 https://youtrack.jetbrains.com/issue/KT-44153,https://github.com/JetBrains/kotlin/commit/cef859fced291788c6d3fa26d4d6caf1baec6a08
 https://youtrack.jetbrains.com/issue/KT-8484,https://github.com/JetBrains/kotlin/commit/fa292ec0e0ae7f4f63ab2a00a5b2932b05c1a071
-https://youtrack.jetbrains.com/issue/KT-8497,https://github.com/JetBrains/kotlin/commit/1a8181bdc4f9f467e2898fa47b2a1b7e0a3fa5bb
 https://youtrack.jetbrains.com/issue/KT-16232,https://github.com/JetBrains/kotlin/commit/d1b17f050b76b0c10f7c22d0e43af777075fbc2e
 https://youtrack.jetbrains.com/issue/KT-17611,https://github.com/JetBrains/kotlin/commit/f5cd8c7e4d86c8a0606ae3a7eb60bccb6032fc09
 https://youtrack.jetbrains.com/issue/KT-37554,https://github.com/JetBrains/kotlin/commit/ced8a926299294522033988cee6638c1bf355d32
@@ -18,3 +17,4 @@ https://youtrack.jetbrains.com/issue/KT-32235,https://github.com/JetBrains/kotli
 https://youtrack.jetbrains.com/issue/KT-10896,https://github.com/JetBrains/kotlin/commit/434bd0707d9c943e6476a91ca68d82ce3dab08f2
 https://youtrack.jetbrains.com/issue/KT-31025,https://github.com/JetBrains/kotlin/commit/a15d3c76b664b9e2e07e7b8260bcc7b902b13e85
 https://youtrack.jetbrains.com/issue/KT-42791,https://github.com/JetBrains/kotlin/commit/0857b9c9e750ed606ed9d1dd0a10c9d9efb35068
+https://youtrack.jetbrains.com/issue/KT-13181,https://github.com/jetbrains/kotlin/commit/e0cdad30e49a23ea62419ae43c69a2131e9bf2f2
