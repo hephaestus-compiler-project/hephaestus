@@ -1,4 +1,3 @@
-from copy import deepcopy
 from collections import OrderedDict
 
 from src import utils
@@ -129,7 +128,7 @@ class Context():
         decls = {}
         for ns, entities in self._context.items():
             if utils.prefix_lst(namespace, ns):
-                decls[ns] = deepcopy(entities['decls'])
+                decls[ns] = entities['decls']
         return decls
 
     def get_decl_type(self, namespace, name):
