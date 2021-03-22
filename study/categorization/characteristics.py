@@ -139,20 +139,6 @@ class Characteristic():
     def __str__(self):
         return self.__repr__()
     
-/////////////////////////////////////
-class SafeNavigationOperator(Characteristic):
-    """
-    Or Safe Call Operator.
-    The test case contains an safe navigation operator (Kotlin, Groovy only).
-    """
-    name = "Safe navigation operator"
-    category = SpecialFeatures()
-    characteristic_type = Expressions()
-    is_common = False
-
-
-
-
 class Overriding(Characteristic):
     """
     The test case contains a class that overrides a specific method or field.
@@ -1070,3 +1056,54 @@ class TypeProjections(Characteristic):
     category = TypeSystem()
     characteristic_type = Types()
     is_common = False
+    
+    /////////////////////////////////////
+class SafeNavigationOperator(Characteristic):
+    """
+    Or Safe Call Operator.
+    The test case contains an safe navigation operator (Kotlin, Groovy only).
+    """
+    name = "Safe navigation operator"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
+    
+    
+class SecondaryConstructor(Characteristic):
+    """
+    The test case contains a secondary constructor (Kotlin only).
+    """
+    name = "Secondary constructor"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+    
+ class AugmentedAssignmentOperator(Characteristic):
+    """
+    The test case contains an augmented assignment operator (x += 1).
+    """
+    name = "Augmented Assignment Operator"
+    category = StandardFeatures()
+    characteristic_type = Expressions()
+    is_common = True
+
+    
+    class Singleton(Characteristic):
+    """
+    The test case declares a singleton object (Scala and Kotlin only).
+    """
+    name = "Singleton"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+class WildCardType(Characteristic):
+    """
+    The test case contains a parameterized type that comes from the
+    application of a type constructor with a wildcard type, e.g. A<?>.
+    """
+    name = "Wildcard Type"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = True
+   /////////////
