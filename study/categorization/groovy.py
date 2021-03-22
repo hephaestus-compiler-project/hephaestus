@@ -463,7 +463,9 @@ groovy_iter2 = [
 groovy_iter3 = [
     GroovyBug(
         "1.GROOVY-5411",
-        [pc.StandardFeatures()],
+        [
+            #  pc.StandardFeatures()
+        ],
         False,
         sy.Runtime(sy.MissingMethodException()),
         rc.MissingCase(),

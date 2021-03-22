@@ -651,7 +651,7 @@ java_iter3 = [
     JavaBug(
         "9.JDK-8177933",
         [
-            pc.StandardFeatures()
+            #  pc.StandardFeatures()
         ],
         True,
         sy.InternalCompilerError(),
