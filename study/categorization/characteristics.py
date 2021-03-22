@@ -138,6 +138,19 @@ class Characteristic():
 
     def __str__(self):
         return self.__repr__()
+    
+/////////////////////////////////////
+class SafeNavigationOperator(Characteristic):
+    """
+    Or Safe Call Operator.
+    The test case contains an safe navigation operator (Kotlin, Groovy only).
+    """
+    name = "Safe navigation operator"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
+    is_common = False
+
+
 
 
 class Overriding(Characteristic):
