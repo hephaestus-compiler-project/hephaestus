@@ -32,7 +32,7 @@ def print_characteristics():
     print("===========================")
 
 def print_stats(bugs):
-    print("======Statistics======")
+    #  print("======Statistics======")
     stats = {
         "Bugs": defaultdict(lambda: 0),
         "Characteristics": {
@@ -45,8 +45,10 @@ def print_stats(bugs):
             "Commons": {"True": 0, "False": 0}},
         "Correctness": {"Correct": 0, "Incorrect": 0},
         "Symptoms": defaultdict(lambda: 0),
-        "Root Causes": defaultdict(lambda: 0),
-        "Categories": defaultdict(lambda: 0)
+        "Categories": defaultdict(lambda: 0),
+        "Root Causes": defaultdict(
+            lambda: {"Subcategories": defaultdict(lambda: 0),
+                     "total": 0})
     }
     for b in bugs:
         stats['Bugs'][b.language] += 1
@@ -75,9 +77,11 @@ def print_stats(bugs):
             stats["Correctness"]["Incorrect"] += 1
         stats["Symptoms"][b.symptom.name] += 1
         stats["Categories"][b.category.name] += 1
-        stats["Root Causes"][b.root_cause.name] += 1
-    print(json.dumps(stats, indent=4))
-    print("======================")
+        root_cause = stats["Root Causes"][b.root_cause.category.name]
+        root_cause["total"] += 1
+        root_cause["Subcategories"][b.root_cause.name] += 1
+    #  print(json.dumps(stats, indent=4))
+    #  print("======================")
     return stats
 
 
@@ -101,7 +105,6 @@ def print_symptoms():
         for s in syms:
             name = s.__name__ + " (" + tp.__name__ + ")"
             print_s(name, s.__doc__)
-print_symptoms()
 
 
 from kotlin import *
@@ -111,7 +114,7 @@ from groovy import *
 
 
 stats = print_stats(
-    java_iter1 + java_iter2 + \
-    scala_iter1 + scala_iter2 + \
-    kotlin_iter1 + kotlin_iter2 + \
-    groovy_iter1 + groovy_iter2)
+    java_iter1 + java_iter2 + java_iter3 + \
+    scala_iter1 + scala_iter2 + scala_iter3 + \
+    kotlin_iter1 + kotlin_iter2 + kotlin_iter3 + \
+    groovy_iter1 + groovy_iter2 + groovy_iter3)
