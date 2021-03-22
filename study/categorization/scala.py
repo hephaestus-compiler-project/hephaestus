@@ -35,7 +35,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.Resolution(),
         7
     ),
     ScalaBug(
