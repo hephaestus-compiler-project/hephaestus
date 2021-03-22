@@ -226,7 +226,7 @@ groovy_iter1 = [
         rc.InsufficientAlgorithmImplementation(),
         # agreed, also consider ct.Declaration because we are checking if constructor with map type argument is semantically correct
         #   If a class defines a constructor which takes a map as argument, then the type checker doesn't recognize it and will think that constructor calls with maps are the default groovy map-style constructor.
-        ct.Mechanics(),
+        ct.Mechanics(), # transformation
         8
     ),
     GroovyBug(

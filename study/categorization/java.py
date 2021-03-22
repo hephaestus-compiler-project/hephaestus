@@ -335,7 +335,7 @@ java_iter2 = [
         8
     ),
     JavaBug(
-        # regression bug 
+        # regression bug
         "5.JDK-8075793",
         # pc.Cast() ( return new HashSet<>(set);)
         [
@@ -362,7 +362,7 @@ java_iter2 = [
     JavaBug(
         "7.JDK-8226510",
         [pc.Conditionals(), pc.TryCatch()],
-        # False 
+        # False
         # The below code should throw a compilation error as there is no result expression for the switch expression.
         # However, the compilation goes through successfully.
         True,
@@ -503,7 +503,7 @@ java_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Mechanics(), # desugaring
         9
     ),
     JavaBug(
@@ -596,7 +596,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.Mechanics(),
+        ct.Environment(),
         55
     ),
     JavaBug(
@@ -633,7 +633,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.Mechanics(),
+        ct.Mechanics(), # error reporting
         62
     ),
     JavaBug(

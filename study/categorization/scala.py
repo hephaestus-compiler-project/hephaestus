@@ -573,7 +573,7 @@ scala_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(), #WrongDataReference(),
-        ct.TypeExpression(),
+        ct.Approximation()
         19
     ),
     ScalaBug(
@@ -803,7 +803,7 @@ scala_iter3 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics(),
+        ct.Mechanics(), # transformation
         13
     ),
     ScalaBug(

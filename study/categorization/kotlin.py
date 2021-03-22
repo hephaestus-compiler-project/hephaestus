@@ -110,8 +110,7 @@ kotlin_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-         # maybe consider ct.Environment?(change in DeserializedMemberScope class)
-        ct.Mechanics(), # -- serialization
+        ct.Environment(),
         #16
         11
     ),
@@ -615,8 +614,8 @@ kotlin_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
-        rc.WrongDataReference(), # Error Reporting
-        ct.Mechanics(),
+        rc.WrongDataReference(),
+        ct.Mechanics(), # Error reporting
         3
     ),
     KotlinBug(
