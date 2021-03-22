@@ -409,7 +409,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "13.KT-42825",
-        pc.ParameterizedTypes()
+        #pc.ParameterizedTypes()
         [pc.Conditionals(),
          pc.ParameterizedClasses(),
          pc.UseVariance(),
@@ -615,7 +615,7 @@ kotlin_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.Mechanics(), # Error reporting
+        ct.ErrorReporting(),
         3
     ),
     KotlinBug(
@@ -638,7 +638,7 @@ kotlin_iter3 = [
         "8.KT-6999",
         [
             pc.SecondaryConstructor(), # TODO
-            pc.Annotation() # TODO
+            pc.TypeAnnotations() # TODO
         ],
         False,
         sy.Runtime(sy.VerifyError()), # ?
@@ -673,7 +673,7 @@ kotlin_iter3 = [
         False,
         sy.MisleadingReport(),
         rc.WrongParams(),
-        ct.Mechanics(), # Error Reporting
+        ct.ErrorReporting(),
         3
     ),
     KotlinBug(
@@ -723,7 +723,7 @@ kotlin_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.ExtraneousComputation(),
-        ct.Mechanics(), # Error Reporting
+        ct.ErrorReporting(),
         3
     ),
     KotlinBug(
@@ -744,7 +744,7 @@ kotlin_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Environment()
+        ct.Environment(),
         22
     ),
     KotlinBug(
@@ -808,7 +808,7 @@ kotlin_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
-        ct.Mechanics(), # Desugaring
+        ct.Transformation(),
         14
     ),
     KotlinBug(

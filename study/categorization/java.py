@@ -46,7 +46,7 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Transformation(),
         # 21
         17
     ),
@@ -252,8 +252,8 @@ java_iter1 = [
         pc.Overriding(), pc.Subtyping()
         ],
         False,
-        sy.Runtime(sy.ClassCastException())
-        rc.WrongParams()
+        sy.Runtime(sy.ClassCastException()),
+        rc.WrongParams(),
         ct.Inference(),
         # 24
         8
@@ -503,7 +503,7 @@ java_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(), # desugaring
+        ct.Transformation(),
         9
     ),
     JavaBug(
@@ -633,7 +633,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.Mechanics(), # error reporting
+        ct.ErrorReporting(),
         62
     ),
     JavaBug(
@@ -671,7 +671,7 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(), # Desugaring
+        ct.Transformation(),
         27
     ),
     JavaBug(
@@ -714,7 +714,7 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(), # Error Reporting
+        ct.ErrorReporting(),
         26
     ),
     JavaBug(
@@ -723,7 +723,7 @@ java_iter3 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
-            pc.WildcardType(), #TODO
+            pc.WildCardType(), #TODO
             pc.Cast()
         ],
         True,
@@ -766,7 +766,7 @@ java_iter3 = [
         "17.JDK-8161383",
         [
             pc.NestedDeclaration(),
-            pc.AugmentedAssignment(), #TODO
+            pc.AugmentedAssignmentOperator(), #TODO
             pc.Inheritance(),
             pc.AccessModifiers()
         ],

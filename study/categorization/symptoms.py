@@ -125,6 +125,13 @@ class WrongResult(RuntimeSymptom):
     name = "Wrong result"
 
 
+class CaseNotFound(RuntimeSymptom):
+    """
+    """
+
+    name = "CaseNotFound"
+
+
 class Runtime(Symptom):
     """
     The developer observes an unexpected behaviour during the execution

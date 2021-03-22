@@ -122,3 +122,11 @@ class Declarations(Category):
     """
     # Note that this category is sub-category of OtherSemanticChecking
     name = "Declaration-related"
+
+
+class ErrorReporting(Category):
+    name = "Error Reporting Bugs"
+
+
+class Transformation(Category):
+    name = "AST Transformation Bugs"

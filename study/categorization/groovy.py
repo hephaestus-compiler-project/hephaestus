@@ -62,7 +62,6 @@ groovy_iter1 = [
          pc.ParameterizedTypes(),
          pc.VarTypeInference(),
          pc.Subtyping()],
-        ),
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),
@@ -74,6 +73,8 @@ groovy_iter1 = [
     GroovyBug(
         "6.GROOVY-5232",
         [pc.Property(), pc.VarTypeInference()],
+        True,
+        sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
         # 15
@@ -110,7 +111,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),
+        ct.Transformation(),
         # 16
         12
     ),
@@ -226,7 +227,7 @@ groovy_iter1 = [
         rc.InsufficientAlgorithmImplementation(),
         # agreed, also consider ct.Declaration because we are checking if constructor with map type argument is semantically correct
         #   If a class defines a constructor which takes a map as argument, then the type checker doesn't recognize it and will think that constructor calls with maps are the default groovy map-style constructor.
-        ct.Mechanics(), # transformation
+        ct.Transformation(),
         8
     ),
     GroovyBug(
@@ -583,7 +584,7 @@ groovy_iter3 = [
             pc.ParameterizedTypes(),
             pc.Lambdas(),
             pc.TypeArgsInference(),
-            pc.WildcardType() # TODO
+            pc.WildCardType() # TODO
         ],
         True,
         sy.CompileTimeError(),
@@ -724,7 +725,7 @@ groovy_iter3 = [
             pc.TypeArgsInference()
         ],
         True,
-        sy.InternalCompilerError(sy.NullPointerException()),
+        sy.InternalCompilerError(),
         rc.WrongDataReference(),
         ct.Inference(),
         27

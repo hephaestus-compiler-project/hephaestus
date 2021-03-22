@@ -160,6 +160,16 @@ class Overloading(Characteristic):
     is_common = True
 
 
+class SecondaryConstructor(Characteristic):
+    """
+    The test case contains a secondary constructor (Kotlin only).
+    """
+    name = "Secondary constructor"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class Subtyping(Characteristic):
     """
     The test case uses types for which the subtyping relation holds.
@@ -247,6 +257,16 @@ class ArithmeticExpressions(Characteristic):
     The test case contains arithmetic expressions (e.g., a + b).
     """
     name = "Arithmetic Expressions"
+    category = StandardFeatures()
+    characteristic_type = Expressions()
+    is_common = True
+
+
+class AugmentedAssignmentOperator(Characteristic):
+    """
+    The test case contains an augmented assignment operator (x += 1).
+    """
+    name = "Augmented Assignment Operator"
     category = StandardFeatures()
     characteristic_type = Expressions()
     is_common = True
@@ -614,6 +634,16 @@ class AccessModifiers(Characteristic):
     is_common = True
 
 
+class Singleton(Characteristic):
+    """
+    The test case declares a singleton object (Scala and Kotlin only).
+    """
+    name = "Singleton"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class Cast(Characteristic):
     """
     The test case contains a cast expression.
@@ -790,6 +820,17 @@ class PrimitiveTypes(Characteristic):
     category = TypeSystem()
     characteristic_type = Types()
     is_common = False
+
+
+class WildCardType(Characteristic):
+    """
+    The test case contains a parameterized type that comes from the
+    application of a type constructor with a wildcard type, e.g. A<?>.
+    """
+    name = "Wildcard Type"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = True
 
 
 class ParameterizedTypes(Characteristic):

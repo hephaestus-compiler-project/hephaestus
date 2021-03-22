@@ -12,7 +12,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics(), # error reporting
+        ct.ErrorReporting(),
         #  10
         9
     ),
@@ -66,7 +66,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation /desugaring
+        ct.Transformation(),
         4
     ),
     ScalaBug(
@@ -79,7 +79,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        pc.Declaration(),
+        ct.Declarations(),
         2
     ),
     ScalaBug(
@@ -109,7 +109,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics(),  # transformation
+        ct.Transformation(),
         # 16
         13
     ),
@@ -153,7 +153,7 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.Mechanics(),  # transformation
+        ct.Transformation(),
         24
     ),
     ScalaBug(
@@ -184,7 +184,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics(),  # error reporting
+        ct.ErrorReporting(),
         5
     ),
     ScalaBug(
@@ -240,7 +240,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation / desugaring
+        ct.Transformation(),
         #7
         6
     ),
@@ -301,7 +301,7 @@ scala_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # error reporting
+        ct.ErrorReporting(),
         4
     ),
     ScalaBug(
@@ -464,7 +464,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation
+        ct.Transformation(),
         10
     ),
     ScalaBug(
@@ -475,7 +475,7 @@ scala_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(),  # transformation
+        ct.Transformation(),
         8
     ),
     ScalaBug(
@@ -486,7 +486,7 @@ scala_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectDataType(),
-        ct.Mechanics(),  # Transformation
+        ct.Transformation(),
         3
     ),
     ScalaBug(
@@ -567,13 +567,13 @@ scala_iter3 = [
             pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.AlgebraicDataTypes(),
-            pc.WildcardType(), # TODO
+            pc.WildCardType(), # TODO
             pc.PatMat()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(), #WrongDataReference(),
-        ct.Approximation()
+        ct.Approximation(),
         19
     ),
     ScalaBug(
@@ -629,7 +629,7 @@ scala_iter3 = [
         "6.Scala2-2038",
         [
             pc.Collections(),
-            pc.WildcardType(), #TODO
+            pc.WildCardType(), #TODO
             pc.Reflection(),
             pc.PatMat(),
             pc.TypeArgsInference(),
@@ -677,7 +677,7 @@ scala_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Mechanics(), # Error Reporting
+        ct.ErrorReporting(),
         18
     ),
     ScalaBug(
@@ -779,7 +779,7 @@ scala_iter3 = [
             pc.CallByName(),
             pc.BoundedPolymorphism(),
             pc.ParameterizedFunctions(),
-            pc.WildcardType(), # TODO
+            pc.WildCardType(), # TODO
             pc.TypeArgsInference(),
             pc.TryCatch(),
             pc.FunctionalInterface(),
@@ -803,7 +803,7 @@ scala_iter3 = [
         True,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Mechanics(), # transformation
+        ct.Transformation(),
         13
     ),
     ScalaBug(
