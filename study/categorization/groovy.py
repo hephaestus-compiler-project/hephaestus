@@ -252,6 +252,7 @@ groovy_iter1 = [
 groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
+        # pc.Property() It seems the property name "names" causes a problem, pc.This()
         [pc.ParameterizedTypes, pc.JavaInterop(),
          pc.WithMultipleAssignment()
          ],
@@ -263,10 +264,12 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "2.Groovy-8686",
+        # pc.VarTypeInference()
         [pc.FlowTyping()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
+        # agreed, because we pop the temporary type info from context, maybe consider it also a Transformation bug?
         ct.Environment(),
         4
     ),
@@ -276,6 +279,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
+        # found it hard to chose, both categories fit to me, but I think Environment(type = applyGenericsContext(resolvedMethodGenerics, type);)is more related to the fix and Expression more general so I would say Environment
         ct.Environment(),  # TypeExpression
         12
     ),
@@ -285,11 +289,13 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
+        # ct.Inference we add an extra check (if we are in a nested method) in order to correctly infer the  type of nested method call 
         ct.TypeExpression(),
         7
     ),
     GroovyBug(
         "5.Groovy-6761",
+        # pc.WildCardType()
         [pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
          pc.UseVariance()
@@ -305,6 +311,7 @@ groovy_iter2 = [
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
+        # rc.MissingCase() they didnt check the assignment of null to boolean correctly (missed 2 checks) which resulted in runtime exception, i cant understand why its a design issue, was the implamantation correct and the problem was on the design? 
         rc.DesignIssue(),
         ct.TypeExpression(),
         5
@@ -331,6 +338,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "9.Groovy-5415",
+        # pc.This()
         [pc.JavaInterop(),
          pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
@@ -345,6 +353,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "10.Groovy-9328",
+        # pc.Property()
         [pc.AccessModifiers(), pc.AnonymousClass(),
          pc.Overriding()],
         True,
@@ -360,11 +369,17 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # ct.TypeApproximation()  This is for internal use only. When an argument method is null,
+        # we cannot determine its type, so we use this one as a wildcard ( UNKNOWN_PARAMETER_TYPE).
+        # in approximation documentation:  A compiler internally may approximate or convert a given type to another
+         # type for various reasons. I think this is an approximation type.
         ct.TypeComparison(),
         7
     ),
     GroovyBug(
+        # regression bug
         "12.Groovy-7922",
+        # pc.MultipleImplements()   
         [pc.Overloading(), pc.Inheritance()],
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
@@ -385,6 +400,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "14.Groovy-8090",
+        # pc.WithMultipleAssignment()
         [pc.Collections(),
          pc.ParameterizedTypes(),
          pc.ParameterizedFunctions()
@@ -403,6 +419,7 @@ groovy_iter2 = [
          ],
         True,
         sy.InternalCompilerError(),
+        # rc.InsufficientAlgorithmImplementation()  reimplementation of the placeholder extraction and resolving map
         rc.IncorrectComputation(),
         ct.Inference(),
         12
@@ -455,6 +472,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        #it is TypeExpression  but maybe consider ct.Tranformation? change the way we visit expressions.
         ct.TypeExpression(),
         7
     )
