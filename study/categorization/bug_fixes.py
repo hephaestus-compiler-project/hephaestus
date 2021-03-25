@@ -46,5 +46,5 @@ for i, p in enumerate(ax.patches):
 ax.set_ylabel('')
 patches, labels = ax.get_legend_handles_labels()
 ax.legend(patches, ('Number of bugs',), loc='lower right')
-plt.savefig("root_causes.pdf", format='pdf', bbox_inches='tight',
+plt.savefig("bug_fixes.pdf", format='pdf', bbox_inches='tight',
             pad_inches=0)
