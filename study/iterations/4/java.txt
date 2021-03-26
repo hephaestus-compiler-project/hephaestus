@@ -3,7 +3,6 @@ https://bugs.openjdk.java.net/browse/JDK-8020147,http://hg.openjdk.java.net/jdk8
 https://bugs.openjdk.java.net/browse/JDK-8174249,http://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/706967704e65
 https://bugs.openjdk.java.net/browse/JDK-8022508,http://hg.openjdk.java.net/jdk8/jdk8/langtools/rev/f657d400c736
 https://bugs.openjdk.java.net/browse/JDK-6975231,http://hg.openjdk.java.net/jdk7/jdk7/langtools/rev/ea1930f4b789
-https://bugs.openjdk.java.net/browse/JDK-8236682,https://hg.openjdk.java.net/jdk/jdk/rev/bb04a191551d
 https://bugs.openjdk.java.net/browse/JDK-8030816,http://hg.openjdk.java.net/jdk8u/jdk8u/langtools/rev/afb6642d0603
 https://bugs.openjdk.java.net/browse/JDK-8020149,http://hg.openjdk.java.net/jdk8/jdk8/langtools/rev/155809b1b969
 https://bugs.openjdk.java.net/browse/JDK-8176714,http://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/24582dd2649a
@@ -18,3 +17,4 @@ https://bugs.openjdk.java.net/browse/JDK-7151070,http://hg.openjdk.java.net/jdk8
 https://bugs.openjdk.java.net/browse/JDK-8194998,http://hg.openjdk.java.net/jdk/jdk/rev/66b0f0134aad
 https://bugs.openjdk.java.net/browse/JDK-8019480,http://hg.openjdk.java.net/jdk8/jdk8/langtools/rev/70b37cdb19d5
 https://bugs.openjdk.java.net/browse/JDK-8164399,http://hg.openjdk.java.net/jdk9/jdk9/langtools/rev/34dea0a7b9ab
+https://bugs.openjdk.java.net/browse/JDK-8008539,https://hg.openjdk.java.net/jdk8/jdk8/langtools/rev/6db9a3b1a93f
