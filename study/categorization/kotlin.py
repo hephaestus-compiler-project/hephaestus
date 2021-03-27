@@ -518,6 +518,7 @@ kotlin_iter2 = [
 kotlin_iter3 = [
     KotlinBug(
         "1.KT-31620",
+        # pc.SAM()(Interface Inv), maybe pc.ExperimentalApi() (ExperimentalTypeInference) characteristic?
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.Lambdas(),
@@ -552,6 +553,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "4.KT-35172",
+        # pc.Cast() (null as T equals to: null (T) in Kotlin)
         [pc.Nullables(), pc.ParameterizedFunctions(),
          pc.ExtensionFunctions(), pc.Lambdas(), pc.ElvisOperator(),
          pc.SafeNavigationOperator(), pc.TypeArgsInference()],
@@ -574,12 +576,15 @@ kotlin_iter3 = [
         ],
         True,
         sy.CompilationPerformance(),
+        # rc.AlgorithmImproperlyImplemented() The current implementation of the algorithm for constraints incorporation 
+        #  produces a potentially very large number constructs and causes a significant degradation performance.
         rc.IncorrectComputation(),
         ct.Inference(),
         41
     ),
     KotlinBug(
         "6.KT-30953",
+        # pc.VarTypeInference()
         [
             pc.Conditionals(),
             pc.FunctionReferences(),
@@ -591,6 +596,7 @@ kotlin_iter3 = [
         3
     ),
     KotlinBug(
+        # regression bug (This issue appeared after recently added new overload for flatMapTo.)
         "7.KT-39470",
         [
             pc.Collections(),
@@ -608,6 +614,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "8.KT-6999",
+        # maybe introduce a characterstic for org.apache.hadoop.util.PlatformName class?
         [
             pc.SecondaryConstructor(), # TODO
             pc.TypeAnnotations() # TODO
@@ -650,6 +657,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "11.KT-26816",
+        # pc.ParamTypeInference() ( Found: List<() -> Int>)
         [
             pc.TypeArgsInference(),
             pc.Lambdas(),
@@ -662,6 +670,7 @@ kotlin_iter3 = [
         9
     ),
     KotlinBug(
+        # regression bug (Issue does not reproduce with Kotlin 1.3.31 or less)
         "12.KT-33125",
         [
             pc.ParameterizedClasses(),
@@ -700,6 +709,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "14.KT-33542",
+        # pc.Nullables (Bundle?),
         [
             pc.Coroutines(),
             pc.ParameterizedClasses(),
@@ -721,6 +731,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "15.KT-15391",
+        # pc.ParamTypeInference() (suspend () -> Unit), pc.Lambda(), pc.NamedArgs() (completion = object : Continuation<Unit>)
         [
             pc.Coroutines(),
             pc.Inheritance(),
@@ -737,6 +748,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "16.KT-9320",
+        # in pc.TypeAnnotations() description it says java only, maybe include Kotlin?
         [
             pc.TypeAnnotations(),
             pc.AnonymousClass()
@@ -744,17 +756,21 @@ kotlin_iter3 = [
         True,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
+        # ct.Resolution 
+        # annotations on object literals are resolved later inside LazyClassDescriptor 
         ct.TypeExpression(),
         5
     ),
     KotlinBug(
         "17.KT-13926",
+        # pc.Nullables()
         [
             pc.TypeAnnotations(),
         ],
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
+        # agreed maybe ct.Environment() (change in private method of LazyImportScope() )
         ct.OtherSemanticChecking(),
         6
     ),
@@ -768,12 +784,16 @@ kotlin_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
+        # rc.MissingCase()
+        # missed to check and throw an error if a parameterized class is extending Throwable
         rc.DesignIssue(),
+        # ct.Declaration()  semantic check of class declaration
         ct.OtherSemanticChecking(),
         10
     ),
     KotlinBug(
         "19.KT-4462",
+        # pc.Property(), pc.Arrays()
         [
             pc.OperatorOverloading(),
         ],
@@ -785,12 +805,14 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "20.KT-11203",
+        # pc.Arrays()
         [
             pc.OperatorOverloading(),
             pc.ExtensionFunctions()
         ],
         False,
         sy.Runtime(sy.VerifyError()),
+        # rc.MissingCase() add a boolean variable to resolveArrayAccessSpecialMethod to check if the array access is implicit, also we add an extra condition and an extra method
         rc.IncorrectCondition(),
         ct.Resolution(),
         8
