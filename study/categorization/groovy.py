@@ -16,7 +16,6 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        # maybe also ct.TypeComparsion() because we are comparing the length of parameterized type and redirectGenericsTypes and also is bound-related
         ct.Inference(),
         5
     ),
@@ -30,7 +29,6 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
-        # 11
         9
         ),
     GroovyBug(
@@ -40,12 +38,10 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
         ct.Resolution(),
-        # 8
         7
     ),
     GroovyBug(
         "4.GROOVY-7211",
-        #pc.Property()
         [pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
          pc.NamedArgs()],
@@ -53,7 +49,6 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Inference(),
-        # 20
         13
     ),
     GroovyBug(
@@ -65,9 +60,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),
-        # ct.Inference() because We want to find inferred type of type variable Map(K,V) and we need to take into consideration the type of key given may be supertype (Object)
         ct.TypeExpression(),
-        # 26
         14
     ),
     GroovyBug(
@@ -77,7 +70,6 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
-        # 15
         9
     ),
     GroovyBug(
@@ -87,23 +79,19 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.TypeComparison(),
-        # 12
         7
     ),
     GroovyBug(
         "8.GROOVY-7721",
-        # pc.JavaInterop()
-        [pc.Arrays(), pc.Subtyping(), pc.Overriding()],
+        [pc.Arrays(), pc.Subtyping(), pc.Overriding(), pc.JavaInterop()],
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Resolution(),
-        # 18
         13
     ),
     GroovyBug(
         "9.GROOVY-6021",
-        # pc.Arrays, pc.WithMultipleAssignment(),
         [pc.Lambdas(),
          pc.Collections(),
          pc.DelegationAPI(),
@@ -111,8 +99,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Transformation(),
-        # 16
+        ct.Transformation(), # TODO backend
         12
     ),
     GroovyBug(
@@ -125,44 +112,36 @@ groovy_iter1 = [
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
         ct.Inference(),
-        # 10
         9
     ),
     GroovyBug(
         "11.GROOVY-7333",
-        #pc.Subtyping()
         [pc.FlowTyping(),
          pc.PrimitiveTypes(),
-         pc.Arrays()],
+         pc.Arrays(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
-        # agreed also consider rc.IncorrectComputation()  Incorrect union type computed in case one of the types is Object
         rc.MissingCase(),
         ct.Approximation(),
-        # 10
         7
 
     ),
     GroovyBug(
         "12.GROOVY-7987",
-        # why static?
         [pc.StaticMethod()],
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
         ct.OtherSemanticChecking(),
-        # 10
         7
     ),
      GroovyBug(
         "13.GROOVY-8445",
-        # no pc.ParamTypeInference(), pc.Streams()
-        [pc.Lambdas(), pc.Collections(), pc.ParamTypeInference()],
+        [pc.Lambdas(), pc.ParamTypeInference(), pc.Streams()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Approximation(),
-        # 14
         11
     ),
     GroovyBug(
@@ -173,7 +152,6 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.TypeExpression(),
-        # 4
         2
     ),
     GroovyBug(
@@ -183,18 +161,15 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Resolution(),
-        # 12
         10
     ),
  GroovyBug(
         "16.GROOVY-7315",
-        # pc.PrimitiveTypes()
-        [pc.NamedArgs(), pc.NestedDeclaration()],
+        [pc.NamedArgs(), pc.NestedDeclaration(), pc.PrimitiveTypes()],
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
         ct.OtherSemanticChecking(),
-        # 12
         9
     ),
     GroovyBug(
@@ -205,13 +180,11 @@ groovy_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
         ct.Resolution(),
-        # 6
         4
     ),
     GroovyBug(
         "18.GROOVY-7711",
-        # pc.Inheritance()
-        [pc.Overriding(), pc.Varargs(), pc.Subtyping()],
+        [pc.Overriding(), pc.Varargs(), pc.Subtyping(), pc.Inheritance()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
@@ -220,13 +193,10 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "19.GROOVY-6119",
-        # pc.PrimitiveTypes(), pc.Property()
         [pc.Collections(), pc.NamedArgs()],
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        # agreed, also consider ct.Declaration because we are checking if constructor with map type argument is semantically correct
-        #   If a class defines a constructor which takes a map as argument, then the type checker doesn't recognize it and will think that constructor calls with maps are the default groovy map-style constructor.
         ct.Transformation(),
         8
     ),
@@ -241,7 +211,6 @@ groovy_iter1 = [
         sy.Runtime(),
         rc.IncorrectCondition(),
         ct.TypeExpression(),
-        # 12
         10
     )
 ]
@@ -289,7 +258,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        # ct.Inference we add an extra check (if we are in a nested method) in order to correctly infer the  type of nested method call 
+        # ct.Inference we add an extra check (if we are in a nested method) in order to correctly infer the  type of nested method call
         ct.TypeExpression(),
         7
     ),
@@ -311,7 +280,7 @@ groovy_iter2 = [
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
-        # rc.MissingCase() they didnt check the assignment of null to boolean correctly (missed 2 checks) which resulted in runtime exception, i cant understand why its a design issue, was the implamantation correct and the problem was on the design? 
+        # rc.MissingCase() they didnt check the assignment of null to boolean correctly (missed 2 checks) which resulted in runtime exception, i cant understand why its a design issue, was the implamantation correct and the problem was on the design?
         rc.DesignIssue(),
         ct.TypeExpression(),
         5
@@ -379,7 +348,7 @@ groovy_iter2 = [
     GroovyBug(
         # regression bug
         "12.Groovy-7922",
-        # pc.MultipleImplements()   
+        # pc.MultipleImplements()
         [pc.Overloading(), pc.Inheritance()],
         False,
         sy.Runtime(sy.AmbiguousMethodError()),

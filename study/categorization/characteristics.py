@@ -586,6 +586,16 @@ class DataClasses(Characteristic):
     is_common = False
 
 
+class ValueClasses(Characteristic):
+    """
+    The test case declares a value class (Scala only)
+    """
+    name = "Value classes"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class NullAssertion(Characteristic):
     """
     The test case contains a null assertion expression (Kotlin only).
