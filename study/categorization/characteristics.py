@@ -40,7 +40,7 @@ class OOPFeatures(CharacteristicCategory):
     initialization, overriding, etc.
     """
 
-    name = "OOP langauges"
+    name = "OOP features"
 
 
 class ParametricPolymorphism(CharacteristicCategory):
@@ -49,7 +49,7 @@ class ParametricPolymorphism(CharacteristicCategory):
     e.g., declaration of parameterized classes / functions, use of
     parameterized types, etc.
     """
-    name = "Parametric Polymorphism"
+    name = "Parametric polymorphism"
 
 
 class FunctionalProgramming(CharacteristicCategory):
@@ -59,7 +59,7 @@ class FunctionalProgramming(CharacteristicCategory):
     declaration of higher-order functions, use of function types, etc.
     """
 
-    name = "Functional Programming"
+    name = "Functional programming"
 
 
 class StandardLibrary(CharacteristicCategory):
@@ -68,7 +68,7 @@ class StandardLibrary(CharacteristicCategory):
     of the language, e.g., collection API (lists, map, sets, etc.).
     """
 
-    name = "Standard Library"
+    name = "Standard library"
 
 
 class TypeInference(CharacteristicCategory):
@@ -78,7 +78,7 @@ class TypeInference(CharacteristicCategory):
     by the compiler.
     """
 
-    name = "Type Inference"
+    name = "Type inference"
 
 
 class TypeSystem(CharacteristicCategory):
@@ -96,7 +96,7 @@ class SpecialFeatures(CharacteristicCategory):
     This category includes other language features that are not related to
     any of the categories above.
     """
-    name = "Special features"
+    name = "Other"
 
 
 class CharacteristicType():
@@ -757,12 +757,19 @@ class Inline(Characteristic):
     is_common = False
 
 
+class Implicits(Characteristic):
+    name = "Implicits"
+    category = SpecialFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class ImplicitParameters(Characteristic):
     """
     The test case contains implicit parameters (Scala only).
     """
     name = "Implicit parameters"
-    category = SpecialFeatures()
+    category = Implicits()
     characteristic_type = Declaration()
     is_common = False
 
@@ -772,7 +779,7 @@ class ImplicitDefs(Characteristic):
     The test case contains implicit definitions (Scala only).
     """
     name = "Implicit definitions"
-    category = SpecialFeatures()
+    category = Implicits()
     characteristic_type = Declaration()
     is_common = False
 
