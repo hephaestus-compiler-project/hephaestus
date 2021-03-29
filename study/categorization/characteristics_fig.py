@@ -45,7 +45,7 @@ for i, (key, dataframe) in enumerate(dataframes.items()):
                         color='grey', ax=axs[i])
     ob = offsetbox.AnchoredText(key, loc=1,
                                 prop=dict(color='black', fontsize=4))
-    ob.patch.set(boxstyle='round', color='darkgrey', alpha=1)
+    ob.patch.set(boxstyle='round', color='lightgrey', alpha=1)
     axs[i].add_artist(ob)
     axs[i].set_ylabel('')
     axs[i].set_xlabel('Number of bugs (%)')
