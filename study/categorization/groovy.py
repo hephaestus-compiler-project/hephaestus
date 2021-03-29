@@ -232,7 +232,7 @@ groovy_iter2 = [
         17
     ),
     GroovyBug(
-        "2.Groovy-8686",
+        "2.GROOVY-8686",
         # pc.VarTypeInference()
         [pc.FlowTyping()],
         False,
@@ -243,7 +243,7 @@ groovy_iter2 = [
         4
     ),
     GroovyBug(
-        "3.Groovy-6415",
+        "3.GROOVY-6415",
         [pc.ParameterizedFunctions()],
         True,
         sy.CompileTimeError(),
@@ -253,7 +253,7 @@ groovy_iter2 = [
         12
     ),
     GroovyBug(
-        "4.Groovy-8590",
+        "4.GROOVY-8590",
         [pc.PrimitiveTypes(), pc.Cast(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
@@ -263,7 +263,7 @@ groovy_iter2 = [
         7
     ),
     GroovyBug(
-        "5.Groovy-6761",
+        "5.GROOVY-6761",
         # pc.WildCardType()
         [pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
@@ -276,7 +276,7 @@ groovy_iter2 = [
         8
     ),
     GroovyBug(
-        "6.Groovy-6034",
+        "6.GROOVY-6034",
         [pc.PrimitiveTypes()],
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
@@ -286,7 +286,7 @@ groovy_iter2 = [
         5
     ),
     GroovyBug(
-        "7.Groovy-6195",
+        "7.GROOVY-6195",
         [pc.Collections(), pc.VarTypeInference()],
         True,
         sy.CompileTimeError(),
@@ -295,7 +295,7 @@ groovy_iter2 = [
         7
     ),
     GroovyBug(
-        "8.Groovy-5873",
+        "8.GROOVY-5873",
         [pc.Inheritance(), pc.ParameterizedClasses(),
          pc.ParameterizedTypes(), pc.Property()
          ],
@@ -306,7 +306,7 @@ groovy_iter2 = [
         10
     ),
     GroovyBug(
-        "9.Groovy-5415",
+        "9.GROOVY-5415",
         # pc.This()
         [pc.JavaInterop(),
          pc.ParameterizedClasses(),
@@ -321,7 +321,7 @@ groovy_iter2 = [
         11
     ),
     GroovyBug(
-        "10.Groovy-9328",
+        "10.GROOVY-9328",
         # pc.Property()
         [pc.AccessModifiers(), pc.AnonymousClass(),
          pc.Overriding()],
@@ -332,7 +332,7 @@ groovy_iter2 = [
         14
     ),
     GroovyBug(
-        "11.Groovy-5175",
+        "11.GROOVY-5175",
         [pc.Arrays(),
          pc.Subtyping()],
         True,
@@ -347,7 +347,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         # regression bug
-        "12.Groovy-7922",
+        "12.GROOVY-7922",
         # pc.MultipleImplements()
         [pc.Overloading(), pc.Inheritance()],
         False,
@@ -357,7 +357,7 @@ groovy_iter2 = [
         9
     ),
     GroovyBug(
-        "13.Groovy-6129",
+        "13.GROOVY-6129",
         [pc.Collections(),
          pc.ParameterizedTypes(),
          pc.TypeArgsInference()],
@@ -368,7 +368,7 @@ groovy_iter2 = [
         2
     ),
     GroovyBug(
-        "14.Groovy-8090",
+        "14.GROOVY-8090",
         # pc.WithMultipleAssignment()
         [pc.Collections(),
          pc.ParameterizedTypes(),
@@ -381,7 +381,7 @@ groovy_iter2 = [
         7
     ),
     GroovyBug(
-        "15.Groovy-5742",
+        "15.GROOVY-5742",
         [pc.Import(), pc.ParameterizedClasses(),
          pc.FBounded(), pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(), pc.Inheritance()
@@ -394,7 +394,7 @@ groovy_iter2 = [
         12
     ),
     GroovyBug(
-        "16.Groovy-7307",
+        "16.GROOVY-7307",
         [pc.Subtyping(),
          pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
          ],
@@ -405,7 +405,7 @@ groovy_iter2 = [
         11
     ),
     GroovyBug(
-        "17.Groovy-7618",
+        "17.GROOVY-7618",
         [
          pc.Lambdas(),
          pc.ParamTypeInference(),
@@ -417,7 +417,7 @@ groovy_iter2 = [
         10
     ),
     GroovyBug(
-        "18.Groovy-5580",
+        "18.GROOVY-5580",
         [pc.Inheritance(), pc.Property()],
         True,
         sy.CompileTimeError(),
@@ -426,7 +426,7 @@ groovy_iter2 = [
         14
     ),
     GroovyBug(
-        "19.Groovy-7061",
+        "19.GROOVY-7061",
         [pc.Collections(), pc.ParamTypeInference(),
          pc.Lambdas()],
         True,
@@ -436,7 +436,7 @@ groovy_iter2 = [
         5
     ),
     GroovyBug(
-        "20.Groovy-5240",
+        "20.GROOVY-5240",
         [pc.Reflection()],
         True,
         sy.CompileTimeError(),
@@ -556,14 +556,14 @@ groovy_iter3 = [
         #  The fix above refines the implementation of the algorithm related to selecting the correct "inject" method so I think it is pc.InsufficientAlgorithmImplementation()
         rc.MissingCase(),
         # found it difficult, both fit I would say TypeExpression because mostly the fix is related more with the type check of expression than with the process of inferring a type variable.
-        # 
+        #
         ct.Inference(), # TypeExpression
         1
     ),
     GroovyBug(
         "9.GROOVY-9518",
-        # pc.pc.TypeArgsInference()  {foo, bar -> println(bar.size())}) for argument Consumer<String, ? super List<Integer>> bar 
-        
+        # pc.pc.TypeArgsInference()  {foo, bar -> println(bar.size())}) for argument Consumer<String, ? super List<Integer>> bar
+
         [
             pc.JavaInterop(),
             pc.FunctionAPI(),
