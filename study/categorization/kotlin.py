@@ -576,7 +576,7 @@ kotlin_iter3 = [
         ],
         True,
         sy.CompilationPerformance(),
-        # rc.AlgorithmImproperlyImplemented() The current implementation of the algorithm for constraints incorporation 
+        # rc.AlgorithmImproperlyImplemented() The current implementation of the algorithm for constraints incorporation
         #  produces a potentially very large number constructs and causes a significant degradation performance.
         rc.IncorrectComputation(),
         ct.Inference(),
@@ -756,8 +756,8 @@ kotlin_iter3 = [
         True,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        # ct.Resolution 
-        # annotations on object literals are resolved later inside LazyClassDescriptor 
+        # ct.Resolution
+        # annotations on object literals are resolved later inside LazyClassDescriptor
         ct.TypeExpression(),
         5
     ),
@@ -963,7 +963,7 @@ kotlin_iter4 = [
         [
             pc.JavaInterop(),
             pc.Conditionals(),
-            pc.Enum()
+            pc.Enums()
         ],
         True,
         sy.Runtime(), # TODO MissingCase
@@ -1081,7 +1081,7 @@ kotlin_iter4 = [
             pc.UseVariance(),
             pc.FunctionReferences(),
             pc.SAM(),
-            pc.FunctionalInterface()
+            pc.FunctionAPI()
         ],
         True,
         sy.CompileTimeError(),
