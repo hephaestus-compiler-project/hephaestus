@@ -450,6 +450,7 @@ groovy_iter2 = [
 groovy_iter3 = [
     GroovyBug(
         "1.GROOVY-5411",
+        # pc.StaticMethod() (static context)
         [
             #  pc.StandardFeatures()
         ],
@@ -483,6 +484,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "4.GROOVY-7327",
+        # no pc.ParameterizedTypes(), pc.Varargs() (Arrays.asList(sequence)[0..1])
         [pc.JavaInterop(),
          pc.ParameterizedFunctions(),
          pc.Collections(),
@@ -501,6 +503,7 @@ groovy_iter3 = [
         [pc.Collections(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
+        # pc.IncorrectComputation() fix body of parameterizeArguments method, could be missing case, but I consider it more algorithmic than logic fix.
         rc.MissingCase(), # IncorrectComputation
         ct.Inference(),
         2
@@ -530,6 +533,11 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # ct.Resolution Groovy is unable to resolve this Generics use case, change in ResolveVisitor, we find the enclosing method
+        # if (innerClassNode.isAnonymous()) {
+        # MethodNode enclosingMethod = innerClassNode.getEnclosingMethod();
+        # if (null != enclosingMethod) {
+        #     resolveGenericsHeader(enclosingMethod.getGenericsTypes());
         ct.Environment(),
         8
     ),
@@ -543,12 +551,19 @@ groovy_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
+        # pc.InsufficientAlgorithmImplementation()
+        # algorithmic error not a simple missing case, we can see many methods like fullyResolve or typeCheckMethodArgumentWithGenerics or typeCheckMethodsWithGenerics removed and re-implemented
+        #  The fix above refines the implementation of the algorithm related to selecting the correct "inject" method so I think it is pc.InsufficientAlgorithmImplementation()
         rc.MissingCase(),
+        # found it difficult, both fit I would say TypeExpression because mostly the fix is related more with the type check of expression than with the process of inferring a type variable.
+        # 
         ct.Inference(), # TypeExpression
         1
     ),
     GroovyBug(
         "9.GROOVY-9518",
+        # pc.pc.TypeArgsInference()  {foo, bar -> println(bar.size())}) for argument Consumer<String, ? super List<Integer>> bar 
+        
         [
             pc.JavaInterop(),
             pc.FunctionalInterface(),
@@ -566,6 +581,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "10.GROOVY-5172",
+        # pc.ParamTypeInference() { ->printHtmlPart(2) }
         [
             pc.JavaInterop(),
             pc.Inheritance(),
@@ -583,6 +599,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "11.GROOVY-5141",
+        #pc.ParamTypeInference()(same as GROOVY-5141 ) maybe create a characterisitc it (implicit variable that is provided in closures.)
         [
             pc.Collections(),
             pc.Lambdas(),
@@ -596,6 +613,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "12.GROOVY-5601",
+        # pc.SAM()(Mapper<F, T>), no pc.Overriding()
         [
             pc.AnonymousClass(),
             pc.ParameterizedClasses(),
@@ -605,7 +623,12 @@ groovy_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
+        # rc.MissingCase() we add a check to report an error message
         rc.DesignIssue(),
+        # I think it fits in 2 categories.
+        # ct.Declaration() because we have a Semantic check of a class declaration, if it is using generics, is inner and is anonymous create an error message.
+        # maybe it could also be ct.ErrorReporting()? we add a check to add an errormessage
+        # ct.Declaration() fits better
         ct.OtherSemanticChecking(),
         18
     ),
@@ -623,6 +646,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "14.GROOVY-8629",
+        # no pc.ParameterizedClasses(), pc.This(), pc.Property() (in fix we see pushEnclosingPropertyExpression),
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
@@ -639,6 +663,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "15.GROOVY-5456",
+        # pc.PrimitiveTypes(), pc.ParamTypeInference() (only it/2 statement without closure parameters) ({ [closureParameters -> ] statements })
         [
             pc.ArithmeticExpressions(),
             pc.Lambdas(),
@@ -659,6 +684,8 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
+        # the fix fits also ct.TypeComparsion()  if (accessedVariable instanceof Parameter) (((Parameter) accessedVariable) casting)
+        # it also fits Environment because putNodeMetaData changes context
         ct.Environment(),
         13
     ),
@@ -708,6 +735,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "20.GROOVY-7880",
+        # pc.This()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
