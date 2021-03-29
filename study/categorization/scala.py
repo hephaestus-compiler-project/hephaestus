@@ -128,7 +128,7 @@ scala_iter1 = [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.FBounded(),
-            pc.ExistentialTypes(),
+            pc.WildCardType(),
             pc.Inheritance(),
             pc.SealedClasses(), pc.ImplicitParameters(), pc.ImplicitDefs()
         ],
@@ -405,7 +405,7 @@ scala_iter2 = [
             pc.NestedDeclaration(),
             pc.Inheritance(),
             pc.ImplicitParameters(),
-            pc.ExistentialTypes(),
+            pc.WildCardType(),
             pc.PatMat()
         ],
         True,
@@ -497,7 +497,7 @@ scala_iter2 = [
             pc.Inheritance(), pc.AlgebraicDataTypes(),
             pc.ParameterizedClasses(), pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(), pc.FunctionTypes(),
-            pc.UnionTypes(), pc.ExistentialTypes()
+            pc.UnionTypes(), pc.WildCardType()
         ],
         True,
         sy.CompileTimeError(),
@@ -585,7 +585,7 @@ scala_iter3 = [
             pc.BoundedPolymorphism(),
             pc.TypeArgsInference(),
             pc.Overloading(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.AnonymousClass()
         ],
         False,
@@ -635,7 +635,7 @@ scala_iter3 = [
             pc.Reflection(),
             pc.PatMat(),
             pc.TypeArgsInference(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes()
         ],
         False,
@@ -648,7 +648,7 @@ scala_iter3 = [
         "7.Scala2-5378",
         [
             pc.ParameterizedClasses(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.DeclVariance(),
             pc.AnonymousClass(),
             pc.Overriding(),
@@ -686,7 +686,7 @@ scala_iter3 = [
         "9.Scala2-11252",
         [
             pc.PatMat(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.Overriding(),
             pc.Conditionals(),
             pc.AlgebraicDataTypes()
@@ -784,7 +784,7 @@ scala_iter3 = [
             pc.WildCardType(), # TODO
             pc.TypeArgsInference(),
             pc.TryCatch(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.Lambdas(),
             pc.ParameterizedTypes()
         ],
@@ -815,7 +815,7 @@ scala_iter3 = [
             pc.PatMat(),
             pc.AlgebraicDataTypes(),
             pc.Overriding(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
         ],
         False,

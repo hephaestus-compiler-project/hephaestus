@@ -526,7 +526,7 @@ groovy_iter3 = [
             pc.ParameterizedFunctions(),
             pc.AnonymousClass(),
             pc.ParameterizedTypes(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.TypeArgsInference(),
             pc.Overriding()
         ],
@@ -566,7 +566,7 @@ groovy_iter3 = [
         
         [
             pc.JavaInterop(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.ParamTypeInference(),
             pc.Collections(),

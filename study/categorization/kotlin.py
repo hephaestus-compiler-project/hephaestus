@@ -62,7 +62,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "6.KT-7485",
-        [pc.Where(),
+        [pc.MultiBounds(),
          pc.BoundedPolymorphism(),
          pc.ParameterizedFunctions(),
          pc.ParameterizedClasses(),
@@ -489,7 +489,7 @@ kotlin_iter2 = [
          pc.ParameterizedFunctions(),
          pc.ParameterizedTypes(),
          pc.FBounded(),
-         pc.Where(),
+         pc.MultiBounds(),
          pc.IntersectionTypes(),
          pc.ExtensionFunctions()],
         True,
@@ -696,7 +696,7 @@ kotlin_iter3 = [
     KotlinBug(
         "13.KT-7383",
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.WildCardType(), # TODO
             pc.ParameterizedTypes(),
             pc.Lambdas()

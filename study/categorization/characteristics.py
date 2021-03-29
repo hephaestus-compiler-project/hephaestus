@@ -308,13 +308,13 @@ class FunctionReferences(Characteristic):
 
 class ExtensionFunctions(Characteristic):
     """
-    The test case defines an extension function.
+    The test case defines an extension function or property.
 
     For more details:
 
     https://kotlinlang.org/docs/extensions.html
     """
-    name = "Extension Fucntions"
+    name = "Extensions"
     category = SpecialFeatures()
     characteristic_type = Declaration()
     is_common = False
@@ -401,7 +401,7 @@ class Nullables(Characteristic):
     The test case uses nullable types (Kotlin only).
     """
     name = "Nullable types"
-    category = SpecialFeatures()
+    category = TypeSystem()
     characteristic_type = Types()
     is_common = False
 
@@ -419,7 +419,7 @@ class BoundedPolymorphism(Characteristic):
     is_common = True
 
 
-class Where(Characteristic):
+class MultiBounds(Characteristic):
     """
     The test case defines a type parameter with multiple bounds.
     """
@@ -648,7 +648,7 @@ class Singleton(Characteristic):
     """
     The test case declares a singleton object (Scala and Kotlin only).
     """
-    name = "Singleton"
+    name = "Singleton object"
     category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = False
@@ -690,7 +690,7 @@ class Delegation(Characteristic):
     is_common = False
 
 
-class FunctionalInterface(Characteristic):
+class FunctionAPI(Characteristic):
     """
     The test case uses the function API from the standard library of Java.
     """
@@ -892,17 +892,6 @@ class DependentTypes(Characteristic):
     (Scala only).
     """
     name = "Dependent types"
-    category = TypeSystem()
-    characteristic_type = Types()
-    is_common = False
-
-
-class ExistentialTypes(Characteristic):
-    """
-    The test declares a variable/parameter whose type is an existential type
-    (Scala only).
-    """
-    name = "Existential types"
     category = TypeSystem()
     characteristic_type = Types()
     is_common = False

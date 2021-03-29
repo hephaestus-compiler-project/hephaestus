@@ -23,7 +23,7 @@ java_iter1 = [
     ),
     JavaBug(
         "2.JDK-8254557",
-        [pc.Streams(), pc.FunctionalInterface(),
+        [pc.Streams(), pc.FunctionAPI(),
          pc.ParameterizedFunctions(), pc.AnonymousClass(),
          pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
          pc.TypeArgsInference(),
@@ -155,7 +155,7 @@ java_iter1 = [
     ),
     JavaBug(
         "12.JDK-8203277",
-        [pc.Collections(), pc.FunctionalInterface(),
+        [pc.Collections(), pc.FunctionAPI(),
          pc.Overriding(), pc.Lambdas(), pc.TypeArgsInference()
          ],
         True,
@@ -169,7 +169,7 @@ java_iter1 = [
         "13.JDK-8195598",
         [
             pc.ParameterizedFunctions(), pc.Overloading(),
-            pc.Lambdas(), pc.FunctionalInterface()
+            pc.Lambdas(), pc.FunctionAPI()
         ],
         True,
         sy.CompileTimeError(),
@@ -234,7 +234,7 @@ java_iter1 = [
  JavaBug(
         "18.JDK-8154180",
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.Lambdas(),
         ],
@@ -261,7 +261,7 @@ java_iter1 = [
     JavaBug(
         "20.JDK-8148354",
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.FunctionReferences(),
             pc.ParameterizedFunctions(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(),
@@ -284,7 +284,7 @@ java_iter2 = [
         # pc.FunctionReferences() strings::stream
         [
             pc.Streams(), pc.Collections(), pc.Lambdas(),
-            pc.FunctionalInterface(), pc.BoundedPolymorphism(),
+            pc.FunctionAPI(), pc.BoundedPolymorphism(),
             pc.UseVariance(), pc.ParameterizedTypes(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.Subtyping()
@@ -414,7 +414,7 @@ java_iter2 = [
         "11.JDK-8020804",
         # pc.SAM() (Supplier<D>), pc.Collections() (LinkedList)
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.Arrays(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(), pc.Overloading(),
@@ -482,7 +482,7 @@ java_iter2 = [
     ),
     JavaBug(
         "16.JDK-8188144",  # regression
-        [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionalInterface()],
+        [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionAPI()],
         True,
         sy.Runtime(sy.WrongResult()),
         # I agree with rc.IncorrectComputation() because:
@@ -498,7 +498,7 @@ java_iter2 = [
         # pc.ParameterizedTypes()?
         [
             pc.Varargs(), pc.TypeArgsInference(), pc.ParameterizedClasses(),
-            pc.FunctionReferences(), pc.FunctionalInterface()
+            pc.FunctionReferences(), pc.FunctionAPI()
         ],
         True,
         sy.InternalCompilerError(),
@@ -703,7 +703,7 @@ java_iter3 = [
         "13.JDK-8175790",
         [
             pc.ParameterizedFunctions(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.Collections(),
             pc.Subtyping(),
             pc.UseVariance(),
@@ -796,7 +796,7 @@ java_iter3 = [
             pc.FunctionReferences(),
             pc.Varargs(),
             pc.ParameterizedFunctions(),
-            pc.FunctionalInterface()
+            pc.FunctionAPI()
         ],
         True,
         sy.InternalCompilerError(),
@@ -807,7 +807,7 @@ java_iter3 = [
     JavaBug(
         "20.JDK-8173456",
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.AccessModifiers(),
             pc.Inheritance(),
