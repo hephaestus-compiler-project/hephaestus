@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from characteristics import CharacteristicCategory
 from kotlin import *
 from java import *
 from scala import *
@@ -18,6 +19,29 @@ bugs = java_iter1 + java_iter2 + java_iter3 + \
 
 
 root_causes = defaultdict(lambda: [])
+symptoms = defaultdict(lambda: [])
+categories = defaultdict(lambda: [])
+characteristics = defaultdict(lambda: {"characteristics": [],
+                                       "categories": []})
+for bug in bugs:
+    assert "." in bug.bug_id
+    bid = bug.bug_id.split(".")[-1].replace("Dotty", "dotty").replace(
+        "Scala2", "scala")
+    root_causes[bid].append(bug.root_cause.category.name)
+    categories[bid].append(bug.category.name)
+    symptoms[bid].append(bug.symptom.name)
+    for char in bug.characteristics:
+        if not isinstance(char, CharacteristicCategory):
+            characteristics[bid]["characteristics"].append(char.name)
+            if char.characteristic_type is not None:
+                characteristics[bid]["categories"].append(
+                    char.characteristic_type.name)
+        else:
+            characteristics[bid]["categories"].append(char.name)
+with open('root_causes.json', 'w') as fp:
+    json.dump(root_causes, fp)
+
+
 for bug in bugs:
     assert "." in bug.bug_id
     bid = bug.bug_id.split(".")[-1].replace("Dotty", "dotty").replace(
@@ -25,3 +49,9 @@ for bug in bugs:
     root_causes[bid].append(bug.root_cause.category.name)
 with open('root_causes.json', 'w') as fp:
     json.dump(root_causes, fp)
+with open('characteristics.json', 'w') as fp:
+    json.dump(characteristics, fp)
+with open('categories.json', 'w') as fp:
+    json.dump(categories, fp)
+with open('symptoms.json', 'w') as fp:
+    json.dump(symptoms, fp)
