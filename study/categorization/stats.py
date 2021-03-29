@@ -22,6 +22,6 @@ for bug in bugs:
     assert "." in bug.bug_id
     bid = bug.bug_id.split(".")[-1].replace("Dotty", "dotty").replace(
         "Scala2", "scala")
-    root_causes[bug.root_cause.category.name].append(bid)
+    root_causes[bid].append(bug.root_cause.category.name)
 with open('root_causes.json', 'w') as fp:
     json.dump(root_causes, fp)
