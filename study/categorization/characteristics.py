@@ -390,7 +390,7 @@ class Varargs(Characteristic):
     Example:
       String foo(String x, Integer... y) // The '...' in Java denotes a vararg.
     """
-    name = "varargs"
+    name = "Variable arguments"
     category = StandardFeatures()
     characteristic_type = Declaration()
     is_common = True
@@ -672,7 +672,7 @@ class Arrays(Characteristic):
       String foo(String[] args)
     """
     name = "Arrays"
-    category = TypeSystem()
+    category = StandardFeatures()
     characteristic_type = Types()
     is_common = True
 
