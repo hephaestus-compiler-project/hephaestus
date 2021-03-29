@@ -244,7 +244,7 @@ kotlin_iter2 = [
     KotlinBug(
         "2.KT-3112",
         # pc.ParameterizedTypes() ( C<String>.Inner or C.Inner)
-        [pc.NestedDeclaration(),
+        [pc.NestedClasses(),
          pc.ParameterizedClasses(),
          pc.TypeArgsInference()],
         False,
@@ -535,7 +535,7 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "2.KT-2277",
-        [pc.Overloading(), pc.NestedDeclaration()],
+        [pc.Overloading(), pc.NestedClasses()],
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
         rc.MissingCase(),
@@ -571,7 +571,7 @@ kotlin_iter3 = [
             pc.BoundedPolymorphism(),
             pc.FBounded(),
             pc.SealedClasses(),
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.Cast()
         ],
         True,
@@ -644,7 +644,7 @@ kotlin_iter3 = [
         "10.KT-5511",
         [
            pc.ParameterizedClasses(),
-           pc.NestedDeclaration(),
+           pc.NestedClasses(),
            pc.Inheritance(),
            pc.ParameterizedTypes(),
            pc.Enums()
@@ -902,7 +902,7 @@ kotlin_iter4 = [
     KotlinBug(
         "7.KT-16232",
         [
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.Singleton()
         ],
         False,
@@ -914,7 +914,7 @@ kotlin_iter4 = [
     KotlinBug(
         "8.KT-17611",
         [
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.AnonymousClass()
         ],
         True,
@@ -1098,7 +1098,7 @@ kotlin_iter4 = [
             pc.ParameterizedFunctions(),
             pc.Inheritance(),
             pc.TypeArgsInference(),
-            pc.NestedDeclaration()
+            pc.NestedClasses()
         ],
         True,
         sy.CompilationPerformance(),

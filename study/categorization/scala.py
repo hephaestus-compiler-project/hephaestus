@@ -98,7 +98,7 @@ scala_iter1 = [
     ScalaBug(
         "8.Scala2-7928",
         [
-            pc.Inheritance(), pc.NestedDeclaration(),
+            pc.Inheritance(), pc.NestedClasses(),
             pc.Collections(), pc.ParameterizedTypes(),
             pc.Overriding(), pc.DependentTypes(), pc.Typedefs(),
             pc.Subtyping()
@@ -140,7 +140,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "11.Scala2-9542",
-        [pc.Inheritance(), pc.NestedDeclaration(),
+        [pc.Inheritance(), pc.NestedClasses(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes()],
         True,
         sy.InternalCompilerError(),
@@ -402,7 +402,7 @@ scala_iter2 = [
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
             pc.FBounded(),
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.Inheritance(),
             pc.ImplicitParameters(),
             pc.WildCardType(),
@@ -534,7 +534,7 @@ scala_iter2 = [
     ScalaBug(
         "20.Dotty-3422",
         [
-            pc.HigherKindedTypes(), pc.NestedDeclaration(),
+            pc.HigherKindedTypes(), pc.NestedClasses(),
             pc.ParameterizedClasses(),
             pc.DependentTypes(), pc.ParameterizedTypes()
         ],
@@ -599,7 +599,7 @@ scala_iter3 = [
         [
             pc.This(),
             pc.DependentTypes(),
-            pc.NestedDeclaration()
+            pc.NestedClasses()
         ],
         True,
         sy.CompileTimeError(),

@@ -11,7 +11,7 @@ java_iter1 = [
         [pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
          pc.SealedClasses(),
-         pc.NestedDeclaration(),
+         pc.NestedClasses(),
          pc.Subtyping()
          ],
          True,
@@ -39,7 +39,7 @@ java_iter1 = [
      JavaBug(
         "3.JDK-8244559",
         [pc.Collections(), pc.Streams(),
-         pc.Inline(), pc.NestedDeclaration(),
+         pc.Inline(), pc.NestedClasses(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes(),
          pc.ReferenceTypes(), pc.Lambdas()
          ],
@@ -221,7 +221,7 @@ java_iter1 = [
   JavaBug(
         "17.JDK-6996914",
         [
-            pc.NestedDeclaration(), pc.Subtyping(), pc.ParameterizedClasses(),
+            pc.NestedClasses(), pc.Subtyping(), pc.ParameterizedClasses(),
             pc.TypeArgsInference(), pc.AccessModifiers()
         ],
         True,
@@ -604,7 +604,7 @@ java_iter3 = [
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.BoundedPolymorphism()
         ],
         True,
@@ -765,7 +765,7 @@ java_iter3 = [
     JavaBug(
         "17.JDK-8161383",
         [
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.AugmentedAssignmentOperator(), #TODO
             pc.Inheritance(),
             pc.AccessModifiers()
@@ -812,7 +812,7 @@ java_iter3 = [
             pc.AccessModifiers(),
             pc.Inheritance(),
             pc.FunctionReferences(),
-            pc.NestedDeclaration()
+            pc.NestedClasses()
         ],
         False,
         sy.InternalCompilerError(),

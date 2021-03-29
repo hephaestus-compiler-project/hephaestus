@@ -165,7 +165,7 @@ groovy_iter1 = [
     ),
  GroovyBug(
         "16.GROOVY-7315",
-        [pc.NamedArgs(), pc.NestedDeclaration(), pc.PrimitiveTypes()],
+        [pc.NamedArgs(), pc.NestedClasses(), pc.PrimitiveTypes()],
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
@@ -650,7 +650,7 @@ groovy_iter3 = [
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.ParameterizedClasses(),
             pc.Subtyping(),
             pc.Overriding()

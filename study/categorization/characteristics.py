@@ -924,7 +924,7 @@ class StaticMethod(Characteristic):
     is_common = False
 
 
-class NestedDeclaration(Characteristic):
+class NestedClasses(Characteristic):
     """
     The test case contains nested declarations (e.g., a class is declared
     inside another class).
@@ -934,8 +934,8 @@ class NestedDeclaration(Characteristic):
          class Y {}
        }
     """
-    name = "Nested declarations"
-    category = StandardFeatures()
+    name = "Nested classes"
+    category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = True
 
