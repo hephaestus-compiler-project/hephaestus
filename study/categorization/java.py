@@ -550,7 +550,10 @@ java_iter2 = [
 
 java_iter3 = [
     JavaBug(
+        # regression bug
+        # the attached source file takes the javac 2s to compile on JDK 7u45. It takes 80s on JDK 8.
         "1.JDK-8031967",
+        #  pc.StandardLibrary?, pc.PrimitiveTypes(),
         [
             pc.Overloading(),
         ],
@@ -561,7 +564,9 @@ java_iter3 = [
         105
     ),
     JavaBug(
+        # regression bug
         "2.JDK-6880344",
+        # no pc.ParameterziedTypes()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -583,6 +588,8 @@ java_iter3 = [
         ],
         True,
         sy.CompilationPerformance(),
+        # maybe  rc.AlgorithmImproperlyImplemented()
+        # algorithm not implemented effectively
         rc.IncorrectComputation(),
         ct.Declarations(),
         84
@@ -600,7 +607,9 @@ java_iter3 = [
         55
     ),
     JavaBug(
+        # regression bug
         "5.JDK-7148242",
+        # pc.ParameterizedFunctions() no pc.ParameterizedTypes() test is parameterized function not type?(diesnt have a distinct parameterized type)
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -610,6 +619,7 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
+        # ct.TypeComparison() We see in the fix changes in subtyping(checking whether a type is subtype of another), also we change the creation of bounds
         ct.Declarations(),
         7
     ),
@@ -619,13 +629,16 @@ java_iter3 = [
             pc.TypeArgsInference()
         ],
         False,
+        # maybe sy.Runtime(sy.ClassCastException)
         sy.Runtime(),
         rc.MissingCase(),
+        # ct.Declarations() diamond operator is used on a declaration
         ct.OtherSemanticChecking(),
         5
     ),
     JavaBug(
         "7.JDK-8209173",
+        # pc.Collections() (List)
         [
             pc.JavaInterop(),
             pc.ParameterizedTypes()
@@ -637,6 +650,7 @@ java_iter3 = [
         62
     ),
     JavaBug(
+        # regression bug
         "8.JDK-7181578",
         [
             pc.TryCatch(),
@@ -670,7 +684,10 @@ java_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.WrongParams() There is a bug, because the implementation passes insufficient parameters to a method.
         rc.MissingCase(),
+        # agreed, maybe consider ct.TypeComparsion()
+        #  types.asSuper(iterator.type.getReturnType(), syms.iteratorType.tsym)
         ct.Transformation(),
         27
     ),
@@ -684,17 +701,24 @@ java_iter3 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.FunctionalSpecificationMismatch(),
+        # I think it is type-related. Summary: Backing out change allowing arrays in intersection types
+        # ct.Approximation()
         ct.Declarations(),
         1
     ),
     JavaBug(
+        # regression bug
         "12.JDK-8236546",
+        # no pc.Subtyping()?
         [
             pc.Conditionals(),
             pc.Subtyping()
         ],
+        # True (EXPECTED BEHAVIOR -Compile normally.)
         False,
         sy.InternalCompilerError(),
+        # maybe create a new Logic Error called rc.WrongMethod()
+        # The type of the bug is a Wrong Method Called.
         rc.IncorrectCondition(),
         ct.TypeExpression(),
         7
@@ -714,11 +738,19 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # ct.Transformation()
+        # There is a post attribution visitor that sets default values to null fields in the ASTs.
+        # This is not being done for field JCVariableDecl.vartype,
+        # so if there is an error during the attribution of a given expression and that field remains null,
+        # then NPE can happen during further analysis of the ASTs
         ct.ErrorReporting(),
         26
     ),
     JavaBug(
+        # regression bug
+        # see first comment. Maybe make a section in the study for asSuper method?
         "14.JDK-8069265",
+        # pc.NestedClasses() An interface declared inside a Class
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
@@ -743,11 +775,15 @@ java_iter3 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.InsufficientAlgorithmImplementation(),
+        # agreed with both, its a type check of exrpession,
+        # but its purpose is to  make enclosing overload resolution fail so I think
+        # ct.Resolution()
         ct.Resolution(), # TypeExpression
         11
     ),
     JavaBug(
         "16.JDK-8211102",
+        # pc.NestedClasses()
         [
             pc.Collections(),
             pc.TypeArgsInference(),
@@ -758,12 +794,16 @@ java_iter3 = [
         ],
         True,
         sy.InternalCompilerError(),
+        # rc.ExtraneousComputation()
+        # disabling analyzers that cannot run in the given source level
         rc.MissingCase(),
         ct.OtherSemanticChecking(),
         7
     ),
     JavaBug(
+        # regression bug
         "17.JDK-8161383",
+        # pc.PrimitiveTypes()
         [
             pc.NestedClasses(),
             pc.AugmentedAssignmentOperator(), #TODO
