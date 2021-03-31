@@ -965,8 +965,8 @@ java_iter4 = [
             pc.Inheritance(),
             pc.ParamTypeInference(),
             pc.ParameterizedTypes(),
-            pc.FunctionalInterface(),
-            pc.BoundedPolymorphism().
+            pc.FunctionAPI(),
+            pc.BoundedPolymorphism(),
             pc.FBounded(),
             pc.SAM(),
             pc.ParameterizedFunctions(),
@@ -981,7 +981,7 @@ java_iter4 = [
     JavaBug(
         "9.JDK-8176714",
         [
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.Conditionals(),
             pc.FunctionReferences(),
@@ -998,7 +998,7 @@ java_iter4 = [
     JavaBug(
         "10.JDK-7014715",
         [
-            pc.NestedDeclaration()
+            pc.NestedClasses()
         ],
         False,
         sy.InternalCompilerError(),
