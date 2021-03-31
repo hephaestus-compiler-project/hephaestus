@@ -439,7 +439,7 @@ class FBounded(Characteristic):
     name = "F-bounds"
     category = BoundedPolymorphism()
     characteristic_type = Types()
-    is_common = False
+    is_common = True
 
 
 class VarTypeInference(Characteristic):
@@ -697,7 +697,7 @@ class FunctionAPI(Characteristic):
     name = "Function API"
     category = StandardLibrary()
     characteristic_type = None
-    is_common = False
+    is_common = True
 
 
 class Streams(Characteristic):
@@ -857,7 +857,7 @@ class ParameterizedTypes(Characteristic):
     name = "Parameterized types"
     category = ParametricPolymorphism()
     characteristic_type = Types()
-    is_common = False
+    is_common = True
 
 
 class FunctionTypes(Characteristic):
@@ -867,7 +867,7 @@ class FunctionTypes(Characteristic):
     name = "Function types"
     category = FunctionalProgramming()
     characteristic_type = Types()
-    is_common = False
+    is_common = True
 
 
 class AlgebraicDataTypes(Characteristic):
@@ -878,16 +878,6 @@ class AlgebraicDataTypes(Characteristic):
     https://alvinalexander.com/scala/fp-book/algebraic-data-types-adts-in-scala/
     """
     name = "Algebraic Data Types"
-    category = TypeSystem()
-    characteristic_type = Types()
-    is_common = False
-
-
-class FlexibleTypes(Characteristic):
-    """
-    The test case contains flexible types (Kotlin only).
-    """
-    name = "Flexible types"
     category = TypeSystem()
     characteristic_type = Types()
     is_common = False
@@ -986,7 +976,7 @@ class UseVariance(Characteristic):
     name = "Use-site variance"
     category = ParametricPolymorphism()
     characteristic_type = Types()
-    is_common = False
+    is_common = True
 
 
 class TryCatch(Characteristic):

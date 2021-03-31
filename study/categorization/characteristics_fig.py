@@ -8,6 +8,7 @@ from utils import stats
 
 
 def construct_dataframe(data):
+    characteristics = []
     dataframes = {}
     for key, value in data.items():
         framedata = []
@@ -16,11 +17,16 @@ def construct_dataframe(data):
                 'Characteristic': subkey,
                 'Number of bugs': 100 * (int(subvalue['total']) / 240),
             })
+            if 'is_common' not in subvalue:
+                print(subkey)
+            if subvalue['is_common']:
+                characteristics.append((subkey, subvalue['is_common'],
+                                        100 * (int(subvalue['total']) / 240)))
         framedata = sorted(framedata, key=lambda k: k['Number of bugs'],
                            reverse=True)[:4]
         percentage = str(round((int(value['total']) / 240) * 100, 2))
         dataframes[key + " (" + percentage + "%)"] = pd.DataFrame(framedata)
-    return dataframes
+    return dataframes, characteristics
 
 
 plt.style.use('ggplot')
@@ -35,8 +41,12 @@ plt.rcParams['font.monospace'] = 'Inconsolata Medium'
 plt.rcParams['axes.labelweight'] = 'bold'
 
 fig, axs = plt.subplots(nrows=8, sharex=True)
-dataframes = construct_dataframe(
+dataframes, characteristics = construct_dataframe(
     stats['Characteristics']['Categories'])
+
+characteristics = sorted(characteristics, key=lambda tup: tup[2])
+print(characteristics[:7])
+print(characteristics[-7:])
 
 for i, (key, dataframe) in enumerate(dataframes.items()):
     dataframe = dataframe.sort_values(
