@@ -52,7 +52,7 @@ categories = [
 ]
 df = df.reindex(categories)
 
-ax = df.plot.barh(width=0.3, color=['#f6cb7d', '#873e23', '#1e81b0', '#8A0528'],
+ax = df.plot.barh(width=0.3, color=['#f6cb7d', '#873e23', '#e28743', '#8A0528'],
                   stacked=True)
 
 sums = []
