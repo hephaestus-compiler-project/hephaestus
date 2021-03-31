@@ -1053,3 +1053,13 @@ class TypeProjections(Characteristic):
     category = TypeSystem()
     characteristic_type = Types()
     is_common = False
+
+
+class IOAPI(Characteristic):
+    """
+    The test case contains IO API calls.
+    """
+    name = "IO API"
+    category = StandardLibrary()
+    characteristic_type = None
+    is_common = True
