@@ -125,7 +125,7 @@ class Declarations(Category):
 
 
 class ErrorReporting(Category):
-    name = "Error Reporting Bugs"
+    name = "Error Reporting & Handling Bugs"
 
 
 class Transformation(Category):
