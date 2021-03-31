@@ -31,6 +31,7 @@ def print_characteristics():
             print("\t" + "\n\t".join(s))
     print("===========================")
 
+
 def print_stats(bugs):
     #  print("======Statistics======")
     stats = {
@@ -60,13 +61,16 @@ def print_stats(bugs):
                     cat["total"] += 1
                     visited.add(c.category.name)
                 cat["subcategories"][c.name]["total"] += 1
+                cat["subcategories"][c.name]["is_common"] = c.is_common
             else:
                 cat = stats["Characteristics"]["Categories"][c.category.category.name]
                 if c.category.category.name not in visited:
                     cat["total"] += 1
                     visited.add(c.category.category.name)
                 cat["subcategories"][c.category.name]["total"] += 1
+                cat["subcategories"][c.category.name]["is_common"] = c.is_common
                 subs = cat["subcategories"][c.category.name]["subcategories"]
+                subs["is_common"] = c.is_common
                 subs[c.name] += 1
             stats["Characteristics"]["Commons"][str(c.is_common)] += 1
             if c.characteristic_type:
@@ -80,8 +84,8 @@ def print_stats(bugs):
         root_cause = stats["Root Causes"][b.root_cause.category.name]
         root_cause["total"] += 1
         root_cause["Subcategories"][b.root_cause.name] += 1
-    #  print(json.dumps(stats, indent=4))
-    #  print("======================")
+    print(json.dumps(stats, indent=4))
+    print("======================")
     return stats
 
 
