@@ -22,7 +22,7 @@ root_causes = defaultdict(lambda: [])
 symptoms = defaultdict(lambda: [])
 categories = defaultdict(lambda: [])
 characteristics = defaultdict(lambda: {"characteristics": [],
-                                       "categories": []})
+                                       "categories": set()})
 for bug in bugs:
     assert "." in bug.bug_id
     bid = bug.bug_id.split(".")[-1].replace("Dotty", "dotty").replace(
@@ -33,11 +33,13 @@ for bug in bugs:
     for char in bug.characteristics:
         if not isinstance(char, CharacteristicCategory):
             characteristics[bid]["characteristics"].append(char.name)
-            if char.categoy is not None:
-                characteristics[bid]["categories"].append(
-                    char.categoy.name)
+            if char.category is not None:
+                characteristics[bid]["categories"].add(
+                    char.category.name)
         else:
-            characteristics[bid]["categories"].append(char.name)
+            characteristics[bid]["categories"].add(char.name)
+    characteristics[bid]["categories"] = list(
+        characteristics[bid]["categories"])
 with open('root_causes.json', 'w') as fp:
     json.dump(root_causes, fp)
 
