@@ -33,9 +33,9 @@ for bug in bugs:
     for char in bug.characteristics:
         if not isinstance(char, CharacteristicCategory):
             characteristics[bid]["characteristics"].append(char.name)
-            if char.characteristic_type is not None:
+            if char.categoy is not None:
                 characteristics[bid]["categories"].append(
-                    char.characteristic_type.name)
+                    char.categoy.name)
         else:
             characteristics[bid]["categories"].append(char.name)
 with open('root_causes.json', 'w') as fp:
