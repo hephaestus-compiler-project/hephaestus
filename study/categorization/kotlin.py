@@ -190,8 +190,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "18.KT-44420",
-        [pc.FlexibleTypes(),
-         pc.Collections(),
+        [pc.Collections(),
          pc.VarTypeInference(),
          pc.JavaInterop()],
         True,
@@ -385,7 +384,7 @@ kotlin_iter2 = [
         [pc.Conditionals(),
          pc.ParameterizedClasses(),
          pc.UseVariance(),
-         pc.FlexibleTypes(), pc.Nullables(),
+         pc.Nullables(),
          pc.JavaInterop(),
          pc.FlowTyping()],
         True,
