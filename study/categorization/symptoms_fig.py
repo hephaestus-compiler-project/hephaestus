@@ -56,11 +56,11 @@ ax = df.plot.barh(width=0.3, color=['#f6cb7d', '#873e23', '#e28743', '#8A0528'],
                   stacked=True)
 
 sums = []
-for c in reversed(categories):
+for c in categories:
     v = sum(data[(lang, c)] for lang in ['Groovy', 'Java', 'Kotlin', 'Scala'])
     sums.append(v)
 
-for i, p in enumerate(ax.patches[16:20]):
+for i, p in enumerate(ax.patches[15:]):
     ax.annotate("{} / 240".format(int(sums[i])),
                 (p.get_x() + p.get_width(), p.get_y()),
                 xytext=(5, 10), textcoords='offset points')
