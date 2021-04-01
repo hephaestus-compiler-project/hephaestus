@@ -549,6 +549,7 @@ scala_iter2 = [
 scala_iter3 = [
     ScalaBug(
         "1.Dotty-10123",
+        # pc.TypeArgsInference() new C(new Foo()).await.status
         [
             pc.ParameterizedClasses(),
             pc.DeclVariance(),
@@ -563,7 +564,9 @@ scala_iter3 = [
         19
     ),
     ScalaBug(
+        # regression bug
         "2.Scala2-5399",
+        # pc.NestedClasses()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -574,6 +577,8 @@ scala_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
+        #WrongDataReference()
+        #should refer to Skolem normal form of an existential type
         rc.MissingCase(), #WrongDataReference(),
         ct.Approximation(),
         19
@@ -590,6 +595,11 @@ scala_iter3 = [
         ],
         False,
         sy.Runtime(sy.AbstractMethodError()),
+        # rc.InsufficientAlgorithmImplementation()
+        # "The check for a concrete class used to be simply that its `abstractTermMembers`
+        # are empty. However, i7597.scala shows that this is not enough.It will not include a member
+        # as long as there is a concrete member with the same signature."
+        # so the root cause was an insufficient implementation of the algorithm
         rc.IncorrectComputation(),
         ct.Declarations(),
         2
@@ -609,6 +619,7 @@ scala_iter3 = [
     ),
     ScalaBug(
         "5.Scala2-7872",
+        # pc.TypeLambdas() (type Stringer[-A] = A => String) Can also verify it form the issue title
         [
             pc.TypeProjections(),
             pc.HigherKindedTypes(),
@@ -629,6 +640,7 @@ scala_iter3 = [
     ),
     ScalaBug(
         "6.Scala2-2038",
+        # pc.Cast() (call cast method), no pc.FunctionAPI()
         [
             pc.Collections(),
             pc.WildCardType(), #TODO
@@ -646,6 +658,8 @@ scala_iter3 = [
     ),
     ScalaBug(
         "7.Scala2-5378",
+        #pc.Collections() (Nil object, List, Traversable), maybe introduce pc.StructuralTypes()(Scala only or Duck Typing in general)
+        # https://alvinalexander.com/scala/how-to-use-duck-typing-in-scala-structural-types/
         [
             pc.ParameterizedClasses(),
             pc.FunctionAPI(),
@@ -660,12 +674,17 @@ scala_iter3 = [
         ],
         False,
         sy.Runtime(sy.MissingMethodException()),
+        # agreed, maybe also consider rc.InsufficientAlgorithmImplementation()
+        # Not enough to look for abstract types; have to recursively check
+        # the bounds of each abstract type for more abstract types. It also makes 2 bug fixes.
         rc.IncorrectComputation(),
+        # ct.TypeExpression() it is too type related to be considered a OtherSemanticChecking bug I think.
         ct.TypeExpression(), # OtherSemanticChecking
         12
     ),
     ScalaBug(
         "8.Scala2-5687",
+        # pc.AccessModifiers() (private val t: T), pc.DependentTypes()
         [
             pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(),
@@ -684,6 +703,7 @@ scala_iter3 = [
     ),
     ScalaBug(
         "9.Scala2-11252",
+        # pc.ParameterizedTypes() (Option[Int] )
         [
             pc.PatMat(),
             pc.FunctionAPI(),
@@ -711,6 +731,7 @@ scala_iter3 = [
     ),
     ScalaBug(
         "11.Scala2-2509",
+        # pc.DependentTypes()  implicit def f[T, U](t: T)(implicit x: X[T, U]): U = x.u
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -756,6 +777,7 @@ scala_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
+        # both fit, but I think Environment fits better (change in context.implicits)
         ct.Environment(), # Resolution
         25
     ),
@@ -770,12 +792,14 @@ scala_iter3 = [
         ],
         False,
         sy.MisleadingReport(),
+        # maybe root cause rc.WrongMethod()?
         rc.IncorrectCondition(),
         ct.Resolution(),
         9
     ),
     ScalaBug(
         "15.Dotty-7041",
+        # pc.Conditionals(), pc.ArithmeticExpressions()
         [
             pc.Inline(),
             pc.CallByName(),
@@ -804,12 +828,15 @@ scala_iter3 = [
         ],
         True,
         sy.InternalCompilerError(),
+        # maybe rc.MissingCase() because in previous examples with a missing codition it was considered a missing case
         rc.IncorrectCondition(),
         ct.Transformation(),
         13
     ),
     ScalaBug(
         "17.Scala2-4691",
+        # pc.SealedClasses() (sealed trait Node), no FunctionApi() maybe pc.StandardLibrary() (for Some) or create some type characteristic like pc.Some() or pc.Option() in general
+        # function api from java doesnt include Some, it is part of Scala standard Library
         [
             pc.Inheritance(),
             pc.PatMat(),
@@ -841,6 +868,7 @@ scala_iter3 = [
     ),
     ScalaBug(
         "19.Scala2-9760",
+        # pc.SealedClasses() (sealed trait Foo[F[_]])
         [
             pc.HigherKindedTypes(),
             pc.AlgebraicDataTypes(),
@@ -869,6 +897,7 @@ scala_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
+        # pc.MissingCase() missed the case that prefix normalizes type aliases and kind-checking should not do this, so this fix is due to a missing case
         rc.IncorrectCondition(),
         ct.TypeComparison(),
         12
