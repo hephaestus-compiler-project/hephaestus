@@ -11,10 +11,10 @@ https://github.com/scala/bug/issues/9086, https://github.com/scala/scala/pull/42
 https://github.com/lampepfl/dotty/issues/8647, https://github.com/lampepfl/dotty/commit/2a7296e6a605d57bee827842314687c726f5db54
 https://github.com/scala/bug/issues/8531, https://github.com/scala/scala/pull/3727
 https://github.com/scala/bug/issues/6912, https://github.com/scala/scala/pull/1859
-https://github.com/scala/bug/issues/5503, https://github.com/scala/scala/commit/5cc3dad991
 https://github.com/lampepfl/dotty/issues/2104, https://github.com/lampepfl/dotty/commit/5b7c0d108f2536c360b6797c4df8eecc886b125d
 https://github.com/lampepfl/dotty/issues/5640, https://github.com/lampepfl/dotty/commit/871a87eaa8c9cb181a7be721f305b861ae1c96c5
 https://github.com/lampepfl/dotty/issues/3067, https://github.com/lampepfl/dotty/commit/fc71ee64a6f9241c2fb0d04f92819eca2c3b9d25
 https://github.com/scala/bug/issues/7636, https://github.com/scala/scala/pull/2738
 https://github.com/scala/bug/issues/9110, https://github.com/scala/scala/pull/4265
 https://github.com/scala/bug/issues/10545, https://github.com/scala/scala/pull/6122
+https://github.com/scala/bug/issues/9398,https://github.com/scala/scala/pull/4919/
