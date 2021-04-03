@@ -281,8 +281,8 @@ java_iter2 = [
     # Note: I see  Bounded Polymorphism characteristic is common in java bugs (18/60) approximately 30% frequency , maybe consider it for paper section about java bugs
     JavaBug(
         "1.JDK-8152832",  # regression
-        # pc.FunctionReferences() strings::stream
         [
+            pc.FunctionReferences(),
             pc.Streams(), pc.Collections(), pc.Lambdas(),
             pc.FunctionAPI(), pc.BoundedPolymorphism(),
             pc.UseVariance(), pc.ParameterizedTypes(),
@@ -296,7 +296,6 @@ java_iter2 = [
         19
     ),
     JavaBug(
-        # nice bug with a good comment explanation, maybe consider it for paper
         "2.JDK-7042566",
         [
             pc.Overloading(), pc.Varargs()
@@ -312,13 +311,11 @@ java_iter2 = [
         # no pc.ParameterizedClasses() in test case, but if we consider the declaration of Comparable<T> part of test case its also pc.SAM() , pc.Inheritance(),
         [
             pc.Overriding(), pc.Overloading(),
-            pc.ParameterizedClasses(),
+            pc.SAM(),
             pc.ParameterizedTypes()
         ],
         False,
         sy.Runtime(sy.ClassCastException()),
-        # rc.FunctionalSpecificationMismatch() becasue in the fix we see a new addition of checkClasses method in Check.java with the following comment:
-        #    /** Check that all non-override equivalent methods accessible from 'site'  are mutually compatible (JLS 8.4.8/9.4.1).
         rc.MissingCase(),
         ct.Resolution(),
         13
@@ -326,7 +323,6 @@ java_iter2 = [
     JavaBug(
         # regression bug (This is a regression, the code was providing the right error message in JDK 7.)
         "4.JDK-8029569",
-        # pc.StaticMethod()
         [pc.Varargs(), pc.Overloading()],
         False,
         sy.InternalCompilerError(),
@@ -337,10 +333,10 @@ java_iter2 = [
     JavaBug(
         # regression bug
         "5.JDK-8075793",
-        # pc.Cast() ( return new HashSet<>(set);)
         [
             pc.Collections(), pc.ParameterizedFunctions(),
             pc.UseVariance(), pc.ParameterizedTypes(),
+            pc.Subtyping(),
             pc.TypeArgsInference()
         ],
         True,
@@ -351,7 +347,6 @@ java_iter2 = [
     ),
     JavaBug(
         "6.JDK-8016081",
-        # pc.ParamTypeInference()
         [pc.TypeAnnotations(), pc.Lambdas(), pc.Conditionals(), pc.SAM()],
         True,
         sy.CompileTimeError(),
@@ -362,14 +357,9 @@ java_iter2 = [
     JavaBug(
         "7.JDK-8226510",
         [pc.Conditionals(), pc.TryCatch()],
-        # False
-        # The below code should throw a compilation error as there is no result expression for the switch expression.
-        # However, the compilation goes through successfully.
-        True,
-        # maybe a category for code which should be rejected by compiler but its accepted with no warnings or errors and can be executed
+        False,
         sy.Runtime(),
         rc.MissingCase(),
-        # ct.TypeExpression check of switch expression, if caseTypes.isEmpty())
         ct.OtherSemanticChecking(),
         10
     ),
@@ -391,10 +381,6 @@ java_iter2 = [
         [pc.TypeAnnotations()],
         True,
         sy.CompileTimeError(),
-        # rc.FunctionalSpecificationMismatch() see descritpion of bug:
-        #  Here is the relevant text for JLS8 9.6.3 "Repeatable Annotation Types"
-        # which is aware of the TYPE_USE construct from JSR 308:
-        # T is applicable to at least the same kinds of program etc. etc.
         rc.DesignIssue(),
         ct.TypeComparison(),
         10
@@ -402,7 +388,6 @@ java_iter2 = [
     JavaBug(
         # regression bug
         "10.JDK-7041730",
-        # pc.PrimitiveTypes() cast from int to Byte, int is primitive, it is also shown in the fix or comments that the bug is related to primitive types
         [pc.Cast()],
         False,
         sy.Runtime(sy.ClassCastException()),
@@ -412,12 +397,12 @@ java_iter2 = [
     ),
     JavaBug(
         "11.JDK-8020804",
-        # pc.SAM() (Supplier<D>), pc.Collections() (LinkedList)
         [
             pc.FunctionAPI(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.Arrays(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(), pc.Overloading(),
+            pc.SAM(), pc.Collections(),
             pc.FunctionReferences()
         ],
         True,
@@ -428,7 +413,6 @@ java_iter2 = [
     ),
     JavaBug(
         "12.JDK-7062745",  # regression
-        # pc.SAM() (A and B)
         [
             pc.Overloading(), pc.Collections(),
             pc.Inheritance(), pc.ParameterizedTypes(),
@@ -456,7 +440,6 @@ java_iter2 = [
     ),
     JavaBug(
         "14.JDK-8011376",
-        # pc.ParamTypeInference(), pc.SAM() (callable)
         [
             pc.Lambdas(), pc.TryCatch(), pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(), pc.Subtyping()
@@ -469,13 +452,9 @@ java_iter2 = [
     ),
     JavaBug(
         "15.JDK-8008537",
-        # Subtyping
         [pc.FunctionReferences(), pc.Overloading(), pc.Subtyping()],
         False,
-        # same symptom with JDK-8226510
         sy.Runtime(),
-        # agreed, also consider rc.IncorrectSequence()
-        # Static-ness check should be applied after member reference resolution
         rc.MissingCase(),
         ct.OtherSemanticChecking(),
         17
@@ -485,8 +464,6 @@ java_iter2 = [
         [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionAPI()],
         True,
         sy.Runtime(sy.WrongResult()),
-        # I agree with rc.IncorrectComputation() because:
-        # The correct selection logic is already implemented in ReferenceChooser.result - but unfortunately the result of the 'choice' is too lossy,
         rc.IncorrectComputation(), # MissingCase
         ct.Resolution(),
         9
@@ -494,9 +471,9 @@ java_iter2 = [
     JavaBug(
         # regression
         "17.JDK-8171993",
-        # pc.BoundedPolymorphism() (<T extends String> works with <T> alone), no pc.ParameterizedTypes()
-        # pc.ParameterizedTypes()?
         [
+            pc.ParameterizedTypes(),
+            pc.BoundedPolymorphism(),
             pc.Varargs(), pc.TypeArgsInference(), pc.ParameterizedClasses(),
             pc.FunctionReferences(), pc.FunctionAPI()
         ],
@@ -510,7 +487,7 @@ java_iter2 = [
         "18.JDK-8010303",
         # pc.SAM() (Func interface)
         [pc.ParameterizedFunctions(), pc.ParameterizedClasses(),
-         pc.ParameterizedTypes()],
+         pc.ParameterizedTypes(), pc.SAM()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),

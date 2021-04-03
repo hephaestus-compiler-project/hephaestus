@@ -273,10 +273,11 @@ scala_iter1 = [
 scala_iter2 = [
     ScalaBug(
         "1.Scala2-8763",
-        # pc.AugmentedAssignmentOperator(), no pc.PatMat(), VarTypeInference() (If rewrite is not attempted because x is a val, then say so.)
         [
             pc.Collections(), pc.PatMat(),
-            pc.Arrays()
+            pc.Arrays(),
+            pc.VarTypeInference(),
+            pc.AugmentedAssignmentOperator()
         ],
         False,
         sy.InternalCompilerError(),
@@ -297,7 +298,6 @@ scala_iter2 = [
     ),
     ScalaBug(
         "3.Scala2-11239",
-        # pc.WildCardType()
         [
             pc.ParameterizedClasses(), pc.Typedefs(),
             pc.HigherKindedTypes(), pc.DataClasses(),
@@ -312,23 +312,20 @@ scala_iter2 = [
     ),
     ScalaBug(
         "4.Dotty-9735",
-        # new pc.OpaqueType() characteristic?, pc.ParameterizedClasses() because we see in test case of fix: opaque type U[A] = [B] =>> Two[A, B] should yield an error too
         [
             pc.Typedefs(), pc.TypeLambdas(),
+            pc.ParameterizedClasses(),
+            pc.OpaqueType(),
             pc.ParameterizedTypes()
         ],
         False,
         sy.MisleadingReport(),
-        # rc.ExtraneousComputation() The type of the bug is an extraneous condition ( tparamSyms.isEmpty )
-        rc.DesignIssue(),
-        #ct.ErrorReporting, we remove a condition that checks if the compiler should report the following error:
-        # report.error(em"opaque type alias must be fully applied", rhs.srcPos)
+        rc.IncorrectCondition(),
         ct.OtherSemanticChecking(),
         3
     ),
     ScalaBug(
         "5.Scala2-10886",
-        # pc.Property(), pc.Lambda(), maybe pc.AugmentedAssignmentOperator()
         [
             pc.Import(),
         ],
@@ -354,25 +351,20 @@ scala_iter2 = [
         # pc.Inheritance(), pc.Subtyping()
         [
             pc.JavaInterop(), pc.Arrays(),
-            pc.Varargs()
+            pc.Varargs(),
+            pc.Inheritance(), pc.Subtyping()
         ],
         True,
-        # sy.InternalCompilerError()
-        sy.CompileTimeError(),
-        # rc.DesignIssue()
-        # Fix the Ycheck error by changing how `elimRepeated` transforms
-        #  `RP[T]`s that appear in Java code.
-        # The previous transform was `RP[T]` => `Array[T]`.
-        # The new transform is `RP[T]` => `Array[_ <: T]`
-        rc.MissingCase(),
+        sy.InternalCompilerError(),
+        rc.DesignIssue(),
         ct.Approximation(),
         10
     ),
     ScalaBug(
         "8.Dotty-4487",
-        # pc.CallByName() (i4: => String)
         [
-            pc.Inheritance(), pc.FunctionTypes()
+            pc.Inheritance(), pc.FunctionTypes(),
+            pc.CallByName()
         ],
         False,
         sy.InternalCompilerError(),
@@ -397,7 +389,6 @@ scala_iter2 = [
     ),
     ScalaBug(
         "10.Dotty-9631",
-        # pc.SealedClasses() sealed pattern match (can be shown also in title)
         [
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
@@ -409,8 +400,7 @@ scala_iter2 = [
             pc.PatMat()
         ],
         True,
-        #sy.InternalCompilerError(), internal compiler crash
-        sy.CompileTimeError(),
+        sy.InternalCompilerError(),
         rc.IncorrectComputation(),
         ct.TypeComparison(),
         15
@@ -454,10 +444,10 @@ scala_iter2 = [
     ),
     ScalaBug(
         "14.Scala2-6714",
-        # pc.AugmentedAssignmentOperator()
         [
             pc.Overriding(), pc.ImplicitDefs(),
-            pc.ImplicitParameters(), pc.ArithmeticExpressions()
+            pc.ImplicitParameters(), pc.ArithmeticExpressions(),
+            pc.AugmentedAssignmentOperator()
         ],
         True,
         sy.CompileTimeError(),
@@ -467,20 +457,17 @@ scala_iter2 = [
     ),
     ScalaBug(
         "15.Dotty-3917",
-        # pc.Property()
         [
             pc.Inheritance()
         ],
         True,
         sy.InternalCompilerError(),
-        # rc.IncorrectSequence()
         rc.MissingCase(),
         ct.Transformation(),
         8
     ),
     ScalaBug(
         "16.Dotty-2723",
-        # pc.CallByName() init: implicit Array[String] => Unit
         [
             pc.Inline(), pc.ImplicitParameters(), pc.FunctionTypes()
         ],
@@ -492,7 +479,6 @@ scala_iter2 = [
     ),
     ScalaBug(
         "17.Dotty-4030",
-        # pc.SealedClasses() (sealed trait Root[T])
         [
             pc.Inheritance(), pc.AlgebraicDataTypes(),
             pc.ParameterizedClasses(), pc.ParameterizedTypes(),
