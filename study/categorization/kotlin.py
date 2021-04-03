@@ -794,6 +794,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "2.KT-12982",
+        # pc.ParameterizedTypes() (KMutableProperty1<Foo, Int>)
         [
             pc.AccessModifiers(),
             pc.Reflection(),
@@ -808,6 +809,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "3.KT-41470",
+        # pc.Couroutines() FlowCollector interface is part of of Couroutines library, pc.SAM() Flow and FlowCollector intefaces
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -821,6 +823,8 @@ kotlin_iter4 = [
             pc.FunctionTypes(),
             pc.BuilderInference()
         ],
+        # True it says: Should print null but instead, it fails with NPE:
+        # Also if we see original report it also says code should pass
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.MissingCase(),
@@ -829,12 +833,16 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "4.KT-12477",
+        # pc.Constants() new category or make pc.StaticMethod -> pc.Static in general and consider this bug  pc.Static because:
+        # "Declaring a variable const is much like using the static keyword in Java."
         [
             pc.StandardFeatures()
         ],
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
+        # I think it fits more pc.ErrorReporting() because althought we have a declaration check implementation (canBeConst),
+        # the fix is strongly related to diagnostics which relates more to Error Reporting, and a strong indication is also the bug symptom
         ct.Declarations(),
         1
     ),
@@ -874,6 +882,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "8.KT-17611",
+        # maybe introduce a new characteristic pc.Shadowing() or pc.VariableShadowing()
         [
             pc.NestedClasses(),
             pc.AnonymousClass()
@@ -916,6 +925,7 @@ kotlin_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
+        # ct.TypeExpression, the fix is related more to a type check of an expression with when
         ct.Inference(),
         11
     ),
@@ -934,6 +944,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "12.KT-30826",
+        # pc.SAM()(I2)
         [
             pc.MultipleImplements(),
             pc.Nullables(),
@@ -945,6 +956,7 @@ kotlin_iter4 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.MissingCase(),
+        #type related, ct.Approximation() fix related to intersection types, expected types
         ct.OtherSemanticChecking(),
         18
     ),
@@ -996,6 +1008,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "16.KT-32235",
+        # pc.Conditionals()
         [
             pc.ParameterizedClasses(),
             pc.Collections(),
@@ -1014,6 +1027,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "17.KT-10896",
+        # pc.FlowTyping() when (result) is SuccessBinding -> {...., pc.VarTypeInference() (FailedBinding(errors))
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedFunctions(),
@@ -1033,6 +1047,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "18.KT-31025",
+        # pc.ParameterizedTypes() (Inv<String>)
         [
             pc.JavaInterop(),
             pc.ParameterizedClasses(),
@@ -1047,11 +1062,15 @@ kotlin_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
+        # agreed, but I think ct.Environment() fits more. We add a check at SamAdapterFunctionsScope also removed
+        # context.call.createLookupLocation() and added ktExpression?.createLookupLocation()
+        # and if it is null then call context.call.createLookupLocation(). Also change arguments of ASTScopeTower
         ct.Resolution(),
         12
     ),
     KotlinBug(
         "19.KT-42791",
+        # regression bug
         [
             pc.ParameterizedTypes(),
             pc.ParameterizedClasses(),
@@ -1063,11 +1082,18 @@ kotlin_iter4 = [
         ],
         True,
         sy.CompilationPerformance(),
+        # maybe rc.DesignIssue() Rethink constraints incorporation
+        # Namely, remove incorporation “otherInsideMyConstraint” to eliminate
+        # constraint system redundancy and produce a potentially very large number
+        #  of constructs.
+        # Instead, introduce not so “spreadable” incorporation during variable fixation
+        # from the commit message, it seems like the bug is associated with an issue in the design rather than the implementation
         rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),
         14
     ),
     KotlinBug(
+        # I think you should change the name of the bug to KT-13181
         "20.KT-42791",
         [
             pc.Import(),
