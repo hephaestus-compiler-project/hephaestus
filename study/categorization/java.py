@@ -850,11 +850,13 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        #maybe consider ct.Declaration() semantic check of a declaration with a bounded type to an array ((b.isErroneous()) set a bound)
         ct.ErrorReporting(),
         2
     ),
     JavaBug(
         "2.JDK-8020147",
+        # pc.Cast()(String)i,
         [
             pc.SAM(),
             pc.ParameterizedTypes(),
@@ -866,12 +868,14 @@ java_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.IncorrectSequence() some code from line 10 to 31 is moved to line 49 which changes the sequence of the program execution
         rc.IncorrectComputation(),
         ct.Environment(),
         13
     ),
     JavaBug(
         "3.JDK-8174249",
+        # regression bug
         [
             pc.Collections(),
             pc.UseVariance(),
@@ -899,6 +903,7 @@ java_iter4 = [
         5
     ),
     JavaBug(
+        # regression bug
         "5.JDK-6975231",
         [
             pc.TypeAnnotations()
@@ -923,6 +928,7 @@ java_iter4 = [
     ),
     JavaBug(
         "7.JDK-8030816",
+        # pc.ParamTypeInference()
         [
             pc.SAM(),
             pc.Lambdas(),
@@ -931,6 +937,7 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        #agreed, maybe ct.Approximation fits better,  dummyMethodType is considered an Approximation type used form the compiler internally.
         ct.ErrorReporting(),
         12
     ),
@@ -956,7 +963,9 @@ java_iter4 = [
         18
     ),
     JavaBug(
+        # regression bug
         "9.JDK-8176714",
+        # no pc.ParameterizedTypes(), pc.This()
         [
             pc.FunctionAPI(),
             pc.ParameterizedTypes(),
@@ -985,6 +994,7 @@ java_iter4 = [
     ),
     JavaBug(
         "11.JDK-7034495",
+
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -999,7 +1009,10 @@ java_iter4 = [
         11
     ),
     JavaBug(
+        # regression bug
         "12.JDK-8044546",
+        # pc.Arrays, pc.PrimitiveTypes() (STEPS TO FOLLOW TO REPRODUCE THE PROBLEM:
+        # Create a new method in this class, which returns a boolean and takes an array argument.
         [
             pc.Collections(),
             pc.Streams(),
@@ -1014,7 +1027,9 @@ java_iter4 = [
         9
     ),
     JavaBug(
+        # regression bug
         "13.JDK-7005095",
+        # no pc.ParameterizedFunctions() in minimized test case on fix
         [
             pc.ParameterizedFunctions(),
             pc.ParameterizedClasses(),
@@ -1032,6 +1047,7 @@ java_iter4 = [
     ),
     JavaBug(
         "14.JDK-8009582",
+        # pc.FunctionReferences()(HashMap::new ), pc.SAM()(GenericMethodRefImplClassLSI)
         [
             pc.TryCatch(),
             pc.Inheritance(),
@@ -1040,7 +1056,9 @@ java_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.WrongParams()(types.erasure(refSym.owner.type))
         rc.MissingCase(),
+        # is types.erasure considered an approximation type ?maybe ct.Approximation
         ct.Transformation(),
         49
     ),
@@ -1057,7 +1075,9 @@ java_iter4 = [
         6
     ),
     JavaBug(
+        # regression bug
         "16.JDK-8042759",
+        # pc.PrimitiveTypes()
         [
             pc.SAM(),
             pc.Conditionals(),
@@ -1067,6 +1087,8 @@ java_iter4 = [
         ],
         False,
         sy.Runtime(sy.WrongResult()),
+        # agreed, also consider  pc.FunctionalSpecificationMismatch() from the description of the problem,
+        # where the JLS8 chapter 15.12.2.2 in not followed.
         rc.WrongParams(),
         ct.TypeExpression(),
         34
@@ -1088,6 +1110,7 @@ java_iter4 = [
         29
     ),
     JavaBug(
+        # regression bug
         "18.JDK-8194998",
         [
             pc.SAM(),
@@ -1114,11 +1137,14 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
+        # ct.TypeComparsion get upper bound of type variable recursively until we find it,
+        #  its a type comparsion recursive functionality
         ct.TypeExpression(),
         21
     ),
     JavaBug(
         "20.JDK-8164399",
+        # pc.ParamTypeInference()(() -> compute(() -> {}))
         [
             pc.TryCatch(),
             pc.ParameterizedFunctions(),
