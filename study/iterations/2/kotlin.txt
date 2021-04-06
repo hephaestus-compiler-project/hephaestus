@@ -10,7 +10,7 @@ https://youtrack.jetbrains.com/issue/KT-18522,https://github.com/jetbrains/kotli
 https://youtrack.jetbrains.com/issue/KT-8320,https://github.com/jetbrains/kotlin/commit/e0ebaac70c8c3445eeb85c3bde3a59883ce3f23a
 https://youtrack.jetbrains.com/issue/KT-32081,https://github.com/jetbrains/kotlin/commit/3777d5dbadf6ba84397ec7970eb48524206eab8b
 https://youtrack.jetbrains.com/issue/KT-11280,https://github.com/jetbrains/kotlin/commit/a830d80dac5ff5f7ee5dcbda0524c1e13cfca555
-https://youtrack.jetbrains.com/issue/KT-3810,https://github.com/JetBrains/kotlin/commit/56e12787a8d2c0bd7371f3ddd6fa15ff61e059b0
+https://youtrack.jetbrains.com/issue/KT-42825,https://github.com/JetBrains/kotlin/pull/3869
 https://youtrack.jetbrains.com/issue/KT-17597,https://github.com/jetbrains/kotlin/commit/c970763a7f3323ee97c9b453c5970708d1377660
 https://youtrack.jetbrains.com/issue/KT-13597,https://github.com/jetbrains/kotlin/commit/56e633e345a2d82773d1915be60faecd0694ac30
 https://youtrack.jetbrains.com/issue/KT-12738,https://github.com/jetbrains/kotlin/commit/3eeccb407e29f1085a2e15dc691e607a292d1f08

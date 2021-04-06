@@ -376,16 +376,19 @@ kotlin_iter2 = [
         13
     ),
     KotlinBug(
-        "13.KT-3810",
-        [pc.Inheritance(),
-         pc.Overriding(),
-         pc.Property(),
-         ],
-        False,
-        sy.InternalCompilerError(),
+        "13.KT-42825",
+        [pc.Conditionals(),
+         pc.ParameterizedClasses(),
+         pc.ParameterizedTypes(),
+         pc.UseVariance(),
+         pc.Nullables(),
+         pc.JavaInterop(),
+         pc.FlowTyping()],
+        True,
+        sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.ErrorReporting(),
-        6
+        ct.TypeComparison(),
+        15
     ),
     KotlinBug(
         # regression bug The regression appeared after  commit with url:
