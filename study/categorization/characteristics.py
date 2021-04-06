@@ -758,29 +758,62 @@ class Inline(Characteristic):
 
 
 class Implicits(Characteristic):
+    """
+    The test case uses implicits (Scala only).
+    """
     name = "Implicits"
     category = SpecialFeatures()
     characteristic_type = Declaration()
     is_common = False
 
 
-class ImplicitParameters(Characteristic):
+class OpaqueType(Characteristic):
     """
-    The test case contains implicit parameters (Scala only).
+    The test case defines opaque type alias (Scala only)
     """
-    name = "Implicit parameters"
-    category = Implicits()
+    name = "Opaque types"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = False
+
+
+class Mixins(Characteristic):
+    """
+    The test case uses a mixin type (Scala Only)
+    """
+    name = "Opaque types"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = False
+
+
+class MatchTypes(Characteristic):
+    """
+    The test case performs pattern matching on types (Scala only).
+    """
+    name = "Match types"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = False
+
+
+class ETAExpansion(Characteristic):
+    """
+    The test case contains an eta expanded method (Scala only).
+    """
+    name = "Eta expansion"
+    category = FunctionalProgramming()
     characteristic_type = Declaration()
     is_common = False
 
 
-class ImplicitDefs(Characteristic):
+class TemplateString(Characteristic):
     """
-    The test case contains implicit definitions (Scala only).
+    The test case contains a template sting (all but Java).
     """
-    name = "Implicit definitions"
-    category = Implicits()
-    characteristic_type = Declaration()
+    name = "Template string"
+    category = SpecialFeatures()
+    characteristic_type = Expressions()
     is_common = False
 
 

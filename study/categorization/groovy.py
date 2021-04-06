@@ -224,7 +224,7 @@ groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
         [pc.ParameterizedTypes, pc.JavaInterop(),
-         pc.WithMultipleAssignment()
+         pc.WithMultipleAssignment(),
          pc.Property(), pc.AccessModifiers()
         ],
         True,
@@ -363,7 +363,7 @@ groovy_iter2 = [
         "14.GROOVY-8090",
         [pc.Collections(),
          pc.ParameterizedTypes(),
-         pc.ParameterizedFunctions()
+         pc.ParameterizedFunctions(),
          pc.TypeArgsInference(),
          ],
         True,
@@ -775,7 +775,7 @@ groovy_iter4 = [
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
-            pc.GString() # TODO
+            pc.TemplateString() # TODO
         ],
         False,
         sy.MisleadingReport(),
@@ -870,7 +870,7 @@ groovy_iter4 = [
         [
             pc.ParameterizedTypes(),
             pc.Lambdas(),
-            pc.FunctionalInterface(),
+            pc.FunctionAPI(),
             pc.ParameterizedClasses(),
             pc.ParamTypeInference(),
             pc.TypeArgsInference(),
@@ -942,7 +942,7 @@ groovy_iter4 = [
         "15.GROOVY-9885",
         [
             pc.ElvisOperator(),
-            pc.GString(), # TODO
+            pc.TemplateString(), # TODO
             pc.Property()
         ],
         True,
@@ -958,7 +958,7 @@ groovy_iter4 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
-            pc.GString()
+            pc.TemplateString(),
             pc.NamedArgs()
         ],
         True,
@@ -982,7 +982,7 @@ groovy_iter4 = [
     GroovyBug(
         "18.GROOVY-7813",
         [
-            pc.NestedDeclaration()
+            pc.NestedClasses()
         ],
         False,
         sy.Runtime(sy.VerifyError()),

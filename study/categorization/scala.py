@@ -1056,7 +1056,7 @@ scala_iter4 = [
             pc.JavaInterop()
         ],
         True,
-        sy.Performance(),
+        sy.CompilationPerformance(),
         rc.InsufficientAlgorithmImplementation(),
         ct.OtherSemanticChecking(),
         0
@@ -1142,7 +1142,7 @@ scala_iter4 = [
     ScalaBug(
         "18.Scala2-9110",
         [
-            pc.NestedDeclaration(),
+            pc.NestedClasses(),
             pc.AlgebraicDataTypes(),
             pc.PatMat()
         ],
