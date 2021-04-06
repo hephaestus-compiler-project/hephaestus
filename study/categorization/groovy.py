@@ -91,16 +91,15 @@ groovy_iter1 = [
         13
     ),
     GroovyBug(
-        "9.GROOVY-6021",
-        [pc.Lambdas(),
-         pc.Collections(),
-         pc.DelegationAPI(),
-         pc.VarTypeInference()],
+        "9.GROOVY-7210",
+        [pc.Arrays(),
+         pc.PrimitiveTypes()
+        ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Transformation(), # TODO backend
-        12
+        ct.Approximation(),
+        3
     ),
     GroovyBug(
         "10.GROOVY-8247",

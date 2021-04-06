@@ -23,21 +23,21 @@ java_iter1 = [
     ),
     JavaBug(
         "2.JDK-8254557",
-        [pc.Streams(), pc.FunctionAPI(),
-         pc.ParameterizedFunctions(), pc.AnonymousClass(),
-         pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
-         pc.TypeArgsInference(),
-         pc.Overriding()
+        [
+         pc.ParameterizedClasses(),
+         pc.UseVariance(),
+         pc.ParameterizedTypes(),
+         pc.Arrays(),
+         pc.ParameterizedFunctions()
          ],
-        False,
-        sy.InternalCompilerError(),
-        rc.MissingCase(),
-        ct.TypeExpression(),
-        # 58
-        34
+        True,
+        sy.CompilationPerformance(),
+        rc.InsufficientAlgorithmImplementation(),
+        ct.TypeComparison(),
+        9
     ),
      JavaBug(
-        "3.JDK-8244559",
+        "3.JDK-8144066",
         [pc.Collections(), pc.Streams(),
          pc.Inline(), pc.NestedClasses(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes(),
