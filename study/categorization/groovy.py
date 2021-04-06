@@ -33,7 +33,7 @@ groovy_iter1 = [
         ),
     GroovyBug(
         "3.GROOVY-5217",
-        [pc.Lambdas(), pc.FunctionTypes(), pc.Property()],
+        [pc.Lambdas(), pc.ParameterizedTypes(), pc.Property()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
@@ -105,7 +105,6 @@ groovy_iter1 = [
         "10.GROOVY-8247",
         [pc.Lambdas(),
          pc.ParamTypeInference(),
-         pc.FunctionTypes(),
          pc.SAM()],
         True,
         sy.InternalCompilerError(),
@@ -222,7 +221,7 @@ groovy_iter1 = [
 groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
-        [pc.ParameterizedTypes, pc.JavaInterop(),
+        [pc.ParameterizedTypes,
          pc.WithMultipleAssignment(),
          pc.Property(), pc.AccessModifiers()
         ],
@@ -293,7 +292,7 @@ groovy_iter2 = [
     GroovyBug(
         "8.GROOVY-5873",
         [pc.Inheritance(), pc.ParameterizedClasses(),
-         pc.ParameterizedTypes(), pc.Property()
+         pc.ParameterizedTypes(),
          ],
         True,
         sy.CompileTimeError(),
@@ -338,7 +337,6 @@ groovy_iter2 = [
         7
     ),
     GroovyBug(
-        # regression bug
         "12.GROOVY-7922",
         [pc.Overloading(), pc.MultipleImplements()],
         False,
@@ -556,13 +554,10 @@ groovy_iter3 = [
         # pc.pc.TypeArgsInference()  {foo, bar -> println(bar.size())}) for argument Consumer<String, ? super List<Integer>> bar
 
         [
-            pc.JavaInterop(),
-            pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.ParamTypeInference(),
             pc.Collections(),
-            pc.Lambdas(),
-            pc.UseVariance()
+            pc.Lambdas()
         ],
         True,
         sy.CompileTimeError(),
@@ -580,7 +575,7 @@ groovy_iter3 = [
             pc.ParameterizedTypes(),
             pc.Lambdas(),
             pc.TypeArgsInference(),
-            pc.WildCardType() # TODO
+            pc.WildCardType()
         ],
         True,
         sy.CompileTimeError(),
@@ -604,13 +599,10 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "12.GROOVY-5601",
-        # pc.SAM()(Mapper<F, T>), no pc.Overriding()
         [
             pc.AnonymousClass(),
-            pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
-            pc.Overriding()
         ],
         False,
         sy.InternalCompilerError(),
@@ -696,6 +688,7 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "18.GROOVY-6671",
+        # Property
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -783,7 +776,7 @@ groovy_iter4 = [
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
-            pc.TemplateString() # TODO
+            pc.TemplateString()
         ],
         False,
         sy.MisleadingReport(),
@@ -916,6 +909,7 @@ groovy_iter4 = [
             pc.ParamTypeInference(),
             pc.Collections(),
             pc.Lambdas(),
+            pc.ParameterizedTypes()
         ],
         True,
         sy.CompileTimeError(),
@@ -954,7 +948,7 @@ groovy_iter4 = [
         "15.GROOVY-9885",
         [
             pc.ElvisOperator(),
-            pc.TemplateString(), # TODO
+            pc.TemplateString(),
             pc.Property()
         ],
         True,
