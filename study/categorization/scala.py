@@ -45,8 +45,7 @@ scala_iter1 = [
          pc.ParameterizedTypes(),
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
-         pc.ImplicitParameters(),
-         pc.ImplicitDefs(),
+         pc.Implicits(),
          pc.Typedefs(),
         ],
         True,
@@ -58,7 +57,7 @@ scala_iter1 = [
     ScalaBug(
         "5.Dotty-4509",
         [
-         pc.ImplicitParameters(),
+         pc.Implicits(),
          pc.FunctionTypes(),
          pc.ErasedParameters(),
          pc.Lambdas()
@@ -130,7 +129,8 @@ scala_iter1 = [
             pc.FBounded(),
             pc.WildCardType(),
             pc.Inheritance(),
-            pc.SealedClasses(), pc.ImplicitParameters(), pc.ImplicitDefs()
+            pc.SealedClasses(),
+            pc.Implicits()
         ],
         True,
         sy.CompileTimeError(),
@@ -210,7 +210,7 @@ scala_iter1 = [
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(), pc.HigherKindedTypes(),
             pc.DeclVariance(), pc.AlgebraicDataTypes(),
-            pc.Subtyping(), pc.ImplicitParameters(), pc.PatMat()
+            pc.Subtyping(), pc.Implicits(), pc.PatMat()
         ],
         False,
         sy.MisleadingReport(),
@@ -288,7 +288,7 @@ scala_iter2 = [
     ScalaBug(
         "2.Scala2-5231",
         [
-            pc.AccessModifiers(), pc.ImplicitDefs()
+            pc.AccessModifiers(), pc.Implicits()
         ],
         False,
         sy.InternalCompilerError(),
@@ -378,8 +378,7 @@ scala_iter2 = [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.CallByName(),
-            pc.ImplicitDefs(),
-            pc.ImplicitParameters()
+            pc.Implicits(),
         ],
         True,
         sy.InternalCompilerError(),
@@ -395,7 +394,7 @@ scala_iter2 = [
             pc.FBounded(),
             pc.NestedClasses(),
             pc.Inheritance(),
-            pc.ImplicitParameters(),
+            pc.Implicits(),
             pc.WildCardType(),
             pc.PatMat()
         ],
@@ -433,7 +432,7 @@ scala_iter2 = [
     ScalaBug(
         "13.Scala2-5454",
         [
-            pc.ImplicitDefs(), pc.ImplicitParameters(),
+            pc.Implicits(),
             pc.Inheritance(), pc.ParameterizedClasses()
         ],
         True,
@@ -445,8 +444,8 @@ scala_iter2 = [
     ScalaBug(
         "14.Scala2-6714",
         [
-            pc.Overriding(), pc.ImplicitDefs(),
-            pc.ImplicitParameters(), pc.ArithmeticExpressions(),
+            pc.Overriding(), pc.Implicits(),
+            pc.ArithmeticExpressions(),
             pc.AugmentedAssignmentOperator()
         ],
         True,
@@ -469,7 +468,7 @@ scala_iter2 = [
     ScalaBug(
         "16.Dotty-2723",
         [
-            pc.Inline(), pc.ImplicitParameters(), pc.FunctionTypes()
+            pc.Inline(), pc.Implicits(), pc.FunctionTypes()
         ],
         True,
         sy.InternalCompilerError(),
@@ -495,7 +494,7 @@ scala_iter2 = [
         "18.Scala2-10536",
         [
             pc.OperatorOverloading(),
-            pc.ParameterizedClasses(), pc.ImplicitParameters(),
+            pc.ParameterizedClasses(), pc.Implicits(),
             pc.FBounded(), pc.BoundedPolymorphism(),
             pc.AlgebraicDataTypes(), pc.Overloading(),
             pc.ParameterizedTypes()
@@ -539,9 +538,8 @@ scala_iter3 = [
         [
             pc.ParameterizedClasses(),
             pc.DeclVariance(),
-            pc.ImplicitDefs(),
+            pc.Implicits(),
             pc.ParameterizedTypes(),
-            pc.ImplicitParameters()
         ],
         True,
         sy.CompileTimeError(),
@@ -727,8 +725,7 @@ scala_iter3 = [
             pc.Inheritance(),
             pc.Overriding(),
             pc.Subtyping(),
-            pc.ImplicitDefs(),
-            pc.ImplicitParameters()
+            pc.Implicits(),
         ],
         True,
         sy.Runtime(sy.WrongResult()),
@@ -753,7 +750,7 @@ scala_iter3 = [
     ScalaBug(
         "13.Scala2-8862",
         [
-            pc.ImplicitDefs(),
+            pc.Implicits(),
             pc.Import(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
@@ -771,10 +768,9 @@ scala_iter3 = [
         "14.Scala2-9231",
         [
             pc.ParameterizedClasses(),
-            pc.ImplicitDefs(),
+            pc.Implicits(),
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
-            pc.ImplicitParameters()
         ],
         False,
         sy.MisleadingReport(),
@@ -909,7 +905,7 @@ scala_iter4 = [
     ScalaBug(
         "2.Scala2-2742",
         [
-            pc.ImplicitDefs(),
+            pc.Implicits(),
             pc.Inheritance(),
             pc.Overriding(),
             pc.Subtyping()
@@ -1025,7 +1021,7 @@ scala_iter4 = [
             pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.TypeArgsInference(),
-            pc.ImplicitDefs()
+            pc.Implicits()
         ],
         True,
         sy.CompileTimeError(),
@@ -1116,7 +1112,7 @@ scala_iter4 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.FunctionTypes(),
-            pc.ImplicitDefs(),
+            pc.Implicits(),
             pc.Inheritance()
         ],
         True,
@@ -1161,7 +1157,7 @@ scala_iter4 = [
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
             pc.FunctionAPI(),
-            pc.ImplicitDefs()
+            pc.Implicits()
         ],
         True,
         sy.CompileTimeError(),
