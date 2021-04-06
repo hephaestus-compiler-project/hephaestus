@@ -233,6 +233,7 @@ kotlin_iter1 = [
 
 kotlin_iter2 = [
     KotlinBug(
+#rc.AlgorithmImproperlyImplemented
         "1.KT-31102",
         [pc.Lambdas(), pc.FunctionReferences(),
          pc.ParameterizedFunctions(), pc.FunctionTypes(),
@@ -245,6 +246,7 @@ kotlin_iter2 = [
         8
     ),
     KotlinBug(
+#rc.AlgorithmImproperlyImplemented
         "2.KT-3112",
         [pc.NestedClasses(),
          pc.ParameterizedClasses(),
@@ -773,6 +775,7 @@ kotlin_iter3 = [
         14
     ),
     KotlinBug(
+				#rc.AlgorithmImproperlyImplemented
         "20.KT-11203",
         # pc.Arrays()
         [
