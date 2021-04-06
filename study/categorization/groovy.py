@@ -91,16 +91,15 @@ groovy_iter1 = [
         13
     ),
     GroovyBug(
-        "9.GROOVY-6021",
-        [pc.Lambdas(),
-         pc.Collections(),
-         pc.DelegationAPI(),
-         pc.VarTypeInference()],
+        "9.GROOVY-7210",
+        [pc.Arrays(),
+         pc.PrimitiveTypes()
+        ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.Transformation(), # TODO backend
-        12
+        ct.Approximation(),
+        3
     ),
     GroovyBug(
         "10.GROOVY-8247",
@@ -744,11 +743,15 @@ groovy_iter3 = [
 groovy_iter4 = [
     GroovyBug(
         "1.GROOVY-5705",
+        # pc.Property() c is property of Test, also on title:
+        # "calling a closure stored in a property yields an NPE"
         [
             pc.ParamTypeInference(),
             pc.Lambdas()
         ],
         True,
+        # sy.Runtime(sy.NullPointerException())
+        # it says when you run(not compile) the example, a NPE is thrown
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
         ct.TypeExpression(),
@@ -756,6 +759,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "2.GROOVY-6760",
+        # maybe pc.SAM() because of callable but it is not defined, only used
         [
             pc.Collections(),
             pc.ParameterizedFunctions(),
@@ -766,6 +770,10 @@ groovy_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.IncorrectCondition
+        # missing condition, same exmplanation with the example of the documentation of this root cause:
+        # " The fix above fixes a bug that lies in the category "Incorrect Condition",
+        # because it introduces a condition that is necessary, but was omitted in the current implementation."
         rc.MissingCase(),
         ct.Inference(),
         12
@@ -797,6 +805,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "5.GROOVY-5237",
+        # pc.Property() initialValue property of Container
         [
             pc.ParameterizedClasses(),
             pc.AccessModifiers()
@@ -809,6 +818,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "6.GROOVY-5640",
+        # pc.SAM() Traverser, pc.Reflection() node.class.name, pc.PropertyReference()
         [
             pc.Loops(),
             pc.Overriding(),
@@ -834,6 +844,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "8.GROOVY-5650",
+        # regression bug
         [
             pc.ParameterizedTypes(),
             pc.ParameterizedClasses(),
@@ -899,6 +910,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "12.GROOVY-6961",
+        # pc.ParameterizedTypes()
         [
             pc.TypeArgsInference(),
             pc.ParamTypeInference(),
@@ -969,6 +981,7 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "17.GROOVY-5702",
+        # pc.SAM() MyCloseable, pc.Inheritance()
         [
             pc.VarTypeInference(),
             pc.Overriding()
@@ -981,6 +994,8 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "18.GROOVY-7813",
+        # pc.Static() make pc.StaticMethod() characteristic to pc.Static() to include static classes
+        # Calling a non-static outer class method from a static class passes STC
         [
             pc.NestedClasses()
         ],
