@@ -147,6 +147,7 @@ groovy_iter1 = [
     GroovyBug(
         "14.GROOVY-7316",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.Collections()],
         True,
         sy.CompileTimeError(),
@@ -204,6 +205,7 @@ groovy_iter1 = [
         "20.GROOVY-8310",
         [pc.ParameterizedTypes(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.Collections(),
          pc.Lambdas(),
          pc.Subtyping()],
@@ -242,7 +244,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "3.GROOVY-6415",
-        [pc.ParameterizedFunctions()],
+        [pc.ParameterizedFunctions(), pc.TypeArgsInference()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
@@ -261,6 +263,7 @@ groovy_iter2 = [
     GroovyBug(
         "5.GROOVY-6761",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(),
          pc.UseVariance()
          ],
@@ -306,6 +309,7 @@ groovy_iter2 = [
          pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.Reflection()
          ],
         True,
@@ -360,6 +364,7 @@ groovy_iter2 = [
         [pc.Collections(),
          pc.ParameterizedTypes(),
          pc.ParameterizedFunctions()
+         pc.TypeArgsInference(),
          ],
         True,
         sy.CompileTimeError(),
@@ -371,6 +376,7 @@ groovy_iter2 = [
         "15.GROOVY-5742",
         [pc.Import(), pc.ParameterizedClasses(),
          pc.FBounded(), pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(), pc.Inheritance()
          ],
         True,
@@ -382,7 +388,8 @@ groovy_iter2 = [
     GroovyBug(
         "16.GROOVY-7307",
         [pc.Subtyping(),
-         pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
+         pc.ParameterizedFunctions(), pc.BoundedPolymorphism(),
+         pc.TypeArgsInference()
          ],
         True,
         sy.CompileTimeError(),

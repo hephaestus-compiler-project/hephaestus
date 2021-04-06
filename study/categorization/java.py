@@ -80,6 +80,7 @@ java_iter1 = [
         [pc.Overriding(),
          pc.Reflection(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.BoundedPolymorphism(),
          pc.ParameterizedTypes()
          ],
@@ -105,6 +106,7 @@ java_iter1 = [
         "8.JDK-6995200",
         [
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.PrimitiveTypes(), pc.ParameterizedTypes()
          ],
         True,
@@ -118,6 +120,7 @@ java_iter1 = [
         "9.JDK-7040883",
         [
             pc.ParameterizedFunctions(), pc.Arrays(),
+            pc.TypeArgsInference(),
             pc.Reflection(), pc.ParameterizedTypes()
          ],
          True,
@@ -143,7 +146,7 @@ java_iter1 = [
     ),
     JavaBug(
         "11.JDK-8129214",
-        [pc.Import(),
+        [pc.Import(), pc.TypeArgsInference(),
          pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
          ],
         True,
@@ -169,6 +172,7 @@ java_iter1 = [
         "13.JDK-8195598",
         [
             pc.ParameterizedFunctions(), pc.Overloading(),
+            pc.TypeArgsInference(),
             pc.Lambdas(), pc.FunctionAPI()
         ],
         True,
@@ -263,6 +267,7 @@ java_iter1 = [
         [
             pc.FunctionAPI(),
             pc.FunctionReferences(),
+            pc.TypeArgsInference(),
             pc.ParameterizedFunctions(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(),
             pc.IntersectionTypes()
@@ -286,6 +291,7 @@ java_iter2 = [
             pc.Streams(), pc.Collections(), pc.Lambdas(),
             pc.FunctionAPI(), pc.BoundedPolymorphism(),
             pc.UseVariance(), pc.ParameterizedTypes(),
+            pc.TypeArgsInference(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.Subtyping()
         ],
@@ -367,6 +373,7 @@ java_iter2 = [
         "8.JDK-8039214",
         [
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.ParameterizedTypes(), pc.UseVariance(),
             pc.Inheritance(), pc.Subtyping()
         ],
@@ -400,6 +407,7 @@ java_iter2 = [
         [
             pc.FunctionAPI(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.Arrays(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(), pc.Overloading(),
             pc.SAM(), pc.Collections(),
@@ -442,6 +450,7 @@ java_iter2 = [
         "14.JDK-8011376",
         [
             pc.Lambdas(), pc.TryCatch(), pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.ParameterizedTypes(), pc.Subtyping()
         ],
         True,
@@ -487,6 +496,7 @@ java_iter2 = [
         "18.JDK-8010303",
         # pc.SAM() (Func interface)
         [pc.ParameterizedFunctions(), pc.ParameterizedClasses(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(), pc.SAM()],
         True,
         sy.CompileTimeError(),
@@ -501,6 +511,7 @@ java_iter2 = [
             pc.FBounded(),
             pc.UseVariance(), pc.Subtyping(),
             pc.ParameterizedFunctions(), pc.Collections(),
+            pc.TypeArgsInference(),
             pc.BoundedPolymorphism()
         ],
         True,
@@ -513,6 +524,7 @@ java_iter2 = [
         "20.JDK-8029002",
         [
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.BoundedPolymorphism(), pc.UseVariance(),
             pc.Subtyping(), pc.Inheritance(),
             pc.ParameterizedTypes()
@@ -813,6 +825,7 @@ java_iter3 = [
             pc.FunctionReferences(),
             pc.Varargs(),
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.FunctionAPI()
         ],
         True,

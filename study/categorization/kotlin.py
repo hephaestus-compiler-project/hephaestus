@@ -53,6 +53,7 @@ kotlin_iter1 = [
         [pc.Overloading(), pc.Varargs(),
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes()],
         True,
         sy.Runtime(sy.WrongResult()),
@@ -77,6 +78,7 @@ kotlin_iter1 = [
     KotlinBug(
         "7.KT-23748",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.Subtyping(),
          pc.Nullables(),
          pc.ElvisOperator()],
@@ -102,6 +104,7 @@ kotlin_iter1 = [
     KotlinBug(
         "9.KT-10711",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedClasses(),
          pc.Collections(),
          pc.FunctionReferences()],
@@ -233,6 +236,7 @@ kotlin_iter2 = [
         "1.KT-31102",
         [pc.Lambdas(), pc.FunctionReferences(),
          pc.ParameterizedFunctions(), pc.FunctionTypes(),
+         pc.TypeArgsInference(),
          pc.TypeArgsInference(), pc.This()],
         True,
         sy.CompileTimeError(),
@@ -264,6 +268,7 @@ kotlin_iter2 = [
         "4.KT-39461",
         [pc.Coroutines(), pc.OperatorOverloading(),
          pc.Lambdas(),
+         pc.TypeArgsInference(),
          pc.ParameterizedFunctions(),
          pc.FunctionTypes()
          ],
@@ -346,6 +351,7 @@ kotlin_iter2 = [
         "11.KT-32081",
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(),
          pc.Nothing(),
          pc.Subtyping(),
@@ -433,6 +439,7 @@ kotlin_iter2 = [
     KotlinBug(
         "18.KT-12286",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.FunctionTypes(),
          pc.FBounded(),
          pc.Conditionals(),
@@ -445,11 +452,11 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "19.KT-9630",
-        # pc.MultipleImplements() class Baz<T> : Foo<T>, Bar<T>,
         [pc.ParameterizedClasses(),
          pc.Inheritance(),
          pc.MultipleImplements(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedTypes(),
          pc.FBounded(),
          pc.MultiBounds(),
@@ -464,6 +471,7 @@ kotlin_iter2 = [
     KotlinBug(
         "20.KT-25302",
         [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.ParameterizedClasses(),
          pc.WildCardType(),
          pc.ParameterizedTypes(),

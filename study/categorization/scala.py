@@ -45,6 +45,7 @@ scala_iter1 = [
          pc.ParameterizedTypes(),
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.Implicits(),
          pc.Typedefs(),
         ],
@@ -84,6 +85,7 @@ scala_iter1 = [
         "7.Scala2-5886",
         [
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.Reflection(),
             pc.CallByName(),
             pc.FunctionTypes()
@@ -195,6 +197,7 @@ scala_iter1 = [
             pc.ParameterizedFunctions(),
             pc.Collections(),
             pc.Overloading(),
+            pc.TypeArgsInference(),
             pc.FunctionReferences(),
             pc.ParameterizedTypes()
         ],
