@@ -892,6 +892,7 @@ scala_iter3 = [
 scala_iter4 = [
     ScalaBug(
         "1.Dotty-5876",
+        # pc.MultiBounds()
         [
             pc.Inheritance(),
             pc.Typedefs(),
@@ -907,6 +908,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "2.Scala2-2742",
+        # pc.VarTypeInference() val f = new A
         [
             pc.Implicits(),
             pc.Inheritance(),
@@ -934,6 +936,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "4.Scala2-9630",
+        # pc.NestedDeclarations() ( nested case classes to the sealed trait)
         [
             pc.AlgebraicDataTypes(),
             pc.PatMat(),
@@ -946,6 +949,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "5.Dotty-6745",
+        # pc.CallByName() prog: (h: self.type) => h.M
         [
             pc.DependentTypes(),
             pc.Typedefs(),
@@ -971,7 +975,13 @@ scala_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.IncorrectDataType()
+        # Previously we just returned the unapplied WildcardType
+        #  which isincorrect if the WildcardType is bounded.
         rc.MissingCase(),
+        #agreed, but consider also ct.TypeComparison()
+        # do the type application on the bounds of the WildcardType
+        # and wrap the result in a WildcardType.
         ct.Approximation(),
         0
     ),
@@ -985,12 +995,15 @@ scala_iter4 = [
         ],
         True,
         sy.InternalCompilerError(),
+        # agreed, we add atPos(uncheckedPattern.pos)
+        # consider also rc.WrongParams() because app is passed as argument to doTypedUnapply
         rc.MissingCase(),
         ct.TypeExpression(),
         0
     ),
     ScalaBug(
         "8.Scala2-7232",
+        # maybe pc.Shadowing() characteristic?
         [
             pc.JavaInterop(),
         ],
@@ -1001,7 +1014,9 @@ scala_iter4 = [
         0
     ),
     ScalaBug(
+        # pc.regression bug
         "9.Scala2-7688",
+        # pc.Singleton() object A
         [
             pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(),
@@ -1018,7 +1033,9 @@ scala_iter4 = [
         0
     ),
     ScalaBug(
+        # regression bug
         "10.Scala2-9086",
+        # pc.Singleton() object X
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -1029,6 +1046,8 @@ scala_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
+        # agreed with Resolution, maybe ct.Environment() fits better?
+        # change at context.outer.owner.newLocalDummy() by passing argument context.owner.pos
         ct.Resolution(),
         0
     ),
@@ -1044,11 +1063,15 @@ scala_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # rc.ExtraneousComputation()
+        # the type of the bug is an extraneous condition
+        # ( as stated on ExtraneousComputation documentation)
         rc.IncorrectCondition(),
         ct.TypeComparison(),
         0
     ),
     ScalaBug(
+        # regression bug
         "12.Scala2-8531",
         [
             pc.Enums(),
@@ -1077,6 +1100,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "14.Dotty-2104",
+        # pc.Singleton() object Cons, pc.TypeArgsInference(), no pc.ParameterizedTypes()
         [
             pc.AlgebraicDataTypes(),
             pc.ParameterizedClasses(),
@@ -1095,6 +1119,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "15.Dotty-5640",
+        # maybe pc.ParamTypeInference()
         [
             pc.Lambdas(),
             pc.VarTypeInference()
@@ -1107,6 +1132,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "16.Dotty-3067",
+        # pc.Singleton() object Bar extends Foo
         [
             pc.ParameterizedClasses(),
             pc.ParamTypeInference(),
@@ -1125,6 +1151,7 @@ scala_iter4 = [
         0
     ),
     ScalaBug(
+        # regression bug
         "17.Scala2-7636",
         [
             pc.ParameterizedClasses(),
@@ -1141,6 +1168,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "18.Scala2-9110",
+        # pc.Singleton() object DomainC extends Domain
         [
             pc.NestedClasses(),
             pc.AlgebraicDataTypes(),
@@ -1164,12 +1192,16 @@ scala_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
+        # maybe rc.FunctionalSpecificationMismatch because it says:
+        # The spec and intuitions suggest that c1 is more specific than the quantified c0
+        # and that the former should be selected over the latter
         rc.MissingCase(),
         ct.TypeComparison(),
         0
     ),
     ScalaBug(
         "20.Scala2-9398",
+        # pc.SealedClasses() sealed abstract class TB, pc.Singleton() case object B extends TB
         [
             pc.AlgebraicDataTypes(),
             pc.PatMat()
