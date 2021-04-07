@@ -23,6 +23,20 @@ java_iter1 = [
     ),
     JavaBug(
         "2.JDK-8254557",
+        [pc.Streams(), pc.FunctionAPI(),
+         pc.ParameterizedFunctions(), pc.AnonymousClass(),
+         pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
+         pc.TypeArgsInference(),
+         pc.Overriding()
+         ],
+        False,
+        sy.InternalCompilerError(),
+        rc.MissingCase(),
+        ct.TypeExpression(),
+        9
+    ),
+     JavaBug(
+        "3.JDK-8144066",
         [
          pc.ParameterizedClasses(),
          pc.UseVariance(),
@@ -34,20 +48,6 @@ java_iter1 = [
         sy.CompilationPerformance(),
         rc.InsufficientAlgorithmImplementation(),
         ct.TypeComparison(),
-        9
-    ),
-     JavaBug(
-        "3.JDK-8144066",
-        [pc.Collections(), pc.Streams(),
-         pc.Inline(), pc.NestedClasses(),
-         pc.ParameterizedClasses(), pc.ParameterizedTypes(),
-         pc.ReferenceTypes(), pc.Lambdas()
-         ],
-        True,
-        sy.CompileTimeError(),
-        rc.MissingCase(),
-        ct.Transformation(),
-        # 21
         17
     ),
         JavaBug(
@@ -225,7 +225,8 @@ java_iter1 = [
   JavaBug(
         "17.JDK-6996914",
         [
-            pc.NestedClasses(), pc.Subtyping(), pc.ParameterizedClasses(),
+            pc.Subtyping(), pc.ParameterizedClasses(),
+            pc.ParameterizedTypes(),
             pc.TypeArgsInference(), pc.AccessModifiers()
         ],
         True,
@@ -544,6 +545,7 @@ java_iter3 = [
         "1.JDK-8031967",
         #  pc.StandardLibrary?, pc.PrimitiveTypes(),
         [
+            pc.Overriding(),
             pc.Overloading(),
         ],
         True,
@@ -668,6 +670,7 @@ java_iter3 = [
             pc.Collections(),
             pc.ParameterizedClasses(),
             pc.Inheritance(),
+            pc.Import(),
             pc.ParameterizedTypes(),
             pc.Loops()
         ],
@@ -714,6 +717,7 @@ java_iter3 = [
     ),
     JavaBug(
         "13.JDK-8175790",
+        # theosort: why not AnonymousClass and Overloading?
         [
             pc.ParameterizedFunctions(),
             pc.FunctionAPI(),
@@ -744,7 +748,7 @@ java_iter3 = [
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
-            pc.WildCardType(), #TODO
+            pc.WildCardType(),
             pc.Cast()
         ],
         True,
@@ -795,7 +799,7 @@ java_iter3 = [
         # pc.PrimitiveTypes()
         [
             pc.NestedClasses(),
-            pc.AugmentedAssignmentOperator(), #TODO
+            pc.AugmentedAssignmentOperator(),
             pc.Inheritance(),
             pc.AccessModifiers()
         ],
