@@ -192,7 +192,7 @@ class JavaInterop(Characteristic):
     code written in Java (e.g., a library, imports a Java class, uses the
     standard library of Java, etc.)
     """
-    name = "Java Interop"
+    name = "Java interop"
     category = SpecialFeatures()
     characteristic_type = None
     is_common = True
@@ -276,7 +276,7 @@ class Lambdas(Characteristic):
     """
     The test case contains a lambda expression.
     """
-    name = "Lambdas"
+    name = "Lambda"
     category = FunctionalProgramming()
     characteristic_type = Expressions()
     is_common = True
@@ -300,7 +300,7 @@ class FunctionReferences(Characteristic):
        class X { static String foo() }
        bar(X::foo) // here we have the function reference
     """
-    name = "Function references"
+    name = "Function reference"
     category = FunctionalProgramming()
     characteristic_type = Expressions()
     is_common = True
@@ -367,7 +367,7 @@ class ParameterizedFunctions(Characteristic):
     """
     The test case declares a parameterized function.
     """
-    name = "Parameterized Functions"
+    name = "Parameterized function"
     category = ParametricPolymorphism()
     characteristic_type = Declaration()
     is_common = True
@@ -377,7 +377,7 @@ class ParameterizedClasses(Characteristic):
     """
     The test case declares a parameterized class.
     """
-    name = "Parameterized Classes"
+    name = "Parameterized class"
     category = ParametricPolymorphism()
     characteristic_type = Declaration()
     is_common = True
@@ -413,7 +413,7 @@ class BoundedPolymorphism(Characteristic):
     Example:
        class X<T extends Object> {}
     """
-    name = "Bounded Quantification"
+    name = "Bounded type params"
     category = ParametricPolymorphism()
     characteristic_type = Types()
     is_common = True
@@ -567,7 +567,7 @@ class Typedefs(Characteristic):
     Example:
       type MyType = List[(Int, Double)]
     """
-    name = "Type definitions"
+    name = "Type alias"
     category = TypeSystem()
     characteristic_type = Declaration()
     is_common = False
@@ -671,7 +671,7 @@ class Arrays(Characteristic):
     Example:
       String foo(String[] args)
     """
-    name = "Arrays"
+    name = "Array"
     category = StandardFeatures()
     characteristic_type = Types()
     is_common = True
@@ -877,7 +877,7 @@ class WildCardType(Characteristic):
     The test case contains a parameterized type that comes from the
     application of a type constructor with a wildcard type, e.g. A<?>.
     """
-    name = "Wildcard Type"
+    name = "Wildcard type"
     category = TypeSystem()
     characteristic_type = Types()
     is_common = True
@@ -887,7 +887,7 @@ class ParameterizedTypes(Characteristic):
     """
     The test case declares a variable/parameter whose type is parameterized.
     """
-    name = "Parameterized types"
+    name = "Parameterized type"
     category = ParametricPolymorphism()
     characteristic_type = Types()
     is_common = True
@@ -897,7 +897,7 @@ class FunctionTypes(Characteristic):
     """
     The test case declares a variable/parameter whose type is a function type.
     """
-    name = "Function types"
+    name = "Function type"
     category = FunctionalProgramming()
     characteristic_type = Types()
     is_common = True
@@ -957,7 +957,7 @@ class NestedClasses(Characteristic):
          class Y {}
        }
     """
-    name = "Nested classes"
+    name = "Nested class"
     category = OOPFeatures()
     characteristic_type = Declaration()
     is_common = True

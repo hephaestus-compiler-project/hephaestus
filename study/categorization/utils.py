@@ -81,9 +81,8 @@ def print_stats(bugs):
             stats["Correctness"]["Incorrect"] += 1
         stats["Symptoms"][b.symptom.name] += 1
         stats["Categories"][b.category.name] += 1
-        root_cause = stats["Root Causes"][b.root_cause.category.name]
+        root_cause = stats["Root Causes"][b.root_cause.name]
         root_cause["total"] += 1
-        root_cause["Subcategories"][b.root_cause.name] += 1
     print(json.dumps(stats, indent=4))
     print("======================")
     return stats
@@ -118,7 +117,7 @@ from groovy import *
 
 
 stats = print_stats(
-    java_iter1 + java_iter2 + java_iter3 + \
-    scala_iter1 + scala_iter2 + scala_iter3 + \
-    kotlin_iter1 + kotlin_iter2 + kotlin_iter3 + \
-    groovy_iter1 + groovy_iter2 + groovy_iter3)
+    java_iter1 + java_iter2 + java_iter3 + java_iter4 + \
+    scala_iter1 + scala_iter2 + scala_iter3 + scala_iter4 + \
+    kotlin_iter1 + kotlin_iter2 + kotlin_iter3 + kotlin_iter4 + \
+    groovy_iter1 + groovy_iter2 + groovy_iter3 + groovy_iter4)

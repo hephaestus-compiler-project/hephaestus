@@ -15,16 +15,16 @@ def construct_dataframe(data):
         for subkey, subvalue in value['subcategories'].items():
             framedata.append({
                 'Characteristic': subkey,
-                'Number of bugs': 100 * (int(subvalue['total']) / 240),
+                'Number of bugs': 100 * (int(subvalue['total']) / 320),
             })
             if 'is_common' not in subvalue:
                 print(subkey)
             if subvalue['is_common']:
                 characteristics.append((subkey, subvalue['is_common'],
-                                        100 * (int(subvalue['total']) / 240)))
+                                        100 * (int(subvalue['total']) / 320)))
         framedata = sorted(framedata, key=lambda k: k['Number of bugs'],
                            reverse=True)[:4]
-        percentage = str(round((int(value['total']) / 240) * 100, 2))
+        percentage = str(round((int(value['total']) / 320) * 100, 2))
         dataframes[key + " (" + percentage + "%)"] = pd.DataFrame(framedata)
     return dataframes, characteristics
 
@@ -32,9 +32,9 @@ def construct_dataframe(data):
 plt.style.use('ggplot')
 sns.set(style="whitegrid")
 plt.rcParams['font.family'] = 'DejaVu Sans'
-plt.rcParams['figure.figsize'] = (6.5, 4)
-plt.rcParams['axes.labelsize'] = 6
-plt.rcParams['ytick.labelsize'] = 4.5
+plt.rcParams['figure.figsize'] = (8, 4.5)
+plt.rcParams['axes.labelsize'] = 8
+plt.rcParams['ytick.labelsize'] = 6.8
 plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['font.serif'] = 'DejaVu Sans'
 plt.rcParams['font.monospace'] = 'Inconsolata Medium'
@@ -54,13 +54,13 @@ for i, (key, dataframe) in enumerate(dataframes.items()):
     dataframe.plot.barh(x='Characteristic', y='Number of bugs',
                         color='grey', ax=axs[i])
     ob = offsetbox.AnchoredText(key, loc=1,
-                                prop=dict(color='black', fontsize=4))
+                                prop=dict(color='black', fontsize=7))
     ob.patch.set(boxstyle='round', color='lightgrey', alpha=1)
     axs[i].add_artist(ob)
     axs[i].set_ylabel('')
     axs[i].set_xlabel('Number of bugs (%)')
     axs[i].get_legend().remove()
-    axs[i].set_xlim([0, 60])
+    axs[i].set_xlim([0, 70])
     for line in axs[i].get_xgridlines():
         line.set_linewidth(0.3)
     for line in axs[i].get_ygridlines():

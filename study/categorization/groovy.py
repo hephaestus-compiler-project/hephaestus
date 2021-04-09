@@ -920,7 +920,6 @@ groovy_iter4 = [
     GroovyBug(
         "13.GROOVY-5229",
         [
-            pc.StandardLibrary(),
             pc.PropertyReference()
         ],
         True,

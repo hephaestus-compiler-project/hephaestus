@@ -844,7 +844,6 @@ kotlin_iter4 = [
         # pc.Constants() new category or make pc.StaticMethod -> pc.Static in general and consider this bug  pc.Static because:
         # "Declaring a variable const is much like using the static keyword in Java."
         [
-            pc.StandardFeatures()
         ],
         False,
         sy.MisleadingReport(),
@@ -857,7 +856,6 @@ kotlin_iter4 = [
     KotlinBug(
         "5.KT-44153",
         [
-            pc.StandardLibrary()
         ],
         False,
         sy.CompilationPerformance(),
