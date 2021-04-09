@@ -1100,7 +1100,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         # I think you should change the name of the bug to KT-13181
-        "20.KT-42791",
+        "20.KT-13181",
         [
             pc.Import(),
             pc.Typedefs(),
