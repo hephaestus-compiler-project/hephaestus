@@ -12,10 +12,10 @@ from utils import print_stats, print_characteristics
 #print_characteristics()
 
 
-bugs = java_iter1 + java_iter2 + java_iter3 + \
-    scala_iter1 + scala_iter2 + scala_iter3 + \
-    kotlin_iter1 + kotlin_iter2 + kotlin_iter3 + \
-    groovy_iter1 + groovy_iter2 + groovy_iter3
+bugs = java_iter1 + java_iter2 + java_iter3 + java_iter4 + \
+    scala_iter1 + scala_iter2 + scala_iter3 + scala_iter4 + \
+    kotlin_iter1 + kotlin_iter2 + kotlin_iter3 + kotlin_iter4 + \
+    groovy_iter1 + groovy_iter2 + groovy_iter3 + groovy_iter4
 
 
 root_causes = defaultdict(lambda: [])
@@ -34,8 +34,12 @@ for bug in bugs:
         if not isinstance(char, CharacteristicCategory):
             characteristics[bid]["characteristics"].append(char.name)
             if char.category is not None:
-                characteristics[bid]["categories"].add(
-                    char.category.name)
+                try:
+                    characteristics[bid]["categories"].add(
+                        char.category.name)
+                except:
+                    characteristics[bid]["categories"].append(
+                        char.category.name)
         else:
             characteristics[bid]["categories"].add(char.name)
     characteristics[bid]["categories"] = list(

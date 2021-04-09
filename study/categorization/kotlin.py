@@ -895,7 +895,7 @@ kotlin_iter4 = [
         ],
         True,
         sy.MisleadingReport(),
-        rc.DesignError(),
+        rc.DesignIssue(),
         ct.OtherSemanticChecking(),
         5
     ),
