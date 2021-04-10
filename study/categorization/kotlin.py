@@ -76,16 +76,15 @@ kotlin_iter1 = [
         11
     ),
     KotlinBug(
-        "7.KT-23748",
-        [pc.ParameterizedFunctions(),
-         pc.TypeArgsInference(),
-         pc.Subtyping(),
-         pc.Nullables(),
-         pc.ElvisOperator()],
+        "7.KT-13401",
+        [pc.ParameterizedClasses(),
+         pc.BoundedPolymorphism(),
+         pc.WildCardType(),
+         ],
         True,
-        sy.CompileTimeError(),
-        rc.IncorrectComputation(),
-        ct.Inference(),  # constraint solving # TODO without fix
+        sy.InternalCompilerError(),
+        rc.WrongDataReference(),
+        ct.TypeExpression(),
         9
     ),
     KotlinBug(
