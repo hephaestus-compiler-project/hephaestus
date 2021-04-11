@@ -13,7 +13,7 @@ class RootCauseGeneralCategory():
 
 
 class LogicError(RootCauseGeneralCategory):
-    name = "Logic errors"
+    name = "Logic error"
 
 
 class AlgorithmicError(RootCauseGeneralCategory):
