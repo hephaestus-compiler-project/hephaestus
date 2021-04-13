@@ -8,7 +8,7 @@ import root_causes as rc
 kotlin_iter1 = [
     KotlinBug(
         "1.KT-1934",
-        [pc.Inheritance()],
+        [pc.Inheritance(), pc.MultipleImplements()],
         False,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
@@ -41,7 +41,8 @@ kotlin_iter1 = [
     KotlinBug(
         "4.KT-10244",
         [pc.FlowTyping(),
-         pc.Conditionals()],
+         pc.Conditionals(),
+         pc.ReturnTypeInference()],
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
@@ -54,6 +55,7 @@ kotlin_iter1 = [
          pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.TypeArgsInference(),
+         pc.Inheritance(),
          pc.ParameterizedTypes()],
         True,
         sy.Runtime(sy.WrongResult()),
@@ -66,7 +68,6 @@ kotlin_iter1 = [
         [pc.MultiBounds(),
          pc.BoundedPolymorphism(),
          pc.ParameterizedFunctions(),
-         pc.ParameterizedClasses(),
          pc.Nullables(),
          pc.Subtyping()],
         False,
@@ -83,8 +84,8 @@ kotlin_iter1 = [
          ],
         True,
         sy.InternalCompilerError(),
-        rc.WrongDataReference(),
-        ct.TypeExpression(),
+        rc.IncorrectCondition(),
+        ct.TypeComparison(),
         9
     ),
     KotlinBug(
@@ -102,8 +103,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "9.KT-10711",
-        [pc.ParameterizedFunctions(),
-         pc.TypeArgsInference(),
+        [pc.TypeArgsInference(),
          pc.ParameterizedClasses(),
          pc.Collections(),
          pc.FunctionReferences()],
@@ -126,6 +126,9 @@ kotlin_iter1 = [
         "11.KT-11468",
         [pc.ParameterizedClasses(), pc.DeclVariance(),
          pc.ParameterizedTypes(),
+         pc.Inheritance(), pc.ParameterizedFunctions(),
+         pc.WildCardType(),
+         pc.TypeArgsInference(), pc.ElvisOperator(),
          pc.Subtyping()],
         True,
         sy.InternalCompilerError(),
@@ -162,7 +165,8 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "15.KT-32184",
-        [pc.Lambdas(), pc.DataClasses(), pc.FunctionTypes(), pc.Nullables()],
+        [pc.Lambdas(), pc.DataClasses(), pc.FunctionTypes(), pc.Nullables(),
+         pc.SecondaryConstructor(), pc.Overloading()],
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
@@ -171,7 +175,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "16.KT-10197",
-        [pc.Overriding(), pc.Inheritance(), pc.Delegation()],
+        [pc.Overriding(), pc.Delegation(), pc.Inheritance()],
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
@@ -181,7 +185,7 @@ kotlin_iter1 = [
     ),
     KotlinBug(
         "17.KT-41693",
-        [pc.Conditionals(), pc.Import(),
+        [pc.Conditionals(),
          pc.Nullables(),
          pc.JavaInterop()],
         True,
@@ -194,6 +198,7 @@ kotlin_iter1 = [
         "18.KT-44420",
         [pc.Collections(),
          pc.VarTypeInference(),
+         pc.TypeArgsInference(),
          pc.JavaInterop()],
         True,
         sy.CompileTimeError(),
@@ -219,8 +224,7 @@ kotlin_iter1 = [
         "20.KT-6992",
         [pc.Overloading(),
          pc.ParameterizedClasses(),
-         pc.Delegation(),  # ConstructorDelegation
-         pc.This()],
+         pc.SecondaryConstructor()],
         False,
         sy.MisleadingReport(),
         rc.InsufficientAlgorithmImplementation(),
@@ -232,11 +236,9 @@ kotlin_iter1 = [
 
 kotlin_iter2 = [
     KotlinBug(
-#rc.AlgorithmImproperlyImplemented
         "1.KT-31102",
         [pc.Lambdas(), pc.FunctionReferences(),
          pc.ParameterizedFunctions(), pc.FunctionTypes(),
-         pc.TypeArgsInference(),
          pc.TypeArgsInference(), pc.This()],
         True,
         sy.CompileTimeError(),
@@ -245,7 +247,6 @@ kotlin_iter2 = [
         8
     ),
     KotlinBug(
-#rc.AlgorithmImproperlyImplemented
         "2.KT-3112",
         [pc.NestedClasses(),
          pc.ParameterizedClasses(),
@@ -283,6 +284,7 @@ kotlin_iter2 = [
         "5.KT-15226",
         [pc.JavaInterop(),
          pc.Overriding(),
+         pc.Inheritance(),
          pc.Delegation()],
         True,
         sy.Runtime(sy.WrongResult()),
@@ -293,7 +295,9 @@ kotlin_iter2 = [
     KotlinBug(
         "6.KT-6720",
         [pc.Overriding(),
-         pc.JavaInterop()],
+         pc.JavaInterop(),
+         pc.Inheritance()
+         ],
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.IncorrectComputation(),
@@ -314,8 +318,10 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "8.KT-22517",
-        [pc.Reflection(),
+        [pc.PropertyReference(),
          pc.OperatorOverloading(),
+         pc.WildCardType(),
+         pc.Subtyping(),
          pc.Delegation(),
          pc.ParameterizedTypes(),
          pc.Nullables(),
@@ -323,13 +329,14 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.DesignIssue(),
-        ct.Environment(),  # XXX
+        ct.Environment(),
         10
     ),
     KotlinBug(
         "9.KT-18522",
         [pc.Conditionals(), pc.Import(),
          pc.ParameterizedClasses(),
+         pc.ReturnTypeInference(),
          pc.ParameterizedTypes()
          ],
         False,
@@ -341,6 +348,8 @@ kotlin_iter2 = [
     KotlinBug(
         "10.KT-8320",
         [pc.ParameterizedFunctions(),
+         pc.BoundedPolymorphism(),
+         pc.Subtyping(),
          pc.TryCatch()],
         False,
         sy.Runtime(sy.ClassCastException()),
@@ -352,8 +361,11 @@ kotlin_iter2 = [
         "11.KT-32081",
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
+         pc.Singleton(),
          pc.TypeArgsInference(),
          pc.ParameterizedTypes(),
+         pc.Inheritance(),
+         pc.OperatorOverloading(),
          pc.Nothing(),
          pc.Subtyping(),
          pc.ExtensionFunctions()],
@@ -390,8 +402,9 @@ kotlin_iter2 = [
         # regression bug The regression appeared after  commit with url:
         # https://github.com/JetBrains/kotlin/commit/b5a8ffaddc64b9862d8cf1173183df5e538e4c8e
         "14.KT-17597",
-        [pc.Collections(), pc.AccessModifiers(),
+        [pc.AccessModifiers(),
          pc.StaticMethod(),
+         pc.Overloading(),
          pc.JavaInterop(),
          pc.FunctionReferences()],
         True,
@@ -402,7 +415,7 @@ kotlin_iter2 = [
     ),
     KotlinBug(
         "15.KT-13597",
-        [pc.AnonymousClass(), pc.Property()],
+        [pc.AnonymousClass(), pc.Property(), pc.SecondaryConstructor()],
         False,  # change final field
         sy.Runtime(sy.IllegalAccessError()),
         rc.InsufficientAlgorithmImplementation(),
@@ -426,6 +439,7 @@ kotlin_iter2 = [
          pc.ParamTypeInference(),
          pc.Nullables(),
          pc.Subtyping(),
+         pc.TypeArgsInference(),
          pc.Lambdas(),
          pc.VarTypeInference()],
         True,
@@ -451,14 +465,13 @@ kotlin_iter2 = [
     KotlinBug(
         "19.KT-9630",
         [pc.ParameterizedClasses(),
-         pc.Inheritance(),
          pc.MultipleImplements(),
          pc.ParameterizedFunctions(),
          pc.TypeArgsInference(),
+         pc.VarTypeInference(),
          pc.ParameterizedTypes(),
          pc.FBounded(),
          pc.MultiBounds(),
-         pc.IntersectionTypes(),
          pc.ExtensionFunctions()],
         True,
         sy.CompileTimeError(),
@@ -485,7 +498,6 @@ kotlin_iter2 = [
 kotlin_iter3 = [
     KotlinBug(
         "1.KT-31620",
-        # pc.SAM()(Interface Inv), maybe pc.ExperimentalApi() (ExperimentalTypeInference) characteristic?
         [pc.ParameterizedClasses(),
          pc.ParameterizedFunctions(),
          pc.Lambdas(),
@@ -520,7 +532,6 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "4.KT-35172",
-        # pc.Cast() (null as T equals to: null (T) in Kotlin)
         [pc.Nullables(), pc.ParameterizedFunctions(),
          pc.ExtensionFunctions(), pc.Lambdas(), pc.ElvisOperator(),
          pc.SafeNavigationOperator(), pc.TypeArgsInference()],
@@ -536,6 +547,7 @@ kotlin_iter3 = [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(),
+            pc.Inheritance(),
             pc.FBounded(),
             pc.SealedClasses(),
             pc.NestedClasses(),
@@ -543,16 +555,14 @@ kotlin_iter3 = [
         ],
         True,
         sy.CompilationPerformance(),
-        # rc.AlgorithmImproperlyImplemented() The current implementation of the algorithm for constraints incorporation
-        #  produces a potentially very large number constructs and causes a significant degradation performance.
-        rc.IncorrectComputation(),
+        rc.AlgorithmImproperlyImplemented(),
         ct.Inference(),
         41
     ),
     KotlinBug(
         "6.KT-30953",
-        # pc.VarTypeInference()
         [
+            pc.VarTypeInference(),
             pc.Conditionals(),
             pc.FunctionReferences(),
         ],
@@ -581,13 +591,12 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "8.KT-6999",
-        # maybe introduce a characterstic for org.apache.hadoop.util.PlatformName class?
         [
-            pc.SecondaryConstructor(), # TODO
-            pc.TypeAnnotations() # TODO
+            pc.SecondaryConstructor(),
+            pc.TypeAnnotations()
         ],
         False,
-        sy.Runtime(sy.VerifyError()), # ?
+        sy.Runtime(sy.VerifyError()),
         rc.IncorrectCondition(),
         ct.Declarations(),
         8
@@ -624,9 +633,9 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "11.KT-26816",
-        # pc.ParamTypeInference() ( Found: List<() -> Int>)
         [
             pc.TypeArgsInference(),
+            pc.ParamTypeInference(),
             pc.Lambdas(),
             pc.Collections()
         ],
@@ -664,8 +673,10 @@ kotlin_iter3 = [
         "13.KT-7383",
         [
             pc.FunctionAPI(),
-            pc.WildCardType(), # TODO
+            pc.WildCardType(),
+            pc.Subtyping(),
             pc.ParameterizedTypes(),
+            pc.ParamTypeInference(),
             pc.Lambdas()
         ],
         False,
@@ -676,7 +687,6 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "14.KT-33542",
-        # pc.Nullables (Bundle?),
         [
             pc.Coroutines(),
             pc.ParameterizedClasses(),
@@ -698,9 +708,9 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "15.KT-15391",
-        # pc.ParamTypeInference() (suspend () -> Unit), pc.Lambda(), pc.NamedArgs() (completion = object : Continuation<Unit>)
         [
             pc.Coroutines(),
+            pc.NamedArgs(),
             pc.Inheritance(),
             pc.FunctionTypes(),
             pc.AnonymousClass(),
@@ -715,7 +725,6 @@ kotlin_iter3 = [
     ),
     KotlinBug(
         "16.KT-9320",
-        # in pc.TypeAnnotations() description it says java only, maybe include Kotlin?
         [
             pc.TypeAnnotations(),
             pc.AnonymousClass()
@@ -723,22 +732,18 @@ kotlin_iter3 = [
         True,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        # ct.Resolution
-        # annotations on object literals are resolved later inside LazyClassDescriptor
-        ct.TypeExpression(),
+        ct.Resolution(),
         5
     ),
     KotlinBug(
         "17.KT-13926",
-        # pc.Nullables()
         [
             pc.TypeAnnotations(),
         ],
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
-        # agreed maybe ct.Environment() (change in private method of LazyImportScope() )
-        ct.OtherSemanticChecking(),
+        ct.Environment(),
         6
     ),
     KotlinBug(
@@ -751,16 +756,12 @@ kotlin_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
-        # rc.MissingCase()
-        # missed to check and throw an error if a parameterized class is extending Throwable
-        rc.DesignIssue(),
-        # ct.Declaration()  semantic check of class declaration
+        rc.MissingCase(),
         ct.OtherSemanticChecking(),
         10
     ),
     KotlinBug(
         "19.KT-4462",
-        # pc.Property(), pc.Arrays()
         [
             pc.OperatorOverloading(),
         ],
@@ -771,16 +772,13 @@ kotlin_iter3 = [
         14
     ),
     KotlinBug(
-				#rc.AlgorithmImproperlyImplemented
         "20.KT-11203",
-        # pc.Arrays()
         [
             pc.OperatorOverloading(),
             pc.ExtensionFunctions()
         ],
         False,
         sy.Runtime(sy.VerifyError()),
-        # rc.MissingCase() add a boolean variable to resolveArrayAccessSpecialMethod to check if the array access is implicit, also we add an extra condition and an extra method
         rc.IncorrectCondition(),
         ct.Resolution(),
         8
@@ -801,9 +799,9 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "2.KT-12982",
-        # pc.ParameterizedTypes() (KMutableProperty1<Foo, Int>)
         [
             pc.AccessModifiers(),
+            pc.ParameterizedTypes(),
             pc.Reflection(),
             pc.FunctionReferences(),
             pc.VarTypeInference()
@@ -816,12 +814,13 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "3.KT-41470",
-        # pc.Couroutines() FlowCollector interface is part of of Couroutines library, pc.SAM() Flow and FlowCollector intefaces
         [
+            pc.Coroutines(),
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
             pc.DeclVariance(),
+            pc.AnonymousClass(),
             pc.ExtensionFunctions(),
             pc.ParameterizedFunctions(),
             pc.Inheritance(),
@@ -830,9 +829,7 @@ kotlin_iter4 = [
             pc.FunctionTypes(),
             pc.BuilderInference()
         ],
-        # True it says: Should print null but instead, it fails with NPE:
-        # Also if we see original report it also says code should pass
-        False,
+        True,
         sy.Runtime(sy.NullPointerException()),
         rc.MissingCase(),
         ct.Inference(),
@@ -840,16 +837,12 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "4.KT-12477",
-        # pc.Constants() new category or make pc.StaticMethod -> pc.Static in general and consider this bug  pc.Static because:
-        # "Declaring a variable const is much like using the static keyword in Java."
         [
         ],
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
-        # I think it fits more pc.ErrorReporting() because althought we have a declaration check implementation (canBeConst),
-        # the fix is strongly related to diagnostics which relates more to Error Reporting, and a strong indication is also the bug symptom
-        ct.Declarations(),
+        ct.ErrorReporting(),
         1
     ),
     KotlinBug(
@@ -865,7 +858,7 @@ kotlin_iter4 = [
     KotlinBug(
         "6.KT-8484",
         [
-            pc.Enums()
+            pc.Enums(), pc.SecondaryConstructor()
         ],
         True,
         sy.CompileTimeError(),
@@ -887,9 +880,7 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "8.KT-17611",
-        # maybe introduce a new characteristic pc.Shadowing() or pc.VariableShadowing()
         [
-            pc.NestedClasses(),
             pc.AnonymousClass()
         ],
         True,
@@ -930,7 +921,6 @@ kotlin_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
-        # ct.TypeExpression, the fix is related more to a type check of an expression with when
         ct.Inference(),
         11
     ),
@@ -942,14 +932,13 @@ kotlin_iter4 = [
             pc.Enums()
         ],
         True,
-        sy.Runtime(), # TODO MissingCase
+        sy.Runtime(),
         rc.DesignIssue(),
         ct.Declarations(),
         11
     ),
     KotlinBug(
         "12.KT-30826",
-        # pc.SAM()(I2)
         [
             pc.MultipleImplements(),
             pc.Nullables(),
@@ -961,8 +950,7 @@ kotlin_iter4 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.MissingCase(),
-        #type related, ct.Approximation() fix related to intersection types, expected types
-        ct.OtherSemanticChecking(),
+        ct.Approximation(),
         18
     ),
     KotlinBug(
@@ -989,6 +977,8 @@ kotlin_iter4 = [
             pc.OperatorOverloading(),
             pc.FunctionTypes(),
             pc.Nullables(),
+            pc.Lambdas(),
+            pc.TypeArgsInference(),
             pc.SafeNavigationOperator(),
             pc.ExtensionFunctions()
         ],
@@ -1003,7 +993,8 @@ kotlin_iter4 = [
         [
             pc.Conditionals(),
             pc.FunctionReferences(),
-            pc.Subtyping()
+            pc.Subtyping(),
+            pc.TryCatch(),
         ],
         True,
         sy.InternalCompilerError(),
@@ -1013,7 +1004,6 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "16.KT-32235",
-        # pc.Conditionals()
         [
             pc.ParameterizedClasses(),
             pc.Collections(),
@@ -1032,9 +1022,9 @@ kotlin_iter4 = [
     ),
     KotlinBug(
         "17.KT-10896",
-        # pc.FlowTyping() when (result) is SuccessBinding -> {...., pc.VarTypeInference() (FailedBinding(errors))
         [
             pc.ParameterizedClasses(),
+            pc.FlowTyping(),
             pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(),
             pc.Subtyping(),
@@ -1067,9 +1057,6 @@ kotlin_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        # agreed, but I think ct.Environment() fits more. We add a check at SamAdapterFunctionsScope also removed
-        # context.call.createLookupLocation() and added ktExpression?.createLookupLocation()
-        # and if it is null then call context.call.createLookupLocation(). Also change arguments of ASTScopeTower
         ct.Resolution(),
         12
     ),
@@ -1087,18 +1074,11 @@ kotlin_iter4 = [
         ],
         True,
         sy.CompilationPerformance(),
-        # maybe rc.DesignIssue() Rethink constraints incorporation
-        # Namely, remove incorporation “otherInsideMyConstraint” to eliminate
-        # constraint system redundancy and produce a potentially very large number
-        #  of constructs.
-        # Instead, introduce not so “spreadable” incorporation during variable fixation
-        # from the commit message, it seems like the bug is associated with an issue in the design rather than the implementation
-        rc.InsufficientAlgorithmImplementation(),
+        rc.DesignIssue(),
         ct.Inference(),
         14
     ),
     KotlinBug(
-        # I think you should change the name of the bug to KT-13181
         "20.KT-13181",
         [
             pc.Import(),

@@ -468,6 +468,16 @@ class BuilderInference(Characteristic):
     is_common = False
 
 
+class ReturnTypeInference(Characteristic):
+    """
+    The test case contains a function whose return type is omitted.
+    """
+    name = "Return type inference"
+    category = TypeInference()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class ParamTypeInference(Characteristic):
     """
     The test case contains a function or lambda whose parameter types are
@@ -965,7 +975,7 @@ class NestedClasses(Characteristic):
 
 class TypeAnnotations(Characteristic):
     """
-    The test case contains type annotations (Java only).
+    The test case contains annotations.
     """
     name = "Type annotations"
     category = SpecialFeatures()
