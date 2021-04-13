@@ -28,14 +28,17 @@ class Bug:
 
 class KotlinBug(Bug):
     language = "Kotlin"
+    compiler = "kotlinc"
 
 
 class GroovyBug(Bug):
     language = "Groovy"
+    compiler = "groovyc"
 
 
 class JavaBug(Bug):
     language = "Java"
+    compiler = "javac (openjdk)"
 
 
 class ScalaBug(Bug):
@@ -45,4 +48,3 @@ class ScalaBug(Bug):
 
 class ScalaDottyBug(ScalaBug):
     compiler = "dotty"
-
