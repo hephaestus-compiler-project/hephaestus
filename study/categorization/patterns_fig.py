@@ -2,7 +2,7 @@
 import argparse
 import json
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 import matplotlib.pylab as plt
 import seaborn as sns
@@ -20,41 +20,56 @@ def get_args():
     return parser.parse_args()
 
 
-def construct_dataframe(bugs):
-    data = defaultdict(lambda: 0)
+def construct_dataframes(bugs):
+    data_lang = defaultdict(lambda: 0)
+    data_symptoms = defaultdict(lambda: 0)
     for bug in bugs.values():
-        data[(bug['language'], bug['pattern']['category'])] += 1
-    framedata = []
-    for (lang, category), value in data.items():
-        framedata.append({
+        data_lang[(bug['language'], bug['pattern']['category'])] += 1
+        data_symptoms[(bug['symptom'], bug['pattern']['category'])] += 1
+    framedata_langs = []
+    for (lang, category), value in data_lang.items():
+        framedata_langs.append({
             "Pattern": category,
             "Language": lang,
             "Number of bugs": value
         })
-    return pd.DataFrame(framedata), data
+    framedata_symptoms = []
+    for (symptom, category), value in data_symptoms.items():
+        framedata_symptoms.append({
+            "Pattern": category,
+            "Symptom": symptom,
+            "Number of bugs": value
+        })
+    return (
+        pd.DataFrame(framedata_langs),
+        pd.DataFrame(framedata_symptoms),
+        data_lang,
+        data_symptoms
+    )
 
 
-def plot_fig(df, data, categories, output):
+def plot_fig(df, data, color_map, categories, output):
     plt.style.use('ggplot')
     sns.set(style="whitegrid")
     plt.rcParams['font.family'] = 'DejaVu Sans'
-    plt.rcParams['figure.figsize'] = (9, 2.5)
+    plt.rcParams['figure.figsize'] = (9, 2.5 if len(color_map) == 4 else 3.5)
     plt.rcParams['axes.labelsize'] = 17
     plt.rcParams['xtick.labelsize'] = 12
     plt.rcParams['font.serif'] = 'DejaVu Sans'
     plt.rcParams['font.monospace'] = 'Inconsolata Medium'
+    plt.rcParams['legend.fontsize'] = 12 if len(color_map) == 4 else 10
     plt.rcParams['axes.labelweight'] = 'bold'
     ax = df.plot.barh(width=0.3,
-                      color=['#e69f56', '#b07219', '#f18e33', '#c22d40'],
+                      color=[color_map[c] for c in df.columns],
                       stacked=True)
 
     sums = []
     for c in categories:
-        v = sum(data[(lang, c)]
-                for lang in ['Groovy', 'Java', 'Kotlin', 'Scala'])
+        v = sum(data[(k, c)] for k in color_map.keys())
         sums.append(v)
 
-    for i, p in enumerate(ax.patches[15:]):
+    start_index = (len(color_map) - 1) * 5
+    for i, p in enumerate(ax.patches[start_index:]):
         ax.annotate("{} / 320".format(int(sums[i])),
                     (p.get_x() + p.get_width(), p.get_y()),
                     xytext=(5, 10), textcoords='offset points')
@@ -68,9 +83,11 @@ def main():
     args = get_args()
     with open(args.data, 'r') as f:
         json_data = json.load(f)
-    df, data = construct_dataframe(json_data)
-    df = df.groupby(['Language', 'Pattern'])['Number of bugs'].sum().unstack(
-        'Language')
+    df_l, df_s, data_l, data_s = construct_dataframes(json_data)
+    df_l = df_l.groupby(
+        ['Language', 'Pattern'])['Number of bugs'].sum().unstack('Language')
+    df_s = df_s.groupby(
+        ['Symptom', 'Pattern'])['Number of bugs'].sum().unstack('Symptom')
     categories = [
         'AST Transformation Bugs',
         'Error Handling & Reporting Bugs',
@@ -78,10 +95,25 @@ def main():
         'Semantic Analysis Bugs',
         'Type-related Bugs',
     ]
-    df = df.reindex(categories)
-    print(df)
-    plot_fig(df, data, categories, args.output)
-
+    df_l, df_s = df_l.reindex(categories), df_s.reindex(categories)
+    print(df_l)
+    print(df_s)
+    langs = OrderedDict([
+        ('Groovy', '#e69f56'),
+        ('Java', '#b07219'),
+        ('Kotlin', '#f18e33'),
+        ('Scala', '#c22d40')
+    ])
+    plot_fig(df_l, data_l, langs, categories, 'patterns.pdf')
+    symptoms = OrderedDict([
+        ('Unexpected Compile-Time Error', '#336600'),
+        ('Internal Compiler Error', '#b07219'),
+        ('Unexpected Runtime Behavior', '#c22d40'),
+        ('Misleading Report', '#f18e33'),
+        ('Compilation Performance Issue', '#666699')
+    ])
+    df_s = df_s.reindex(symptoms.keys(), axis=1)
+    plot_fig(df_s, data_s, symptoms, categories, 'patterns_symptoms.pdf')
 
 
 if __name__ == "__main__":
