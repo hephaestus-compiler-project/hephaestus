@@ -34,7 +34,7 @@ def construct_dataframe(bugs):
     return pd.DataFrame(framedata), data
 
 
-def save_fig(df, data, categories, output):
+def plot_fig(df, data, categories, output):
     plt.style.use('ggplot')
     sns.set(style="whitegrid")
     plt.rcParams['font.family'] = 'DejaVu Sans'
@@ -80,7 +80,7 @@ def main():
     ]
     df = df.reindex(categories)
     print(df)
-    save_fig(df, data, categories, args.output)
+    plot_fig(df, data, categories, args.output)
 
 
 if __name__ == "__main__":
