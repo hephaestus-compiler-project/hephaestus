@@ -33,14 +33,14 @@ if __name__ == "__main__":
         # Convert sets to lists
         chars["characteristics"] = list(chars["characteristics"])
         chars["categories"] = list(chars["categories"])
-        # Category
-        category = {"category": "", "subcategory": None}
+        # Pattern
+        pattern = {"category": "", "subcategory": None}
         if hasattr(b.category, "category"):
-            category["category"] = b.category.category.name
-            category["subcategory"] = b.category.name
+            pattern["category"] = b.category.category.name
+            pattern["subcategory"] = b.category.name
         else:
-            category["category"] = b.category.name
-            category["subcategory"] = None
+            pattern["category"] = b.category.name
+            pattern["subcategory"] = None
 
         # result
         res[bug_id] = {
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             "compiler": b.compiler,
             "is_correct": b.test_case_correct,
             "symptom": b.symptom.name,
-            "category": category,
+            "pattern": pattern,
             "root_cause": {"category": b.root_cause.category.name,
                            "subcategory": b.root_cause.name},
             "chars": chars

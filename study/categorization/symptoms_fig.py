@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import argparse
 import json
+
 from collections import defaultdict
 
 import matplotlib.pylab as plt
