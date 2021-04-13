@@ -22,8 +22,8 @@ if __name__ == "__main__":
         gv.groovy_iter1 + gv.groovy_iter2 + gv.groovy_iter3 + gv.groovy_iter4
     res = {}
     for b in bugs:
-        # symptoms
-
+        # bug id
+        bug_id = b.bug_id.split('.')[-1] if '.' in b.bug_id else b.bug_id
         # characteristics
         chars = {"characteristics": set(), "categories": set()}
         for c in b.characteristics:
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             category["subcategory"] = None
 
         # result
-        res[b.bug_id] = {
+        res[bug_id] = {
             "language": b.language,
             "compiler": b.compiler,
             "is_correct": b.test_case_correct,
