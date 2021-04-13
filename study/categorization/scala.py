@@ -13,7 +13,6 @@ scala_iter1 = [
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
         ct.ErrorReporting(),
-        #  10
         9
     ),
     ScalaBug(
@@ -73,7 +72,6 @@ scala_iter1 = [
         "6.Scala2-5878",
         [
          pc.ValueClasses(),
-         pc.Inheritance()
         ],
         False,
         sy.InternalCompilerError(),
@@ -88,6 +86,7 @@ scala_iter1 = [
             pc.TypeArgsInference(),
             pc.Reflection(),
             pc.CallByName(),
+            pc.FunctionReferences(),
             pc.FunctionTypes()
         ],
         True,
@@ -101,6 +100,7 @@ scala_iter1 = [
         [
             pc.Inheritance(), pc.NestedClasses(),
             pc.Collections(), pc.ParameterizedTypes(),
+            pc.BoundedPolymorphism(),
             pc.Overriding(), pc.DependentTypes(), pc.Typedefs(),
             pc.Subtyping()
         ],
@@ -132,6 +132,7 @@ scala_iter1 = [
             pc.WildCardType(),
             pc.Inheritance(),
             pc.SealedClasses(),
+            pc.Singleton(),
             pc.Implicits()
         ],
         True,
@@ -142,7 +143,7 @@ scala_iter1 = [
     ),
     ScalaBug(
         "11.Scala2-9542",
-        [pc.Inheritance(), pc.NestedClasses(),
+        [pc.ValueClasses(), pc.NestedClasses(),
          pc.ParameterizedClasses(), pc.ParameterizedTypes()],
         True,
         sy.InternalCompilerError(),
@@ -168,6 +169,7 @@ scala_iter1 = [
         "13.Scala-9361",
         [
             pc.HigherKindedTypes(),
+            pc.WildCardType(),
             pc.Overriding(),
             pc.Subtyping(),
             pc.Nothing(),
@@ -195,6 +197,7 @@ scala_iter1 = [
         "15.Dotty-10325",
         [
             pc.ParameterizedFunctions(),
+            pc.OptionTypes(),
             pc.Collections(),
             pc.Overloading(),
             pc.TypeArgsInference(),
@@ -213,6 +216,8 @@ scala_iter1 = [
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(), pc.HigherKindedTypes(),
             pc.DeclVariance(), pc.AlgebraicDataTypes(),
+            pc.CaseClasses(), pc.Inheritance(),
+            pc.MultipleImplements(), pc.FunctionTypes(),
             pc.Subtyping(), pc.Implicits(), pc.PatMat()
         ],
         False,
@@ -251,6 +256,7 @@ scala_iter1 = [
             pc.ParameterizedTypes(), pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(), pc.HigherKindedTypes(),
             pc.AlgebraicDataTypes(), pc.PatMat(),
+            pc.Inheritance(), pc.CaseClasses()
         ],
         True,
         sy.CompileTimeError(),
@@ -303,7 +309,7 @@ scala_iter2 = [
         "3.Scala2-11239",
         [
             pc.ParameterizedClasses(), pc.Typedefs(),
-            pc.HigherKindedTypes(), pc.DataClasses(),
+            pc.HigherKindedTypes(), pc.CaseClasses(),
             pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
             pc.TypeProjections()
         ],
@@ -331,6 +337,8 @@ scala_iter2 = [
         "5.Scala2-10886",
         [
             pc.Import(),
+            pc.AugmentedAssignmentOperator(),
+            pc.ArithmeticExpressions()
         ],
         True,
         sy.CompileTimeError(),
@@ -351,7 +359,6 @@ scala_iter2 = [
     ),
     ScalaBug(
         "7.Dotty-5140",
-        # pc.Inheritance(), pc.Subtyping()
         [
             pc.JavaInterop(), pc.Arrays(),
             pc.Varargs(),
@@ -380,6 +387,8 @@ scala_iter2 = [
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
+            pc.This(),
+            pc.OptionTypes(),
             pc.CallByName(),
             pc.Implicits(),
         ],
@@ -392,11 +401,15 @@ scala_iter2 = [
     ScalaBug(
         "10.Dotty-9631",
         [
+            pc.AccessModifiers(),
+            pc.Singleton(),
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
             pc.FBounded(),
             pc.NestedClasses(),
             pc.Inheritance(),
+            pc.AlgebraicDataTypes(),
+            pc.SelfTypes(),
             pc.Implicits(),
             pc.WildCardType(),
             pc.PatMat()
@@ -449,6 +462,7 @@ scala_iter2 = [
         [
             pc.Overriding(), pc.Implicits(),
             pc.ArithmeticExpressions(),
+            pc.SpecialMethodOverriding(),
             pc.AugmentedAssignmentOperator()
         ],
         True,
@@ -483,6 +497,8 @@ scala_iter2 = [
         "17.Dotty-4030",
         [
             pc.Inheritance(), pc.AlgebraicDataTypes(),
+            pc.CaseClasses(), pc.Singleton(),
+            pc.ParameterizedFunctions(), pc.TypeArgsInference(),
             pc.ParameterizedClasses(), pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(), pc.FunctionTypes(),
             pc.UnionTypes(), pc.WildCardType()
@@ -496,10 +512,10 @@ scala_iter2 = [
     ScalaBug(
         "18.Scala2-10536",
         [
-            pc.OperatorOverloading(),
             pc.ParameterizedClasses(), pc.Implicits(),
             pc.FBounded(), pc.BoundedPolymorphism(),
             pc.AlgebraicDataTypes(), pc.Overloading(),
+            pc.Inheritance(), pc.CaseClasses(),
             pc.ParameterizedTypes()
         ],
         True,
@@ -537,9 +553,10 @@ scala_iter2 = [
 scala_iter3 = [
     ScalaBug(
         "1.Dotty-10123",
-        # pc.TypeArgsInference() new C(new Foo()).await.status
         [
             pc.ParameterizedClasses(),
+            pc.NestedClasses(),
+            pc.TypeArgsInference(),
             pc.DeclVariance(),
             pc.Implicits(),
             pc.ParameterizedTypes(),
@@ -553,20 +570,19 @@ scala_iter3 = [
     ScalaBug(
         # regression bug
         "2.Scala2-5399",
-        # pc.NestedClasses()
         [
             pc.ParameterizedClasses(),
+            pc.NestedClasses(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.AlgebraicDataTypes(),
-            pc.WildCardType(), # TODO
+            pc.CaseClasses(),
+            pc.WildCardType(),
             pc.PatMat()
         ],
         True,
         sy.CompileTimeError(),
-        #WrongDataReference()
-        #should refer to Skolem normal form of an existential type
-        rc.MissingCase(), #WrongDataReference(),
+        rc.MissingCase(),
         ct.Approximation(),
         19
     ),
@@ -576,18 +592,12 @@ scala_iter3 = [
             pc.ParameterizedFunctions(),
             pc.BoundedPolymorphism(),
             pc.TypeArgsInference(),
-            pc.Overloading(),
-            pc.FunctionAPI(),
+            pc.SpecialMethodOverriding(),
             pc.AnonymousClass()
         ],
         False,
         sy.Runtime(sy.AbstractMethodError()),
-        # rc.InsufficientAlgorithmImplementation()
-        # "The check for a concrete class used to be simply that its `abstractTermMembers`
-        # are empty. However, i7597.scala shows that this is not enough.It will not include a member
-        # as long as there is a concrete member with the same signature."
-        # so the root cause was an insufficient implementation of the algorithm
-        rc.IncorrectComputation(),
+        rc.InsufficientAlgorithmImplementation(),
         ct.MissingValiationChecks(),
         2
     ),
@@ -595,22 +605,24 @@ scala_iter3 = [
         "4.Scala2-5958",
         [
             pc.This(),
+            pc.SelfTypes(),
+            pc.FunctionReferences(),
             pc.DependentTypes(),
             pc.NestedClasses()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.IncorrectAnalysisMechanics(), # Attribution
+        ct.IncorrectAnalysisMechanics(),
         12
     ),
     ScalaBug(
         "5.Scala2-7872",
-        # pc.TypeLambdas() (type Stringer[-A] = A => String) Can also verify it form the issue title
         [
             pc.TypeProjections(),
             pc.HigherKindedTypes(),
             pc.Collections(),
+            pc.ETAExpansion(),
             pc.Typedefs(),
             pc.FunctionTypes(),
             pc.Subtyping(),
@@ -627,14 +639,13 @@ scala_iter3 = [
     ),
     ScalaBug(
         "6.Scala2-2038",
-        # pc.Cast() (call cast method), no pc.FunctionAPI()
         [
             pc.Collections(),
-            pc.WildCardType(), #TODO
+            pc.WildCardType(),
             pc.Reflection(),
             pc.PatMat(),
             pc.TypeArgsInference(),
-            pc.FunctionAPI(),
+            pc.SpecialMethodOverriding(),
             pc.ParameterizedTypes()
         ],
         False,
@@ -645,35 +656,28 @@ scala_iter3 = [
     ),
     ScalaBug(
         "7.Scala2-5378",
-        #pc.Collections() (Nil object, List, Traversable), maybe introduce pc.StructuralTypes()(Scala only or Duck Typing in general)
-        # https://alvinalexander.com/scala/how-to-use-duck-typing-in-scala-structural-types/
         [
             pc.ParameterizedClasses(),
-            pc.FunctionAPI(),
+            pc.SpecialMethodOverriding(),
+            pc.Collections(),
             pc.DeclVariance(),
             pc.AnonymousClass(),
-            pc.Overriding(),
             pc.VarTypeInference(),
             pc.ParameterizedFunctions(),
-            pc.TypeArgsInference(),
             pc.BoundedPolymorphism(),
             pc.ParameterizedTypes()
         ],
         False,
         sy.Runtime(sy.MissingMethodException()),
-        # agreed, maybe also consider rc.InsufficientAlgorithmImplementation()
-        # Not enough to look for abstract types; have to recursively check
-        # the bounds of each abstract type for more abstract types. It also makes 2 bug fixes.
         rc.IncorrectComputation(),
-        # ct.IncorrectAnalysisMechanics() it is too type related to be considered a MissingValiationChecks bug I think.
-        ct.IncorrectAnalysisMechanics(), # MissingValiationChecks
+        ct.MissingValiationChecks(),
         12
     ),
     ScalaBug(
         "8.Scala2-5687",
-        # pc.AccessModifiers() (private val t: T), pc.DependentTypes()
         [
             pc.ParameterizedClasses(),
+            pc.AccessModifiers(),
             pc.BoundedPolymorphism(),
             pc.Typedefs(),
             pc.Cast(),
@@ -690,13 +694,13 @@ scala_iter3 = [
     ),
     ScalaBug(
         "9.Scala2-11252",
-        # pc.ParameterizedTypes() (Option[Int] )
         [
             pc.PatMat(),
-            pc.FunctionAPI(),
-            pc.Overriding(),
+            pc.SpecialMethodOverriding(),
+            pc.ParameterizedTypes(),
             pc.Conditionals(),
-            pc.AlgebraicDataTypes()
+            pc.OptionTypes(),
+            pc.CaseClasses(),
         ],
         True,
         sy.CompileTimeError(),
@@ -718,7 +722,6 @@ scala_iter3 = [
     ),
     ScalaBug(
         "11.Scala2-2509",
-        # pc.DependentTypes()  implicit def f[T, U](t: T)(implicit x: X[T, U]): U = x.u
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -726,6 +729,7 @@ scala_iter3 = [
             pc.TypeArgsInference(),
             pc.DeclVariance(),
             pc.Inheritance(),
+            pc.Singleton(),
             pc.Overriding(),
             pc.Subtyping(),
             pc.Implicits(),
@@ -756,6 +760,7 @@ scala_iter3 = [
             pc.Implicits(),
             pc.Import(),
             pc.ParameterizedTypes(),
+            pc.OptionTypes(),
             pc.Inheritance(),
             pc.Overriding(),
             pc.ParameterizedClasses()
@@ -763,8 +768,7 @@ scala_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        # both fit, but I think Environment fits better (change in context.implicits)
-        ct.Environment(), # Resolution
+        ct.Environment(),
         25
     ),
     ScalaBug(
@@ -777,22 +781,21 @@ scala_iter3 = [
         ],
         False,
         sy.MisleadingReport(),
-        # maybe root cause rc.WrongMethod()?
         rc.IncorrectCondition(),
         ct.Resolution(),
         9
     ),
     ScalaBug(
         "15.Dotty-7041",
-        # pc.Conditionals(), pc.ArithmeticExpressions()
         [
             pc.Inline(),
             pc.CallByName(),
             pc.BoundedPolymorphism(),
             pc.ParameterizedFunctions(),
-            pc.WildCardType(), # TODO
+            pc.WildCardType(),
             pc.TypeArgsInference(),
             pc.TryCatch(),
+            pc.Conditionals(),
             pc.FunctionAPI(),
             pc.Lambdas(),
             pc.ParameterizedTypes()
@@ -808,30 +811,28 @@ scala_iter3 = [
         [
             pc.Import(),
             pc.AccessModifiers(),
-            pc.Singleton(), #TODO
+            pc.Singleton(),
             pc.Inline()
         ],
         True,
         sy.InternalCompilerError(),
-        # maybe rc.MissingCase() because in previous examples with a missing codition it was considered a missing case
         rc.IncorrectCondition(),
         ct.Transformation(),
         13
     ),
     ScalaBug(
         "17.Scala2-4691",
-        # pc.SealedClasses() (sealed trait Node), no FunctionApi() maybe pc.StandardLibrary() (for Some) or create some type characteristic like pc.Some() or pc.Option() in general
-        # function api from java doesnt include Some, it is part of Scala standard Library
         [
             pc.Inheritance(),
             pc.PatMat(),
             pc.AlgebraicDataTypes(),
-            pc.Overriding(),
-            pc.FunctionAPI(),
+            pc.Inheritance(),
+            pc.OptionTypes(),
+            pc.SpecialMethodOverriding(),
             pc.ParameterizedTypes(),
         ],
         False,
-        sy.Runtime(sy.CaseNotFound()), #TODO
+        sy.Runtime(sy.CaseNotFound()),
         rc.DesignIssue(),
         ct.MissingValiationChecks(),
         18
@@ -853,10 +854,10 @@ scala_iter3 = [
     ),
     ScalaBug(
         "19.Scala2-9760",
-        # pc.SealedClasses() (sealed trait Foo[F[_]])
         [
             pc.HigherKindedTypes(),
             pc.AlgebraicDataTypes(),
+            pc.CaseClasses(),
             pc.ParameterizedTypes(),
             pc.ParameterizedClasses(),
             pc.ParameterizedFunctions(),
@@ -882,8 +883,7 @@ scala_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
-        # pc.MissingCase() missed the case that prefix normalizes type aliases and kind-checking should not do this, so this fix is due to a missing case
-        rc.IncorrectCondition(),
+        rc.MissingCase(),
         ct.TypeComparison(),
         12
     )
@@ -892,9 +892,9 @@ scala_iter3 = [
 scala_iter4 = [
     ScalaBug(
         "1.Dotty-5876",
-        # pc.MultiBounds()
         [
             pc.Inheritance(),
+            pc.MultiBounds(),
             pc.Typedefs(),
             pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(),
@@ -913,6 +913,7 @@ scala_iter4 = [
             pc.Implicits(),
             pc.Inheritance(),
             pc.Overriding(),
+            pc.VarTypeInference(),
             pc.Subtyping()
         ],
         True,
@@ -936,9 +937,10 @@ scala_iter4 = [
     ),
     ScalaBug(
         "4.Scala2-9630",
-        # pc.NestedMissingValiationChecks() ( nested case classes to the sealed trait)
         [
             pc.AlgebraicDataTypes(),
+            pc.Inheritance(),
+            pc.CaseClasses(),
             pc.PatMat(),
         ],
         True,
@@ -949,9 +951,9 @@ scala_iter4 = [
     ),
     ScalaBug(
         "5.Dotty-6745",
-        # pc.CallByName() prog: (h: self.type) => h.M
         [
             pc.DependentTypes(),
+            pc.SelfTypes(),
             pc.Typedefs(),
             pc.This(),
             pc.FunctionTypes(),
@@ -969,41 +971,33 @@ scala_iter4 = [
             pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(),
             pc.HigherKindedTypes(),
-            pc.TypeLambdas(),
+            pc.FunctionTypes(),
             pc.WildCardType(),
             pc.Typedefs()
         ],
         True,
         sy.CompileTimeError(),
-        # rc.IncorrectDataType()
-        # Previously we just returned the unapplied WildcardType
-        #  which isincorrect if the WildcardType is bounded.
         rc.MissingCase(),
-        #agreed, but consider also ct.TypeComparison()
-        # do the type application on the bounds of the WildcardType
-        # and wrap the result in a WildcardType.
         ct.Approximation(),
         0
     ),
     ScalaBug(
         "7.Scala2-6754",
         [
-            pc.ParameterizedFunctions(),
+            pc.ParameterizedClasses(),
             pc.BoundedPolymorphism(),
             pc.Reflection(),
+            pc.Collections(),
             pc.PatMat()
         ],
         True,
         sy.InternalCompilerError(),
-        # agreed, we add atPos(uncheckedPattern.pos)
-        # consider also rc.WrongParams() because app is passed as argument to doTypedUnapply
         rc.MissingCase(),
         ct.IncorrectAnalysisMechanics(),
         0
     ),
     ScalaBug(
         "8.Scala2-7232",
-        # maybe pc.Shadowing() characteristic?
         [
             pc.JavaInterop(),
         ],
@@ -1016,12 +1010,13 @@ scala_iter4 = [
     ScalaBug(
         # pc.regression bug
         "9.Scala2-7688",
-        # pc.Singleton() object A
         [
             pc.ParameterizedClasses(),
+            pc.Singleton(),
             pc.BoundedPolymorphism(),
             pc.TypeProjections(),
-            pc.Mixins(), # TODO
+            pc.Mixins(),
+            pc.SpecialMethodOverriding(),
             pc.Reflection(),
             pc.ParameterizedTypes(),
             pc.DependentTypes()
@@ -1035,9 +1030,9 @@ scala_iter4 = [
     ScalaBug(
         # regression bug
         "10.Scala2-9086",
-        # pc.Singleton() object X
         [
             pc.ParameterizedClasses(),
+            pc.Singleton(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
             pc.TypeArgsInference(),
@@ -1046,9 +1041,7 @@ scala_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        # agreed with Resolution, maybe ct.Environment() fits better?
-        # change at context.outer.owner.newLocalDummy() by passing argument context.owner.pos
-        ct.Resolution(),
+        ct.Environment(),
         0
     ),
     ScalaBug(
@@ -1057,16 +1050,13 @@ scala_iter4 = [
             pc.ParameterizedClasses(),
             pc.WildCardType(),
             pc.Typedefs(),
-            pc.MatchTypes(), # TODO
+            pc.MatchTypes(),
             pc.PatMat(),
             pc.ParameterizedTypes()
         ],
         True,
         sy.CompileTimeError(),
-        # rc.ExtraneousComputation()
-        # the type of the bug is an extraneous condition
-        # ( as stated on ExtraneousComputation documentation)
-        rc.IncorrectCondition(),
+        rc.ExtraneousComputation(),
         ct.TypeComparison(),
         0
     ),
@@ -1088,6 +1078,8 @@ scala_iter4 = [
         "13.Scala2-6912",
         [
             pc.ParameterizedFunctions(),
+            pc.SpecialMethodOverriding(),
+            pc.NamedArgs(),
             pc.Overloading(),
             pc.Nothing(),
             pc.ParameterizedTypes()
@@ -1100,11 +1092,11 @@ scala_iter4 = [
     ),
     ScalaBug(
         "14.Dotty-2104",
-        # pc.Singleton() object Cons, pc.TypeArgsInference(), no pc.ParameterizedTypes()
         [
-            pc.AlgebraicDataTypes(),
+            pc.CaseClasses(),
+            pc.Singleton(),
+            pc.SpecialMethodOverriding(),
             pc.ParameterizedClasses(),
-            pc.FunctionAPI(),
             pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(),
             pc.DeclVariance(),
@@ -1119,7 +1111,6 @@ scala_iter4 = [
     ),
     ScalaBug(
         "15.Dotty-5640",
-        # maybe pc.ParamTypeInference()
         [
             pc.Lambdas(),
             pc.VarTypeInference()
@@ -1132,12 +1123,12 @@ scala_iter4 = [
     ),
     ScalaBug(
         "16.Dotty-3067",
-        # pc.Singleton() object Bar extends Foo
         [
             pc.ParameterizedClasses(),
             pc.ParamTypeInference(),
             pc.Lambdas(),
-            pc.ETAExpansion(), #TODO
+            pc.ETAExpansion(),
+            pc.Singleton(),
             pc.Collections(),
             pc.ParameterizedTypes(),
             pc.FunctionTypes(),
@@ -1168,9 +1159,11 @@ scala_iter4 = [
     ),
     ScalaBug(
         "18.Scala2-9110",
-        # pc.Singleton() object DomainC extends Domain
         [
             pc.NestedClasses(),
+            pc.CaseClasses(),
+            pc.Inheritance(),
+            pc.Singleton(),
             pc.AlgebraicDataTypes(),
             pc.PatMat()
         ],
@@ -1185,25 +1178,25 @@ scala_iter4 = [
         [
             pc.HigherKindedTypes(),
             pc.ParameterizedClasses(),
+            pc.SpecialMethodOverriding(),
             pc.ParameterizedTypes(),
             pc.ParameterizedFunctions(),
-            pc.FunctionAPI(),
+            pc.Singleton(),
             pc.Implicits()
         ],
         True,
         sy.CompileTimeError(),
-        # maybe rc.FunctionalSpecificationMismatch because it says:
-        # The spec and intuitions suggest that c1 is more specific than the quantified c0
-        # and that the former should be selected over the latter
         rc.MissingCase(),
         ct.TypeComparison(),
         0
     ),
     ScalaBug(
         "20.Scala2-9398",
-        # pc.SealedClasses() sealed abstract class TB, pc.Singleton() case object B extends TB
         [
             pc.AlgebraicDataTypes(),
+            pc.CaseClasses(),
+            pc.Inheritance(),
+            pc.Singleton(),
             pc.PatMat()
         ],
         False,

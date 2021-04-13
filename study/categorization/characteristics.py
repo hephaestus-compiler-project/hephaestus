@@ -596,6 +596,46 @@ class DataClasses(Characteristic):
     is_common = False
 
 
+class CaseClasses(Characteristic):
+    """
+    The test case declares a case class (Scala only)
+    """
+    name = "Case classes"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
+class SelfTypes(Characteristic):
+    """
+    The test case declares a case class (Scala only)
+    """
+    name = "Self types"
+    category = OOPFeatures()
+    characteristic_type = Declaration()
+    is_common = False
+
+
+class StructuralTypes(Characteristic):
+    """
+    The test case use structural types (Scala only)
+    """
+    name = "Structural types"
+    category = TypeSystem()
+    characteristic_type = Types()
+    is_common = False
+
+
+class SpecialMethodOverriding(Characteristic):
+    """
+    The test case overrides at least one special method (e.g., apply, update).
+    """
+    name = "Special method overriding"
+    category = Overriding()
+    characteristic_type = Declaration()
+    is_common = False
+
+
 class ValueClasses(Characteristic):
     """
     The test case declares a value class (Scala only)
@@ -824,6 +864,13 @@ class TemplateString(Characteristic):
     name = "Template string"
     category = SpecialFeatures()
     characteristic_type = Expressions()
+    is_common = False
+
+
+class OptionTypes(Characteristic):
+    name = "Option types"
+    category = SpecialFeatures()
+    characteristic_type = Types()
     is_common = False
 
 
