@@ -78,7 +78,7 @@ scala_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         2
     ),
     ScalaBug(
@@ -93,7 +93,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         8
     ),
     ScalaBug(
@@ -188,7 +188,7 @@ scala_iter1 = [
         False,
         sy.Runtime(sy.VerifyError()),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         6
     ),
     ScalaBug(
@@ -204,7 +204,7 @@ scala_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         7
     ),
     ScalaBug(
@@ -242,7 +242,7 @@ scala_iter1 = [
         False,
         sy.MisleadingReport(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         2
     ),
     ScalaBug(
@@ -266,7 +266,7 @@ scala_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         4
     )
 
@@ -296,7 +296,7 @@ scala_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         6
     ),
     ScalaBug(
@@ -324,7 +324,7 @@ scala_iter2 = [
         False,
         sy.MisleadingReport(),
         rc.IncorrectCondition(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         3
     ),
     ScalaBug(
@@ -335,7 +335,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         9
     ),
     ScalaBug(
@@ -372,7 +372,7 @@ scala_iter2 = [
         False,
         sy.InternalCompilerError(),
         rc.DesignIssue(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         1
     ),
     ScalaBug(
@@ -490,7 +490,7 @@ scala_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         11
     ),
     ScalaBug(
@@ -516,7 +516,7 @@ scala_iter2 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         6
     ),
     ScalaBug(
@@ -588,7 +588,7 @@ scala_iter3 = [
         # as long as there is a concrete member with the same signature."
         # so the root cause was an insufficient implementation of the algorithm
         rc.IncorrectComputation(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         2
     ),
     ScalaBug(
@@ -601,7 +601,7 @@ scala_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(), # Attribution
+        ct.IncorrectAnalysisMechanics(), # Attribution
         12
     ),
     ScalaBug(
@@ -622,7 +622,7 @@ scala_iter3 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         13
     ),
     ScalaBug(
@@ -665,8 +665,8 @@ scala_iter3 = [
         # Not enough to look for abstract types; have to recursively check
         # the bounds of each abstract type for more abstract types. It also makes 2 bug fixes.
         rc.IncorrectComputation(),
-        # ct.TypeExpression() it is too type related to be considered a OtherSemanticChecking bug I think.
-        ct.TypeExpression(), # OtherSemanticChecking
+        # ct.IncorrectAnalysisMechanics() it is too type related to be considered a MissingValiationChecks bug I think.
+        ct.IncorrectAnalysisMechanics(), # MissingValiationChecks
         12
     ),
     ScalaBug(
@@ -833,7 +833,7 @@ scala_iter3 = [
         False,
         sy.Runtime(sy.CaseNotFound()), #TODO
         rc.DesignIssue(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         18
     ),
     ScalaBug(
@@ -918,7 +918,7 @@ scala_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.DesignIssue(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         12
     ),
     ScalaBug(
@@ -936,7 +936,7 @@ scala_iter4 = [
     ),
     ScalaBug(
         "4.Scala2-9630",
-        # pc.NestedDeclarations() ( nested case classes to the sealed trait)
+        # pc.NestedMissingValiationChecks() ( nested case classes to the sealed trait)
         [
             pc.AlgebraicDataTypes(),
             pc.PatMat(),
@@ -944,7 +944,7 @@ scala_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         12
     ),
     ScalaBug(
@@ -959,7 +959,7 @@ scala_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         4
     ),
     ScalaBug(
@@ -998,7 +998,7 @@ scala_iter4 = [
         # agreed, we add atPos(uncheckedPattern.pos)
         # consider also rc.WrongParams() because app is passed as argument to doTypedUnapply
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         0
     ),
     ScalaBug(
@@ -1081,7 +1081,7 @@ scala_iter4 = [
         True,
         sy.CompilationPerformance(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         0
     ),
     ScalaBug(
@@ -1177,7 +1177,7 @@ scala_iter4 = [
         True,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         0
     ),
     ScalaBug(
@@ -1209,7 +1209,7 @@ scala_iter4 = [
         False,
         sy.Runtime(sy.CaseNotFound()),
         rc.InsufficientAlgorithmImplementation(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         0
     ),
 ]

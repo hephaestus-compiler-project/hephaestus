@@ -60,7 +60,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectDataType(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         14
     ),
     GroovyBug(
@@ -130,7 +130,7 @@ groovy_iter1 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         7
     ),
      GroovyBug(
@@ -150,7 +150,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         2
     ),
     GroovyBug(
@@ -168,7 +168,7 @@ groovy_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         9
     ),
     GroovyBug(
@@ -210,7 +210,7 @@ groovy_iter1 = [
         False,
         sy.Runtime(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         10
     )
 ]
@@ -228,7 +228,7 @@ groovy_iter2 = [
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         17
     ),
     GroovyBug(
@@ -246,7 +246,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Environment(),  # TypeExpression
+        ct.Environment(),  # IncorrectAnalysisMechanics
         12
     ),
     GroovyBug(
@@ -255,7 +255,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         7
     ),
     GroovyBug(
@@ -277,7 +277,7 @@ groovy_iter2 = [
         False,  # At the time was false
         sy.Runtime(sy.VerifyError()),
         rc.DesignIssue(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         5
     ),
     GroovyBug(
@@ -431,7 +431,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         7
     )
 ]
@@ -446,7 +446,7 @@ groovy_iter3 = [
         False,
         sy.Runtime(sy.MissingMethodException()),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         8
     ),
     GroovyBug(
@@ -544,9 +544,9 @@ groovy_iter3 = [
         # algorithmic error not a simple missing case, we can see many methods like fullyResolve or typeCheckMethodArgumentWithGenerics or typeCheckMethodsWithGenerics removed and re-implemented
         #  The fix above refines the implementation of the algorithm related to selecting the correct "inject" method so I think it is pc.InsufficientAlgorithmImplementation()
         rc.MissingCase(),
-        # found it difficult, both fit I would say TypeExpression because mostly the fix is related more with the type check of expression than with the process of inferring a type variable.
+        # found it difficult, both fit I would say IncorrectAnalysisMechanics because mostly the fix is related more with the type check of expression than with the process of inferring a type variable.
         #
-        ct.Inference(), # TypeExpression
+        ct.Inference(), # IncorrectAnalysisMechanics
         1
     ),
     GroovyBug(
@@ -562,7 +562,7 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         28
     ),
     GroovyBug(
@@ -612,7 +612,7 @@ groovy_iter3 = [
         # ct.Declaration() because we have a Semantic check of a class declaration, if it is using generics, is inner and is anonymous create an error message.
         # maybe it could also be ct.ErrorReporting()? we add a check to add an errormessage
         # ct.Declaration() fits better
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         18
     ),
     GroovyBug(
@@ -654,7 +654,7 @@ groovy_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         5
     ),
     GroovyBug(
@@ -747,7 +747,7 @@ groovy_iter4 = [
         # it says when you run(not compile) the example, a NPE is thrown
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         9
     ),
     GroovyBug(
@@ -866,7 +866,7 @@ groovy_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         10
     ),
     GroovyBug(
@@ -953,7 +953,7 @@ groovy_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         11
     ),
     GroovyBug(
@@ -1020,7 +1020,7 @@ groovy_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         1
     ),
 ]

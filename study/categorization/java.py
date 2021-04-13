@@ -32,7 +32,7 @@ java_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         9
     ),
      JavaBug(
@@ -98,7 +98,7 @@ java_iter1 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         # 7
         6
     ),
@@ -164,7 +164,7 @@ java_iter1 = [
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         # 12
         9
     ),
@@ -367,7 +367,7 @@ java_iter2 = [
         False,
         sy.Runtime(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         10
     ),
     JavaBug(
@@ -457,7 +457,7 @@ java_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.WrongParams(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         6
     ),
     JavaBug(
@@ -466,7 +466,7 @@ java_iter2 = [
         False,
         sy.Runtime(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         17
     ),
     JavaBug(
@@ -582,7 +582,7 @@ java_iter3 = [
         # maybe  rc.AlgorithmImproperlyImplemented()
         # algorithm not implemented effectively
         rc.IncorrectComputation(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         84
     ),
     JavaBug(
@@ -611,7 +611,7 @@ java_iter3 = [
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
         # ct.TypeComparison() We see in the fix changes in subtyping(checking whether a type is subtype of another), also we change the creation of bounds
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         7
     ),
     JavaBug(
@@ -623,8 +623,8 @@ java_iter3 = [
         # maybe sy.Runtime(sy.ClassCastException)
         sy.Runtime(),
         rc.MissingCase(),
-        # ct.Declarations() diamond operator is used on a declaration
-        ct.OtherSemanticChecking(),
+        # ct.MissingValiationChecks() diamond operator is used on a declaration
+        ct.MissingValiationChecks(),
         5
     ),
     JavaBug(
@@ -650,7 +650,7 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         16
     ),
     JavaBug(
@@ -661,7 +661,7 @@ java_iter3 = [
         True,
         sy.InternalCompilerError(),
         rc.ExtraneousComputation(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         46
     ),
     JavaBug(
@@ -695,7 +695,7 @@ java_iter3 = [
         rc.FunctionalSpecificationMismatch(),
         # I think it is type-related. Summary: Backing out change allowing arrays in intersection types
         # ct.Approximation()
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         1
     ),
     JavaBug(
@@ -712,7 +712,7 @@ java_iter3 = [
         # maybe create a new Logic Error called rc.WrongMethod()
         # The type of the bug is a Wrong Method Called.
         rc.IncorrectCondition(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         7
     ),
     JavaBug(
@@ -771,7 +771,7 @@ java_iter3 = [
         # agreed with both, its a type check of exrpession,
         # but its purpose is to  make enclosing overload resolution fail so I think
         # ct.Resolution()
-        ct.Resolution(), # TypeExpression
+        ct.Resolution(), # IncorrectAnalysisMechanics
         11
     ),
     JavaBug(
@@ -790,7 +790,7 @@ java_iter3 = [
         # rc.ExtraneousComputation()
         # disabling analyzers that cannot run in the given source level
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         7
     ),
     JavaBug(
@@ -820,7 +820,7 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         13
     ),
     JavaBug(
@@ -916,7 +916,7 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         5
     ),
     JavaBug(
@@ -995,7 +995,7 @@ java_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.AlgorithmImproperlyImplemented(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         10
     ),
     JavaBug(
@@ -1107,7 +1107,7 @@ java_iter4 = [
         # agreed, also consider  pc.FunctionalSpecificationMismatch() from the description of the problem,
         # where the JLS8 chapter 15.12.2.2 in not followed.
         rc.WrongParams(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         34
     ),
     JavaBug(
@@ -1156,7 +1156,7 @@ java_iter4 = [
         rc.MissingCase(),
         # ct.TypeComparsion get upper bound of type variable recursively until we find it,
         #  its a type comparsion recursive functionality
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         21
     ),
     JavaBug(

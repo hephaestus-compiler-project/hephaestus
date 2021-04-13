@@ -12,7 +12,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.Declarations(),  # -- During Override Resolution
+        ct.MissingValiationChecks(),  # -- During Override Resolution
         4
     ),
     KotlinBug(
@@ -21,7 +21,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.VerifyError()),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         4
     ),
     KotlinBug(
@@ -46,7 +46,7 @@ kotlin_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         4
     ),
     KotlinBug(
@@ -73,7 +73,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.NullPointerException()),
         rc.IncorrectComputation(), # IncorrectCondition
-        ct.TypeComparison(), # Declarations
+        ct.TypeComparison(), # MissingValiationChecks
         11
     ),
     KotlinBug(
@@ -160,7 +160,7 @@ kotlin_iter1 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(), # -- BREAK_OR_CONTINUE_JUMPS_ACROSS_FUNCTION_BOUNDARY
+        ct.MissingValiationChecks(), # -- BREAK_OR_CONTINUE_JUMPS_ACROSS_FUNCTION_BOUNDARY
         7
     ),
     KotlinBug(
@@ -179,7 +179,7 @@ kotlin_iter1 = [
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
-        ct.Declarations(), # -- During Override Resolution
+        ct.MissingValiationChecks(), # -- During Override Resolution
         #16
         12
     ),
@@ -289,7 +289,7 @@ kotlin_iter2 = [
         True,
         sy.Runtime(sy.WrongResult()),
         rc.DesignIssue(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         15
     ),
     KotlinBug(
@@ -354,7 +354,7 @@ kotlin_iter2 = [
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         11
     ),
     KotlinBug(
@@ -419,7 +419,7 @@ kotlin_iter2 = [
         False,  # change final field
         sy.Runtime(sy.IllegalAccessError()),
         rc.InsufficientAlgorithmImplementation(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         15
     ),
     KotlinBug(
@@ -518,7 +518,7 @@ kotlin_iter3 = [
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         5
     ),
     KotlinBug(
@@ -527,7 +527,7 @@ kotlin_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         6
     ),
     KotlinBug(
@@ -598,7 +598,7 @@ kotlin_iter3 = [
         False,
         sy.Runtime(sy.VerifyError()),
         rc.IncorrectCondition(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         8
     ),
     KotlinBug(
@@ -666,7 +666,7 @@ kotlin_iter3 = [
         True,
         sy.InternalCompilerError(),
         rc.InsufficientAlgorithmImplementation(),
-        ct.TypeExpression(),
+        ct.IncorrectAnalysisMechanics(),
         12
     ),
     KotlinBug(
@@ -720,7 +720,7 @@ kotlin_iter3 = [
         False,
         sy.Runtime(sy.AbstractMethodError()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         15
     ),
     KotlinBug(
@@ -757,7 +757,7 @@ kotlin_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         10
     ),
     KotlinBug(
@@ -794,7 +794,7 @@ kotlin_iter4 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         3
     ),
     KotlinBug(
@@ -863,7 +863,7 @@ kotlin_iter4 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectCondition(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         4
     ),
     KotlinBug(
@@ -875,7 +875,7 @@ kotlin_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         13
     ),
     KotlinBug(
@@ -886,7 +886,7 @@ kotlin_iter4 = [
         True,
         sy.MisleadingReport(),
         rc.DesignIssue(),
-        ct.OtherSemanticChecking(),
+        ct.MissingValiationChecks(),
         5
     ),
     KotlinBug(
@@ -934,7 +934,7 @@ kotlin_iter4 = [
         True,
         sy.Runtime(),
         rc.DesignIssue(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         11
     ),
     KotlinBug(
@@ -966,7 +966,7 @@ kotlin_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.IncorrectCondition(),
-        ct.Declarations(),
+        ct.MissingValiationChecks(),
         7
     ),
     KotlinBug(
