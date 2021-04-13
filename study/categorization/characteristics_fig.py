@@ -16,6 +16,10 @@ def get_args():
             "--output",
             default="characteristics.pdf",
             help="Filename to save the figure.")
+    parser.add_argument(
+            "--all",
+            action="store_true",
+            help="Print table with all characteristics")
     return parser.parse_args()
 
 
@@ -77,6 +81,29 @@ def plot_fig(dataframes, output):
                 pad_inches=0)
 
 
+def print_table(data):
+    res = []
+    for category, values in data.items():
+        for subcategory, cat_values in values['subcategories'].items():
+            res.append((subcategory, category, cat_values['total'],
+                        cat_values['is_common']))
+            for subsubcat, total in cat_values['subcategories'].items():
+                if subsubcat == "is_common":
+                    continue
+                res.append((subsubcat, category, total, True))
+    res = sorted(res, key=lambda x: (x[1], -x[2]))
+    print("\\begin{tabular}{l l l c c}")
+    print("\\hline")
+    print("{\\bf Feature} & {\\bf Category} & {\\bf Total} & {\\bf Common} \\\\")
+    print("\\hline")
+    for row in res:
+        print("{} & {} & {} & {}\\\\".format(
+            row[0], row[1], row[2], row[3]
+        ))
+    print("\\hline")
+    print("\\end{tabular}")
+
+
 def main():
     args = get_args()
     with open(args.data, 'r') as f:
@@ -86,6 +113,8 @@ def main():
     print(characteristics[:7])
     print(characteristics[-7:])
     plot_fig(dataframes, args.output)
+    if args.all:
+        print_table(json_data['Categories'])
 
 
 if __name__ == "__main__":
