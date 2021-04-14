@@ -3,18 +3,19 @@ import categories as ct
 import characteristics as pc
 import symptoms as sy
 import root_causes as rc
-# Rename pc.FunctionApi() to pc.FunctionApi() because An informative annotation type used to indicate that an interface type declaration is intended to be a functional interface as defined by the Java Language Specification. Conceptually, a functional interface has exactly one abstract method
+
 
 java_iter1 = [
     JavaBug(
         "1.JDK-8258972",
         [pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
+         pc.Inheritance(),
          pc.SealedClasses(),
          pc.NestedClasses(),
          pc.Subtyping()
          ],
-         True,
+        True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.TypeComparison(),
@@ -23,9 +24,9 @@ java_iter1 = [
     ),
     JavaBug(
         "2.JDK-8254557",
-        [pc.Streams(), pc.FunctionAPI(),
+        [pc.FunctionAPI(),
          pc.ParameterizedFunctions(), pc.AnonymousClass(),
-         pc.Lambdas(), pc.Conditionals(), pc.Reflection(),
+         pc.Lambdas(), pc.Conditionals(),
          pc.TypeArgsInference(),
          pc.Overriding()
          ],
@@ -34,58 +35,60 @@ java_iter1 = [
         rc.MissingCase(),
         ct.IncorrectAnalysisMechanics(),
         9
-    ),
-     JavaBug(
+     ),
+    JavaBug(
         "3.JDK-8144066",
         [
          pc.ParameterizedClasses(),
+         pc.TypeArgsInference(),
          pc.UseVariance(),
          pc.ParameterizedTypes(),
          pc.Arrays(),
+         pc.Subtyping(),
          pc.ParameterizedFunctions()
          ],
         True,
-        sy.CompilationPerformance(),
+        sy.InternalCompilerError(),
         rc.InsufficientAlgorithmImplementation(),
         ct.TypeComparison(),
         17
-    ),
-        JavaBug(
+     ),
+    JavaBug(
         "4.JDK-8191802",
         [pc.ParameterizedClasses(), pc.BoundedPolymorphism(),
          pc.ParameterizedTypes(), pc.UseVariance(),
          pc.Subtyping(), pc.VarTypeInference()
          ],
-         True,
+        True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Inference(),
-        # 9
         8
     ),
     JavaBug(
         "5.JDK-8231461",
         [pc.FunctionReferences(),
          pc.StaticMethod(), pc.Overloading(),
+         pc.SAM(), pc.FunctionAPI()
          ],
-         True,
-         sy.CompileTimeError(),
-         rc.MissingCase(),
+        True,
+        sy.CompileTimeError(),
+        rc.MissingCase(),
         ct.Resolution(),
-        # 10
         8
     ),
     JavaBug(
         "6.JDK-8012238",
         [pc.Overriding(),
+         pc.Inheritance(),
          pc.Reflection(),
          pc.ParameterizedFunctions(),
          pc.TypeArgsInference(),
          pc.BoundedPolymorphism(),
          pc.ParameterizedTypes()
          ],
-         True,
-         sy.CompileTimeError(),
+        True,
+        sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
         ct.Inference(),
         18
@@ -102,7 +105,7 @@ java_iter1 = [
         # 7
         6
     ),
-   JavaBug(
+    JavaBug(
         "8.JDK-6995200",
         [
             pc.ParameterizedFunctions(),
@@ -113,7 +116,6 @@ java_iter1 = [
         sy.InternalCompilerError(),
         rc.MissingCase(),
         ct.TypeComparison(),
-        # 9
         8
     ),
     JavaBug(
@@ -123,11 +125,10 @@ java_iter1 = [
             pc.TypeArgsInference(),
             pc.Reflection(), pc.ParameterizedTypes()
          ],
-         True,
+        True,
         sy.CompileTimeError(),
         rc.WrongParams(),
         ct.Inference(),
-        # 16
         6
     ),
     JavaBug(
@@ -141,39 +142,37 @@ java_iter1 = [
         sy.InternalCompilerError(),
         rc.IncorrectComputation(),
         ct.Environment(),
-        # 10
         9
     ),
     JavaBug(
         "11.JDK-8129214",
-        [pc.Import(), pc.TypeArgsInference(),
+        [pc.Import(), pc.TypeArgsInference(), pc.StaticMethod(),
          pc.ParameterizedFunctions(), pc.BoundedPolymorphism()
          ],
         True,
-         sy.CompileTimeError(),
+        sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Approximation(),
-        # 13
         10
     ),
     JavaBug(
         "12.JDK-8203277",
-        [pc.Collections(), pc.FunctionAPI(),
-         pc.Overriding(), pc.Lambdas(), pc.TypeArgsInference()
+        [pc.Collections(), pc.FunctionAPI(), pc.SAM(),
+         pc.Overriding(), pc.Lambdas(), pc.TypeArgsInference(),
+         pc.AnonymousClass(),
          ],
         True,
         sy.InternalCompilerError(),
         rc.MissingCase(),
         ct.IncorrectAnalysisMechanics(),
-        # 12
         9
     ),
     JavaBug(
         "13.JDK-8195598",
         [
             pc.ParameterizedFunctions(), pc.Overloading(),
-            pc.TypeArgsInference(),
-            pc.Lambdas(), pc.FunctionAPI()
+            pc.TypeArgsInference(), pc.WildCardType(),
+            pc.Lambdas(), pc.FunctionAPI(), pc.SAM()
         ],
         True,
         sy.CompileTimeError(),
@@ -184,14 +183,13 @@ java_iter1 = [
     JavaBug(
         "14.JDK-8202597",
         [pc.Cast(),
-         pc.Subtyping(),
+         pc.Subtyping(), pc.SAM(),
          pc.FunctionReferences(), pc.IntersectionTypes()
          ],
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
         ct.Approximation(),
-        # 10
         9
     ),
     JavaBug(
@@ -219,54 +217,55 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.WrongParams(),
         ct.TypeComparison(),
-        # 17
         7
     ),
   JavaBug(
         "17.JDK-6996914",
         [
             pc.Subtyping(), pc.ParameterizedClasses(),
-            pc.ParameterizedTypes(),
+            pc.ParameterizedTypes(), pc.Inheritance(),
+            pc.AnonymousClass(), pc.NestedClasses(),
             pc.TypeArgsInference(), pc.AccessModifiers()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Environment(),
-        # 19
         8
     ),
- JavaBug(
+    JavaBug(
         "18.JDK-8154180",
         [
             pc.FunctionAPI(),
             pc.ParameterizedTypes(),
             pc.Lambdas(),
+            pc.ParamTypeInference(),
+            pc.SAM()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
         ct.Resolution(),
-        # 15,17
         16
     ),
     JavaBug(
         "19.JDK-7041019",
         [pc.Arrays(), pc.ParameterizedClasses(),
-        pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
-        pc.Overriding(), pc.Subtyping()
-        ],
+         pc.BoundedPolymorphism(), pc.ParameterizedTypes(),
+         pc.Overriding(), pc.Subtyping(), pc.Inheritance(),
+         pc.ParameterizedFunctions(), pc.TypeArgsInference()
+         ],
         False,
         sy.Runtime(sy.ClassCastException()),
         rc.WrongParams(),
         ct.Inference(),
-        # 24
         8
     ),
     JavaBug(
         "20.JDK-8148354",
         [
             pc.FunctionAPI(),
+            pc.SAM(),
             pc.FunctionReferences(),
             pc.TypeArgsInference(),
             pc.ParameterizedFunctions(), pc.BoundedPolymorphism(),
@@ -277,23 +276,21 @@ java_iter1 = [
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
         ct.Approximation(),
-        # 17
         8
     ),
 ]
 
 
 java_iter2 = [
-    # Note: I see  Bounded Polymorphism characteristic is common in java bugs (18/60) approximately 30% frequency , maybe consider it for paper section about java bugs
     JavaBug(
         "1.JDK-8152832",  # regression
         [
-            pc.FunctionReferences(),
-            pc.Streams(), pc.Collections(), pc.Lambdas(),
-            pc.FunctionAPI(), pc.BoundedPolymorphism(),
+            pc.SAM(),
+            pc.Collections(),
+            pc.BoundedPolymorphism(),
             pc.UseVariance(), pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
-            pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
+            pc.ParameterizedFunctions(),
             pc.Subtyping()
         ],
         True,
@@ -315,10 +312,9 @@ java_iter2 = [
     ),
     JavaBug(
         "3.JDK-6476118",
-        # no pc.ParameterizedClasses() in test case, but if we consider the declaration of Comparable<T> part of test case its also pc.SAM() , pc.Inheritance(),
         [
             pc.Overriding(), pc.Overloading(),
-            pc.SAM(),
+            pc.SAM(), pc.Inheritance(),
             pc.ParameterizedTypes()
         ],
         False,
@@ -330,7 +326,7 @@ java_iter2 = [
     JavaBug(
         # regression bug (This is a regression, the code was providing the right error message in JDK 7.)
         "4.JDK-8029569",
-        [pc.Varargs(), pc.Overloading()],
+        [pc.Varargs(), pc.Overloading(), pc.StaticMethod()],
         False,
         sy.InternalCompilerError(),
         rc.IncorrectDataType(),
@@ -374,7 +370,7 @@ java_iter2 = [
         "8.JDK-8039214",
         [
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
-            pc.TypeArgsInference(),
+            pc.TypeArgsInference(), pc.WildCardType(),
             pc.ParameterizedTypes(), pc.UseVariance(),
             pc.Inheritance(), pc.Subtyping()
         ],
@@ -406,9 +402,8 @@ java_iter2 = [
     JavaBug(
         "11.JDK-8020804",
         [
-            pc.FunctionAPI(),
             pc.ParameterizedClasses(), pc.ParameterizedFunctions(),
-            pc.TypeArgsInference(),
+            pc.TypeArgsInference(), pc.WildCardType(),
             pc.Arrays(), pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(), pc.Overloading(),
             pc.SAM(), pc.Collections(),
@@ -424,8 +419,8 @@ java_iter2 = [
         "12.JDK-7062745",  # regression
         [
             pc.Overloading(), pc.Collections(),
-            pc.Inheritance(), pc.ParameterizedTypes(),
-            pc.Subtyping()
+            pc.ParameterizedTypes(),
+            pc.Subtyping(), pc.MultipleImplements()
         ],
         True,
         sy.CompileTimeError(),
@@ -436,8 +431,8 @@ java_iter2 = [
     JavaBug(
         "13.JDK-8189838",
         [
-            pc.FBounded(),
-            pc.BoundedPolymorphism(), pc.ParameterizedClasses(),
+            pc.FBounded(), pc.WildCardType(),
+            pc.ParameterizedClasses(),
             pc.Collections(), pc.ParameterizedTypes(),
             pc.TypeArgsInference(), pc.IntersectionTypes()
         ],
@@ -451,7 +446,7 @@ java_iter2 = [
         "14.JDK-8011376",
         [
             pc.Lambdas(), pc.TryCatch(), pc.ParameterizedFunctions(),
-            pc.TypeArgsInference(),
+            pc.TypeArgsInference(), pc.SAM(),
             pc.ParameterizedTypes(), pc.Subtyping()
         ],
         True,
@@ -462,7 +457,8 @@ java_iter2 = [
     ),
     JavaBug(
         "15.JDK-8008537",
-        [pc.FunctionReferences(), pc.Overloading(), pc.Subtyping()],
+        [pc.FunctionReferences(), pc.Overloading(), pc.Subtyping(),
+         pc.SAM()],
         False,
         sy.Runtime(),
         rc.MissingCase(),
@@ -471,7 +467,8 @@ java_iter2 = [
     ),
     JavaBug(
         "16.JDK-8188144",  # regression
-        [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionAPI()],
+        [pc.ParameterizedTypes(), pc.FunctionReferences(), pc.FunctionAPI(),
+         pc.SAM()],
         True,
         sy.Runtime(sy.WrongResult()),
         rc.IncorrectComputation(), # MissingCase
@@ -482,10 +479,10 @@ java_iter2 = [
         # regression
         "17.JDK-8171993",
         [
-            pc.ParameterizedTypes(),
+            pc.ParameterizedTypes(), pc.ParameterizedFunctions(),
             pc.BoundedPolymorphism(),
             pc.Varargs(), pc.TypeArgsInference(), pc.ParameterizedClasses(),
-            pc.FunctionReferences(), pc.FunctionAPI()
+            pc.FunctionReferences(), pc.FunctionAPI(), pc.SAM()
         ],
         True,
         sy.InternalCompilerError(),
@@ -495,7 +492,6 @@ java_iter2 = [
     ),
     JavaBug(
         "18.JDK-8010303",
-        # pc.SAM() (Func interface)
         [pc.ParameterizedFunctions(), pc.ParameterizedClasses(),
          pc.TypeArgsInference(),
          pc.ParameterizedTypes(), pc.SAM()],
@@ -513,7 +509,6 @@ java_iter2 = [
             pc.UseVariance(), pc.Subtyping(),
             pc.ParameterizedFunctions(), pc.Collections(),
             pc.TypeArgsInference(),
-            pc.BoundedPolymorphism()
         ],
         True,
         sy.CompileTimeError(),
@@ -543,7 +538,6 @@ java_iter3 = [
         # regression bug
         # the attached source file takes the javac 2s to compile on JDK 7u45. It takes 80s on JDK 8.
         "1.JDK-8031967",
-        #  pc.StandardLibrary?, pc.PrimitiveTypes(),
         [
             pc.Overriding(),
             pc.Overloading(),
@@ -557,12 +551,10 @@ java_iter3 = [
     JavaBug(
         # regression bug
         "2.JDK-6880344",
-        # no pc.ParameterziedTypes()
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
             pc.Inheritance(),
-            pc.BoundedPolymorphism(),
             pc.FBounded()
         ],
         True,
@@ -575,13 +567,12 @@ java_iter3 = [
         "3.JDK-7142086",
         [
             pc.Overloading(),
-            pc.Overriding()
+            pc.Overriding(),
+            pc.Inheritance()
         ],
         True,
         sy.CompilationPerformance(),
-        # maybe  rc.AlgorithmImproperlyImplemented()
-        # algorithm not implemented effectively
-        rc.IncorrectComputation(),
+        rc.AlgorithmImproperlyImplemented(),
         ct.MissingValiationChecks(),
         84
     ),
@@ -589,6 +580,7 @@ java_iter3 = [
         "4.JDK-8131915",
         [
             pc.TypeAnnotations(),
+            pc.Inheritance(),
             pc.Import()
         ],
         False,
@@ -600,9 +592,9 @@ java_iter3 = [
     JavaBug(
         # regression bug
         "5.JDK-7148242",
-        # pc.ParameterizedFunctions() no pc.ParameterizedTypes() test is parameterized function not type?(diesnt have a distinct parameterized type)
         [
             pc.ParameterizedClasses(),
+            pc.ParameterizedFunctions(),
             pc.ParameterizedTypes(),
             pc.NestedClasses(),
             pc.BoundedPolymorphism()
@@ -610,8 +602,7 @@ java_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.ExtraneousComputation(),
-        # ct.TypeComparison() We see in the fix changes in subtyping(checking whether a type is subtype of another), also we change the creation of bounds
-        ct.MissingValiationChecks(),
+        ct.TypeComparison(),
         7
     ),
     JavaBug(
@@ -620,18 +611,16 @@ java_iter3 = [
             pc.TypeArgsInference()
         ],
         False,
-        # maybe sy.Runtime(sy.ClassCastException)
         sy.Runtime(),
         rc.MissingCase(),
-        # ct.MissingValiationChecks() diamond operator is used on a declaration
         ct.MissingValiationChecks(),
         5
     ),
     JavaBug(
         "7.JDK-8209173",
-        # pc.Collections() (List)
         [
             pc.JavaInterop(),
+            pc.Collections(),
             pc.ParameterizedTypes()
         ],
         False,
@@ -656,7 +645,6 @@ java_iter3 = [
     JavaBug(
         "9.JDK-8177933",
         [
-            #  pc.StandardFeatures()
         ],
         True,
         sy.InternalCompilerError(),
@@ -668,6 +656,8 @@ java_iter3 = [
         "10.JDK-8013394",
         [
             pc.Collections(),
+            pc.Inheritance(),
+            pc.Overriding(),
             pc.ParameterizedClasses(),
             pc.Inheritance(),
             pc.Import(),
@@ -676,10 +666,7 @@ java_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
-        # rc.WrongParams() There is a bug, because the implementation passes insufficient parameters to a method.
         rc.MissingCase(),
-        # agreed, maybe consider ct.TypeComparsion()
-        #  types.asSuper(iterator.type.getReturnType(), syms.iteratorType.tsym)
         ct.Transformation(),
         27
     ),
@@ -693,34 +680,30 @@ java_iter3 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.FunctionalSpecificationMismatch(),
-        # I think it is type-related. Summary: Backing out change allowing arrays in intersection types
-        # ct.Approximation()
-        ct.MissingValiationChecks(),
+        ct.Approximation(),
         1
     ),
     JavaBug(
         # regression bug
         "12.JDK-8236546",
-        # no pc.Subtyping()?
         [
             pc.Conditionals(),
             pc.Subtyping()
         ],
-        # True (EXPECTED BEHAVIOR -Compile normally.)
-        False,
+        True,
         sy.InternalCompilerError(),
-        # maybe create a new Logic Error called rc.WrongMethod()
-        # The type of the bug is a Wrong Method Called.
-        rc.IncorrectCondition(),
+        rc.IncorrectComputation(),
         ct.IncorrectAnalysisMechanics(),
         7
     ),
     JavaBug(
         "13.JDK-8175790",
-        # theosort: why not AnonymousClass and Overloading?
         [
             pc.ParameterizedFunctions(),
+            pc.AnonymousClass(),
+            pc.Overriding(),
             pc.FunctionAPI(),
+            pc.SAM(),
             pc.Collections(),
             pc.Subtyping(),
             pc.UseVariance(),
@@ -731,11 +714,6 @@ java_iter3 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        # ct.Transformation()
-        # There is a post attribution visitor that sets default values to null fields in the ASTs.
-        # This is not being done for field JCVariableDecl.vartype,
-        # so if there is an error during the attribution of a given expression and that field remains null,
-        # then NPE can happen during further analysis of the ASTs
         ct.ErrorReporting(),
         26
     ),
@@ -743,13 +721,14 @@ java_iter3 = [
         # regression bug
         # see first comment. Maybe make a section in the study for asSuper method?
         "14.JDK-8069265",
-        # pc.NestedClasses() An interface declared inside a Class
         [
             pc.Collections(),
+            pc.NestedClasses(),
             pc.ParameterizedTypes(),
             pc.TypeArgsInference(),
             pc.WildCardType(),
-            pc.Cast()
+            pc.Cast(),
+            pc.Subtyping(),
         ],
         True,
         sy.Runtime(sy.ClassCastException()),
@@ -768,10 +747,7 @@ java_iter3 = [
         False,
         sy.Runtime(sy.WrongResult()),
         rc.InsufficientAlgorithmImplementation(),
-        # agreed with both, its a type check of exrpession,
-        # but its purpose is to  make enclosing overload resolution fail so I think
-        # ct.Resolution()
-        ct.Resolution(), # IncorrectAnalysisMechanics
+        ct.Resolution(),
         11
     ),
     JavaBug(
@@ -787,18 +763,16 @@ java_iter3 = [
         ],
         True,
         sy.InternalCompilerError(),
-        # rc.ExtraneousComputation()
-        # disabling analyzers that cannot run in the given source level
-        rc.MissingCase(),
+        rc.ExtraneousComputation(),
         ct.MissingValiationChecks(),
         7
     ),
     JavaBug(
         # regression bug
         "17.JDK-8161383",
-        # pc.PrimitiveTypes()
         [
             pc.NestedClasses(),
+            pc.ArithmeticExpressions(),
             pc.AugmentedAssignmentOperator(),
             pc.Inheritance(),
             pc.AccessModifiers()
@@ -829,6 +803,7 @@ java_iter3 = [
             pc.FunctionReferences(),
             pc.Varargs(),
             pc.ParameterizedFunctions(),
+            pc.SAM(),
             pc.TypeArgsInference(),
             pc.FunctionAPI()
         ],
@@ -842,6 +817,7 @@ java_iter3 = [
         "20.JDK-8173456",
         [
             pc.FunctionAPI(),
+            pc.SAM(),
             pc.ParameterizedTypes(),
             pc.AccessModifiers(),
             pc.Inheritance(),
@@ -867,7 +843,6 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        #maybe consider ct.Declaration() semantic check of a declaration with a bounded type to an array ((b.isErroneous()) set a bound)
         ct.ErrorReporting(),
         2
     ),
@@ -881,12 +856,12 @@ java_iter4 = [
             pc.TypeArgsInference(),
             pc.ParameterizedClasses(),
             pc.ParameterizedFunctions(),
+            pc.Cast(),
             pc.Lambdas()
         ],
         True,
         sy.CompileTimeError(),
-        # rc.IncorrectSequence() some code from line 10 to 31 is moved to line 49 which changes the sequence of the program execution
-        rc.IncorrectComputation(),
+        rc.IncorrectSequence(),
         ct.Environment(),
         13
     ),
@@ -954,7 +929,6 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        #agreed, maybe ct.Approximation fits better,  dummyMethodType is considered an Approximation type used form the compiler internally.
         ct.ErrorReporting(),
         12
     ),
@@ -966,11 +940,11 @@ java_iter4 = [
             pc.Inheritance(),
             pc.ParamTypeInference(),
             pc.ParameterizedTypes(),
-            pc.FunctionAPI(),
             pc.BoundedPolymorphism(),
             pc.FBounded(),
             pc.SAM(),
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.Lambdas()
         ],
         True,
@@ -982,9 +956,9 @@ java_iter4 = [
     JavaBug(
         # regression bug
         "9.JDK-8176714",
-        # no pc.ParameterizedTypes(), pc.This()
         [
             pc.FunctionAPI(),
+            pc.SAM(),
             pc.ParameterizedTypes(),
             pc.Conditionals(),
             pc.FunctionReferences(),
@@ -1028,13 +1002,14 @@ java_iter4 = [
     JavaBug(
         # regression bug
         "12.JDK-8044546",
-        # pc.Arrays, pc.PrimitiveTypes() (STEPS TO FOLLOW TO REPRODUCE THE PROBLEM:
-        # Create a new method in this class, which returns a boolean and takes an array argument.
         [
             pc.Collections(),
+            pc.Arrays(),
+            pc.PrimitiveTypes(),
             pc.Streams(),
             pc.Lambdas(),
             pc.TypeArgsInference(),
+            pc.ParameterizedFunctions(),
             pc.ParamTypeInference()
         ],
         False,
@@ -1046,13 +1021,9 @@ java_iter4 = [
     JavaBug(
         # regression bug
         "13.JDK-7005095",
-        # no pc.ParameterizedFunctions() in minimized test case on fix
         [
-            pc.ParameterizedFunctions(),
             pc.ParameterizedClasses(),
-            pc.BoundedPolymorphism(),
             pc.ParameterizedTypes(),
-            pc.TypeArgsInference(),
             pc.Cast(),
             pc.Inheritance()
         ],
@@ -1064,18 +1035,15 @@ java_iter4 = [
     ),
     JavaBug(
         "14.JDK-8009582",
-        # pc.FunctionReferences()(HashMap::new ), pc.SAM()(GenericMethodRefImplClassLSI)
         [
             pc.TryCatch(),
             pc.Inheritance(),
-            pc.IOAPI(), # TODO
+            pc.FunctionReferences(),
             pc.Cast()
         ],
         True,
         sy.CompileTimeError(),
-        # rc.WrongParams()(types.erasure(refSym.owner.type))
         rc.MissingCase(),
-        # is types.erasure considered an approximation type ?maybe ct.Approximation
         ct.Transformation(),
         49
     ),
@@ -1094,9 +1062,9 @@ java_iter4 = [
     JavaBug(
         # regression bug
         "16.JDK-8042759",
-        # pc.PrimitiveTypes()
         [
             pc.SAM(),
+            pc.PrimitiveTypes(),
             pc.Conditionals(),
             pc.Lambdas(),
             pc.ParamTypeInference(),
@@ -1104,8 +1072,6 @@ java_iter4 = [
         ],
         False,
         sy.Runtime(sy.WrongResult()),
-        # agreed, also consider  pc.FunctionalSpecificationMismatch() from the description of the problem,
-        # where the JLS8 chapter 15.12.2.2 in not followed.
         rc.WrongParams(),
         ct.IncorrectAnalysisMechanics(),
         34
@@ -1132,6 +1098,7 @@ java_iter4 = [
         [
             pc.SAM(),
             pc.FunctionReferences(),
+            pc.AnonymousClass(),
             pc.Cast(),
             pc.AccessModifiers()
         ],
@@ -1154,17 +1121,15 @@ java_iter4 = [
         False,
         sy.InternalCompilerError(),
         rc.MissingCase(),
-        # ct.TypeComparsion get upper bound of type variable recursively until we find it,
-        #  its a type comparsion recursive functionality
-        ct.IncorrectAnalysisMechanics(),
+        ct.Inference(),
         21
     ),
     JavaBug(
         "20.JDK-8164399",
-        # pc.ParamTypeInference()(() -> compute(() -> {}))
         [
             pc.TryCatch(),
             pc.ParameterizedFunctions(),
+            pc.TypeArgsInference(),
             pc.ParameterizedTypes(),
             pc.BoundedPolymorphism(),
             pc.Lambdas(),
