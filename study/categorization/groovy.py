@@ -21,7 +21,8 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "2.GROOVY-7364",
-        [pc.ParameterizedClasses(),
+        [pc.ParameterizedFunctions(),
+         pc.TypeArgsInference(),
          pc.VarTypeInference(),
          pc.NamedArgs()
          ],
@@ -33,7 +34,8 @@ groovy_iter1 = [
         ),
     GroovyBug(
         "3.GROOVY-5217",
-        [pc.Lambdas(), pc.ParameterizedTypes(), pc.Property()],
+        [pc.Lambdas(), pc.ParameterizedTypes(), pc.AccessModifiers(),
+         pc.SAM()],
         True,
         sy.CompileTimeError(),
         rc.IncorrectSequence(),
@@ -83,7 +85,8 @@ groovy_iter1 = [
     ),
     GroovyBug(
         "8.GROOVY-7721",
-        [pc.Arrays(), pc.Subtyping(), pc.Overriding(), pc.JavaInterop()],
+        [pc.Arrays(), pc.Subtyping(), pc.Overriding(), pc.JavaInterop(),
+         pc.Inheritance()],
         True,
         sy.CompileTimeError(),
         rc.FunctionalSpecificationMismatch(),
@@ -94,7 +97,7 @@ groovy_iter1 = [
         "9.GROOVY-7210",
         [pc.Arrays(),
          pc.PrimitiveTypes()
-        ],
+         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -133,9 +136,10 @@ groovy_iter1 = [
         ct.MissingValiationChecks(),
         7
     ),
-     GroovyBug(
+    GroovyBug(
         "13.GROOVY-8445",
-        [pc.Lambdas(), pc.ParamTypeInference(), pc.Streams()],
+        [pc.Lambdas(), pc.ParamTypeInference(), pc.Streams(),
+         pc.TypeArgsInference()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -162,9 +166,10 @@ groovy_iter1 = [
         ct.Resolution(),
         10
     ),
- GroovyBug(
+    GroovyBug(
         "16.GROOVY-7315",
-        [pc.NamedArgs(), pc.NestedClasses(), pc.PrimitiveTypes()],
+        [pc.NamedArgs(), pc.NestedClasses(), pc.PrimitiveTypes(),
+         pc.AccessModifiers()],
         True,
         sy.CompileTimeError(),
         rc.InsufficientAlgorithmImplementation(),
@@ -205,6 +210,7 @@ groovy_iter1 = [
          pc.ParameterizedFunctions(),
          pc.TypeArgsInference(),
          pc.Collections(),
+         pc.SAM(),
          pc.Lambdas(),
          pc.Subtyping()],
         False,
@@ -216,15 +222,13 @@ groovy_iter1 = [
 ]
 
 
-
-
 groovy_iter2 = [
     GroovyBug(
         "1.GROOVY-6489",
-        [pc.ParameterizedTypes,
+        [pc.ParameterizedTypes(),
          pc.WithMultipleAssignment(),
          pc.Property(), pc.AccessModifiers()
-        ],
+         ],
         True,
         sy.InternalCompilerError(),
         rc.WrongParams(),
@@ -246,7 +250,7 @@ groovy_iter2 = [
         True,
         sy.CompileTimeError(),
         rc.IncorrectComputation(),
-        ct.Environment(),  # IncorrectAnalysisMechanics
+        ct.Environment(),
         12
     ),
     GroovyBug(
@@ -282,7 +286,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "7.GROOVY-6195",
-        [pc.Collections(), pc.VarTypeInference()],
+        [pc.Collections(), pc.VarTypeInference(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -302,7 +306,6 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "9.GROOVY-5415",
-        # pc.This()
         [pc.JavaInterop(),
          pc.ParameterizedClasses(),
          pc.ParameterizedTypes(),
@@ -338,7 +341,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "12.GROOVY-7922",
-        [pc.Overloading(), pc.MultipleImplements()],
+        [pc.Overloading(), pc.MultipleImplements(), pc.Subtyping()],
         False,
         sy.Runtime(sy.AmbiguousMethodError()),
         rc.IncorrectComputation(),
@@ -418,6 +421,7 @@ groovy_iter2 = [
     GroovyBug(
         "19.GROOVY-7061",
         [pc.Collections(), pc.ParamTypeInference(),
+         pc.TypeArgsInference(),
          pc.Lambdas()],
         True,
         sy.CompileTimeError(),
@@ -427,7 +431,7 @@ groovy_iter2 = [
     ),
     GroovyBug(
         "20.GROOVY-5240",
-        [pc.Reflection()],
+        [pc.Reflection(), pc.Subtyping()],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
@@ -439,9 +443,8 @@ groovy_iter2 = [
 groovy_iter3 = [
     GroovyBug(
         "1.GROOVY-5411",
-        # pc.StaticMethod() (static context)
         [
-            #  pc.StandardFeatures()
+            pc.StaticMethod()
         ],
         False,
         sy.Runtime(sy.MissingMethodException()),
@@ -473,7 +476,6 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "4.GROOVY-7327",
-        # no pc.ParameterizedTypes(), pc.Varargs() (Arrays.asList(sequence)[0..1])
         [pc.JavaInterop(),
          pc.ParameterizedFunctions(),
          pc.Collections(),
@@ -492,8 +494,7 @@ groovy_iter3 = [
         [pc.Collections(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
-        # pc.IncorrectComputation() fix body of parameterizeArguments method, could be missing case, but I consider it more algorithmic than logic fix.
-        rc.MissingCase(), # IncorrectComputation
+        pc.IncorrectComputation(),
         ct.Inference(),
         2
     ),
@@ -516,17 +517,13 @@ groovy_iter3 = [
             pc.AnonymousClass(),
             pc.ParameterizedTypes(),
             pc.FunctionAPI(),
+            pc.SAM(),
             pc.TypeArgsInference(),
             pc.Overriding()
         ],
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        # ct.Resolution Groovy is unable to resolve this Generics use case, change in ResolveVisitor, we find the enclosing method
-        # if (innerClassNode.isAnonymous()) {
-        # MethodNode enclosingMethod = innerClassNode.getEnclosingMethod();
-        # if (null != enclosingMethod) {
-        #     resolveGenericsHeader(enclosingMethod.getGenericsTypes());
         ct.Environment(),
         8
     ),
@@ -540,19 +537,12 @@ groovy_iter3 = [
         ],
         True,
         sy.CompileTimeError(),
-        # pc.InsufficientAlgorithmImplementation()
-        # algorithmic error not a simple missing case, we can see many methods like fullyResolve or typeCheckMethodArgumentWithGenerics or typeCheckMethodsWithGenerics removed and re-implemented
-        #  The fix above refines the implementation of the algorithm related to selecting the correct "inject" method so I think it is pc.InsufficientAlgorithmImplementation()
-        rc.MissingCase(),
-        # found it difficult, both fit I would say IncorrectAnalysisMechanics because mostly the fix is related more with the type check of expression than with the process of inferring a type variable.
-        #
-        ct.Inference(), # IncorrectAnalysisMechanics
+        rc.InsufficientAlgorithmImplementation(),
+        ct.Inference(),
         1
     ),
     GroovyBug(
         "9.GROOVY-9518",
-        # pc.pc.TypeArgsInference()  {foo, bar -> println(bar.size())}) for argument Consumer<String, ? super List<Integer>> bar
-
         [
             pc.ParameterizedTypes(),
             pc.ParamTypeInference(),
@@ -567,9 +557,10 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "10.GROOVY-5172",
-        # pc.ParamTypeInference() { ->printHtmlPart(2) }
         [
             pc.JavaInterop(),
+            pc.SAM(),
+            pc.ParamTypeInference(),
             pc.Inheritance(),
             pc.PrimitiveTypes(),
             pc.ParameterizedTypes(),
@@ -585,9 +576,9 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "11.GROOVY-5141",
-        #pc.ParamTypeInference()(same as GROOVY-5141 ) maybe create a characterisitc it (implicit variable that is provided in closures.)
         [
             pc.Collections(),
+            pc.ParamTypeInference(),
             pc.Lambdas(),
             pc.TypeArgsInference()
         ],
@@ -606,12 +597,7 @@ groovy_iter3 = [
         ],
         False,
         sy.InternalCompilerError(),
-        # rc.MissingCase() we add a check to report an error message
         rc.DesignIssue(),
-        # I think it fits in 2 categories.
-        # ct.Declaration() because we have a Semantic check of a class declaration, if it is using generics, is inner and is anonymous create an error message.
-        # maybe it could also be ct.ErrorReporting()? we add a check to add an errormessage
-        # ct.Declaration() fits better
         ct.MissingValiationChecks(),
         18
     ),
@@ -629,7 +615,6 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "14.GROOVY-8629",
-        # no pc.ParameterizedClasses(), pc.This(), pc.Property() (in fix we see pushEnclosingPropertyExpression),
         [
             pc.Collections(),
             pc.ParameterizedTypes(),
@@ -646,9 +631,10 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "15.GROOVY-5456",
-        # pc.PrimitiveTypes(), pc.ParamTypeInference() (only it/2 statement without closure parameters) ({ [closureParameters -> ] statements })
         [
             pc.ArithmeticExpressions(),
+            pc.SAM(),
+            pc.ParamTypeInference(),
             pc.Lambdas(),
         ],
         False,
@@ -667,8 +653,6 @@ groovy_iter3 = [
         True,
         sy.CompileTimeError(),
         rc.MissingCase(),
-        # the fix fits also ct.TypeComparsion()  if (accessedVariable instanceof Parameter) (((Parameter) accessedVariable) casting)
-        # it also fits Environment because putNodeMetaData changes context
         ct.Environment(),
         13
     ),
@@ -688,7 +672,6 @@ groovy_iter3 = [
     ),
     GroovyBug(
         "18.GROOVY-6671",
-        # Property
         [
             pc.ParameterizedClasses(),
             pc.ParameterizedTypes(),
@@ -736,15 +719,13 @@ groovy_iter3 = [
 groovy_iter4 = [
     GroovyBug(
         "1.GROOVY-5705",
-        # pc.Property() c is property of Test, also on title:
-        # "calling a closure stored in a property yields an NPE"
         [
+            pc.SAM(),
+            pc.Property(),
             pc.ParamTypeInference(),
             pc.Lambdas()
         ],
         True,
-        # sy.Runtime(sy.NullPointerException())
-        # it says when you run(not compile) the example, a NPE is thrown
         sy.InternalCompilerError(),
         rc.WrongDataReference(),
         ct.IncorrectAnalysisMechanics(),
@@ -752,7 +733,6 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "2.GROOVY-6760",
-        # maybe pc.SAM() because of callable but it is not defined, only used
         [
             pc.Collections(),
             pc.ParameterizedFunctions(),
@@ -763,11 +743,7 @@ groovy_iter4 = [
         ],
         True,
         sy.CompileTimeError(),
-        # rc.IncorrectCondition
-        # missing condition, same exmplanation with the example of the documentation of this root cause:
-        # " The fix above fixes a bug that lies in the category "Incorrect Condition",
-        # because it introduces a condition that is necessary, but was omitted in the current implementation."
-        rc.MissingCase(),
+        rc.IncorrectCondition(),
         ct.Inference(),
         12
     ),
@@ -775,6 +751,7 @@ groovy_iter4 = [
         "3.GROOVY-5559",
         [
             pc.Collections(),
+            pc.VarTypeInference(),
             pc.ParameterizedTypes(),
             pc.TemplateString()
         ],
@@ -798,9 +775,9 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "5.GROOVY-5237",
-        # pc.Property() initialValue property of Container
         [
             pc.ParameterizedClasses(),
+            pc.Property(),
             pc.AccessModifiers()
         ],
         True,
@@ -811,9 +788,10 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "6.GROOVY-5640",
-        # pc.SAM() Traverser, pc.Reflection() node.class.name, pc.PropertyReference()
         [
             pc.Loops(),
+            pc.Inheritance(),
+            pc.Reflection(),
             pc.Overriding(),
             pc.Collections(),
             pc.ParameterizedTypes()
@@ -893,6 +871,7 @@ groovy_iter4 = [
         "11.GROOVY-9903",
         [
             pc.DelegationAPI(),
+            pc.SAM(),
             pc.Lambdas()
         ],
         False,
@@ -903,7 +882,6 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "12.GROOVY-6961",
-        # pc.ParameterizedTypes()
         [
             pc.TypeArgsInference(),
             pc.ParamTypeInference(),
@@ -974,9 +952,9 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "17.GROOVY-5702",
-        # pc.SAM() MyCloseable, pc.Inheritance()
         [
             pc.VarTypeInference(),
+            pc.Inheritance(),
             pc.Overriding()
         ],
         True,
@@ -987,8 +965,6 @@ groovy_iter4 = [
     ),
     GroovyBug(
         "18.GROOVY-7813",
-        # pc.Static() make pc.StaticMethod() characteristic to pc.Static() to include static classes
-        # Calling a non-static outer class method from a static class passes STC
         [
             pc.NestedClasses()
         ],
