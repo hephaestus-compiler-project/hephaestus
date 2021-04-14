@@ -166,7 +166,7 @@ scala_iter1 = [
         3
     ),
     ScalaBug(
-        "13.Scala-9361",
+        "13.Scala2-9361",
         [
             pc.HigherKindedTypes(),
             pc.WildCardType(),
