@@ -17,4 +17,4 @@ https://github.com/lampepfl/dotty/issues/2723,https://github.com/lampepfl/dotty/
 https://github.com/lampepfl/dotty/issues/4030,https://github.com/lampepfl/dotty/pull/4034
 https://github.com/scala/bug/issues/10536,https://github.com/scala/scala/pull/8760
 https://github.com/lampepfl/dotty/issues/9749,https://github.com/lampepfl/dotty/pull/9963
-https://github.com/lampepfl/dotty/issues/10295,https://github.com/lampepfl/dotty/pull/3428
+https://github.com/lampepfl/dotty/issues/3422,https://github.com/lampepfl/dotty/pull/3428
