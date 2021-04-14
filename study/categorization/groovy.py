@@ -494,7 +494,7 @@ groovy_iter3 = [
         [pc.Collections(), pc.ParameterizedTypes()],
         True,
         sy.CompileTimeError(),
-        pc.IncorrectComputation(),
+        rc.IncorrectComputation(),
         ct.Inference(),
         2
     ),
