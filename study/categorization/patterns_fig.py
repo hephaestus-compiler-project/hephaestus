@@ -9,6 +9,14 @@ import seaborn as sns
 import pandas as pd
 
 
+lang2comp = {
+    'Groovy': 'groovyc',
+    'Java': 'javac',
+    'Kotlin': 'kotlinc',
+    'Scala': 'scalac & Dotty'
+}
+
+
 def get_args():
     parser = argparse.ArgumentParser(
         description='Generate patterns figure.')
@@ -24,13 +32,13 @@ def construct_dataframes(bugs):
     data_lang = defaultdict(lambda: 0)
     data_symptoms = defaultdict(lambda: 0)
     for bug in bugs.values():
-        data_lang[(bug['language'], bug['pattern']['category'])] += 1
+        data_lang[(lang2comp[bug['language']], bug['pattern']['category'])] += 1
         data_symptoms[(bug['symptom'], bug['pattern']['category'])] += 1
     framedata_langs = []
-    for (lang, category), value in data_lang.items():
+    for (comp, category), value in data_lang.items():
         framedata_langs.append({
             "Pattern": category,
-            "Language": lang,
+            "Compiler": comp,
             "Number of bugs": value
         })
     framedata_symptoms = []
@@ -85,7 +93,7 @@ def main():
         json_data = json.load(f)
     df_l, df_s, data_l, data_s = construct_dataframes(json_data)
     df_l = df_l.groupby(
-        ['Language', 'Pattern'])['Number of bugs'].sum().unstack('Language')
+        ['Compiler', 'Pattern'])['Number of bugs'].sum().unstack('Compiler')
     df_s = df_s.groupby(
         ['Symptom', 'Pattern'])['Number of bugs'].sum().unstack('Symptom')
     categories = [
@@ -99,10 +107,10 @@ def main():
     print(df_l)
     print(df_s)
     langs = OrderedDict([
-        ('Groovy', '#e69f56'),
-        ('Java', '#b07219'),
-        ('Kotlin', '#f18e33'),
-        ('Scala', '#c22d40')
+        ('groovyc', '#e69f56'),
+        ('javac', '#b07219'),
+        ('kotlinc', '#f18e33'),
+        ('scalac & Dotty', '#c22d40')
     ])
     plot_fig(df_l, data_l, langs, categories, 'patterns.pdf')
     symptoms = OrderedDict([

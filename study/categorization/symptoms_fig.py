@@ -9,6 +9,14 @@ import seaborn as sns
 import pandas as pd
 
 
+lang2comp = {
+    'Groovy': 'groovyc',
+    'Java': 'javac',
+    'Kotlin': 'kotlinc',
+    'Scala': 'scalac & Dotty'
+}
+
+
 def get_args():
     parser = argparse.ArgumentParser(
         description='Generate symptoms figure.')
@@ -23,12 +31,12 @@ def get_args():
 def construct_dataframe(bugs):
     data = defaultdict(lambda: 0)
     for bug in bugs.values():
-        data[(bug['language'], bug['symptom'])] += 1
+        data[(lang2comp[bug['language']], bug['symptom'])] += 1
     framedata = []
-    for (lang, symptom), value in data.items():
+    for (comp, symptom), value in data.items():
         framedata.append({
             "Symptom": symptom,
-            "Language": lang,
+            "Compiler": comp,
             "Number of bugs": value
         })
     return pd.DataFrame(framedata), data
@@ -51,7 +59,7 @@ def plot_fig(df, data, categories, output):
     sums = []
     for c in categories:
         v = sum(data[(lang, c)]
-                for lang in ['Groovy', 'Java', 'Kotlin', 'Scala'])
+                for lang in ['groovyc', 'javac', 'kotlinc', 'scalac & Dotty'])
         sums.append(v)
 
     for i, p in enumerate(ax.patches[15:]):
@@ -69,8 +77,8 @@ def main():
     with open(args.data, 'r') as f:
         json_data = json.load(f)
     df, data = construct_dataframe(json_data)
-    df = df.groupby(['Language', 'Symptom'])['Number of bugs'].sum().unstack(
-        'Language')
+    df = df.groupby(['Compiler', 'Symptom'])['Number of bugs'].sum().unstack(
+        'Compiler')
     categories = [
         'Compilation Performance Issue',
         'Misleading Report',
