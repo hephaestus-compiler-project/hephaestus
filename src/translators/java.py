@@ -199,24 +199,28 @@ class JavaTranslator(ASTVisitor):
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
-            if self.is_func_non_void_block:
-                children_res[0] = ut.add_string_at(
-                    children_res[0],
-                    "return ",
-                    ut.leading_spaces(children_res[0]))
-            res = "{{\n{ident}{stmt};\n{old_ident}}}".format(
+            sugar = "return " if self.is_func_non_void_block else "var x = "
+            children_res[0] = ut.add_string_at(
+                children_res[0],
+                sugar,
+                ut.leading_spaces(children_res[0]))
+            res = "{{\n{ident}{stmt};{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
+                ret="\n" + self.get_ident() + "return;" \
+                    if not self.is_func_non_void_block else "",
                 old_ident=self.get_ident(extra=-2)
             )
         else:
-            if self.is_func_non_void_block:
-                children_res[-1] = ut.add_string_at(
-                    children_res[-1],
-                    "return ",
-                    ut.leading_spaces(children_res[-1]))
-            res = "{{\n{stmts}\n{old_ident}}}".format(
+            sugar = "return " if self.is_func_non_void_block else "var x = "
+            children_res[-1] = ut.add_string_at(
+                children_res[-1],
+                sugar,
+                ut.leading_spaces(children_res[-1]))
+            res = "{{\n{stmts}{ret}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
+                ret="\n" + self.get_ident() + "return;" \
+                    if not self.is_func_non_void_block else "",
                 old_ident=self.get_ident(extra=-2)
             )
         return res
@@ -509,6 +513,28 @@ class JavaTranslator(ASTVisitor):
         )
 
     @append_to
+    def visit_array_expr(self, node):
+        if not node.length:
+            return "{ident}new {array}[0]{semicolon}".format(
+                ident=self.get_ident(),
+                array=get_type_name(node.array_type.type_args[0]),
+                semicolon=";" if self._parent_is_block() else ""
+            )
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+        return "{ident}new {etype}{{{exprs}}}{semicolon}".format(
+            ident=self.get_ident(),
+            exprs=", ".join(children_res),
+            etype=get_type_name(node.array_type),
+            semicolon=";" if self._parent_is_block() else ""
+        )
+
+    @append_to
     def visit_variable(self, node):
         return "{ident}{main_prefix}{name}{semicolon}".format(
             ident=self.get_ident(),
@@ -556,11 +582,12 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{ident}(({if_condition}) ?\n{body} : \n {else_body})".format(
+        res = "{ident}(({if_condition}) ?\n{body} : \n {else_body}){semicolon}".format(
             ident=self.get_ident(old_ident=old_ident),
             if_condition=children_res[0].lstrip(),
             body=children_res[1],
-            else_body=children_res[2]
+            else_body=children_res[2],
+            semicolon=";" if self._parent_is_block() else ""
         )
         self.ident = old_ident
         self._inside_is = prev_inside_is
@@ -598,10 +625,11 @@ class JavaTranslator(ASTVisitor):
             cls = node.class_type.name + "<>"
         else:
             cls = node.class_type.get_name()
-        res = "{ident}new {cls}({args})".format(
+        res = "{ident}new {cls}({args}){semicolon}".format(
             ident=self.get_ident(),
             cls=cls,
-            args=", ".join(children_res)
+            args=", ".join(children_res),
+            semicolon=";" if self._parent_is_block() else ""
         )
         self._cast_number = prev_cast_number
         return res
@@ -615,10 +643,11 @@ class JavaTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        return "{ident}{expr}.{field}".format(
+        return "{ident}{expr}.{field}{semicolon}".format(
             ident=self.get_ident(),
             expr=children_res[0],
-            field=node.field
+            field=node.field,
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
