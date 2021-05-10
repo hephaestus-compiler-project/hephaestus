@@ -40,8 +40,12 @@ case "$LANGUAGE" in
         PROGRAM="Main.groovy.bin"
         ;;
 
+    "java")
+        PROGRAM="Main.java.bin"
+        ;;
+
     *)
-        echo "language should be groovy or kotlin"
+        echo "language should be groovy, kotlin or Java"
         exit
         ;;
 esac
