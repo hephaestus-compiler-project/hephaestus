@@ -384,15 +384,17 @@ class JavaTranslator(ASTVisitor):
             else:
                 body = body_res
         if is_nested_func():
+            pass
             # We should declare an Interface for this function with apply
-            type_args =
-            self._function_interfaces.add(len(node.params) + 1)  # +1 for ret_type
-            res = "{ident}def {name} = {{ {params} -> {body}}}".format(
-                ident=self.get_ident(old_ident=old_ident),
-                name=node.name,
-                params=", ".join(param_res),
-                body=body_res
-            )
+            # TODO Nested functions
+            #type_args =
+            #self._function_interfaces.add(len(node.params) + 1)  # +1 for ret_type
+            #res = "{ident}def {name} = {{ {params} -> {body}}}".format(
+            #    ident=self.get_ident(old_ident=old_ident),
+            #    name=node.name,
+            #    params=", ".join(param_res),
+            #    body=body_res
+            #)
         else:
             res = ("{ident}{final}{abstract}{ret_type} "
                    "{name}({params}) {body}").format(
