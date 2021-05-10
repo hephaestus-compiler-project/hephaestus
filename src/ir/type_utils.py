@@ -21,7 +21,9 @@ def _construct_related_types(etype, types, get_subtypes):
             t_args = _find_types(etype.type_args[i], types,
                                  not get_subtypes, True,
                                  t_param.bound, concrete_only=True)
-        valid_args.append(list(t_args))
+        # Type argument should not be primitives.
+        t_args = [t for t in t_args if not t.is_primitive()]
+        valid_args.append(t_args)
 
     return [
         etype.t_constructor.new(type_args)
@@ -204,7 +206,10 @@ class TypeUpdater():
         updated_type = self._cache.get(key)
         if not updated_type:
             new_type = self.update_type(etype, new_type, test_pred)
-            self._cache[key] = new_type
+            # We do not store builtin types into cache, because we never
+            # update builtin types.
+            if not isinstance(new_type, tp.Builtin):
+                self._cache[key] = new_type
             return new_type
         return updated_type
 
@@ -254,7 +259,7 @@ class TypeUpdater():
         return etype
 
 
-def _get_available_types(types, only_regular):
+def _get_available_types(types, only_regular, primitives=True):
     if not only_regular:
         return types
     available_types = []
@@ -264,6 +269,8 @@ def _get_available_types(types, only_regular):
             continue
         if isinstance(ptype, tp.TypeConstructor):
             continue
+        if not primitives and hasattr(ptype, 'box_type'):
+            ptype = ptype.box_type()
         available_types.append(ptype)
     return available_types
 
@@ -271,7 +278,7 @@ def _get_available_types(types, only_regular):
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                                  types: List[tp.Type],
                                  only_regular=True):
-    types = _get_available_types(types, only_regular)
+    types = _get_available_types(types, only_regular, primitives=False)
     # Instantiate a type constructor with random type arguments.
     t_args = []
     for t_param in type_constructor.type_parameters:

@@ -24,6 +24,9 @@ class Type(Node):
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
+    def is_primitive(self):
+        raise NotImplementedError("You have to implement 'is_primitive()'")
+
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
         stack = [self]
@@ -57,6 +60,9 @@ class AbstractType(Type):
     def not_related(self, other):
         raise TypeError("You cannot call 'not_related()' in an AbstractType")
 
+    def is_primitive(self):
+        return False
+
 
 class Builtin(Type):
     """https://kotlinlang.org/spec/type-system.html#built-in-types
@@ -88,7 +94,8 @@ class Builtin(Type):
 
 
 class Classifier(Type):
-    pass
+    def is_primitive(self):
+        return False
 
 
 class Object(Classifier):
