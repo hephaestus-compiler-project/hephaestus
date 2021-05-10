@@ -4,6 +4,7 @@ from src.ir.types import Builtin
 
 
 import src.ir.builtins as bt
+import src.ir.types as tp
 
 
 class JavaBuiltinFactory(bt.BuiltinFactory):
