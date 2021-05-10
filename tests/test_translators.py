@@ -1,8 +1,17 @@
 import re
+import os
 
+
+from src.ir import (groovy_types)
 from src.translators.groovy import GroovyTranslator
-from tests.resources.translators.groovy import (program1, program2, program3,
+from tests.resources.translators import (program1, program2, program3,
     program4)
+
+
+LANG_LOOKUP = {
+    "groovy": (GroovyTranslator, groovy_types, "groovy")
+}
+TEST_DIR = "tests/resources/translators/"
 
 
 def translate(translator_cls, program):
@@ -15,42 +24,35 @@ def read_expected(path):
     with open(path, 'r') as expf:
         return expf.read()
 
-def test_groovy_cls():
-    expected = "tests/resources/translators/groovy/program1.groovy"
-    program = program1.program
-    res = translate(GroovyTranslator, program)
-    expected_res = read_expected(expected)
-    res = re.sub('\s+', ' ', res)
-    expected_res = re.sub('\s+', ' ', expected_res)
-    assert res.strip() == expected_res.strip()
+
+def find_targets(program):
+    return [f for f in os.listdir(TEST_DIR)
+            if f.startswith(program) and f != program + ".py"]
 
 
-def test_groovy_global():
-    expected = "tests/resources/translators/groovy/program2.groovy"
-    program = program2.program
-    res = translate(GroovyTranslator, program)
-    expected_res = read_expected(expected)
-    res = re.sub('\s+', ' ', res)
-    expected_res = re.sub('\s+', ' ', expected_res)
-    assert res.strip() == expected_res.strip()
+def run_test(program_name, program):
+    for target_program in find_targets(program_name):
+        expected = os.path.join(TEST_DIR, target_program)
+        translator, types, lang = LANG_LOOKUP[target_program.split(".")[-1]]
+        ast = program.produce_program(lang, types)
+        res = translate(translator, ast)
+        expected_res = read_expected(expected)
+        res = re.sub('\s+', ' ', res)
+        expected_res = re.sub('\s+', ' ', expected_res)
+        assert res.strip() == expected_res.strip()
 
 
-def test_groovy_closures():
-    expected = "tests/resources/translators/groovy/program3.groovy"
-    program = program3.program
-    res = translate(GroovyTranslator, program)
-    expected_res = read_expected(expected)
-    res = re.sub('\s+', ' ', res)
-    expected_res = re.sub('\s+', ' ', expected_res)
-    assert res.strip() == expected_res.strip()
+def test_cls():
+    run_test("program1", program1)
 
 
-def test_groovy_generics():
-    expected = "tests/resources/translators/groovy/program4.groovy"
-    program = program4.program
-    res = translate(GroovyTranslator, program)
-    print(res)
-    expected_res = read_expected(expected)
-    res = re.sub('\s+', ' ', res)
-    expected_res = re.sub('\s+', ' ', expected_res)
-    assert res.strip() == expected_res.strip()
+def test_global():
+    run_test("program2", program2)
+
+
+def test_closures():
+    run_test("program3", program3)
+
+
+def test_generics():
+    run_test("program4", program4)
