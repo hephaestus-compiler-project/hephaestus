@@ -52,6 +52,9 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_string_type(self):
         return StringType()
 
+    def get_array_type(self):
+        return ArrayType()
+
 
 class JavaBuiltin(Builtin):
     def __str__(self):
@@ -165,6 +168,14 @@ class BooleanType(ObjectType):
         return bt.Boolean
 
 
+class ArrayType(tp.TypeConstructor, ObjectType):
+    def __init__(self, name="Array"):
+        # In Java, arrays are covariant.
+        super().__init__(name, [tp.TypeParameter(
+            "T", variance=tp.TypeParameter.COVARIANT)])
+        self.supertypes.append(ObjectType())
+
+
 ### WARNING: use them only for testing ###
 Object = ObjectType()
 Void = VoidType()
@@ -178,5 +189,6 @@ Double = DoubleType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
+Array = ArrayType()
 NonNothingTypes = [Object, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean]
+                   Double, Char, String, Boolean, Array]
