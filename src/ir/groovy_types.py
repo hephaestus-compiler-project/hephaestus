@@ -2,6 +2,7 @@
 from src.ir.types import Builtin
 
 
+from src import utils
 import src.ir.builtins as bt
 import src.ir.types as tp
 
@@ -26,28 +27,28 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
         return IntegerType()
 
     def get_byte_type(self):
-        return ByteType()
+        return ByteType(primitive=utils.random.bool())
 
     def get_short_type(self):
-        return ShortType()
+        return ShortType(primitive=utils.random.bool())
 
     def get_long_type(self):
-        return LongType()
+        return LongType(primitive=utils.random.bool())
 
     def get_float_type(self):
-        return FloatType()
+        return FloatType(primitive=utils.random.bool())
 
     def get_double_type(self):
-        return DoubleType()
+        return DoubleType(primitive=utils.random.bool())
 
     def get_big_decimal_type(self):
         return BigDecimalType()
 
     def get_boolean_type(self):
-        return BooleanType()
+        return BooleanType(primitive=utils.random.bool())
 
     def get_char_type(self):
-        return CharType()
+        return CharType(primitive=False)
 
     def get_string_type(self):
         return StringType()
@@ -57,25 +58,46 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
 
 
 class GroovyBuiltin(Builtin):
+    def __init__(self, name, primitive):
+        super().__init__(name)
+        self.primitive = primitive
+
     def __str__(self):
-        return str(self.name) + "(groovy-builtin)"
+        if not self.is_primitive():
+            return str(self.name) + "(groovy-builtin)"
+        return str(self.name).lower() + "(groovy-primitive)"
+
+    def is_primitive(self):
+        return self.primitive
+
+    def box_type(self):
+        raise NotImplementedError('box_type() must be implemented')
 
 
 class ObjectType(GroovyBuiltin):
     def __init__(self, name="Object"):
-        super().__init__(name)
+        super().__init__(name, False)
 
     def get_builtin_type(self):
         return bt.Any
 
+    def box_type(self):
+        return self
 
-class VoidType(ObjectType):
-    def __init__(self, name="void"):
-        super().__init__(name)
-        self.supertypes.append(ObjectType())
+
+class VoidType(GroovyBuiltin):
+    def __init__(self, name="void", primitive=False):
+        super().__init__(name, primitive)
+        if not self.primitive:
+            self.supertypes.append(ObjectType())
+        else:
+            self.supertypes = []
 
     def get_builtin_type(self):
         return bt.Void
+
+    def box_type(self):
+        return VoidType(self.name, primitive=False)
 
 
 class NumberType(ObjectType):
@@ -86,59 +108,116 @@ class NumberType(ObjectType):
     def get_builtin_type(self):
         return bt.Number
 
+    def box_type(self):
+        return self
+
 
 class IntegerType(NumberType):
-    def __init__(self, name="Integer"):
+    def __init__(self, name="Integer", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Integer
 
+    def box_type(self):
+        return IntegerType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "int"
+        return super().get_name()
+
 
 class ShortType(NumberType):
-    def __init__(self, name="Short"):
+    def __init__(self, name="Short", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Short
 
+    def box_type(self):
+        return ShortType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "short"
+        return super().get_name()
+
 
 class LongType(NumberType):
-    def __init__(self, name="Long"):
+    def __init__(self, name="Long", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Long
 
+    def box_type(self):
+        return LongType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "long"
+        return super().get_name()
+
 
 class ByteType(NumberType):
-    def __init__(self, name="Byte"):
+    def __init__(self, name="Byte", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Byte
 
+    def box_type(self):
+        return ByteType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "byte"
+        return super().get_name()
+
 
 class FloatType(NumberType):
-    def __init__(self, name="Float"):
+    def __init__(self, name="Float", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Float
 
+    def box_type(self):
+        return FloatType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "float"
+        return super().get_name()
+
 
 class DoubleType(NumberType):
-    def __init__(self, name="Double"):
+    def __init__(self, name="Double", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(NumberType())
 
     def get_builtin_type(self):
         return bt.Double
+
+    def box_type(self):
+        return DoubleType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "double"
+        return super().get_name()
 
 
 class BigDecimalType(NumberType):
@@ -155,14 +234,26 @@ class BigDecimalType(NumberType):
     def get_builtin_type(self):
         return bt.BigDecimal
 
+    def box_type(self):
+        return self
+
 
 class CharType(ObjectType):
-    def __init__(self, name="Character"):
+    def __init__(self, name="Character", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(ObjectType())
 
     def get_builtin_type(self):
         return bt.Char
+
+    def box_type(self):
+        return CharType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "char"
+        return super().get_name()
 
 
 class StringType(ObjectType):
@@ -173,14 +264,26 @@ class StringType(ObjectType):
     def get_builtin_type(self):
         return bt.String
 
+    def box_type(self):
+        return self
+
 
 class BooleanType(ObjectType):
-    def __init__(self, name="Boolean"):
+    def __init__(self, name="Boolean", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
         self.supertypes.append(ObjectType())
 
     def get_builtin_type(self):
         return bt.Boolean
+
+    def box_type(self):
+        return BooleanType(self.name, primitive=False)
+
+    def get_name(self):
+        if self.is_primitive():
+            return "boolean"
+        return super().get_name()
 
 
 class ArrayType(tp.TypeConstructor, ObjectType):

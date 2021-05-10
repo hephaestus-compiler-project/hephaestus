@@ -167,6 +167,10 @@ class ParameterizedSubstitution(Transformation):
             if tp.variance == INVARIANT:
                 type_arg = tp.constraint if tp.constraint else \
                     utils.random.choice(self._get_candidate_bounds())
+                type_arg = (
+                    type_arg.box_type()
+                    if type_arg.is_primitive() else type_arg)
+                assert not type_arg.is_primitive()
                 type_args.append(type_arg)
                 continue
             if tp.constraint is None:
@@ -195,7 +199,11 @@ class ParameterizedSubstitution(Transformation):
             if tp.type_param.bound:
                 possible_types = [t for t in possible_types
                                   if t.is_subtype(tp.type_param.bound)]
-            type_args.append(utils.random.choice(possible_types))
+            type_arg = utils.random.choice(possible_types)
+            type_arg = (
+                type_arg.box_type() if type_arg.is_primitive() else type_arg)
+            assert not type_arg.is_primitive()
+            type_args.append(type_arg)
         return self._type_constructor_decl.get_type().new(type_args)
 
     def _propagate_type_parameter(self, gnode: GNode,
@@ -225,6 +233,9 @@ class ParameterizedSubstitution(Transformation):
             if self.language in ['groovy', 'java', 'kotlin'] and (
                     t.name == 'Array'):
                 continue
+
+            if t.is_primitive():
+                t = t.box_type()
 
             if t.name == 'Array':
                 t, _ = tu.instantiate_type_constructor(t, self.types)
@@ -267,6 +278,8 @@ class ParameterizedSubstitution(Transformation):
                                               concrete_only=True)))
                 if candidate_bounds:
                     bound = utils.random.choice(candidate_bounds)
+                    if bound.is_primitive():
+                        bound = bound.box_type()
         return types.TypeParameter(name, variance, bound)
 
     def _use_type_parameter(self, namespace, node, old_type):
@@ -469,7 +482,10 @@ class ParameterizedSubstitution(Transformation):
                 super_cls = cls.superclasses[0]
                 if super_cls.class_type.name == source_cls.name:
                     new_type = deepcopy(self._parameterized_type)
-                    new_type.type_args[index] = new_argument
+                    new_type.type_args[index] = (
+                        new_argument.box_type()
+                        if new_argument.is_primitive()
+                        else new_argument)
                     self._parameterized_supers[cls.name] = new_type
 
     @change_namespace

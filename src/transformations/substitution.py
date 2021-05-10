@@ -367,7 +367,11 @@ class TypeSubstitution(Transformation):
         bool_expr = self.generator.generate_expr(
             self.bt_factory.get_boolean_type(), only_leaves=True)
         is_not = not self.disable_inverted_smart_cast and utils.random.bool()
-        is_expr = ast.Is(ast.Variable(param.name), old_type,
+        # You are not allowed to perform instanceof check using primitive
+        # types.
+        old_type_is = (
+            old_type.box_type() if old_type.is_primitive() else old_type)
+        is_expr = ast.Is(ast.Variable(param.name), old_type_is,
                          is_not=is_not)
         and_expr = ast.LogicalExpr(
             bool_expr, is_expr,

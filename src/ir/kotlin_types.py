@@ -75,6 +75,9 @@ class KotlinBuiltin(tp.Builtin):
     def __str__(self):
         return str(self.name) + "(kotlin-builtin)"
 
+    def is_primitive(self):
+        return False
+
 
 class AnyType(KotlinBuiltin, ):
     def __init__(self, name="Any"):
