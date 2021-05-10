@@ -2,14 +2,16 @@ import re
 import os
 
 
-from src.ir import (groovy_types)
+from src.ir import groovy_types, java_types
 from src.translators.groovy import GroovyTranslator
+from src.translators.java import JavaTranslator
 from tests.resources.translators import (program1, program2, program3,
     program4)
 
 
 LANG_LOOKUP = {
-    "groovy": (GroovyTranslator, groovy_types, "groovy")
+    "groovy": (GroovyTranslator, groovy_types, "groovy"),
+    "java": (JavaTranslator, java_types, "java")
 }
 TEST_DIR = "tests/resources/translators/"
 
