@@ -7,6 +7,7 @@ import src.utils as ut
 from src.ir import ast, java_types as jt
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
+from src.translators.utils import get_type_name
 
 
 def append_to(visit):
@@ -36,11 +37,6 @@ def append_to(visit):
         else:
             self._children_res.append(res)
     return inner
-
-
-def type_to_str(tp):
-    # FIXME
-    return tp.name
 
 
 class JavaTranslator(ASTVisitor):
@@ -420,7 +416,7 @@ class JavaTranslator(ASTVisitor):
                 body = body_res
         if is_nested_func():
             types = list(map(lambda x: x.split()[0], param_res))
-            types.append(type_to_str(node.inferred_type))
+            types.append(get_type_name(node.inferred_type))
             params = list(map(lambda x: x.split()[1], param_res))
             self._function_interfaces.add(len(params))
             res_t = "{ident}Function{n}<{tp}> {name} = ({params}) -> {body};"
