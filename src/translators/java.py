@@ -38,6 +38,11 @@ def append_to(visit):
     return inner
 
 
+def type_to_str(tp):
+    # FIXME
+    return tp.name
+
+
 class JavaTranslator(ASTVisitor):
 
     filename = "Main.java"
@@ -127,6 +132,29 @@ class JavaTranslator(ASTVisitor):
             return "Main."
         return ""
 
+    def _get_functional_interfaces(self):
+        """It produces the required functional interfaces.
+        For each number x in _function_interfaces it creates FunctionX+1.
+        The last type argument is used for the return type.
+        """
+        res = ""
+        template = "interface Function{}<{}> {{\n{}public {} apply({});\n}}\n\n"
+        for number in self._function_interfaces:
+            res += template.format(
+                number,
+                ", ".join(["A" + str(i) for i in range(1, number + 2)]),
+                2 * self.ident_value,
+                "A" + str(number + 1),
+                ", ".join(["A" + str(i) + " a" + str(i)
+                          for i in range(1, number + 1)]),
+            )
+        res = "\n\n" + res if res != "" else ""
+        return res
+
+    def _parent_is_block(self):
+        # The second node is the parent node
+        return isinstance(self._nodes_stack[-2], ast.Block)
+
     def visit_program(self, node):
         self.context = node.context
         children = node.children()
@@ -147,9 +175,10 @@ class JavaTranslator(ASTVisitor):
             main_method="\n\n" + main_method if main_method else ""
         )
         other_classes = "\n\n".join(self.pop_children_res(children))
-        self.program = "{package}{main}{other_classes}".format(
+        self.program = "{package}{main}{f_interfaces}{other_classes}".format(
             package=package_str,
             main=main_cls,
+            f_interfaces=self._get_functional_interfaces(),
             other_classes="\n\n" + other_classes if other_classes else ''
         )
         self._reset_state()
@@ -185,8 +214,6 @@ class JavaTranslator(ASTVisitor):
                 old_ident=self.get_ident(extra=-2)
             )
         else:
-            # NOTE `;` should already exists
-            #  children_res[-1] += ";
             if self.is_func_non_void_block:
                 children_res[-1] = ut.add_string_at(
                     children_res[-1],
@@ -196,10 +223,6 @@ class JavaTranslator(ASTVisitor):
                 stmts="\n".join(children_res),
                 old_ident=self.get_ident(extra=-2)
             )
-        # When block is inside is then it is recognised as closure, thus
-        # we must append () to call it.
-        if self._inside_is and not self._inside_is_function:
-            res += "()"
         return res
 
     @append_to
@@ -396,17 +419,19 @@ class JavaTranslator(ASTVisitor):
             else:
                 body = body_res
         if is_nested_func():
-            pass
-            # We should declare an Interface for this function with apply
-            # TODO Nested functions
-            #type_args =
-            #self._function_interfaces.add(len(node.params) + 1)  # +1 for ret_type
-            #res = "{ident}def {name} = {{ {params} -> {body}}}".format(
-            #    ident=self.get_ident(old_ident=old_ident),
-            #    name=node.name,
-            #    params=", ".join(param_res),
-            #    body=body_res
-            #)
+            types = list(map(lambda x: x.split()[0], param_res))
+            types.append(type_to_str(node.inferred_type))
+            params = list(map(lambda x: x.split()[1], param_res))
+            self._function_interfaces.add(len(params))
+            res_t = "{ident}Function{n}<{tp}> {name} = ({params}) -> {body};"
+            res = res_t.format(
+                ident=self.get_ident(old_ident=old_ident),
+                n=len(params),
+                tp=", ".join(types),
+                name=node.name,
+                params=", ".join(params),
+                body=body_res
+            )
         else:
             res = ("{ident}{final}{abstract}{ret_type} "
                    "{name}({params}) {body}").format(
@@ -489,10 +514,11 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_variable(self, node):
-        return "{ident}{main_prefix}{name}".format(
+        return "{ident}{main_prefix}{name}{semicolon}".format(
             ident=self.get_ident(),
             main_prefix=self._get_main_prefix('vars', node.name),
-            name=node.name
+            name=node.name,
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
@@ -601,9 +627,16 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_func_call(self, node):
-        def parent_is_block():
-            # The second node is the parent node
-            return isinstance(self._nodes_stack[-2], ast.Block)
+        def is_nested_func():
+            # TODO if the function decl and the function call is not in the
+            # function in the same level then we return false
+            parent_namespace = self._namespace[:-1]
+            parent_name = self._namespace[-1]
+            parent_decl = self.context.get_decl(parent_namespace, parent_name)
+            if (isinstance(parent_decl, ast.FunctionDeclaration) and
+                    node.func in self.context.get_funcs(self._namespace, True)):
+                return True
+            return False
         old_ident = self.ident
         self.ident = 0
         prev_cast_number = self._cast_number
@@ -616,12 +649,13 @@ class JavaTranslator(ASTVisitor):
         func = self._get_main_prefix('funcs', node.func) + node.func
         receiver = children_res[0] if node.receiver else None
         args = children_res[1:] if node.receiver else children_res
-        res = "{ident}{receiver}{name}({args}){semicolon}".format(
+        res = "{ident}{receiver}{name}{nested}({args}){semicolon}".format(
             ident=self.get_ident(),
             receiver=receiver + "." if receiver else "",
             name=func,
+            nested=".apply" if is_nested_func() else "",
             args=", ".join(args),
-            semicolon=";" if parent_is_block() else ""
+            semicolon=";" if self._parent_is_block() else ""
         )
         self._cast_number = prev_cast_number
         return res
