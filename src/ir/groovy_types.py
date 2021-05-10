@@ -124,6 +124,10 @@ class IntegerType(NumberType):
     def box_type(self):
         return IntegerType(self.name, primitive=False)
 
+    def is_assignable(self, other):
+        assignable_types = (IntegerType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
+
     def get_name(self):
         if self.is_primitive():
             return "int"
@@ -141,6 +145,10 @@ class ShortType(NumberType):
 
     def box_type(self):
         return ShortType(self.name, primitive=False)
+
+    def is_assignable(self, other):
+        assignable_types = (ShortType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
 
     def get_name(self):
         if self.is_primitive():
@@ -160,6 +168,10 @@ class LongType(NumberType):
     def box_type(self):
         return LongType(self.name, primitive=False)
 
+    def is_assignable(self, other):
+        assignable_types = (LongType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
+
     def get_name(self):
         if self.is_primitive():
             return "long"
@@ -177,6 +189,10 @@ class ByteType(NumberType):
 
     def box_type(self):
         return ByteType(self.name, primitive=False)
+
+    def is_assignable(self, other):
+        assignable_types = (ByteType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
 
     def get_name(self):
         if self.is_primitive():
@@ -196,6 +212,10 @@ class FloatType(NumberType):
     def box_type(self):
         return FloatType(self.name, primitive=False)
 
+    def is_assignable(self, other):
+        assignable_types = (FloatType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
+
     def get_name(self):
         if self.is_primitive():
             return "float"
@@ -213,6 +233,10 @@ class DoubleType(NumberType):
 
     def box_type(self):
         return DoubleType(self.name, primitive=False)
+
+    def is_assignable(self, other):
+        assignable_types = (DoubleType,)
+        return self.is_subtype(other) or isinstance(other, assignable_types)
 
     def get_name(self):
         if self.is_primitive():

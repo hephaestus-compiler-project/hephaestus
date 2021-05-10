@@ -24,6 +24,17 @@ class Type(Node):
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
+    def is_assignable(self, other: Type):
+        """
+        Checks of a value of the current type is assignable to 'other' type.
+
+        By default, the current type should be subtype of the other type.
+        However, this is not always the case, e.g., in Groovy / Java,
+        a value of type Short can be assigned to a value of type Integer,
+        but Short is not subtype of Integer.
+        """
+        return self.is_subtype(other)
+
     def is_primitive(self):
         raise NotImplementedError("You have to implement 'is_primitive()'")
 
