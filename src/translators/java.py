@@ -2,6 +2,7 @@
 # pylint: disable=too-many-statements
 from collections import OrderedDict
 
+
 import src.utils as ut
 from src.ir import ast, java_types as jt
 from src.ir.visitors import ASTVisitor
@@ -15,9 +16,13 @@ def append_to(visit):
     2. The node is a top level function or variable declaration => append the
         result to _main_children (nodes to declared static in Main class)
     3. All other nodes just append them to _children_res
+
+    We also use this function to set _nodes_stack
     """
     def inner(self, node):
+        self._nodes_stack.append(node)
         res = visit(self, node)
+        self._nodes_stack.pop()
         if (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(node, ast.FunctionDeclaration) and
                 node.name == "main"):
@@ -44,11 +49,11 @@ class JavaTranslator(ASTVisitor):
         self._children_res = []
         self.program = None
         self.ident = 0
-        # Keep track if a block is in a function that has non-void return type
-        self.is_func_non_void_block = False
         self.package = package
         self.context = None
         self._cast_number = False
+        # Keep track if a block is in a function that has non-void return type
+        self.is_func_non_void_block = False
 
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
@@ -70,6 +75,11 @@ class JavaTranslator(ASTVisitor):
         # an interface for a function should have.
         self._function_interfaces = set()
 
+        # We need nodes_stack to set semicolons when needed.
+        # For instance, in visit_func_call we use a semicolon only if parent
+        # node is a block.
+        self._nodes_stack = [None]
+
     def _reset_state(self):
         # Clear the state
         self._main_method = ""
@@ -82,6 +92,7 @@ class JavaTranslator(ASTVisitor):
         self.is_func_non_void_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
+        self._nodes_stack = [None]
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -174,7 +185,8 @@ class JavaTranslator(ASTVisitor):
                 old_ident=self.get_ident(extra=-2)
             )
         else:
-            children_res[-1] += ";"
+            # NOTE `;` should already exists
+            #  children_res[-1] += ";
             if self.is_func_non_void_block:
                 children_res[-1] = ut.add_string_at(
                     children_res[-1],
@@ -589,6 +601,9 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_func_call(self, node):
+        def parent_is_block():
+            # The second node is the parent node
+            return isinstance(self._nodes_stack[-2], ast.Block)
         old_ident = self.ident
         self.ident = 0
         prev_cast_number = self._cast_number
@@ -601,11 +616,12 @@ class JavaTranslator(ASTVisitor):
         func = self._get_main_prefix('funcs', node.func) + node.func
         receiver = children_res[0] if node.receiver else None
         args = children_res[1:] if node.receiver else children_res
-        res = "{ident}{receiver}{name}({args})".format(
+        res = "{ident}{receiver}{name}({args}){semicolon}".format(
             ident=self.get_ident(),
             receiver=receiver + "." if receiver else "",
             name=func,
-            args=", ".join(args)
+            args=", ".join(args),
+            semicolon=";" if parent_is_block() else ""
         )
         self._cast_number = prev_cast_number
         return res
