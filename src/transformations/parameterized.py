@@ -472,22 +472,6 @@ class ParameterizedSubstitution(Transformation):
         self.program.context.add_var(self._namespace, new_node.name, new_node)
         return new_node
 
-    def _update_super_instantiations(self, source_cls, new_argument, index):
-        if not source_cls:
-            return
-        classes = list(self.program.context.get_classes(
-            ast.GLOBAL_NAMESPACE, only_current=True).values())
-        for cls in classes:
-            if cls.superclasses:
-                super_cls = cls.superclasses[0]
-                if super_cls.class_type.name == source_cls.name:
-                    new_type = deepcopy(self._parameterized_type)
-                    new_type.type_args[index] = (
-                        new_argument.box_type()
-                        if new_argument.is_primitive()
-                        else new_argument)
-                    self._parameterized_supers[cls.name] = new_type
-
     @change_namespace
     def visit_func_decl(self, node):
         # Again, we do not update the parameters and return types of
@@ -533,8 +517,11 @@ class ParameterizedSubstitution(Transformation):
 
                 # Therefore, the following code proceeds as follows:
                 # if we have a function whose return type is supertype of the
-                # current constraint, update the current constraint to
-                # equal with the type of this declaration.
+                # current constraint, update the current constraint so that it
+                # s equal with the type of this declaration.
+                # Also, update the declaration of the parameterized class,
+                # and create a new bound for the corresponding type parameter.
+                # The bound is the same with the return type of the function.
                 if tp.constraint and tp.constraint.is_subtype(
                         new_node.get_type()):
                     tp.constraint = new_node.get_type()
@@ -545,8 +532,14 @@ class ParameterizedSubstitution(Transformation):
                     if type_param.bound and not new_node.get_type().is_subtype(
                             type_param.bound):
                         type_param.bound = new_node.get_type()
-                    self._update_super_instantiations(
-                        self._current_cls, new_node.get_type(), i)
+                        self._parameterized_type.t_constructor = \
+                            self._type_constructor_decl.get_type()
+                    elif not type_param.bound and (
+                            new_node.get_type().name != 'Array' and
+                            tp.constraint != new_node.get_type()):
+                        type_param.bound = new_node.get_type()
+                        self._parameterized_type.t_constructor = \
+                            self._type_constructor_decl.get_type()
             copied_t = deepcopy(ret_type)
             new_node.ret_type = copied_t
             new_node.inferred_type = copied_t
