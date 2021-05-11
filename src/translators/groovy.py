@@ -148,7 +148,7 @@ class GroovyTranslator(ASTVisitor):
             # Cast return statement if it's a number literal
             if prev and i == children_len - 1:
                 prev_cast_number = self._cast_number
-                self._cast_number = True
+                self._cast_number = False
                 c.accept(self)
                 self._cast_number = prev_cast_number
             else:
@@ -287,7 +287,7 @@ class GroovyTranslator(ASTVisitor):
     @append_to
     def visit_var_decl(self, node):
         prev_cast_number = self._cast_number
-        self._cast_number = True
+        self._cast_number = not bool(node.var_type)
         children = node.children()
         for c in children:
             c.accept(self)
@@ -349,7 +349,7 @@ class GroovyTranslator(ASTVisitor):
         self.is_func_block = node.get_type() != gt.Void
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
-            self._cast_number = True
+            self._cast_number = False
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
@@ -393,7 +393,7 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_integer_constant(self, node):
-        if not self._cast_number:
+        if not self._cast_number and node.integer_type.is_primitive():
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
@@ -413,7 +413,7 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_real_constant(self, node):
-        if not self._cast_number:
+        if not self._cast_number and node.real_type.is_primitive():
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
@@ -611,7 +611,7 @@ class GroovyTranslator(ASTVisitor):
         old_ident = self.ident
         self.ident = 0
         prev_cast_number = self._cast_number
-        self._cast_number = True
+        self._cast_number = False
         children = node.children()
         for c in children:
             c.accept(self)
