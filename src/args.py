@@ -157,6 +157,13 @@ parser.add_argument(
     default=600,
     help="Timeout for transformations (in seconds)"
 )
+parser.add_argument(
+    "--cast-numbers",
+    action="store_true",
+    help=("Cast numeric constants to their actual type"
+          " (this option is used to avoid re-occrrence of"
+          " a specific Groovy bug)")
+)
 
 
 args = parser.parse_args()
@@ -206,6 +213,9 @@ args.temp_directory = os.path.join(cwd, "temp")
 args.options = {
     "Generator": {
         "disable_inference_in_closures": args.disable_inference_in_closures
+    },
+    'Translator': {
+        'cast_numbers': args.cast_numbers,
     },
     "TypeSubstitution": {
         "disable_params_type_widening": args.disable_params_type_widening,

@@ -10,7 +10,7 @@ class KotlinTranslator(ASTVisitor):
     incorrect_filename = "incorrect.kt"
     executable = "program.jar"
 
-    def __init__(self, package=None):
+    def __init__(self, package=None, options={}):
         self._children_res = []
         self.program = None
         self.ident = 0

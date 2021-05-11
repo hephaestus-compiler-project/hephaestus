@@ -254,7 +254,8 @@ def gen_program(pid, dirname, packages):
     The program belongs to the given packages.
     """
     utils.random.reset_word_pool()
-    translator = TRANSLATORS[cli_args.language]('src.' + packages[0])
+    translator = TRANSLATORS[cli_args.language]('src.' + packages[0],
+                                                cli_args.options['Translator'])
     proc = ProgramProcessor(pid, cli_args)
     try:
         # FIXME this may cause MaximumRecursionError
