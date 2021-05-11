@@ -91,7 +91,7 @@ class VoidType(GroovyBuiltin):
         if not self.primitive:
             self.supertypes.append(ObjectType())
         else:
-            self.supertypes = []
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Void
@@ -116,7 +116,10 @@ class IntegerType(NumberType):
     def __init__(self, name="Integer", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Integer
@@ -125,8 +128,8 @@ class IntegerType(NumberType):
         return IntegerType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (IntegerType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, IntegerType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -138,7 +141,10 @@ class ShortType(NumberType):
     def __init__(self, name="Short", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Short
@@ -147,8 +153,8 @@ class ShortType(NumberType):
         return ShortType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (ShortType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, ShortType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -160,7 +166,10 @@ class LongType(NumberType):
     def __init__(self, name="Long", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Long
@@ -169,8 +178,8 @@ class LongType(NumberType):
         return LongType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (LongType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, LongType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -182,7 +191,10 @@ class ByteType(NumberType):
     def __init__(self, name="Byte", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Byte
@@ -191,8 +203,8 @@ class ByteType(NumberType):
         return ByteType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (ByteType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, ByteType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -204,7 +216,10 @@ class FloatType(NumberType):
     def __init__(self, name="Float", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Float
@@ -213,8 +228,8 @@ class FloatType(NumberType):
         return FloatType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (FloatType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, FloatType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -226,7 +241,10 @@ class DoubleType(NumberType):
     def __init__(self, name="Double", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(NumberType())
+        if not self.primitive:
+            self.supertypes.append(NumberType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Double
@@ -235,8 +253,8 @@ class DoubleType(NumberType):
         return DoubleType(self.name, primitive=False)
 
     def is_assignable(self, other):
-        assignable_types = (DoubleType,)
-        return self.is_subtype(other) or isinstance(other, assignable_types)
+        assignable_types = (NumberType, DoubleType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
     def get_name(self):
         if self.is_primitive():
@@ -266,7 +284,10 @@ class CharType(ObjectType):
     def __init__(self, name="Character", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(ObjectType())
+        if not self.primitive:
+            self.supertypes.append(ObjectType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Char
@@ -296,7 +317,10 @@ class BooleanType(ObjectType):
     def __init__(self, name="Boolean", primitive=False):
         super().__init__(name)
         self.primitive = primitive
-        self.supertypes.append(ObjectType())
+        if not self.primitive:
+            self.supertypes.append(ObjectType())
+        else:
+            self.supertypes = set()
 
     def get_builtin_type(self):
         return bt.Boolean
