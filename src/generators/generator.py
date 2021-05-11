@@ -330,7 +330,7 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                cond = attr_type.is_subtype(etype) if subtype \
+                cond = attr_type.is_assignable(etype) if subtype \
                     else attr_type == etype
                 if not cond:
                     continue
@@ -345,7 +345,7 @@ class Generator():
         for func in self.context.get_funcs(self.namespace).values():
             cond = (
                 func.get_type() != self.bt_factory.get_void_type() and
-                func.get_type().is_subtype(etype)
+                func.get_type().is_assignable(etype)
                 if subtype else func.get_type() == etype)
             # The receiver object for this kind of functions is None.
             if not cond:
@@ -364,7 +364,7 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                cond = attr_type.is_subtype(etype) if subtype else \
+                cond = attr_type.is_assignable(etype) if subtype else \
                     attr_type == etype
                 if not cond:
                     continue
@@ -449,7 +449,7 @@ class Generator():
             # or t == t_con: If etype is a parameterized type (i.e.,
             # getattr(etype, 't_constructor', None) != None), we need to
             # get the class corresponding to its type constructor.
-            if ((cls_type.is_subtype(etype) and cls_type.name == etype.name)
+            if ((cls_type.is_assignable(etype) and cls_type.name == etype.name)
                     or cls_type == t_con):
                 return c
         return None
@@ -522,7 +522,7 @@ class Generator():
         # If we need to use a variable of a specific types, then filter
         # all variables that match this specific type.
         if subtype:
-            fun = lambda v, t: v.get_type().is_subtype(t)
+            fun = lambda v, t: v.get_type().is_assignable(t)
         else:
             fun = lambda v, t: v.get_type() == t
         variables = [v for v in variables.values() if fun(v, etype)]
