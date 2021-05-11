@@ -24,28 +24,28 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
         return NumberType()
 
     def get_integer_type(self):
-        return IntegerType(primitive=utils.random.bool())
+        return IntegerType(primitive=False)
 
     def get_byte_type(self):
-        return ByteType(primitive=utils.random.bool())
+        return ByteType(primitive=False)
 
     def get_short_type(self):
-        return ShortType(primitive=utils.random.bool())
+        return ShortType(primitive=False)
 
     def get_long_type(self):
-        return LongType(primitive=utils.random.bool())
+        return LongType(primitive=False)
 
     def get_float_type(self):
-        return FloatType(primitive=utils.random.bool())
+        return FloatType(primitive=False)
 
     def get_double_type(self):
-        return DoubleType(primitive=utils.random.bool())
+        return DoubleType(primitive=False)
 
     def get_big_decimal_type(self):
         return BigDecimalType()
 
     def get_boolean_type(self):
-        return BooleanType(primitive=utils.random.bool())
+        return BooleanType(primitive=False)
 
     def get_char_type(self):
         return CharType(primitive=False)
@@ -58,6 +58,25 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
 
     def get_big_integer_type(self):
         return BigIntegerType()
+
+    def get_primitive_types(self):
+        return [
+            ByteType(primitive=True),
+            ShortType(primitive=True),
+            IntegerType(primitive=True),
+            LongType(primitive=True),
+            FloatType(primitive=True),
+            DoubleType(primitive=True),
+            # XXX Disable this until GROOVY-10079 is fixed
+            # CharType(primitive=True),
+            BooleanType(primitive=True)
+        ]
+
+    def get_non_nothing_types(self):
+        return super().get_non_nothing_types() + self.get_primitive_types()
+
+    def get_number_types(self):
+        return super().get_number_types() + self.get_primitive_types()[:-1]
 
 
 class GroovyBuiltin(Builtin):
