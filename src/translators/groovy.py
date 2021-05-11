@@ -40,7 +40,8 @@ class GroovyTranslator(ASTVisitor):
     executable = "Main.jar"
     ident_value = " "
 
-    def __init__(self, package=None):
+    def __init__(self, package=None,
+                 options={}):
         self._children_res = []
         self.program = None
         self.ident = 0
@@ -64,6 +65,7 @@ class GroovyTranslator(ASTVisitor):
         # immediately `()`.
         self._inside_is = False
         self._inside_is_function = False
+        self.always_cast_numbers = options.get('cast_numbers', False)
 
     def _reset_state(self):
         # Clear the state
@@ -393,7 +395,9 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_integer_constant(self, node):
-        if not self._cast_number and node.integer_type.is_primitive():
+        if not self._cast_number and (
+                not self.always_cast_numbers and
+                node.integer_type.is_primitive()):
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
@@ -413,7 +417,9 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_real_constant(self, node):
-        if not self._cast_number and node.real_type.is_primitive():
+        if not self._cast_number and (
+                not self.always_cast_numbers and
+                node.real_type.is_primitive()):
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
