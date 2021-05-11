@@ -58,6 +58,8 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 continue
             if etype == selected_type:
                 continue
+            if not selected_type:
+                import pdb; pdb.set_trace()
             if selected_type.is_subtype(etype):
                 t_set.add(selected_type)
                 continue

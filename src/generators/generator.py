@@ -81,7 +81,8 @@ class Generator():
             self.bt_factory.get_byte_type(),
             self.bt_factory.get_short_type(),
             self.bt_factory.get_long_type(),
-            self.bt_factory.get_big_decimal_type()
+            self.bt_factory.get_big_decimal_type(),
+            self.bt_factory.get_big_integer_type(),
         ]
         number_types = self.bt_factory.get_number_types()
         e2_types = {
@@ -98,6 +99,7 @@ class Generator():
             ],
             self.bt_factory.get_float_type(): number_types,
             self.bt_factory.get_integer_type(): number_types,
+            self.bt_factory.get_big_integer_type(): number_types,
             self.bt_factory.get_byte_type(): number_types,
             self.bt_factory.get_short_type(): number_types,
             self.bt_factory.get_long_type(): number_types
@@ -633,6 +635,7 @@ class Generator():
         constant_candidates = {
             self.bt_factory.get_number_type().name: gu.gen_integer_constant,
             self.bt_factory.get_integer_type().name: gu.gen_integer_constant,
+            self.bt_factory.get_big_integer_type().name: gu.gen_integer_constant,
             self.bt_factory.get_byte_type().name: gu.gen_integer_constant,
             self.bt_factory.get_short_type().name: gu.gen_integer_constant,
             self.bt_factory.get_long_type().name: gu.gen_integer_constant,
