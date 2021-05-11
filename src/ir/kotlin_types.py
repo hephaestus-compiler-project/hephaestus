@@ -41,6 +41,10 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
     def get_big_decimal_type(self):
         return DoubleType()
 
+    def get_big_integer_type(self):
+        # FIXME
+        return IntegerType()
+
     def get_boolean_type(self):
         return BooleanType()
 

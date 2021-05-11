@@ -53,6 +53,7 @@ class ValueSubstitution(Transformation):
             self.bt_factory.get_float_type().name: gu.gen_real_constant,
             self.bt_factory.get_double_type().name: gu.gen_real_constant,
             self.bt_factory.get_big_decimal_type().name: gu.gen_real_constant,
+            self.bt_factory.get_big_integer_type().name: gu.gen_integer_constant,
             self.bt_factory.get_array_type().name: (
                 lambda x: self.generator.gen_array_expr(x, only_leaves=True)
             ),
@@ -573,6 +574,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         floatt = self.bt_factory.get_float_type()
         double = self.bt_factory.get_double_type()
         big_decimal = self.bt_factory.get_big_decimal_type()
+        big_integer = self.bt_factory.get_big_integer_type()
         numbert = self.bt_factory.get_number_type()
         return {
             byte: [],
@@ -581,7 +583,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             longt: [byte, short, integer],
             floatt: [byte, short, integer, longt],
             double: [byte, short, integer, longt, floatt],
-            big_decimal: [byte, short, integer, longt, floatt, double, numbert]
+            big_decimal: [byte, short, integer, longt, floatt, double, numbert],
+            big_integer: [byte, short, integer, longt]
         }
 
     def replace_value_node(self, node, exclude=[]):

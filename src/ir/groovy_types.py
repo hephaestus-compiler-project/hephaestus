@@ -24,7 +24,7 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
         return NumberType()
 
     def get_integer_type(self):
-        return IntegerType()
+        return IntegerType(primitive=utils.random.bool())
 
     def get_byte_type(self):
         return ByteType(primitive=utils.random.bool())
@@ -55,6 +55,9 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
 
     def get_array_type(self):
         return ArrayType()
+
+    def get_big_integer_type(self):
+        return BigIntegerType()
 
 
 class GroovyBuiltin(Builtin):
@@ -185,6 +188,22 @@ class LongType(NumberType):
         if self.is_primitive():
             return "long"
         return super().get_name()
+
+
+class BigIntegerType(NumberType):
+    def __init__(self, name="BigInteger"):
+        super().__init__(name)
+        self.supertypes.append(NumberType())
+
+    def get_builtin_type(self):
+        return bt.BigIntegerType
+
+    def box_type(self):
+        return self
+
+    def is_assignable(self, other):
+        assignable_types = (NumberType, BigIntegerType,)
+        return self.is_subtype(other) or type(other) in assignable_types
 
 
 class ByteType(NumberType):
@@ -353,9 +372,11 @@ Byte = ByteType()
 Float = FloatType()
 Double = DoubleType()
 BigDecimal = BigDecimalType()
+BigInteger = BigIntegerType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
 NonNothingTypes = [Object, Number, Integer, Short, Long, Byte, Float,
-                   Double, BigDecimal, Char, String, Boolean, Array]
+                   Double, BigDecimal, BigInteger, Char, String, Boolean,
+                   Array]

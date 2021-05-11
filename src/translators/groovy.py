@@ -407,6 +407,7 @@ class GroovyTranslator(ASTVisitor):
             gt.Short: "(Short) ",
             gt.Byte: "(Byte) ",
             gt.Number: "(Number) ",
+            gt.BigInteger: "(BigInteger) ",
         }
         cast = integer_types.get(node.integer_type, "")
         return "{ident}{cast}{literal}".format(

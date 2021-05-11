@@ -1,7 +1,7 @@
 # pylint: disable=abstract-method
 from abc import ABC, abstractmethod
 
-from src.ir.types import Builtin, TypeConstructor, TypeParameter, Type
+from src.ir.types import Builtin, TypeConstructor, TypeParameter
 
 
 class BuiltinFactory(ABC):
@@ -54,6 +54,10 @@ class BuiltinFactory(ABC):
         pass
 
     @abstractmethod
+    def get_big_integer_type(self):
+        pass
+
+    @abstractmethod
     def get_boolean_type(self):
         pass
 
@@ -80,6 +84,7 @@ class BuiltinFactory(ABC):
             self.get_float_type(),
             self.get_double_type(),
             self.get_big_decimal_type(),
+            self.get_big_integer_type(),
             self.get_boolean_type(),
             self.get_char_type(),
             self.get_string_type(),
@@ -94,7 +99,8 @@ class BuiltinFactory(ABC):
             self.get_long_type(),
             self.get_float_type(),
             self.get_double_type(),
-            self.get_big_decimal_type()
+            self.get_big_decimal_type(),
+            self.get_big_integer_type(),
         ]
 
     def get_nothing(self):
@@ -128,6 +134,12 @@ class NumberType(AnyType):
 
 class IntegerType(NumberType):
     def __init__(self, name="Int"):
+        super().__init__(name)
+        self.supertypes.append(NumberType())
+
+
+class BigIntegerType(NumberType):
+    def __init__(self, name="BigInteger"):
         super().__init__(name)
         self.supertypes.append(NumberType())
 
@@ -204,9 +216,11 @@ Byte = ByteType()
 Float = FloatType()
 Double = DoubleType()
 BigDecimal = BigDecimalType()
+BigInteger = BigIntegerType()
 Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean, BigDecimal, Array]
+                   Double, Char, String, Boolean, BigDecimal, BigInteger,
+                   Array]
