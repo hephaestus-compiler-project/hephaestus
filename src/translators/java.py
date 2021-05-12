@@ -56,6 +56,9 @@ class JavaTranslator(ASTVisitor):
         # Keep track if a block is in a function that has non-void return type
         self.is_func_non_void_block = False
 
+        # Keep track if a block is in a function that is a nested function
+        self.is_nested_func_block = False
+
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
         # into a Main static class. Moreover, they should be static and get
@@ -91,6 +94,7 @@ class JavaTranslator(ASTVisitor):
         self._cast_number = False
         self.ident = 0
         self.is_func_non_void_block = False
+        self.is_nested_func_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
         self._nodes_stack = [None]
@@ -182,12 +186,14 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_block(self, node):
         children = node.children()
-        prev = self.is_func_non_void_block
+        is_func_non_void_block = self.is_func_non_void_block
+        is_nested_func_block = self.is_nested_func_block
         self.is_func_non_void_block = False
+        self.is_nested_func_block = False
         children_len = len(children)
         for i, c in enumerate(children):
             # Cast return statement if it's a number literal
-            if prev and i == children_len - 1:
+            if is_func_non_void_block and i == children_len - 1:
                 prev_cast_number = self._cast_number
                 self._cast_number = True
                 c.accept(self)
@@ -195,7 +201,15 @@ class JavaTranslator(ASTVisitor):
             else:
                 c.accept(self)
         children_res = self.pop_children_res(children)
-        self.is_func_non_void_block = prev
+        self.is_func_non_void_block = is_func_non_void_block
+        self.is_nested_func_block = is_nested_func_block
+
+        # We use this return statement if the function type is void
+        return_stmt = ""
+        if not self.is_func_non_void_block:
+            ret = "return null;" if self.is_nested_func_block else "return;"
+            return_stmt = "\n" + self.get_ident() + ret
+
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
@@ -209,8 +223,7 @@ class JavaTranslator(ASTVisitor):
             res = "{{\n{ident}{stmt};{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
-                ret="\n" + self.get_ident() + "return null;" \
-                    if not self.is_func_non_void_block else "",
+                ret=return_stmt,
                 old_ident=self.get_ident(extra=-2)
             )
         else:
@@ -221,8 +234,7 @@ class JavaTranslator(ASTVisitor):
                 ut.leading_spaces(children_res[-1]))
             res = "{{\n{stmts}{ret}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
-                ret="\n" + self.get_ident() + "return null;" \
-                    if not self.is_func_non_void_block else "",
+                ret=return_stmt,
                 old_ident=self.get_ident(extra=-2)
             )
         return res
@@ -398,8 +410,10 @@ class JavaTranslator(ASTVisitor):
         self.ident += 2
         prev_cast_number = self._cast_number
         children = node.children()
-        prev = self.is_func_non_void_block
+        is_func_non_void_block = self.is_func_non_void_block
         self.is_func_non_void_block = node.get_type() != jt.Void
+        is_nested_func_block = self.is_nested_func_block
+        self.is_nested_func_block = is_nested_func()
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
             self._cast_number = True
@@ -448,7 +462,8 @@ class JavaTranslator(ASTVisitor):
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
-        self.is_func_non_void_block = prev
+        self.is_func_non_void_block = is_func_non_void_block
+        self.is_nested_func_block = is_nested_func_block
         self._cast_number = prev_cast_number
         if self._inside_is:
             self._inside_is_function = prev_inside_is_function
