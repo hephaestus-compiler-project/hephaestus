@@ -34,10 +34,9 @@ class Generator():
         self._new_from_class = None
         self.namespace = ('global',)
 
-        # When this flag is set to true, we generate only final variables.
-        # This is used for Java lambdas where local variables references must
-        # be final
-        self._only_final_var = False
+        # This flag is used for Java lambdas where local variables references
+        # must be final.
+        self._inside_java_nested_fun = False
 
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
@@ -229,8 +228,8 @@ class Generator():
         nested_function = (self.namespace[-1] != 'global' and
                            self.namespace[1][0].islower())
 
-        prev_only_final_var = self._only_final_var
-        self._only_final_var = nested_function and self.language == "java"
+        prev_inside_java_nested_fun = self._inside_java_nested_fun
+        self._inside_java_nested_fun = nested_function and self.language == "java"
 
         params = self._gen_func_params()
 
@@ -256,7 +255,7 @@ class Generator():
             inferred_type = None
             exprs, decls = self._gen_side_effects()
             body = ast.Block(decls + exprs + [expr])
-        self._only_final_var = prev_only_final_var
+        self._inside_java_nested_fun = prev_inside_java_nested_fun
         self.depth = initial_depth
         self.namespace = initial_namespace
         return ast.FunctionDeclaration(
@@ -372,7 +371,13 @@ class Generator():
     def _get_matching_objects(self, etype, subtype, attr_name) -> \
             List[Tuple[ast.Expr, ast.Declaration]]:
         decls = []
-        for var in self.context.get_vars(self.namespace).values():
+        variables = self.context.get_vars(self.namespace).values()
+        if self._inside_java_nested_fun:
+            variables = list(filter(
+                lambda v: (getattr(v, 'is_final', False) or v not in
+                    self.context.get_vars(self.namespace[:-1]).values()),
+                variables))
+        for var in variables:
             var_type = var.get_type()
             # We are only interested in variables of class types.
             if tu.is_builtin(var_type, self.bt_factory):
@@ -583,7 +588,7 @@ class Generator():
         variables = self.context.get_vars(self.namespace).values()
         # Case where we want only final variables
         # Or variables declared in the nested function
-        if self._only_final_var:
+        if self._inside_java_nested_fun:
             variables = list(filter(
                 lambda v: (getattr(v, 'is_final', False) or v not in
                     self.context.get_vars(self.namespace[:-1]).values()),
@@ -604,12 +609,11 @@ class Generator():
     def _get_assignable_vars(self):
         variables = []
         for var in self.context.get_vars(self.namespace).values():
-            # Case where we want only final variables
-            # Or variables declared in the nested function
-            if self._only_final_var:
-                if not (getattr(var, 'is_final', False) or var not in
-                        self.context.get_vars(self.namespace[:-1]).values()):
-                    continue
+            if self._inside_java_nested_fun:
+                # TODO
+                #  if var not in self.context.get_vars(
+                        #  self.namespace[:-1]).values():
+                continue
             if not getattr(var, 'is_final', True):
                 variables.append((None, var))
                 continue
