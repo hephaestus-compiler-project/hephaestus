@@ -367,8 +367,17 @@ class GroovyTranslator(ASTVisitor):
             else:
                 body = body_res
         if is_closure():
-            res = "{ident}def {name} = {{ {params} -> {body}}}".format(
+            ret_type = node.get_type()
+            ret_type = (ret_type if not ret_type.is_primitive()
+                        else ret_type.box_type())
+            prefix = (
+                "def"
+                if not node.ret_type or node.ret_type == gt.Void
+                else "Closure<{}>".format(get_type_name(ret_type))
+            )
+            res = "{ident}{prefix} {name} = {{ {params} -> {body}}}".format(
                 ident=self.get_ident(old_ident=old_ident),
+                prefix=prefix,
                 name=node.name,
                 params=", ".join(param_res),
                 body=body_res
