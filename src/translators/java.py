@@ -265,7 +265,8 @@ class JavaTranslator(ASTVisitor):
             # Maybe we have to do for the transitive closure
             constructor_fields = OrderedDict()
             for field in node.fields:
-                constructor_fields[field.name] = field.field_type.get_name()
+                constructor_fields[field.name] = get_type_name(
+                    field.field_type)
             return constructor_fields
 
         def construct_constructor():
