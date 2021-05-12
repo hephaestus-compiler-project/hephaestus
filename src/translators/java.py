@@ -199,6 +199,8 @@ class JavaTranslator(ASTVisitor):
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
+            # If return type is void, then we assign the statement in a
+            # variable x and we return null.
             sugar = "return " if self.is_func_non_void_block else "var x = "
             children_res[0] = ut.add_string_at(
                 children_res[0],
@@ -207,7 +209,7 @@ class JavaTranslator(ASTVisitor):
             res = "{{\n{ident}{stmt};{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
-                ret="\n" + self.get_ident() + "return;" \
+                ret="\n" + self.get_ident() + "return null;" \
                     if not self.is_func_non_void_block else "",
                 old_ident=self.get_ident(extra=-2)
             )
@@ -219,7 +221,7 @@ class JavaTranslator(ASTVisitor):
                 ut.leading_spaces(children_res[-1]))
             res = "{{\n{stmts}{ret}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
-                ret="\n" + self.get_ident() + "return;" \
+                ret="\n" + self.get_ident() + "return null;" \
                     if not self.is_func_non_void_block else "",
                 old_ident=self.get_ident(extra=-2)
             )
