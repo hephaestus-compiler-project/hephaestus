@@ -115,11 +115,13 @@ class Generator():
             ast.ComparisonExpr.VALID_OPERATORS[self.language])
         e1_type = ut.random.choice(valid_types)
         e2_type = ut.random.choice(e2_types[e1_type])
-        if self.language == 'java' and e1_type.name in ('Boolean', 'String'):
-            op = '=='
         e1 = self.generate_expr(e1_type, only_leaves)
         e2 = self.generate_expr(e2_type, only_leaves)
         self.depth = initial_depth
+        if self.language == 'java' and e1_type.name in ('Boolean', 'String'):
+            op = ut.random.choice(
+                ast.EqualityExpr.VALID_OPERATORS[self.language])
+            return ast.EqualityExpr(e1, e2, op)
         return ast.ComparisonExpr(e1, e2, op)
 
     def gen_field_decl(self, etype=None):
