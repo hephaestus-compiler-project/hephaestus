@@ -241,7 +241,7 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_super_instantiation(self, node):
-        return node.class_type.get_name()
+        return get_type_name(node.class_type)
 
     @append_to
     @change_namespace
@@ -345,7 +345,7 @@ class JavaTranslator(ASTVisitor):
     def visit_type_param(self, node):
         return "{name}{bound}".format(
             name=node.name,
-            bound=' extends ' + node.bound.get_name()
+            bound=' extends ' + get_type_name(node.bound)
             if node.bound is not None else ''
         )
 
@@ -362,7 +362,7 @@ class JavaTranslator(ASTVisitor):
         # their type.
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE):
-            var_type = node.inferred_type.get_name()
+            var_type = get_type_name(node.inferred_type)
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
@@ -381,7 +381,7 @@ class JavaTranslator(ASTVisitor):
     def visit_field_decl(self, node):
         return "public {final}{field_type} {name};".format(
             final="final " if node.is_final else "",
-            field_type=node.field_type.get_name(),
+            field_type=get_type_name(node.field_type),
             name=node.name
         )
 
@@ -455,7 +455,7 @@ class JavaTranslator(ASTVisitor):
                 ident=self.get_ident(old_ident=old_ident),
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
-                ret_type=node.inferred_type.get_name(),
+                ret_type=get_type_name(node.inferred_type),
                 name=node.name,
                 params=", ".join(param_res),
                 body=body
@@ -579,11 +579,12 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{ident}({left} {operator} {right})".format(
+        res = "{ident}({left} {operator} {right}){semicolon}".format(
             ident=self.get_ident(old_ident=old_ident),
             left=children_res[0],
             operator=node.operator,
-            right=children_res[1]
+            right=children_res[1],
+            semicolon=";" if self._parent_is_block() else ""
         )
         self.ident = old_ident
         return res
@@ -653,7 +654,7 @@ class JavaTranslator(ASTVisitor):
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
             cls = node.class_type.name + "<>"
         else:
-            cls = node.class_type.get_name()
+            cls = get_type_name(node.class_type)
         res = "{ident}new {cls}({args}){semicolon}".format(
             ident=self.get_ident(),
             cls=cls,
