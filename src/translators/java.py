@@ -400,6 +400,7 @@ class JavaTranslator(ASTVisitor):
             if isinstance(parent_decl, ast.FunctionDeclaration):
                 return True
             return False
+
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
             self._inside_is_function = True
@@ -446,7 +447,7 @@ class JavaTranslator(ASTVisitor):
                 tp=", ".join(types),
                 name=node.name,
                 params=", ".join(params),
-                body=body_res
+                body=body
             )
         else:
             res = ("{ident}{final}{abstract}{ret_type} "
@@ -483,13 +484,15 @@ class JavaTranslator(ASTVisitor):
             return str(literal)
 
         if not self._cast_number:
-            return "{ident}{literal}".format(
+            return "{ident}{literal}{semicolon}".format(
                 ident=self.get_ident(),
-                literal=str(node.literal)
+                literal=str(node.literal),
+                semicolon=";" if self._parent_is_block() else ""
             )
-        return "{ident}{cast_literal}".format(
+        return "{ident}{cast_literal}{semicolon}".format(
             ident=self.get_ident(),
-            cast_literal=get_cast_literal(node.integer_type, node.literal)
+            cast_literal=get_cast_literal(node.integer_type, node.literal),
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
@@ -502,34 +505,39 @@ class JavaTranslator(ASTVisitor):
             return str(literal)
 
         if not self._cast_number:
-            return "{ident}{literal}".format(
+            return "{ident}{literal}{semicolon}".format(
                 ident=self.get_ident(),
-                literal=str(node.literal)
+                literal=str(node.literal),
+                semicolon=";" if self._parent_is_block() else ""
             )
-        return "{ident}{cast_literal}".format(
+        return "{ident}{cast_literal}{semicolon}".format(
             ident=self.get_ident(),
-            cast_literal=get_cast_literal(node.real_type, node.literal)
+            cast_literal=get_cast_literal(node.real_type, node.literal),
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
     def visit_char_constant(self, node):
-        return "{ident} '{literal}'".format(
+        return "{ident} '{literal}'{semicolon}".format(
             ident=self.get_ident(),
-            literal=node.literal
+            literal=node.literal,
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
     def visit_string_constant(self, node):
-        return "{ident}\"{literal}\"".format(
+        return "{ident}\"{literal}\"{semicolon}".format(
             ident=self.get_ident(),
-            literal=node.literal
+            literal=node.literal,
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
     def visit_boolean_constant(self, node):
-        return "{ident}{literal}".format(
+        return "{ident}{literal}{semicolon}".format(
             ident=self.get_ident(),
-            literal=str(node.literal)
+            literal=str(node.literal),
+            semicolon=";" if self._parent_is_block() else ""
         )
 
     @append_to
@@ -613,6 +621,7 @@ class JavaTranslator(ASTVisitor):
         self._inside_is = prev_inside_is
         return res
 
+    # TODO Remove?
     @append_to
     def visit_is(self, node):
         old_ident = self.ident
