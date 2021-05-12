@@ -210,24 +210,25 @@ class JavaTranslator(ASTVisitor):
             ret = "return null;" if self.is_nested_func_block else "return;"
             return_stmt = "\n" + self.get_ident() + ret
 
+        # If return type is void, then we assign the last statement (except
+        # function calls) in a variable x and then we use return_stmt.
+        sugar = "return " if self.is_func_non_void_block else \
+            "" if isinstance(children[-1], ast.FunctionCall) else "var x = "
+
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
-            # If return type is void, then we assign the statement in a
-            # variable x and we return null.
-            sugar = "return " if self.is_func_non_void_block else "var x = "
             children_res[0] = ut.add_string_at(
                 children_res[0],
                 sugar,
                 ut.leading_spaces(children_res[0]))
-            res = "{{\n{ident}{stmt};{ret}\n{old_ident}}}".format(
+            res = "{{\n{ident}{stmt}{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
                 ret=return_stmt,
                 old_ident=self.get_ident(extra=-2)
             )
         else:
-            sugar = "return " if self.is_func_non_void_block else "var x = "
             children_res[-1] = ut.add_string_at(
                 children_res[-1],
                 sugar,
