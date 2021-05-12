@@ -300,7 +300,26 @@ class ParameterizedSubstitution(Transformation):
         if connected_type_param:
             return connected_type_param
 
-        if utils.random.bool():
+        if utils.random.bool() or old_type.is_primitive():
+            # Do not parameterized node whose initial type is a primitive,
+            # because this creates a lot of troubles. For example,
+            # consider the following program
+            #
+            # class A {
+            #  int foo()
+            # }
+            # class B extends A {
+            #  int foo()
+            # }
+            #
+            # and after transformation we have
+            #
+            # class A<T> {
+            #  T foo()
+            # }
+            # class B extends A<Integer> {
+            #  int foo() // error here!!! because int != Integer
+            # }
             return old_type
 
         for tp in self._type_params:
