@@ -34,6 +34,11 @@ class Generator():
         self._new_from_class = None
         self.namespace = ('global',)
 
+        # When this flag is set to true, we generate only final variables.
+        # This is used for Java lambdas where local variables references must
+        # be final
+        self._only_final_var = False
+
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
@@ -210,11 +215,21 @@ class Generator():
         self.namespace += (func_name,)
         initial_depth = self.depth
         self.depth += 1
-        # Check if this function we want to generate is nested, by checking
-        # the name of the outer namespace. If we are in class then
+        # Check if this function we want to generate is a class method, by
+        # checking the name of the outer namespace. If we are in class then
         # the outer namespace begins with capital letter.
         class_method = self.namespace[-1][0].isupper()
+        # Check if this function we want to generate is a nested functions.
+        # To do so, we want to find if the function is directly inside the
+        # namespace of another function.
+        nested_function = (self.namespace[-1] != 'global' and
+                           self.namespace[1][0].islower())
+
+        prev_only_final_var = self._only_final_var
+        self._only_final_var = nested_function and self.language == "java"
+
         params = self._gen_func_params()
+
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         expr_type = self.gen_type(False) \
             if ret_type == self.bt_factory.get_void_type() else ret_type
@@ -237,6 +252,7 @@ class Generator():
             inferred_type = None
             exprs, decls = self._gen_side_effects()
             body = ast.Block(decls + exprs + [expr])
+        self._only_final_var = prev_only_final_var
         self.depth = initial_depth
         self.namespace = initial_namespace
         return ast.FunctionDeclaration(
@@ -560,14 +576,21 @@ class Generator():
     def gen_variable(self, etype, only_leaves=False, subtype=True):
         # Get all variables declared in the current namespace or
         # the outer namespace.
-        variables = self.context.get_vars(self.namespace)
+        variables = self.context.get_vars(self.namespace).values()
+        # Case where we want only final variables
+        # Or variables declared in the nested function
+        if self._only_final_var:
+            variables = list(filter(
+                lambda v: (getattr(v, 'is_final', False) or v not in
+                    self.context.get_vars(self.namespace[:-1]).values()),
+                variables))
         # If we need to use a variable of a specific types, then filter
         # all variables that match this specific type.
         if subtype:
             fun = lambda v, t: v.get_type().is_assignable(t)
         else:
             fun = lambda v, t: v.get_type() == t
-        variables = [v for v in variables.values() if fun(v, etype)]
+        variables = [v for v in variables if fun(v, etype)]
         if not variables:
             return self.generate_expr(etype, only_leaves=only_leaves,
                                       subtype=subtype, exclude_var=True)
@@ -577,6 +600,12 @@ class Generator():
     def _get_assignable_vars(self):
         variables = []
         for var in self.context.get_vars(self.namespace).values():
+            # Case where we want only final variables
+            # Or variables declared in the nested function
+            if self._only_final_var:
+                if not (getattr(var, 'is_final', False) or var not in
+                        self.context.get_vars(self.namespace[:-1]).values()):
+                    continue
             if not getattr(var, 'is_final', True):
                 variables.append((None, var))
                 continue
