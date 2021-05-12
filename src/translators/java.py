@@ -456,46 +456,51 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_integer_constant(self, node):
+        def get_cast_literal(integer_type, literal):
+            if integer_type == jt.Long:
+                return "(long)" + str(literal)
+            if integer_type == jt.Short:
+                return "(short)" + str(literal)
+            if integer_type == jt.Byte:
+                return "(byte)" + str(literal)
+            if integer_type == jt.Number:
+                return "(Number) new Long(" + str(literal) + ")"
+            return str(literal)
+
         if not self._cast_number:
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
             )
-        integer_types = {
-            jt.Long: "(Long) ",
-            jt.Short: "(Short) ",
-            jt.Byte: "(Byte) ",
-            jt.Number: "(Number) ",
-        }
-        cast = integer_types.get(node.integer_type, "")
-        return "{ident}{cast}{literal}".format(
+        return "{ident}{cast_literal}".format(
             ident=self.get_ident(),
-            cast=cast,
-            literal=str(node.literal)
+            cast_literal=get_cast_literal(node.integer_type, node.literal)
         )
 
     @append_to
     def visit_real_constant(self, node):
+        def get_cast_literal(real_type, literal):
+            if real_type == jt.Double:
+                return "(double)" + str(literal)
+            if real_type == jt.Float:
+                return "(float)" + str(literal)
+            if real_type == jt.Number:
+                return "(Number) new Double(" + str(literal) + ")"
+            return str(literal)
+
         if not self._cast_number:
             return "{ident}{literal}".format(
                 ident=self.get_ident(),
                 literal=str(node.literal)
             )
-        real_types = {
-            jt.Double: "(Double) ",
-            jt.Float: "(Float) ",
-            jt.Number: "(Number) ",
-        }
-        cast = real_types.get(node.real_type, "")
-        return "{ident}{cast}{literal}".format(
+        return "{ident}{cast_literal}".format(
             ident=self.get_ident(),
-            cast=cast,
-            literal=str(node.literal)
+            cast_literal=get_cast_literal(node.real_type, node.literal)
         )
 
     @append_to
     def visit_char_constant(self, node):
-        return "{ident}(Character) '{literal}'".format(
+        return "{ident} '{literal}'".format(
             ident=self.get_ident(),
             literal=node.literal
         )
