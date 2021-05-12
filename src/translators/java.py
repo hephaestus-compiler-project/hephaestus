@@ -495,8 +495,6 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_real_constant(self, node):
         def get_cast_literal(real_type, literal):
-            if real_type == jt.Double:
-                return "(double)" + str(literal)
             if real_type == jt.Float:
                 return "(float)" + str(literal)
             if real_type == jt.Number:
