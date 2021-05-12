@@ -375,7 +375,7 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_param_decl(self, node):
-        res = node.param_type.get_name() + " " + node.name
+        res = get_type_name(node.param_type) + " " + node.name
         return res
 
     @append_to
@@ -422,7 +422,7 @@ class JavaTranslator(ASTVisitor):
                 body = body_res
         if is_nested_func():
             types = list(map(lambda x: x.split()[0], param_res))
-            types.append(get_type_name(node.inferred_type))
+            types.append(get_type_name(node.inferred_type, True))
             params = list(map(lambda x: x.split()[1], param_res))
             self._function_interfaces.add(len(params))
             res_t = "{ident}Function{n}<{tp}> {name} = ({params}) -> {body};"
