@@ -7,6 +7,7 @@ from collections import OrderedDict
 import src.utils as ut
 from src.ir import ast, java_types as jt, types as tp
 from src.ir.visitors import ASTVisitor
+from src.ir.context import get_decl
 from src.transformations.base import change_namespace
 from src.translators.utils import get_type_name
 
@@ -711,13 +712,11 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_func_call(self, node):
         def is_nested_func():
-            # TODO if the function decl and the function call is not in the
-            # function in the same level then we return false
-            parent_namespace = self._namespace[:-1]
-            parent_name = self._namespace[-1]
-            parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            if (isinstance(parent_decl, ast.FunctionDeclaration) and
-                    node.func in self.context.get_funcs(self._namespace, True)):
+            # From where we are in the AST we search backwards for declarations
+            # with the same name.
+            decl = get_decl(self.context, self._namespace, node.func)
+            # decl[0][-1] is the parent.
+            if decl and decl[0][-1] != 'global' and decl[0][-1][0].islower():
                 return True
             return False
         old_ident = self.ident
