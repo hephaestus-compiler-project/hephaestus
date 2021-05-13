@@ -2,7 +2,7 @@
 # pylint: disable=too-many-statements
 from collections import OrderedDict
 
-from src.ir import ast, groovy_types as gt
+from src.ir import ast, groovy_types as gt, types as tp
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
 from src.translators.utils import get_type_name
@@ -324,7 +324,14 @@ class GroovyTranslator(ASTVisitor):
 
     @append_to
     def visit_param_decl(self, node):
-        res = get_type_name(node.param_type) + " " + node.name
+        vararg_str = '...' if node.vararg else ''
+        # Recall that varargs ara actually arrays in the signature of
+        # the corresponding parameters.
+        param_type = (
+            node.param_type.type_args[0]
+            if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
+            else node.param_type)
+        res = get_type_name(param_type) + vararg_str + " " + node.name
         return res
 
     @append_to

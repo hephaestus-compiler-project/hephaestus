@@ -1,4 +1,4 @@
-from src.ir import ast, kotlin_types as kt
+from src.ir import ast, kotlin_types as kt, types as tp
 from src.ir.visitors import ASTVisitor
 from src.translators.utils import get_type_name
 
@@ -159,7 +159,14 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
-        res = node.name + ": " + get_type_name(node.param_type)
+        vararg_str = 'vararg ' if node.vararg else ''
+        # Recall that varargs ara actually arrays in the signature of
+        # the corresponding parameters.
+        param_type = (
+            node.param_type.type_args[0]
+            if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
+            else node.param_type)
+        res = vararg_str + node.name + ": " + get_type_name(param_type)
         self._children_res.append(res)
 
     def visit_func_decl(self, node):

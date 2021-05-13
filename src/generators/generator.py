@@ -167,21 +167,40 @@ class Generator():
                  if not isinstance(d, ast.ParameterDeclaration)]
         return exprs, decls
 
+    def _gen_func_params(self):
+        params = []
+        arr_index = None
+        vararg_found = False
+        vararg = None
+        for i in range(ut.random.integer(0, self.max_params)):
+            param = self.gen_param_decl()
+            # If the type of the parameter is an array consider make it
+            # a vararg.
+            if not vararg_found and param.get_type().name == 'Array' and (
+                    ut.random.bool()):
+                param.vararg = True
+                arr_index = i
+                vararg = param
+                vararg_found = True
+            params.append(param)
+            self.context.add_var(self.namespace, param.name, param)
+        len_p = len(params)
+        # If one of the parameters is a vararg, then place it to the back.
+        if arr_index is not None and arr_index != len_p - 1:
+            params[len_p - 1], params[arr_index] = vararg, params[len_p - 1]
+        return params
+
     def gen_func_decl(self, etype=None, not_void=False):
         func_name = gu.gen_identifier('lower')
         initial_namespace = self.namespace
         self.namespace += (func_name,)
         initial_depth = self.depth
         self.depth += 1
-        params = []
         # Check if this function we want to generate is nested, by checking
         # the name of the outer namespace. If we are in class then
         # the outer namespace begins with capital letter.
         class_method = self.namespace[-1][0].isupper()
-        for _ in range(ut.random.integer(0, self.max_params)):
-            param = self.gen_param_decl()
-            params.append(param)
-            self.context.add_var(self.namespace, param.name, param)
+        params = self._gen_func_params()
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         expr_type = self.gen_type(False) \
             if ret_type == self.bt_factory.get_void_type() else ret_type
@@ -425,7 +444,14 @@ class Generator():
         initial_depth = self.depth
         self.depth += 1
         for param in func.params:
-            args.append(self.generate_expr(param.get_type(), only_leaves))
+            if not param.vararg:
+                args.append(self.generate_expr(param.get_type(), only_leaves))
+            else:
+                # This param is a vararg, so provide a random number of
+                # arguments.
+                for _ in range(ut.random.integer(0, 3)):
+                    args.append(self.generate_expr(
+                        param.get_type().type_args[0], only_leaves))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
 

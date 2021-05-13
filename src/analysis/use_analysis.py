@@ -172,12 +172,20 @@ class UseAnalysis(DefaultVisitor):
             add_none = True
 
         for i, arg in enumerate(node.args):
-            param_node = (
-                NONE_NODE
-                if add_none
-                else GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
-                           fun_nsdecl[1].params[i].name)
-            )
+            if add_none:
+                param_node = NONE_NODE
+            else:
+                len_p = len(fun_nsdecl[1].params)
+                if i < len_p:
+                    param_index = i
+                else:
+                    # Ok, the formal parameter is a vararg, and we have
+                    # provided more than one arguments.
+                    param_index = len_p - 1
+                    assert fun_nsdecl[1].params[param_index].vararg
+
+                param_node = GNode(fun_nsdecl[0] + (fun_nsdecl[1].name,),
+                                   fun_nsdecl[1].params[param_index].name)
             if isinstance(arg, ast.Variable):
                 # The argument is a variable reference. So add edge from the
                 # variable to the corresponding functions's parameter.
