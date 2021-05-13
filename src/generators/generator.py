@@ -225,8 +225,9 @@ class Generator():
         # Check if this function we want to generate is a nested functions.
         # To do so, we want to find if the function is directly inside the
         # namespace of another function.
-        nested_function = (self.namespace[-1] != 'global' and
-                           self.namespace[1][0].islower())
+        nested_function = (len(self.namespace) > 1 and
+                           self.namespace[-2] != 'global' and
+                           self.namespace[-2][0].islower())
 
         prev_inside_java_nested_fun = self._inside_java_nested_fun
         self._inside_java_nested_fun = nested_function and self.language == "java"
