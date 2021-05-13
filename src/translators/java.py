@@ -214,8 +214,12 @@ class JavaTranslator(ASTVisitor):
 
         # If return type is void, then we assign the last statement (except
         # function calls) in a variable x and then we use return_stmt.
-        sugar = "return " if self.is_func_non_void_block else \
-            "" if isinstance(children[-1], ast.FunctionCall) else "var x = "
+        if self.is_func_non_void_block:
+            sugar = "return "
+        elif children and not isinstance(children[-1], ast.FunctionCall):
+            sugar = "var x = "
+        else:
+            sugar = ""
 
         if len(children_res) == 0:  # empty block
             res = "{ }"
