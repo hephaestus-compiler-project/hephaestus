@@ -2,7 +2,6 @@
 # pylint: disable=too-many-statements
 import re
 from collections import OrderedDict
-from copy import deepcopy
 
 
 import src.utils as ut
@@ -10,7 +9,6 @@ from src.ir import ast, java_types as jt, types as tp
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
 from src.translators.utils import get_type_name
-from src.generators import Generator
 
 
 def append_to(visit):
@@ -102,7 +100,6 @@ class JavaTranslator(ASTVisitor):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
         self._nodes_stack = [None]
-        self._generator = None
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -162,8 +159,6 @@ class JavaTranslator(ASTVisitor):
 
     def visit_program(self, node):
         self.context = node.context
-        self._generator = Generator(language='java',
-                                    context=deepcopy(self.context))
         children = node.children()
         for c in children:
             c.accept(self)
@@ -290,18 +285,17 @@ class JavaTranslator(ASTVisitor):
 
             super_call = ""
             if node.superclasses:
-                supercls_type = node.superclasses[0].class_type
-                if not isinstance(supercls_type, tp.Builtin):
-                    new = self._generator.gen_new(supercls_type,
-                                                  subtype=False,
-                                                  only_leaves=True)
+                supercls = node.superclasses[0]
+                if not isinstance(supercls.class_type, tp.Builtin):
                     translator = JavaTranslator()
-                    translator.context = deepcopy(self.context)
-                    translator.visit(new)
-                    res = translator._children_res[0]
-                    res = re.sub(r'\s+',' ',res)[res.find('('):]
-                    super_call = "\n" + self.get_ident(extra=2) + 'super' + \
-                        res + ";"
+                    translator.context = self.context
+                    translator._cast_number = True
+                    for expr in supercls.args:
+                        translator.visit(expr)
+                    res = ", ".join(translator._children_res)
+                    res = re.sub(r'\s+',' ',res)
+                    super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
+                        res + ");"
             return ("{ident}public {name}({params}) {{{super_call}{fields}"
                     "{new_line}{close_ident}}}").format(
                 ident=self.get_ident(),
