@@ -477,14 +477,15 @@ class JavaTranslator(ASTVisitor):
             )
         else:
             res = ("{ident}{final}{abstract}{ret_type} "
-                   "{name}({params}) {body}").format(
+                   "{name}({params}) {body}{semicolon}").format(
                 ident=self.get_ident(old_ident=old_ident),
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
                 ret_type=get_type_name(node.inferred_type),
                 name=node.name,
                 params=", ".join(param_res),
-                body=body
+                body=body,
+                semicolon=";" if body == "" else ""
             )
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
