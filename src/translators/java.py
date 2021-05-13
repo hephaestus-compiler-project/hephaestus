@@ -551,11 +551,14 @@ class JavaTranslator(ASTVisitor):
                 semicolon=";" if self._parent_is_block() else ""
             )
         old_ident = self.ident
+        prev_cast_number = self._cast_number
+        self._cast_number = True
         self.ident = 0
         children = node.children()
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+        self._cast_number = prev_cast_number
         self.ident = old_ident
         return "{ident}new {etype}{{{exprs}}}{semicolon}".format(
             ident=self.get_ident(),
