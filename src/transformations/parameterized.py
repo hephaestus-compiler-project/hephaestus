@@ -324,6 +324,16 @@ class ParameterizedSubstitution(Transformation):
 
         for tp in self._type_params:
             if tp.constraint is None:
+                # if the node is vararg parameter, then its type is
+                # represented as Array<T>. However, we need constrain
+                # the corresponding type parameter with type T.
+                if getattr(node, 'vararg', False):
+                    assert isinstance(old_type, types.ParameterizedType)
+                    actual_type = old_type.type_args[0]
+                    if actual_type.is_primitive():
+                        return old_type
+                    old_type = actual_type
+
                 tp.constraint = old_type
                 tp.node = GNode(namespace, node.name)
                 tp.variance = self._get_variance(tp.node)

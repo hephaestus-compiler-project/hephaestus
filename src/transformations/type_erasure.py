@@ -168,10 +168,13 @@ class TypeArgumentErasureSubstitution(Transformation):
         # TODO Add randomness
         fdecl = self.program.context.get_funcs(
             self._namespace, glob=True)[node.func]
+        len_p = len(fdecl.params)
         for pos, arg in enumerate(node.args):
+            # Correctly define position of parameter in case of varargs.
+            param_index = pos if pos < len_p else len_p - 1
             if (isinstance(arg, ast.New) and
                     isinstance(arg.class_type, types.ParameterizedType) and
-                    fdecl.params[pos].param_type.name ==
+                    fdecl.params[param_index].param_type.name ==
                     arg.class_type.name and
                     not arg.class_type.can_infer_type_args):
                 self.is_transformed = True

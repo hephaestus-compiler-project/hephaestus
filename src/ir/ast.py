@@ -274,9 +274,11 @@ class SuperClassInstantiation(Node):
 class ParameterDeclaration(Declaration):
     def __init__(self, name: str,
                  param_type: types.Type,
+                 vararg: bool = False,
                  default: Expr = None):
         self.name = name
         self.param_type = param_type
+        self.vararg = vararg
         self.default = default
 
     def children(self):
@@ -289,15 +291,17 @@ class ParameterDeclaration(Declaration):
         return self.param_type
 
     def __str__(self):
+        prefix = 'vararg ' if self.vararg else ''
         if self.default is None:
-            return self.name + ": " + str(self.param_type)
-        return "{}: {} = {}".format(
-            self.name, str(self.param_type), str(self.default))
+            return prefix + self.name + ": " + str(self.param_type)
+        return "{}{}: {} = {}".format(
+            prefix, self.name, str(self.param_type), str(self.default))
 
     def is_equal(self, other):
         if isinstance(other, ParameterDeclaration):
             return (self.name == other.name and
                     self.param_type == other.param_type and
+                    self.vararg == other.vararg and
                     check_default_eq(self.default, other.default))
         return False
 
