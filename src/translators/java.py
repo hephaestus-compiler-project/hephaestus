@@ -287,13 +287,15 @@ class JavaTranslator(ASTVisitor):
             if node.superclasses:
                 supercls = node.superclasses[0]
                 if not isinstance(supercls.class_type, tp.Builtin):
-                    translator = JavaTranslator()
-                    translator.context = self.context
-                    translator._cast_number = True
-                    for expr in supercls.args:
-                        translator.visit(expr)
-                    res = ", ".join(translator._children_res)
-                    res = re.sub(r'\s+',' ',res)
+                    res = ""
+                    if supercls.args:
+                        translator = JavaTranslator()
+                        translator.context = self.context
+                        translator._cast_number = True
+                        for expr in supercls.args:
+                            translator.visit(expr)
+                        res = ", ".join(translator._children_res)
+                        res = re.sub(r'\s+',' ',res)
                     super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
                         res + ");"
             return ("{ident}public {name}({params}) {{{super_call}{fields}"
