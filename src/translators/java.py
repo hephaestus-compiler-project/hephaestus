@@ -644,7 +644,6 @@ class JavaTranslator(ASTVisitor):
         self._inside_is = prev_inside_is
         return res
 
-    # TODO Remove?
     @append_to
     def visit_is(self, node):
         old_ident = self.ident
@@ -653,11 +652,12 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{ident}{expr} {is_lit} {type_to_check}".format(
+        res = "{ident}{not_1}{expr} instanceof {type_to_check}{not_2}".format(
             ident=self.get_ident(old_ident=old_ident),
+            not_1="!(",
             expr=children_res[0],
-            is_lit="!instanceof" if node.operator.is_not else "instanceof",
-            type_to_check=node.rexpr.get_name())
+            type_to_check=node.rexpr.get_name(),
+            not_2=")")
         self.ident = old_ident
         return res
 
