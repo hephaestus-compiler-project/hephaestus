@@ -1,13 +1,16 @@
 # pylint: disable=protected-access,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements
+import re
 from collections import OrderedDict
+from copy import deepcopy
 
 
 import src.utils as ut
-from src.ir import ast, java_types as jt
+from src.ir import ast, java_types as jt, types as tp
 from src.ir.visitors import ASTVisitor
 from src.transformations.base import change_namespace
 from src.translators.utils import get_type_name
+from src.generators import Generator
 
 
 def append_to(visit):
@@ -52,6 +55,7 @@ class JavaTranslator(ASTVisitor):
         self.ident = 0
         self.package = package
         self.context = None
+        self._generator = None
         self._cast_number = False
         # Keep track if a block is in a function that has non-void return type
         self.is_func_non_void_block = False
@@ -98,6 +102,7 @@ class JavaTranslator(ASTVisitor):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
         self._nodes_stack = [None]
+        self._generator = None
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -157,6 +162,8 @@ class JavaTranslator(ASTVisitor):
 
     def visit_program(self, node):
         self.context = node.context
+        self._generator = Generator(language='java',
+                                    context=deepcopy(self.context))
         children = node.children()
         for c in children:
             c.accept(self)
@@ -263,7 +270,6 @@ class JavaTranslator(ASTVisitor):
             return superclasses, interfaces
 
         def get_constructor_params():
-            # Maybe we have to do for the transitive closure
             constructor_fields = OrderedDict()
             for field in node.fields:
                 constructor_fields[field.name] = get_type_name(
@@ -275,16 +281,33 @@ class JavaTranslator(ASTVisitor):
                       for name, tname in
                       get_constructor_params().items()]
             constructor_params = ",".join(params)
+
             fields = ["this." + f.name + ' = ' + f.name + ";"
                       for f in node.fields]
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
-            return ("{ident}public {name}({params}) {{{fields}{new_line}"
-                    "{close_ident}}}").format(
+
+            super_call = ""
+            if node.superclasses:
+                supercls_type = node.superclasses[0].class_type
+                if not isinstance(supercls_type, tp.Builtin):
+                    new = self._generator.gen_new(supercls_type,
+                                                  subtype=False,
+                                                  only_leaves=True)
+                    translator = JavaTranslator()
+                    translator.context = deepcopy(self.context)
+                    translator.visit(new)
+                    res = translator._children_res[0]
+                    res = re.sub(r'\s+',' ',res)[res.find('('):]
+                    super_call = "\n" + self.get_ident(extra=2) + 'super' + \
+                        res + ";"
+            return ("{ident}public {name}({params}) {{{super_call}{fields}"
+                    "{new_line}{close_ident}}}").format(
                 ident=self.get_ident(),
                 name=node.name,
                 params=constructor_params,
+                super_call=super_call,
                 fields=constructor_fields,
                 new_line="\n" if fields else "",
                 close_ident=self.get_ident() if fields else ""
@@ -323,7 +346,7 @@ class JavaTranslator(ASTVisitor):
             else:
                 res += " implements " + ", ".join(interfaces)
         body = " {"
-        if function_res or field_res:
+        if function_res or field_res or superclasses:
             body += "\n"
             join_separator = "\n" + self.get_ident()
             if field_res:
