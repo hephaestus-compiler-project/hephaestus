@@ -1,8 +1,6 @@
 # pylint: disable=abstract-method, useless-super-delegation,too-many-ancestors
 from src.ir.types import Builtin
 
-
-from src import utils
 import src.ir.builtins as bt
 import src.ir.types as tp
 
@@ -67,8 +65,7 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
             LongType(primitive=True),
             FloatType(primitive=True),
             DoubleType(primitive=True),
-            # XXX Disable this until GROOVY-10079 is fixed
-            # CharType(primitive=True),
+            CharType(primitive=True),
             BooleanType(primitive=True)
         ]
 
