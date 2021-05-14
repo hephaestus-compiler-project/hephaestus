@@ -570,9 +570,17 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_array_expr(self, node):
         if not node.length:
-            return "{ident}new {array}[0]{semicolon}".format(
+            new_stmt = "new {etype}".format(
+                etype=get_type_name(node.array_type.type_args[0])
+            )
+            if isinstance(node.array_type.type_args[0], tp.ParameterizedType):
+                new_stmt = "({etype}[]) new Object".format(
+                    etype=get_type_name(node.array_type.type_args[0])
+                )
+
+            return "{ident}{new}[0]{semicolon}".format(
                 ident=self.get_ident(),
-                array=get_type_name(node.array_type.type_args[0]),
+                new=new_stmt,
                 semicolon=";" if self._parent_is_block() else ""
             )
         old_ident = self.ident
@@ -583,12 +591,21 @@ class JavaTranslator(ASTVisitor):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+
+        new_stmt = "new {etype}".format(
+            etype=get_type_name(node.array_type)
+        )
+        if isinstance(node.array_type, tp.ParameterizedType):
+            new_stmt = "({etype}) new Object[]".format(
+                etype=get_type_name(node.array_type)
+            )
+
         self._cast_number = prev_cast_number
         self.ident = old_ident
-        return "{ident}new {etype}{{{exprs}}}{semicolon}".format(
+        return "{ident}{new}{{{exprs}}}{semicolon}".format(
             ident=self.get_ident(),
             exprs=", ".join(children_res),
-            etype=get_type_name(node.array_type),
+            new=new_stmt,
             semicolon=";" if self._parent_is_block() else ""
         )
 
