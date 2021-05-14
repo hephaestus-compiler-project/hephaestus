@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 from src import utils as ut
 from src.generators import utils as gu
-from src.ir import ast, types, type_utils as tu
+from src.ir import ast, types, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
@@ -167,6 +167,19 @@ class Generator():
                  if not isinstance(d, ast.ParameterDeclaration)]
         return exprs, decls
 
+    def _can_vararg_param(self, param):
+        if self.language == 'kotlin':
+            # XXX Can we do this in a better way? without hardcode?
+            # Actually in Kotlin, the type of varargs is Array<out T>.
+            # So, until we add support for use-site variance, we support
+            # varargs for 'primitive' types only which kotlinc treats them
+            # as specialized arrays.
+            t_constructor = getattr(param.get_type(), 't_constructor', None)
+            return isinstance(t_constructor, kt.SpecializedArrayType)
+        # A vararg is actually a syntactic sugar for a parameter whose type
+        # is an array of something.
+        return param.get_type().name == 'Array'
+
     def _gen_func_params(self):
         params = []
         arr_index = None
@@ -176,7 +189,7 @@ class Generator():
             param = self.gen_param_decl()
             # If the type of the parameter is an array consider make it
             # a vararg.
-            if not vararg_found and param.get_type().name == 'Array' and (
+            if not vararg_found and self._can_vararg_param(param) and (
                     ut.random.bool()):
                 param.vararg = True
                 arr_index = i
