@@ -224,7 +224,9 @@ class JavaTranslator(ASTVisitor):
         # function calls) in a variable x and then we use return_stmt.
         if self.is_func_non_void_block:
             sugar = "return "
-        elif children and not isinstance(children[-1], ast.FunctionCall):
+        elif children and not isinstance(children[-1],
+                                        (ast.FunctionCall,
+                                         ast.VariableDeclaration)):
             sugar = "var x = "
         else:
             sugar = ""

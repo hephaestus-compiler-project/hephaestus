@@ -21,7 +21,7 @@ def produce_program(lang, types):
     )
     b_cls = ClassDeclaration(
         "B",
-        [SuperClassInstantiation(a_cls.get_type(), [])],
+        [SuperClassInstantiation(a_cls.get_type(), [StringConstant("b")])],
         ClassDeclaration.REGULAR,
         [b_a_field],
         is_final=False
