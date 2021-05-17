@@ -37,15 +37,21 @@ def create_override_fields(fields):
 
 
 def create_override_functions(functions):
-    return [
-        ast.FunctionDeclaration(f.name, deepcopy(f.params),
-                                deepcopy(f.ret_type),
-                                deepcopy(f.body),
-                                ast.FunctionDeclaration.CLASS_METHOD,
-                                inferred_type=deepcopy(f.inferred_type),
-                                is_final=f.is_final, override=True)
-        for f in functions
-    ]
+    over_functions = []
+    for f in functions:
+        params = deepcopy(f.params)
+        # FIXME: In Kotlin overriden function are not allowed to carry
+        # default arguments.
+        for p in params:
+            p.default = None
+        overf = ast.FunctionDeclaration(f.name, params,
+                                        deepcopy(f.ret_type),
+                                        deepcopy(f.body),
+                                        ast.FunctionDeclaration.CLASS_METHOD,
+                                        inferred_type=deepcopy(f.inferred_type),
+                                        is_final=f.is_final, override=True)
+        over_functions.append(overf)
+    return over_functions
 
 
 def create_empty_supertype(class_type):
@@ -60,14 +66,18 @@ def create_interface(class_decl, empty):
     if empty:
         # Create an empty interface, i.e., without functions.
         return create_empty_supertype(ast.ClassDeclaration.INTERFACE)
-    functions = [
-        ast.FunctionDeclaration(f.name, deepcopy(f.params),
-                                deepcopy(f.get_type()), None,
-                                ast.FunctionDeclaration.CLASS_METHOD,
-                                inferred_type=None,
-                                is_final=False, override=f.override)
-        for f in class_decl.functions
-    ]
+    functions = []
+    for f in class_decl.functions:
+        params = deepcopy(f.params)
+        # We can't have default parameters in interfaces.
+        for p in params:
+            p.default = None
+        func = ast.FunctionDeclaration(f.name, params,
+                                       deepcopy(f.get_type()), None,
+                                       ast.FunctionDeclaration.CLASS_METHOD,
+                                       inferred_type=None,
+                                       is_final=False, override=f.override)
+        functions.append(func)
     return ast.ClassDeclaration(utils.random.word().capitalize(),
                                 superclasses=[], fields=[],
                                 class_type=ast.ClassDeclaration.INTERFACE,
@@ -407,8 +417,11 @@ class SupertypeCreation(TypeCreation):
             sfunc = func_map[func.name]  # selected_func
             ret_type = sfunc.ret_type if check_return_stmt(sfunc) else \
                 sfunc.inferred_type
+            params = deepcopy(sfunc.params)
+            for p in params:
+                p.default = None
             over_func = ast.FunctionDeclaration(
-                sfunc.name, deepcopy(sfunc.params), ret_type,
+                sfunc.name, params, ret_type,
                 sfunc.body, ast.FunctionDeclaration.CLASS_METHOD,
                 sfunc.inferred_type,
                 is_final=sfunc.is_final, override=True)

@@ -159,14 +159,24 @@ class KotlinTranslator(ASTVisitor):
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in node.children():
+            c.accept(self)
+        self.ident = old_ident
         vararg_str = 'vararg ' if node.vararg else ''
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
         param_type = (
             node.param_type.type_args[0]
-            if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
+            if node.vararg and isinstance(node.param_type,
+                                          tp.ParameterizedType)
             else node.param_type)
         res = vararg_str + node.name + ": " + get_type_name(param_type)
+        if len(children):
+            children_res = self.pop_children_res(children)
+            res += " = " + children_res[0]
         self._children_res.append(res)
 
     def visit_func_decl(self, node):
