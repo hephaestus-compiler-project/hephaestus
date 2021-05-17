@@ -315,6 +315,17 @@ class GroovyTranslator(ASTVisitor):
         return res
 
     @append_to
+    def visit_call_argument(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in node.children():
+            c.accept(self)
+        self.ident = old_ident
+        children_res = self.pop_children_res(children)
+        return children_res[0]
+
+    @append_to
     def visit_field_decl(self, node):
         return "public {final}{field_type} {name}".format(
             final="final " if node.is_final else "",

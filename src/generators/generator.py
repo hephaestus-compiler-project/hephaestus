@@ -477,13 +477,19 @@ class Generator():
         self.depth += 1
         for param in func.params:
             if not param.vararg:
-                args.append(self.generate_expr(param.get_type(), only_leaves))
+                arg = self.generate_expr(param.get_type(), only_leaves)
+                if param.default:
+                    args.append(ast.CallArgument(arg, name=param.name))
+                else:
+                    args.append(ast.CallArgument(arg))
+
             else:
                 # This param is a vararg, so provide a random number of
                 # arguments.
                 for _ in range(ut.random.integer(0, 3)):
-                    args.append(self.generate_expr(
-                        param.get_type().type_args[0], only_leaves))
+                    args.append(ast.CallArgument(
+                        self.generate_expr(
+                            param.get_type().type_args[0], only_leaves)))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
 
