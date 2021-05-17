@@ -65,6 +65,16 @@ class JavaTranslator(ASTVisitor):
         # Keep track if a block is function body
         self.in_func = False
 
+        # In Java the format of smart cast is the following:
+        # ((variable instanceof Type new_var_name) ? new_var_name : foo)
+        # To mitigate this issue we keep the variables that we smart cast in
+        # a stack. Finally, when we reference a variable inside a conditional,
+        # add the suffix _is in variable's name.
+        # Example:
+        # ((v instanceof Foo v_is) ? v_is : bar)
+        # NOTE we currently handle only Variable objects
+        self._visit_is_stack = [None]
+
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
         # into a Main static class. Moreover, they should be static and get
@@ -105,6 +115,7 @@ class JavaTranslator(ASTVisitor):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
         self._nodes_stack = [None]
+        self._visit_is_stack = [None]
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -624,10 +635,11 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_variable(self, node):
-        return "{ident}{main_prefix}{name}{semicolon}".format(
+        return "{ident}{main_prefix}{name}{is_prefix}{semicolon}".format(
             ident=self.get_ident(),
             main_prefix=self._get_main_prefix('vars', node.name),
             name=node.name,
+            is_prefix=self._visit_is_stack.count(node.name) * "_is",
             semicolon=";" if self._parent_is_block() else ""
         )
 
@@ -686,16 +698,30 @@ class JavaTranslator(ASTVisitor):
     def visit_is(self, node):
         old_ident = self.ident
         self.ident = 0
+
+        is_variable = True
+        if isinstance(node.lexpr, ast.Variable):
+            self._visit_is_stack.append(node.lexpr.name)
+            is_variable = True
+
         children = node.children()
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{ident}{not_1}{expr} instanceof {type_to_check}{not_2}".format(
+
+        not_1 = "!(" if node.operator.is_not else ""
+        not_2 = ")" if node.operator.is_not else ""
+        new_var = " {name}{suffix}".format(
+                name=node.lexpr.name,
+                suffix=self._visit_is_stack.count(node.lexpr.name) * "_is"
+            ) if is_variable else ""
+        res = "{ident}{not_1}{expr} instanceof {type_to_check}{new}{not_2}".format(
             ident=self.get_ident(old_ident=old_ident),
-            not_1="!(",
-            expr=children_res[0],
+            not_1=not_1,
+            expr=children_res[0][:-3] if is_variable else children_res[0],
             type_to_check=node.rexpr.get_name(),
-            not_2=")")
+            new=new_var,
+            not_2=not_2)
         self.ident = old_ident
         return res
 
