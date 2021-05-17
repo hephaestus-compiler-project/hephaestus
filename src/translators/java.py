@@ -62,6 +62,9 @@ class JavaTranslator(ASTVisitor):
         # Keep track if a block is in a function that is a nested function
         self.is_nested_func_block = False
 
+        # Keep track if a block is function body
+        self.in_func = False
+
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         # We have to add all non-class declarations top-level declarations
         # into a Main static class. Moreover, they should be static and get
@@ -97,6 +100,7 @@ class JavaTranslator(ASTVisitor):
         self._cast_number = False
         self.ident = 0
         self.is_func_non_void_block = False
+        self.in_func = False
         self.is_nested_func_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
@@ -191,8 +195,10 @@ class JavaTranslator(ASTVisitor):
         children = node.children()
         is_func_non_void_block = self.is_func_non_void_block
         is_nested_func_block = self.is_nested_func_block
+        in_func = self.in_func
         self.is_func_non_void_block = False
         self.is_nested_func_block = False
+        self.in_func = False
         children_len = len(children)
         for i, c in enumerate(children):
             # Cast return statement if it's a number literal
@@ -206,6 +212,7 @@ class JavaTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         self.is_func_non_void_block = is_func_non_void_block
         self.is_nested_func_block = is_nested_func_block
+        self.in_func = in_func
 
         # We use this return statement if the function type is void
         return_stmt = ""
@@ -222,6 +229,7 @@ class JavaTranslator(ASTVisitor):
         else:
             sugar = ""
 
+        # A block could be the body of a function or the body of an if statement
         if len(children_res) == 0:  # empty block
             res = "{ }"
         elif len(children_res) == 1:  # single statement
@@ -441,6 +449,8 @@ class JavaTranslator(ASTVisitor):
         self.is_func_non_void_block = node.get_type() != jt.Void
         is_nested_func_block = self.is_nested_func_block
         self.is_nested_func_block = is_nested_func()
+        in_func = self.in_func
+        self.in_func = True
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
             self._cast_number = True
@@ -492,6 +502,7 @@ class JavaTranslator(ASTVisitor):
         self.ident = old_ident
         self.is_func_non_void_block = is_func_non_void_block
         self.is_nested_func_block = is_nested_func_block
+        self.in_func = in_func
         self._cast_number = prev_cast_number
         if self._inside_is:
             self._inside_is_function = prev_inside_is_function
