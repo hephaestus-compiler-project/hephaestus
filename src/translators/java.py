@@ -210,7 +210,7 @@ class JavaTranslator(ASTVisitor):
         # We use this return statement if the function type is void
         return_stmt = ""
         if not self.is_func_non_void_block:
-            ret = "return null;" if self.is_nested_func_block else "return;"
+            ret = "return null;" if self.is_nested_func_block else ""
             return_stmt = "\n" + self.get_ident() + ret
 
         # If return type is void, then we assign the last statement (except
