@@ -12,6 +12,7 @@ class ASTVisitor():
             ast.SuperClassInstantiation: self.visit_super_instantiation,
             ast.ClassDeclaration: self.visit_class_decl,
             types.TypeParameter: self.visit_type_param,
+            ast.CallArgument: self.visit_call_argument,
             ast.FieldDeclaration: self.visit_field_decl,
             ast.VariableDeclaration: self.visit_var_decl,
             ast.ParameterDeclaration: self.visit_param_decl,
@@ -60,6 +61,9 @@ class ASTVisitor():
 
     def visit_var_decl(self, node):
         raise NotImplementedError('visit_var_decl() must be implemented')
+
+    def visit_call_argument(self, node):
+        raise NotImplementedError('visit_call_argument() must be implemented')
 
     def visit_field_decl(self, node):
         raise NotImplementedError('visit_field_decl() must be implemented')
@@ -155,6 +159,9 @@ class DefaultVisitor(ASTVisitor):
     def visit_var_decl(self, node):
         return self._visit_node(node)
 
+    def visit_call_argument(self, node):
+        return self._visit_node(node)
+
     def visit_field_decl(self, node):
         return self._visit_node(node)
 
@@ -225,8 +232,6 @@ class DefaultVisitorUpdate(DefaultVisitor):
         children = node.children()
         new_children = []
         for c in children:
-            if not c:
-                import pdb; pdb.set_trace()
             new_children.append(c.accept(self))
         node.update_children(new_children)
         return node
