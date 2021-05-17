@@ -142,6 +142,7 @@ class Block(Node):
             return check_list_eq(self.body, other.body)
         return False
 
+
 class Declaration(Node):
     def get_type(self):
         raise NotImplementedError('get_type() must be implemented')
@@ -268,6 +269,30 @@ class SuperClassInstantiation(Node):
         if isinstance(other, SuperClassInstantiation):
             return (self.class_type == other.class_type and
                     check_list_eq(self.args, other.args))
+        return False
+
+
+class CallArgument(Node):
+    def __init__(self, expr: Expr, name: str = None):
+        self.expr = expr
+        self.name = name
+
+    def children(self):
+        return [self.expr]
+
+    def update_children(self, children):
+        super().update_children(children)
+        self.expr = children[0]
+
+    def __str__(self):
+        if self.name:
+            return "{} = {}".format(self.name, str(self.expr))
+        return str(self.expr)
+
+    def is_equal(self, other):
+        if isinstance(other, CallArgument):
+            return (self.name == other.name and
+                    self.expr.is_equal(other.is_equal))
         return False
 
 
@@ -930,7 +955,8 @@ class FieldAccess(Expr):
 
 
 class FunctionCall(Expr):
-    def __init__(self, func: str, args: List[Expr], receiver: Expr = None):
+    def __init__(self, func: str, args: List[CallArgument],
+                 receiver: Expr = None):
         self.func = func
         self.args = args
         self.receiver = receiver

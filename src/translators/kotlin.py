@@ -151,6 +151,19 @@ class KotlinTranslator(ASTVisitor):
         self._cast_integers = prev
         self._children_res.append(res)
 
+    def visit_call_argument(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in node.children():
+            c.accept(self)
+        self.ident = old_ident
+        children_res = self.pop_children_res(children)
+        res = children_res[0]
+        if node.name:
+            res = node.name + " = " + res
+        self._children_res.append(res)
+
     def visit_field_decl(self, node):
         prefix = '' if node.can_override else 'open '
         prefix += '' if not node.override else 'override '
