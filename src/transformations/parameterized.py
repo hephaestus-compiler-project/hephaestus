@@ -300,7 +300,8 @@ class ParameterizedSubstitution(Transformation):
         if connected_type_param:
             return connected_type_param
 
-        if utils.random.bool() or old_type.is_primitive():
+        if utils.random.bool() or old_type.is_primitive() or (
+                getattr(node, 'default', None)):
             # Do not parameterized node whose initial type is a primitive,
             # because this creates a lot of troubles. For example,
             # consider the following program

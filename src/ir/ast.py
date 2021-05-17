@@ -282,10 +282,14 @@ class ParameterDeclaration(Declaration):
         self.default = default
 
     def children(self):
+        if self.default:
+            return [self.default]
         return []
 
     def update_children(self, children):
-        pass
+        super().update_children(children)
+        if self.default:
+            self.default = children[0]
 
     def get_type(self):
         return self.param_type

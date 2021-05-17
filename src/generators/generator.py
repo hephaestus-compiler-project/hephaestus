@@ -189,6 +189,22 @@ class Generator():
         # is an array of something.
         return param.get_type().name == 'Array'
 
+    def _gen_func_params_with_default(self):
+        has_default = False
+        params = []
+        for i in range(ut.random.integer(0, self.max_params)):
+            param = self.gen_param_decl()
+            if not has_default:
+                has_default = ut.random.bool()
+            if has_default:
+                prev = self.namespace
+                self.namespace = self.namespace[:-1]
+                expr = self.generate_expr(param.get_type(), only_leaves=True)
+                self.namespace = prev
+                param.default = expr
+                params.append(param)
+        return params
+
     def _gen_func_params(self):
         params = []
         arr_index = None
@@ -231,9 +247,10 @@ class Generator():
 
         prev_inside_java_nested_fun = self._inside_java_nested_fun
         self._inside_java_nested_fun = nested_function and self.language == "java"
-
-        params = self._gen_func_params()
-
+        params = (
+            self._gen_func_params()
+            if ut.random.bool(prob=0.25) or self.language == 'java'
+            else self._gen_func_params_with_default())
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         expr_type = self.gen_type(False) \
             if ret_type == self.bt_factory.get_void_type() else ret_type
