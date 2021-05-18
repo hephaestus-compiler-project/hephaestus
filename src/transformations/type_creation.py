@@ -16,16 +16,22 @@ def create_non_final_fields(fields):
     ]
 
 
-def create_non_final_functions(functions):
-    return [
-        ast.FunctionDeclaration(f.name, deepcopy(f.params),
-                                deepcopy(f.get_type()),
-                                deepcopy(f.body),
-                                ast.FunctionDeclaration.CLASS_METHOD,
-                                inferred_type=deepcopy(f.inferred_type),
-                                is_final=False, override=f.override)
-        for f in functions
-    ]
+def create_non_final_functions(functions, exclude_default_args=True):
+    new_functions = []
+    for f in functions:
+        if exclude_default_args and any(
+                p.default is not None for p in f.params):
+            continue
+        params = deepcopy(f.params)
+        new_functions.append(
+            ast.FunctionDeclaration(f.name, params,
+                                    deepcopy(f.get_type()),
+                                    deepcopy(f.body),
+                                    ast.FunctionDeclaration.CLASS_METHOD,
+                                    inferred_type=deepcopy(f.inferred_type),
+                                    is_final=False, override=f.override)
+        )
+    return new_functions
 
 
 def create_override_fields(fields):
@@ -34,24 +40,6 @@ def create_override_fields(fields):
                              override=True, is_final=f.is_final)
         for f in fields
     ]
-
-
-def create_override_functions(functions):
-    over_functions = []
-    for f in functions:
-        params = deepcopy(f.params)
-        # FIXME: In Kotlin overriden function are not allowed to carry
-        # default arguments.
-        for p in params:
-            p.default = None
-        overf = ast.FunctionDeclaration(f.name, params,
-                                        deepcopy(f.ret_type),
-                                        deepcopy(f.body),
-                                        ast.FunctionDeclaration.CLASS_METHOD,
-                                        inferred_type=deepcopy(f.inferred_type),
-                                        is_final=f.is_final, override=True)
-        over_functions.append(overf)
-    return over_functions
 
 
 def create_empty_supertype(class_type):
@@ -68,10 +56,10 @@ def create_interface(class_decl, empty):
         return create_empty_supertype(ast.ClassDeclaration.INTERFACE)
     functions = []
     for f in class_decl.functions:
-        params = deepcopy(f.params)
         # We can't have default parameters in interfaces.
-        for p in params:
-            p.default = None
+        if any(p.default is not None for p in f.params):
+            continue
+        params = deepcopy(f.params)
         func = ast.FunctionDeclaration(f.name, params,
                                        deepcopy(f.get_type()), None,
                                        ast.FunctionDeclaration.CLASS_METHOD,
@@ -91,6 +79,9 @@ def create_abstract_class(class_decl, empty):
         return create_empty_supertype(ast.ClassDeclaration.INTERFACE)
     functions = []
     for func in class_decl.functions:
+        has_default = any(p.default is not None for p in func.params)
+        if has_default:
+            continue
         # Some functions are randomly made abstract.
         body_f = None if utils.random.bool() else deepcopy(func.body)
         functions.append(
@@ -359,7 +350,8 @@ class SubtypeCreation(TypeCreation):
 
     def adapt_old_class(self, class_decl):
         class_decl.fields = create_non_final_fields(class_decl.fields)
-        class_decl.functions = create_non_final_functions(class_decl.functions)
+        class_decl.functions = create_non_final_functions(class_decl.functions,
+                                                          False)
         class_decl.is_final = False
         return class_decl
 
@@ -433,6 +425,11 @@ class SupertypeCreation(TypeCreation):
             if utils.random.bool():
                 # Randomly choose to override a function from supertype.
                 functions.append(over_func)
+        functions_with_default = [
+            f for f in class_decl.functions
+            if any(p.default is not None for p in f.params)
+        ]
+        functions.extend(functions_with_default)
         return functions
 
     def adapt_old_class(self, class_decl):
