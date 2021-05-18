@@ -148,12 +148,12 @@ class TypeCreation(Transformation):
         class_decl = utils.random.choice(classes)
         self._new_class = self.create_new_class(class_decl)
         self._old_class = self.adapt_old_class(class_decl)
+        # Update the old class and add new class to the context.
+        node.add_declaration(self._old_class)
+        node.add_declaration(self._new_class)
         # Add the newly created class to the program's context.
         new_node = super().visit_program(self.program)
         self.program = new_node
-        # Update the old class and add new class to the context.
-        new_node.add_declaration(self._old_class)
-        new_node.add_declaration(self._new_class)
 
         # At the following lines, we place new class at the right place.
         # For example, if the new class inherits from the old class, we place
@@ -217,9 +217,10 @@ class TypeCreation(Transformation):
         return node
 
     def visit_param_decl(self, node):
-        self.update_type(node, 'param_type')
-        self.program.context.add_var(self._namespace, node.name, node)
-        return node
+        new_node = super().visit_param_decl(node)
+        self.update_type(new_node, 'param_type')
+        self.program.context.add_var(self._namespace, new_node.name, new_node)
+        return new_node
 
     def visit_var_decl(self, node):
         new_node = super().visit_var_decl(node)

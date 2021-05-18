@@ -353,8 +353,9 @@ class TypeSubstitution(Transformation):
         return new_node
 
     def visit_param_decl(self, node):
-        self._defs[(self._namespace, node.name)] = False
-        return node
+        new_node = super().visit_param_decl(node)
+        self._defs[(self._namespace, new_node.name)] = False
+        return new_node
 
     def visit_field_decl(self, node):
         self._defs[(self._namespace, node.name)] = False
