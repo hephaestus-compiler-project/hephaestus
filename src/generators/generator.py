@@ -504,7 +504,9 @@ class Generator():
             if not param.vararg:
                 arg = self.generate_expr(param.get_type(), only_leaves)
                 if param.default:
-                    args.append(ast.CallArgument(arg, name=param.name))
+                    if self.language == 'kotlin' and ut.random.bool():
+                        # Randomly skip some default arguments.
+                        args.append(ast.CallArgument(arg, name=param.name))
                 else:
                     args.append(ast.CallArgument(arg))
 
