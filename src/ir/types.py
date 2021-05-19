@@ -174,31 +174,60 @@ class SimpleClassifier(Classifier):
         )
 
 
-class TypeParameter(AbstractType):
+class Variance(object):
     INVARIANT = 0
     COVARIANT = 1
     CONTRAVARIANT = 2
 
-    def __init__(self, name: str, variance=None, bound: Type = None):
-        super().__init__(name)
-        self.variance = variance or self.INVARIANT
-        self.bound = bound
+    def __init__(self, value):
+        self.value = value
 
-    def variance_to_string(self):
-        if self.variance == 1:
+    def variance_to_str(self):
+        if self.value == 1:
             return 'out'
-        if self.variance == 2:
+        if self.value == 2:
             return 'in'
         return ''
 
     def is_covariant(self):
-        return self.variance == 1
+        return self.value == 1
 
     def is_contravariant(self):
-        return self.variance == 2
+        return self.value == 2
 
     def is_invariant(self):
-        return self.variance == 0
+        return self.value == 0
+
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__ and
+            self.value == other.value
+        )
+
+
+Invariant = Variance(Variance.INVARIANT)
+Covariant = Variance(Variance.COVARIANT)
+Contravariant = Variance(Variance.CONTRAVARIANT)
+
+
+class TypeParameter(AbstractType):
+
+    def __init__(self, name: str, variance=None, bound: Type = None):
+        super().__init__(name)
+        self.variance = variance or Invariant
+        self.bound = bound
+
+    def variance_to_string(self):
+        return self.variance.variance_to_str()
+
+    def is_covariant(self):
+        return self.variance.is_covariant()
+
+    def is_contravariant(self):
+        return self.variance.is_contravariant()
+
+    def is_invariant(self):
+        return self.variance.is_invariant()
 
     def children(self):
         return []
@@ -215,7 +244,7 @@ class TypeParameter(AbstractType):
     def __str__(self):
         return "{}{}{}".format(
             self.variance_to_string() +
-            ' ' if self.variance != self.INVARIANT else '',
+            ' ' if self.variance != Invariant else '',
             self.name,
             ': ' + self.bound.get_name() if self.bound is not None else ''
         )
