@@ -6,7 +6,7 @@ from src.ir import groovy_types, java_types
 from src.translators.groovy import GroovyTranslator
 from src.translators.java import JavaTranslator
 from tests.resources.translators import (program1, program2, program3,
-    program4, program5)
+    program4, program5, program6)
 
 
 LANG_LOOKUP = {
@@ -59,5 +59,10 @@ def test_closures():
 def test_generics():
     run_test("program4", program4)
 
+
 def test_is():
     run_test("program5", program5)
+
+
+def test_condition_block():
+    run_test("program6", program6)
