@@ -328,7 +328,7 @@ class JavaTranslator(ASTVisitor):
             interfaces = []
             for cls_inst in node.superclasses:
                 cls_name = cls_inst.class_type.name
-                cls_inst = cls_inst.class_type.get_name()
+                cls_inst = get_type_name(cls_inst.class_type)
                 cls_decl = self.context.get_classes(
                     self._namespace, glob=True)[cls_name]
                 if cls_decl.class_type == ast.ClassDeclaration.INTERFACE:
