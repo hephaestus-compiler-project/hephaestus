@@ -470,7 +470,8 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if isinstance(expr, ast.Variable):
             smart_type = smart_casts.get(expr)
             if smart_type:
-                return smart_type
+                vardecl = ctx.get_decl(context, namespace, expr.name)
+                return _return_type_hint(smart_type)
             vardecl = ctx.get_decl(context, namespace, expr.name)
             return _return_type_hint(
                 None if vardecl is None else vardecl[1].get_type())
@@ -486,9 +487,6 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
                 e1_type, e2_type, types, factory.get_any_type()))
 
         if isinstance(expr, ast.FunctionCall):
-            smart_type = smart_casts.get(expr)
-            if smart_type:
-                return smart_type
             if expr.receiver is None:
                 funcdecl = ctx.get_decl(context, namespace, expr.func)
                 return _return_type_hint(
@@ -497,9 +495,6 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             expr = expr.receiver
 
         elif isinstance(expr, ast.FieldAccess):
-            smart_type = smart_casts.get(expr)
-            if smart_type:
-                return smart_type
             names.append(expr.field)
             expr = expr.expr
 
