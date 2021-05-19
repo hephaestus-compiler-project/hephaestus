@@ -1,11 +1,17 @@
 import itertools
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import src.ir.ast as ast
 import src.ir.types as tp
 import src.ir.context as ctx
-import src.ir.kotlin_types as kt
+import src.ir.builtins as bt
 from src import utils
+
+
+class IsEqualDict(dict):
+    def get(self, key):
+        key = next((k for k in self.keys() if k.is_equal(key)), None)
+        return dict.get(self, key)
 
 
 def _construct_related_types(etype, types, get_subtypes):
@@ -87,7 +93,8 @@ def find_supertypes(etype, types, include_self=False, bound=None,
                        concrete_only=concrete_only)
 
 
-def get_irrelevant_parameterized_type(etype, types, type_args_map):
+def get_irrelevant_parameterized_type(etype, types, type_args_map,
+                                      factory: bt.BuiltinFactory):
     assert isinstance(etype, tp.TypeConstructor)
     type_args = type_args_map.get(etype.name)
 
@@ -104,7 +111,7 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map):
             type_list = [to_type(t, types) for t in types if t != type_args[i]]
             new_type_args[i] = utils.random.choice(type_list)
         else:
-            t = find_irrelevant_type(type_args[i], types)
+            t = find_irrelevant_type(type_args[i], types, factory)
             if t is None:
                 continue
             new_type_args[i] = t
@@ -114,7 +121,8 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map):
     return etype.new(new_type_args)
 
 
-def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
+def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
+                         factory: bt.BuiltinFactory) -> tp.Type:
     """
     Find a type that is irrelevant to the given type.
 
@@ -127,11 +135,11 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
             return cls.get_type()
         return cls
 
-    if etype == kt.Any:
+    if etype == factory.get_any_type():
         return None
 
     if isinstance(etype, tp.TypeParameter):
-        if etype.bound is None or etype.bound == kt.Any:
+        if etype.bound is None or etype.bound == factory.get_any_type():
             return choose_type(types, only_regular=True)
         else:
             etype = etype.bound
@@ -158,7 +166,8 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type]) -> tp.Type:
         # type arguments in order to pass type arguments that are irrelevant
         # with any parameterized type created by this type constructor.
         type_list = [t for t in types if t != etype]
-        return get_irrelevant_parameterized_type(t, type_list, type_args_map)
+        return get_irrelevant_parameterized_type(
+                t, type_list, type_args_map, factory)
     return t
 
 
@@ -348,6 +357,19 @@ def find_nearest_supertype(etype, types, pred=lambda x, y: x in y):
     return None
 
 
+def find_lub(type_a, type_b, types, any_type):
+    # FIXME use a proper algorithm
+    super_types_a = find_supertypes(type_a, types, include_self=True)
+    super_types_b = find_supertypes(type_b, types, include_self=True)
+    super_types = list(set(super_types_a) & set(super_types_b))
+    res = (any_type, 0)
+    for stype in super_types:
+        score = len([t for t in super_types if stype.is_subtype(t)])
+        if score >= res[1]:
+            res = (stype, score)
+    return res[0]
+
+
 def get_decl_from_inheritance(receiver_t: tp.Type,
                               decl_name: str,
                               context: ctx.Context):
@@ -374,12 +396,16 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
     return None
 
 
-def get_type_hint(expr, context: ctx.Context,
-                  namespace: Tuple[str]) -> tp.Type:
+def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
+                  factory: bt.BuiltinFactory, types: List[tp.Type],
+                  smart_casts=IsEqualDict()) -> tp.Type:
     """
     Get a hint of the type of the expression.
 
     It's just a hint.
+
+    # NOTE that smart_casts are used in both branches which is incorrect.
+    # In the generated programs this works.
     """
 
     names = []
@@ -413,49 +439,69 @@ def get_type_hint(expr, context: ctx.Context,
 
     while True:
         if isinstance(expr, ast.IntegerConstant):
-            return _return_type_hint(expr.integer_type or kt.IntegerType)
+            return _return_type_hint(expr.integer_type or
+                                     type(factory.get_integer_type()))
 
-        elif isinstance(expr, ast.RealConstant):
+        if isinstance(expr, ast.RealConstant):
             return _return_type_hint(expr.real_type)
 
-        elif isinstance(expr, ast.BooleanConstant):
-            return _return_type_hint(kt.Boolean)
+        if isinstance(expr, ast.BooleanConstant):
+            return _return_type_hint(factory.get_boolean_type())
 
-        elif isinstance(expr, ast.CharConstant):
-            return _return_type_hint(kt.Char)
+        if isinstance(expr, ast.CharConstant):
+            return _return_type_hint(factory.get_char_type())
 
-        elif isinstance(expr, ast.StringConstant):
-            return _return_type_hint(kt.String)
+        if isinstance(expr, ast.StringConstant):
+            return _return_type_hint(factory.get_string_type())
 
-        elif isinstance(expr, ast.BinaryOp):
-            return _return_type_hint(kt.Boolean)
+        if isinstance(expr, ast.BinaryOp):
+            return _return_type_hint(factory.get_boolean_type())
 
-        elif isinstance(expr, ast.New):
+        if isinstance(expr, ast.New):
             return _return_type_hint(expr.class_type)
 
-        elif isinstance(expr, ast.Variable):
+        if isinstance(expr, ast.Block):
+            return _return_type_hint(get_type_hint(
+                expr.body[-1], context, namespace, factory, types))
+
+        if isinstance(expr, ast.Variable):
+            smart_type = smart_casts.get(expr)
+            if smart_type:
+                return smart_type
             vardecl = ctx.get_decl(context, namespace, expr.name)
             return _return_type_hint(
                 None if vardecl is None else vardecl[1].get_type())
 
-        elif isinstance(expr, ast.Conditional):
-            expr = expr.true_branch
+        if isinstance(expr, ast.Conditional):
+            expr1 = expr.true_branch
+            expr2 = expr.false_branch
+            e1_type = get_type_hint(expr1, context, namespace, factory, types,
+                                    smart_casts=smart_casts)
+            e2_type = get_type_hint(expr2, context, namespace, factory, types,
+                                    smart_casts=smart_casts)
+            return _return_type_hint(find_lub(
+                e1_type, e2_type, types, factory.get_any_type()))
 
-        elif isinstance(expr, ast.FunctionCall):
+        if isinstance(expr, ast.FunctionCall):
+            smart_type = smart_casts.get(expr)
+            if smart_type:
+                return smart_type
             if expr.receiver is None:
                 funcdecl = ctx.get_decl(context, namespace, expr.func)
                 return _return_type_hint(
                     None if funcdecl is None else funcdecl[1].get_type())
-            else:
-                names.append(expr.func)
-                expr = expr.receiver
+            names.append(expr.func)
+            expr = expr.receiver
 
         elif isinstance(expr, ast.FieldAccess):
+            smart_type = smart_casts.get(expr)
+            if smart_type:
+                return smart_type
             names.append(expr.field)
             expr = expr.expr
 
         else:
-            return kt.Unit
+            return factory.get_void_type()
 
 
 def node_in_expr(node, expr):
