@@ -77,7 +77,7 @@ class ValueSubstitution(Transformation):
             # variance. Therefore, we first need to get the class_declaration
             # of this type, and initialize the map of type parameters.
             params_map = {
-                t_p: etype.type_args[i]
+                t_p: etype.type_args[i].to_type()
                 for i, t_p in enumerate(etype.t_constructor.type_parameters)
             }
             return self._generate_new(class_decl, etype, params_map)
@@ -293,7 +293,7 @@ class TypeSubstitution(Transformation):
                              if st.name == parent_cls.name]
                 if isinstance(supertype, tp.ParameterizedType):
                     type_param_map = {
-                        t_param: supertype.type_args[i]
+                        t_param: supertype.type_args[i].to_type()
                         for i, t_param in enumerate(
                             supertype.t_constructor.type_parameters)
                     }
@@ -676,7 +676,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             # the type of the current attribute is abstract. So, based on
             # the instantiation of the receiver, find its concrete type.
             type_param_map = {
-                t_param: receiver.type_args[i]
+                t_param: receiver.type_args[i].to_type()
                 for i, t_param in enumerate(
                     receiver.t_constructor.type_parameters)
             }
@@ -820,7 +820,7 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
             field_types = [f.get_type() for f in cls.fields]
         else:
             type_param_map = {
-                t_param: node.class_type.type_args[i]
+                t_param: node.class_type.type_args[i].to_type()
                 for i, t_param in enumerate(
                     node.class_type.t_constructor.type_parameters)
             }

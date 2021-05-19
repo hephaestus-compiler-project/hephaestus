@@ -8,10 +8,10 @@ def get_type_name(t, get_boxed_void=False):
             return "Void"
         return t.get_name()
     if isinstance(t_constructor, gt.ArrayType):
-        return "{}[]".format(get_type_name(t.type_args[0]))
+        return "{}[]".format(get_type_name(t.type_args[0].to_type()))
     if isinstance(t_constructor, kt.SpecializedArrayType):
-        return "{}Array".format(get_type_name(t.type_args[0]))
+        return "{}Array".format(get_type_name(t.type_args[0].to_type()))
     if isinstance(t_constructor, jt.ArrayType):
-        return "{}[]".format(get_type_name(t.type_args[0]))
-    return "{}<{}>".format(t.name, ", ".join([get_type_name(ta, True)
+        return "{}[]".format(get_type_name(t.type_args[0].to_type()))
+    return "{}<{}>".format(t.name, ", ".join([get_type_name(ta.to_type(), True)
                                               for ta in t.type_args]))

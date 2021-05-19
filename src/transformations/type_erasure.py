@@ -6,7 +6,7 @@ from src.ir import ast
 from src.ir import types
 from src.ir import type_utils as tp
 from src.transformations.base import Transformation, change_namespace
-from src.analysis.use_analysis import UseAnalysis, GNode, NONE_NODE
+from src.analysis.use_analysis import UseAnalysis, GNode
 
 
 def deepcopynode(func):
@@ -89,7 +89,7 @@ class TypeArgumentErasureSubstitution(Transformation):
                 if (self._var_decl is not None and
                         self._var_decl[1].inferred_type in
                         self.program.bt_factory.get_number_types() and
-                        any(ta in self.program.bt_factory.get_number_types()
+                        any(ta.to_type() in self.program.bt_factory.get_number_types()
                             for ta in node.class_type.type_args)):
                     return node
                 # If the node is the return statement of a function or if it is

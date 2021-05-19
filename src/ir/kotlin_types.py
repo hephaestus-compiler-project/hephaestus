@@ -232,14 +232,14 @@ Boolean = BooleanType()
 Array = ArrayType()
 
 # Specialized arrays, see https://kotlinlang.org/spec/type-system.html#array-types
-DoubleArray = SpecializedArrayType().new([Double])
-FloatArray = SpecializedArrayType().new([Float])
-LongArray = SpecializedArrayType().new([Long])
-IntegerArray = SpecializedArrayType().new([Integer])
-ShortArray = SpecializedArrayType().new([Short])
-ByteArray = SpecializedArrayType().new([Byte])
-CharArray = SpecializedArrayType().new([Char])
-BooleanArray = SpecializedArrayType().new([Boolean])
+DoubleArray = SpecializedArrayType().new([Double.to_type_arg()])
+FloatArray = SpecializedArrayType().new([Float.to_type_arg()])
+LongArray = SpecializedArrayType().new([Long.to_type_arg()])
+IntegerArray = SpecializedArrayType().new([Integer.to_type_arg()])
+ShortArray = SpecializedArrayType().new([Short.to_type_arg()])
+ByteArray = SpecializedArrayType().new([Byte.to_type_arg()])
+CharArray = SpecializedArrayType().new([Char.to_type_arg()])
+BooleanArray = SpecializedArrayType().new([Boolean.to_type_arg()])
 
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
                    Double, Char, String, Boolean, Array,

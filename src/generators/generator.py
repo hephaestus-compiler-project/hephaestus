@@ -323,7 +323,7 @@ class Generator():
 
     def gen_array_expr(self, expr_type, only_leaves=False, subtype=True):
         arr_len = ut.random.integer(0, 3)
-        etype = expr_type.type_args[0]
+        etype = expr_type.type_args[0].to_type()
         exprs = [
             self.generate_expr(etype, only_leaves=only_leaves, subtype=subtype)
             for _ in range(arr_len)
@@ -352,7 +352,10 @@ class Generator():
         candiate_types.extend(usr_types)
 
         for _ in etype.type_parameters:
-            t_args.append(ut.random.choice(candiate_types))
+            selected_type = ut.random.choice(candiate_types)
+            if selected_type.is_primitive():
+                selected_type = selected_type.box_type()
+            t_args.append(selected_type.to_type_arg())
         return etype.new(t_args)
 
     def gen_variable_decl(self, etype=None, only_leaves=False,
@@ -516,7 +519,8 @@ class Generator():
                 for _ in range(ut.random.integer(0, 3)):
                     args.append(ast.CallArgument(
                         self.generate_expr(
-                            param.get_type().type_args[0], only_leaves)))
+                            param.get_type().type_args[0].to_type(),
+                            only_leaves)))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
 
@@ -564,6 +568,8 @@ class Generator():
                     subclasses.append(c)
         # FIXME what happens if subclasses is empty?
         # it may happens due to ParameterizedType with TypeParameters as targs
+        if not subclasses:
+            import pdb; pdb.set_trace()
         return ut.random.choice(
             [s for s in subclasses if s.name == etype.name] or subclasses)
 
@@ -589,7 +595,7 @@ class Generator():
         # type arguments as given by the `etype` variable.
         type_param_map = (
             {} if not class_decl.is_parameterized()
-            else {t_p: etype.type_args[i]
+            else {t_p: etype.type_args[i].to_type()
                   for i, t_p in enumerate(class_decl.type_parameters)}
         )
         initial_depth = self.depth
