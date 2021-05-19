@@ -267,9 +267,9 @@ class TypeParameter(AbstractType):
 
 
 def _get_type_substitution(etype, type_map):
-    if isinstance(etype.to_type(), ParameterizedType):
-        return substitute_type_args(etype.to_type(), type_map)
-    t = type_map.get(etype.to_type())
+    if isinstance(etype, ParameterizedType):
+        return substitute_type_args(etype, type_map)
+    t = type_map.get(etype)
     if t is None or t.has_type_variables():
         # The type parameter does not correspond to an abstract type
         # so, there is nothing to substitute.
@@ -281,9 +281,10 @@ def substitute_type_args(etype, type_map):
     assert isinstance(etype, ParameterizedType)
     type_args = []
     for t_arg in etype.type_args:
-        type_args.append(_get_type_substitution(t_arg, type_map))
+        type_args.append(_get_type_substitution(
+            t_arg.to_type(), type_map).to_type_arg(t_arg.variance))
     new_type_map = {
-        tp: type_args[i].to_type_arg()
+        tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
     }
     type_con = perform_type_substitution(
@@ -362,6 +363,8 @@ class TypeConstructor(AbstractType):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
         type_con = perform_type_substitution(self, type_map)
+        if any(not isinstance(ta, TypeArgument) for ta in type_args):
+            import pdb; pdb.set_trace()
         return ParameterizedType(type_con, type_args)
 
 
