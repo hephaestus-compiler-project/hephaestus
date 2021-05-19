@@ -731,20 +731,22 @@ class JavaTranslator(ASTVisitor):
         cond.accept(self)
         true_branch = children[1]
         false_branch = children[2]
-        # Smart Cast
+        # Handle Smart Cast and is suffix
         if isinstance(cond, ast.Is):
-            # true branch
+            # true branch smart cast
             if not cond.operator.is_not:
                 self.smart_casts[cond.lexpr] = cond.rexpr
                 true_branch.accept(self)
                 self.smart_casts.pop(cond.lexpr, None)
                 false_branch.accept(self)
-            # false branch
+            # false branch smart cast
             else:
                 true_branch.accept(self)
                 self.smart_casts[cond.lexpr] = cond.rexpr
                 false_branch.accept(self)
                 self.smart_casts.pop(cond.lexpr, None)
+            if isinstance(cond.lexpr, ast.Variable):
+                self._visit_is_stack.pop()
         else:
             true_branch.accept(self)
             false_branch.accept(self)
@@ -766,7 +768,7 @@ class JavaTranslator(ASTVisitor):
         old_ident = self.ident
         self.ident = 0
 
-        is_variable = True
+        is_variable = False
         if isinstance(node.lexpr, ast.Variable):
             self._visit_is_stack.append(node.lexpr.name)
             is_variable = True
