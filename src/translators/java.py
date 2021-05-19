@@ -249,7 +249,11 @@ class JavaTranslator(ASTVisitor):
                                           self._namespace,
                                           jt.JavaBuiltinFactory(),
                                           self.types), jt.VoidType):
-                sugar = "var x_{x} = ".format(x=self._x_counter)
+                if not isinstance(children[-1],
+                               (ast.VariableDeclaration,
+                                ast.FunctionCall,
+                                ast.Assignment)):
+                    sugar = "var x_{x} = ".format(x=self._x_counter)
                 return_stmt += "return null;"
             else:
                 assert not isinstance(children[-1], ast.VariableDeclaration), \
@@ -269,7 +273,8 @@ class JavaTranslator(ASTVisitor):
             if (children and
                     not isinstance(children[-1],
                                    (ast.VariableDeclaration,
-                                    ast.FunctionCall))):
+                                    ast.FunctionCall,
+                                    ast.Assignment))):
                 sugar = "var x_{x} = ".format(x=self._x_counter)
                 self._x_counter += 1
 
