@@ -249,6 +249,7 @@ class JavaTranslator(ASTVisitor):
                                           self._namespace,
                                           jt.JavaBuiltinFactory(),
                                           self.types), jt.VoidType):
+                sugar = "var x_{x} = ".format(x=self._x_counter)
                 return_stmt += "return null;"
             else:
                 assert not isinstance(children[-1], ast.VariableDeclaration), \
