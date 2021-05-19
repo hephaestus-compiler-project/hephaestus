@@ -201,7 +201,7 @@ class JavaTranslator(ASTVisitor):
         main_decls = [
             self.get_ident() + "static " + d.lstrip()
             for d in self._main_children]
-        main_method = self.get_ident() + "public static " + \
+        main_method = self.get_ident() + "static " + \
             self._main_method.lstrip() if self._main_method else None
         main_cls = "class Main {{\n{main_decls}{main_method}\n}}".format(
             main_decls="\n\n".join(main_decls),
@@ -544,9 +544,10 @@ class JavaTranslator(ASTVisitor):
                 body=body
             )
         else:
-            res = ("{ident}{final}{abstract}{ret_type} "
+            res = ("{ident}{public}{final}{abstract}{ret_type} "
                    "{name}({params}) {body}{semicolon}").format(
                 ident=self.get_ident(old_ident=old_ident),
+                public="public ",
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
                 ret_type=get_type_name(node.inferred_type),
