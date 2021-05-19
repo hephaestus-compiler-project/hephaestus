@@ -14,15 +14,15 @@ def _construct_related_types(etype, types, get_subtypes):
         if t_param.is_invariant():
             t_args = [etype.type_args[i]]
         elif t_param.is_covariant():
-            t_args = _find_types(etype.type_args[i], types,
+            t_args = _find_types(etype.type_args[i].concrete_type, types,
                                  get_subtypes, True,
                                  t_param.bound, concrete_only=True)
         else:
-            t_args = _find_types(etype.type_args[i], types,
+            t_args = _find_types(etype.type_args[i].concrete_type, types,
                                  not get_subtypes, True,
                                  t_param.bound, concrete_only=True)
         # Type argument should not be primitives.
-        t_args = [t for t in t_args if not t.is_primitive()]
+        t_args = [t.to_type_arg() for t in t_args if not t.is_primitive()]
         valid_args.append(t_args)
 
     return [
@@ -38,7 +38,6 @@ def to_type(stype, types):
     return stype
 
 
-# FIXME RecursionError
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 concrete_only=False):
 
@@ -102,13 +101,16 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map,
 
     for i, t_param in enumerate(etype.type_parameters):
         if t_param.is_invariant():
-            type_list = [to_type(t, types) for t in types if t != type_args[i]]
-            new_type_args[i] = utils.random.choice(type_list)
+            type_list = [to_type(t, types)
+                         for t in types
+                         if t != type_args[i].concrete_type]
+            new_type_args[i] = utils.random.choice(type_list).to_type_arg()
         else:
-            t = find_irrelevant_type(type_args[i], types, factory)
+            t = find_irrelevant_type(type_args[i].concrete_type, types,
+                                     factory)
             if t is None:
                 continue
-            new_type_args[i] = t
+            new_type_args[i] = t.to_type_arg()
 
     if new_type_args == type_args:
         return None
@@ -196,8 +198,9 @@ class TypeUpdater():
     def _update_type(self, etype, new_type,
                      test_pred=lambda x, y: x.name == y.name):
         if isinstance(etype, tp.TypeParameter) or (
-            isinstance(etype, tp.ParameterizedType)) or (
-                isinstance(etype, tp.TypeConstructor)):
+            isinstance(etype, tp.TypeArgument)) or (
+                isinstance(etype, tp.ParameterizedType)) or (
+                    isinstance(etype, tp.TypeConstructor)):
             # We must re-compute parameterized types, as they may involve
             # different type arguments or type constructors.
             return self.update_type(etype, new_type, test_pred)
@@ -211,7 +214,7 @@ class TypeUpdater():
             new_type = self.update_type(etype, new_type, test_pred)
             # We do not store builtin types into cache, because we never
             # update builtin types.
-            if not isinstance(new_type, tp.Builtin):
+            if not isinstance(new_type, (tp.Builtin, tp.TypeArgument)):
                 self._cache[key] = new_type
             return new_type
         return updated_type
@@ -224,8 +227,9 @@ class TypeUpdater():
             return etype
 
         self.update_supertypes(etype, new_type, test_pred)
+        is_type_arg = isinstance(etype, tp.TypeArgument)
         # Case 1: The test_pred func of the two types match.
-        if test_pred(etype, new_type):
+        if test_pred(etype, new_type) and not is_type_arg:
             # So if the new type is a type constructor update the type
             # constructor of 'etype' (if it is applicable)
             if isinstance(new_type, tp.TypeConstructor):
@@ -236,7 +240,7 @@ class TypeUpdater():
         # Case 2: If etype is a parameterized type, recursively inspect its
         # type arguments and type constructor for updates.
         if isinstance(etype, tp.ParameterizedType):
-            new_type_args = [self._update_type(ta, new_type)
+            new_type_args = [self._update_type(ta, new_type).to_type_arg()
                              for ta in etype.type_args]
             new_t_constructor = self._update_type(
                 etype.t_constructor, new_type, test_pred)
@@ -259,6 +263,11 @@ class TypeUpdater():
             if etype.bound is not None:
                 etype.bound = self._update_type(etype.bound, new_type,
                                                 test_pred)
+
+        # Case 5: If etype is a type argument, then update the enclosing type.
+        if is_type_arg:
+            etype.concrete_type = self._update_type(etype.concrete_type,
+                                                    new_type, test_pred)
         return etype
 
 
@@ -303,9 +312,9 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             types = [t for t in types if t != c]
             cls_type, _ = instantiate_type_constructor(
                 cls_type, types, only_regular)
-        t_args.append(cls_type)
+        t_args.append(cls_type.to_type_arg())
     # Also return a map of type parameters and their instantiations.
-    params_map = {t_param: t_args[i]
+    params_map = {t_param: t_args[i].to_type()
                   for i, t_param in enumerate(
                       type_constructor.type_parameters)}
     return type_constructor.new(t_args), params_map
@@ -332,7 +341,7 @@ def get_parameterized_type_instantiation(etype):
     if not isinstance(etype, tp.ParameterizedType):
         return {}
     return {
-        t_param: etype.type_args[i]
+        t_param: etype.type_args[i].to_type()
         for i, t_param in enumerate(etype.t_constructor.type_parameters)
     }
 
@@ -419,7 +428,7 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if isinstance(decl.get_type(), tp.AbstractType):
             assert isinstance(rec_t, tp.ParameterizedType)
             type_param_map = {
-                t_param: rec_t.type_args[i]
+                t_param: rec_t.type_args[i].to_type()
                 for i, t_param in enumerate(
                     rec_t.t_constructor.type_parameters)
             }

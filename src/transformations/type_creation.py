@@ -264,13 +264,14 @@ class SubtypeCreation(TypeCreation):
                          ast.ClassDeclaration.REGULAR]
         for field in class_decl.fields:
             subtypes = tu.find_subtypes(
-                self._type_params_map.get(field.get_type(), field.get_type()),
+                self._type_params_map.get(
+                    field.get_type(), field.get_type()).to_type(),
                 regular_types, concrete_only=True)
             random_type = (
                 utils.random.choice(subtypes)
                 if subtypes
                 else self._type_params_map.get(
-                    field.get_type(), field.get_type())
+                    field.get_type(), field.get_type()).to_type()
             )
             # FIXME it may crash here in some rare cases
             args.append(self.generator.generate_expr(
@@ -298,7 +299,7 @@ class SubtypeCreation(TypeCreation):
             fields.append(ast.FieldDeclaration(
                 field.name,
                 deepcopy(self._type_params_map.get(
-                    field.field_type, field.field_type)),
+                    field.field_type, field.field_type).to_type()),
                 can_override=True,
                 override=True,
                 is_final=field.is_final))
@@ -311,7 +312,7 @@ class SubtypeCreation(TypeCreation):
         # We need to override all abstract function defined in the supertype.
         for func in abstract_functions:
             expr_type = self._type_params_map.get(func.get_type(),
-                                                  func.get_type())
+                                                  func.get_type()).to_type()
             # If the return type of the function is Unit, then choose a random
             # type, and generate an expression of this type.
             expr_type = (
@@ -455,7 +456,8 @@ class SupertypeCreation(TypeCreation):
             # parent class.
             new_class_type = self._new_class.get_type()
             if isinstance(new_class_type, tp.TypeConstructor):
-                new_class_type = new_class_type.new(class_decl.type_parameters)
+                new_class_type = new_class_type.new(
+                    [t.to_type_arg() for t in class_decl.type_parameters])
             super_instantiation = ast.SuperClassInstantiation(
                 new_class_type, args)
         class_decl.superclasses.append(super_instantiation)

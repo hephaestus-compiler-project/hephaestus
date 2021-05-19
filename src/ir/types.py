@@ -7,6 +7,48 @@ from typing import List
 from src.ir.node import Node
 
 
+class Variance(object):
+    INVARIANT = 0
+    COVARIANT = 1
+    CONTRAVARIANT = 2
+
+    def __init__(self, value):
+        self.value = value
+
+    def variance_to_str(self):
+        if self.value == 1:
+            return 'out'
+        if self.value == 2:
+            return 'in'
+        return ''
+
+    def is_covariant(self):
+        return self.value == 1
+
+    def is_contravariant(self):
+        return self.value == 2
+
+    def is_invariant(self):
+        return self.value == 0
+
+    def __hash__(self):
+        return hash(str(self.value))
+
+    def __str__(self):
+        return str(self.value)
+
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__ and
+            self.value == other.value
+        )
+
+
+Invariant = Variance(Variance.INVARIANT)
+Covariant = Variance(Variance.COVARIANT)
+Contravariant = Variance(Variance.CONTRAVARIANT)
+
+
 class Type(Node):
     def __init__(self, name):
         self.name = name
@@ -23,6 +65,16 @@ class Type(Node):
 
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
+
+    def to_type_arg(self, variance=Invariant):
+        if isinstance(self, TypeArgument):
+            return self
+        return TypeArgument(self, variance=variance)
+
+    def to_type(self):
+        if isinstance(self, TypeArgument):
+            return self.concrete_type
+        return self
 
     def is_assignable(self, other: Type):
         """
@@ -174,42 +226,6 @@ class SimpleClassifier(Classifier):
         )
 
 
-class Variance(object):
-    INVARIANT = 0
-    COVARIANT = 1
-    CONTRAVARIANT = 2
-
-    def __init__(self, value):
-        self.value = value
-
-    def variance_to_str(self):
-        if self.value == 1:
-            return 'out'
-        if self.value == 2:
-            return 'in'
-        return ''
-
-    def is_covariant(self):
-        return self.value == 1
-
-    def is_contravariant(self):
-        return self.value == 2
-
-    def is_invariant(self):
-        return self.value == 0
-
-    def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__ and
-            self.value == other.value
-        )
-
-
-Invariant = Variance(Variance.INVARIANT)
-Covariant = Variance(Variance.COVARIANT)
-Contravariant = Variance(Variance.CONTRAVARIANT)
-
-
 class TypeParameter(AbstractType):
 
     def __init__(self, name: str, variance=None, bound: Type = None):
@@ -251,9 +267,9 @@ class TypeParameter(AbstractType):
 
 
 def _get_type_substitution(etype, type_map):
-    if isinstance(etype, ParameterizedType):
-        return substitute_type_args(etype, type_map)
-    t = type_map.get(etype)
+    if isinstance(etype.to_type(), ParameterizedType):
+        return substitute_type_args(etype.to_type(), type_map)
+    t = type_map.get(etype.to_type())
     if t is None or t.has_type_variables():
         # The type parameter does not correspond to an abstract type
         # so, there is nothing to substitute.
@@ -267,7 +283,7 @@ def substitute_type_args(etype, type_map):
     for t_arg in etype.type_args:
         type_args.append(_get_type_substitution(t_arg, type_map))
     new_type_map = {
-        tp: type_args[i]
+        tp: type_args[i].to_type_arg()
         for i, tp in enumerate(etype.t_constructor.type_parameters)
     }
     type_con = perform_type_substitution(
@@ -301,7 +317,7 @@ def perform_type_substitution(etype, type_map):
             type_params.append(t_param)
             continue
 
-        new_bound = _get_type_substitution(t_param.bound, type_map)
+        new_bound = _get_type_substitution(t_param.bound, type_map).to_type()
         t_param = TypeParameter(t_param.name, t_param.variance, new_bound)
         type_params.append(t_param)
 
@@ -342,15 +358,85 @@ class TypeConstructor(AbstractType):
         #    t.t_constructor == self
         return other in self.get_supertypes()
 
-    def new(self, type_args: List[Type]):
+    def new(self, type_args: List[TypeArgument]):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
         type_con = perform_type_substitution(self, type_map)
         return ParameterizedType(type_con, type_args)
 
 
+class TypeArgument(Classifier):
+    def __init__(self, concrete_type: Type, variance=Invariant):
+        super().__init__(concrete_type.name)
+        assert not isinstance(concrete_type, TypeArgument), (
+            "The enclosing type of a type argument cannot be a type argument")
+        self.concrete_type = concrete_type
+        self.variance = variance
+
+    def has_type_variables(self):
+        return self.concrete_type.has_type_variables()
+
+    def is_covariant(self):
+        return self.variance.is_covariant()
+
+    def is_contravariant(self):
+        return self.variance.is_contravariant()
+
+    def is_invariant(self):
+        return self.variance.is_invariant()
+
+    def to_type(self):
+        return self.concrete_type
+
+    def _is_subtype_type_arg(self, other: Type):
+        if self.is_invariant():
+            if other.is_invariant():
+                return self.concrete_type == other.concrete_type
+            elif other.is_covariant():
+                return self.concrete_type.is_subtype(other.concrete_type)
+            else:
+                return other.concrete_type.is_subtype(self.concrete_type)
+        elif self.is_covariant():
+            if other.is_invariant() or other.is_contravariant():
+                return False
+            else:
+                return self.concrete_type.is_subtype(other.concrete_type)
+        else:
+            if other.is_invariant() or other.is_covariant():
+                return False
+            return other.concrete_type.is_subtype(self.concrete_type)
+
+    def is_subtype(self, other: Type):
+        if isinstance(other, TypeArgument):
+            return self._is_subtype_type_arg(other)
+        if self.is_invariant():
+            return self.concrete_type == other
+        elif self.is_covariant():
+            return self.concrete_type.is_subtype(other)
+        else:
+            return other.is_subtype(self.concrete_type)
+
+    def __str__(self):
+        if self.variance == Invariant:
+            return str(self.concrete_type)
+        else:
+            return self.variance.variance_to_str() + " " + str(
+                self.concrete_type)
+
+    def __hash__(self):
+        return hash(str(self.concrete_type) + str(self.variance))
+
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__ and
+            self.concrete_type == other.concrete_type and
+            self.variance == other.variance
+        )
+
+
 class ParameterizedType(SimpleClassifier):
-    def __init__(self, t_constructor: TypeConstructor, type_args: List[Type],
+    def __init__(self, t_constructor: TypeConstructor,
+                 type_args: List[TypeArgument],
                  can_infer_type_args=False):
         self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
@@ -358,6 +444,8 @@ class ParameterizedType(SimpleClassifier):
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
+        assert all(not t.to_type().is_primitive() for t in type_args), (
+            "Type argument cannot be a primitive type")
         self._can_infer_type_args = can_infer_type_args
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
@@ -402,15 +490,22 @@ class ParameterizedType(SimpleClassifier):
             return True
         if isinstance(other, ParameterizedType):
             if self.t_constructor == other.t_constructor:
-                for tp, sarg, targ in zip(self.t_constructor.type_parameters,
-                                          self.type_args, other.type_args):
-                    if tp.is_invariant() and sarg != targ:
-                        return False
-                    if tp.is_covariant() and not sarg.is_subtype(targ):
-                        return False
-                    if tp.is_contravariant() and not targ.is_subtype(sarg):
-                        return False
-                return True
+                try:
+                    for tp, sarg, targ in zip(self.t_constructor.type_parameters,
+                                              self.type_args, other.type_args):
+                        if tp.is_invariant() and not sarg.is_subtype(targ):
+                            return False
+                        if tp.is_covariant() and not sarg.concrete_type.is_subtype(
+                                targ.concrete_type):
+                            return False
+                        if tp.is_contravariant() and (
+                                not targ.concrete_type.is_subtype(
+                                    sarg.concrete_type)):
+                            return False
+                    return True
+                except AttributeError as err:
+                    print(err)
+                    import pdb; pdb.set_trace()
         return False
 
     def is_assignable(self, other: Type):

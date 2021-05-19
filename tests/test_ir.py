@@ -62,46 +62,51 @@ def test_parameterized_type():
     cls1 = SimpleClassifier("Cls1", [])
     tp1 = [TypeParameter("T", Invariant)]
     tc1 = TypeConstructor("Tp1", tp1, [cls1])
-    ta1 = [NumberType()]
+    ta1 = [NumberType().to_type_arg()]
     pt1 = ParameterizedType(tc1, ta1)
     assert pt1.name == "Tp1"
     assert pt1.get_supertypes() == {cls1, pt1}
     assert pt1.is_subtype(cls1)
     assert pt1.is_subtype(pt1)
     assert not pt1.is_subtype(NumberType())
-    assert not pt1.is_subtype(ParameterizedType(tc1, [AnyType()]))
-    assert not pt1.is_subtype(ParameterizedType(tc1, [IntegerType()]))
+    assert not pt1.is_subtype(ParameterizedType(
+        tc1, [AnyType().to_type_arg()]))
+    assert not pt1.is_subtype(
+        ParameterizedType(tc1, [IntegerType().to_type_arg()]))
 
     # Covariant
     tp2 = [TypeParameter("T", Covariant)]
     tc2 = TypeConstructor("Tp2", tp2, [cls1])
-    ta2 = [NumberType()]
+    ta2 = [NumberType().to_type_arg()]
     pt2 = ParameterizedType(tc2, ta2)
     assert pt2.get_supertypes() == {cls1, pt2}
     assert pt2.is_subtype(cls1)
     assert pt2.is_subtype(pt2)
-    assert pt2.is_subtype(ParameterizedType(tc2, [AnyType()]))
-    assert not pt2.is_subtype(ParameterizedType(tc2, [IntegerType()]))
+    assert pt2.is_subtype(ParameterizedType(tc2, [AnyType().to_type_arg()]))
+    assert not pt2.is_subtype(ParameterizedType(
+        tc2, [IntegerType().to_type_arg()]))
 
     # Contravariant
     tp3 = [TypeParameter("T", Contravariant)]
     tc3 = TypeConstructor("Tp3", tp3, [cls1])
-    ta3 = [NumberType()]
+    ta3 = [NumberType().to_type_arg()]
     pt3 = ParameterizedType(tc3, ta3)
     assert pt3.get_supertypes() == {cls1, pt3}
     assert pt3.is_subtype(cls1)
     assert pt3.is_subtype(pt3)
-    assert pt3.is_subtype(ParameterizedType(tc3, [IntegerType()]))
-    assert not pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
+    assert pt3.is_subtype(ParameterizedType(
+        tc3, [IntegerType().to_type_arg()]))
+    assert not pt3.is_subtype(ParameterizedType(
+        tc3, [AnyType().to_type_arg()]))
 
     # Recursive
     tp4 = [TypeParameter("T", Covariant)]
     tc4 = TypeConstructor("Tp4", tp4, [cls1])
     temp_tp = [TypeParameter("T", Covariant)]
     temp_tc = TypeConstructor("Temp", temp_tp, [cls1])
-    ta1 = [ParameterizedType(temp_tc, [NumberType()])]
-    ta2 = [ParameterizedType(temp_tc, [AnyType()])]
-    ta3 = [ParameterizedType(temp_tc, [IntegerType()])]
+    ta1 = [ParameterizedType(temp_tc, [NumberType().to_type_arg()]).to_type_arg()]
+    ta2 = [ParameterizedType(temp_tc, [AnyType().to_type_arg()]).to_type_arg()]
+    ta3 = [ParameterizedType(temp_tc, [IntegerType().to_type_arg()]).to_type_arg()]
     pt4 = ParameterizedType(tc4, ta1)
     assert pt4.is_subtype(pt4)
     assert pt4.is_subtype(ParameterizedType(tc4, ta2))
@@ -137,7 +142,8 @@ def test_inherits_from_parameterized():
     cls1 = ClassDeclaration("A", [], 0,
                             type_parameters=[TypeParameter("T")])
     cls2 = ClassDeclaration(
-        "B", [SuperClassInstantiation(cls1.get_type().new([String]))], 0)
+        "B", [SuperClassInstantiation(cls1.get_type().new(
+            [String.to_type_arg()]))], 0)
 
     assert cls2.inherits_from(cls1)
     assert not cls1.inherits_from(cls2)
@@ -149,7 +155,8 @@ def test_inherits_from_parameterized_with_abstract():
     cls1 = ClassDeclaration("A", [], 0,
                             type_parameters=[type_param])
     cls2 = ClassDeclaration(
-        "B", [SuperClassInstantiation(cls1.get_type().new([type_param2]))], 0,
+        "B", [SuperClassInstantiation(cls1.get_type().new(
+            [type_param2.to_type_arg()]))], 0,
         type_parameters=[type_param2]
     )
     assert cls2.inherits_from(cls1)

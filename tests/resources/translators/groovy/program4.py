@@ -1,42 +1,12 @@
-from src.ir import ast, types, kotlin_types as kt
+from src.ir import ast, types, groovy_types as gt
 from src.ir.context import Context
-
-# class AClass<T>(val x: T) {
-#
-#     fun foo(): String {
-#         return "xxx"
-#     }
-# }
-#
-# class BClass<X, Y>
-#
-# fun bar(y: BClass<Double, Integer>) {}
-#
-# fun buz(): BClass<Any, Integer> =
-#    BClass<Any, Integer>() // OK
-#
-# fun foo1(k: AClass<String>) {}
-#
-# fun foo2(n: AClass<Any>) {}
-#
-# fun main() {
-#     val a1 = AClass<String>("a1") // should not change but it could
-#     val a2 = AClass<Any>("a2")    // cannot change
-#     val a3 = AClass<Any>("a3")    // OK
-#     val b: BClass<Any, Integer> = BClass<Any, Integer>() // OK
-#     val c: BClass<Double, Integer> = BClass<Double, Integer>() // OK
-#     bar(c)
-#     bar(BClass<Double, Integer>()) // OK
-#     foo1(a1)
-#     foo2(a2)
-# }
 
 tp_T = types.TypeParameter("T")
 field_x = ast.FieldDeclaration("x", tp_T)
 fun_tmp = ast.FunctionDeclaration(
     "tmp",
     params=[],
-    ret_type=kt.String,
+    ret_type=gt.String,
     body=ast.Block([ast.StringConstant("xxx")]),
     func_type=ast.FunctionDeclaration.CLASS_METHOD
 )
@@ -48,11 +18,11 @@ cls_a = ast.ClassDeclaration(
     functions=[fun_tmp],
     type_parameters=[tp_T]
 )
-cls_a_str = cls_a.get_type().new([kt.String.to_type_arg()])
-cls_a_any = cls_a.get_type().new([kt.Any.to_type_arg()])
+cls_a_str = cls_a.get_type().new([gt.String.to_type_arg()])
+cls_a_any = cls_a.get_type().new([gt.Object.to_type_arg()])
 
 tp_X = types.TypeParameter("X")
-tp_Y = types.TypeParameter("Y")
+tp_Y = types.TypeParameter("Y", bound=gt.Object)
 cls_b = ast.ClassDeclaration(
     "BClass",
     [],
@@ -61,16 +31,16 @@ cls_b = ast.ClassDeclaration(
     functions=[],
     type_parameters=[tp_X, tp_Y]
 )
-cls_b_double_integer = cls_b.get_type().new([kt.Double.to_type_arg(),
-                                             kt.Integer.to_type_arg()])
-cls_b_any_integer = cls_b.get_type().new([kt.Any.to_type_arg(),
-                                          kt.Integer.to_type_arg()])
+cls_b_double_integer = cls_b.get_type().new([gt.Double.to_type_arg(),
+                                             gt.Integer.to_type_arg()])
+cls_b_any_integer = cls_b.get_type().new([gt.Object.to_type_arg(),
+                                          gt.Integer.to_type_arg()])
 
 y_param = ast.ParameterDeclaration("y", cls_b_double_integer)
 fun_bar = ast.FunctionDeclaration(
     "bar",
     params=[y_param],
-    ret_type=kt.Unit,
+    ret_type=gt.Void,
     body=ast.Block([]),
     func_type=ast.FunctionDeclaration.FUNCTION
 )
@@ -87,7 +57,7 @@ k_param = ast.ParameterDeclaration("k", cls_a_str)
 fun_foo1 = ast.FunctionDeclaration(
     "foo1",
     params=[k_param],
-    ret_type=kt.Unit,
+    ret_type=gt.Void,
     body=ast.Block([]),
     func_type=ast.FunctionDeclaration.FUNCTION
 )
@@ -96,7 +66,7 @@ n_param = ast.ParameterDeclaration("n", cls_a_any)
 fun_foo2 = ast.FunctionDeclaration(
     "foo2",
     params=[n_param],
-    ret_type=kt.Unit,
+    ret_type=gt.Void,
     body=ast.Block([]),
     func_type=ast.FunctionDeclaration.FUNCTION
 )
@@ -150,9 +120,10 @@ main_body = ast.Block(
 main_func = ast.FunctionDeclaration(
     "main",
     params=[],
-    ret_type=kt.Unit,
+    ret_type=gt.Void,
     func_type=ast.FunctionDeclaration.FUNCTION,
-    body=main_body
+    body=main_body,
+    is_final=False
 )
 
 
@@ -174,4 +145,4 @@ ctx.add_var(ast.GLOBAL_NAMESPACE + ("main",), var_a2.name, var_a2)
 ctx.add_var(ast.GLOBAL_NAMESPACE + ("main",), var_a3.name, var_a3)
 ctx.add_var(ast.GLOBAL_NAMESPACE + ("main",), var_b.name, var_b)
 ctx.add_var(ast.GLOBAL_NAMESPACE + ("main",), var_c.name, var_c)
-program = ast.Program(ctx)
+program = ast.Program(ctx, language="groovy")

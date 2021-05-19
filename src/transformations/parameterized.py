@@ -171,7 +171,7 @@ class ParameterizedSubstitution(Transformation):
                     type_arg.box_type()
                     if type_arg.is_primitive() else type_arg)
                 assert not type_arg.is_primitive()
-                type_args.append(type_arg)
+                type_args.append(type_arg.to_type_arg())
                 continue
             if tp.constraint is None:
                 possible_types = self._get_candidate_bounds()
@@ -203,7 +203,7 @@ class ParameterizedSubstitution(Transformation):
             type_arg = (
                 type_arg.box_type() if type_arg.is_primitive() else type_arg)
             assert not type_arg.is_primitive()
-            type_args.append(type_arg)
+            type_args.append(type_arg.to_type_arg())
         return self._type_constructor_decl.get_type().new(type_args)
 
     def _propagate_type_parameter(self, gnode: GNode,
@@ -254,6 +254,7 @@ class ParameterizedSubstitution(Transformation):
             if isinstance(bound, types.ParameterizedType):
                 type_params = bound.t_constructor.type_parameters
                 for targ, tparam in zip(bound.type_args, type_params):
+                    targ = targ.to_type()
                     # Handle case where targ is ParameterizedType recursively.
                     if (isinstance(targ, types.ParameterizedType) and
                             not bounds_filter(targ)):
@@ -330,7 +331,7 @@ class ParameterizedSubstitution(Transformation):
                 # the corresponding type parameter with type T.
                 if getattr(node, 'vararg', False):
                     assert isinstance(old_type, types.ParameterizedType)
-                    actual_type = old_type.type_args[0]
+                    actual_type = old_type.type_args[0].to_type()
                     if actual_type.is_primitive():
                         return old_type
                     old_type = actual_type
