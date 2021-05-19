@@ -5,6 +5,10 @@ class Main {
     }
 }
 
+interface Function0<A1> {
+  public A1 apply();
+}
+
 class A {
     public final String a;
 
