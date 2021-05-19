@@ -374,11 +374,19 @@ class TypeSubstitution(Transformation):
             old_type.box_type() if old_type.is_primitive() else old_type)
         is_expr = ast.Is(ast.Variable(param.name), old_type_is,
                          is_not=is_not)
-        and_expr = ast.LogicalExpr(
-            bool_expr, is_expr,
-            ast.Operator('&&')
-            if bool_expr.literal == 'true'
-            else ast.Operator('||'))
+        if self.language == 'java':
+            # In Java the following expressions produce compile-time errors.
+            # ((true && !(x instanceof Byte x_is)))
+            # ((false || x instanceof Byte x_is))
+            # NOTE maybe we can keep the case where the first part is true and
+            # is_not is false
+            and_expr = is_expr
+        else:
+            and_expr = ast.LogicalExpr(
+                bool_expr, is_expr,
+                ast.Operator('&&')
+                if bool_expr.literal == 'true'
+                else ast.Operator('||'))
         use_var = False
         ret_var = []
         if var_decl:
@@ -608,7 +616,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
         exclude.extend(self._excluded_types.get(self._expected_type, []))
         types = [tt for tt in self.types if tt not in exclude]
-        ir_type = tu.find_irrelevant_type(self._expected_type, types)
+        ir_type = tu.find_irrelevant_type(self._expected_type, types,
+                                          self.bt_factory)
         if ir_type is None:
             # We didn't find an irrelevant type, so we can't substitute
             # the given node.
@@ -646,7 +655,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # the correspondng attribute/method from the inheritance chain of
         # the receiver.
         receiver_t = tu.get_type_hint(node.receiver, self.program.context,
-                                      self._namespace)
+                                      self._namespace, self.bt_factory,
+                                      self.types)
         decl = tu.get_decl_from_inheritance(
             receiver_t, name, self.program.context)
         if decl is None:
@@ -827,7 +837,8 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
         # TODO handle receiver of field access.
         return node
         # rec_t = tu.get_type_hint(node.expr, self.program.context,
-        #                          self._namespace)
+        #                          self._namespace, self.bt_factory,
+        #                          self.types)
         # if not rec_t:
         #     return node
         # previous = self._expected_type
