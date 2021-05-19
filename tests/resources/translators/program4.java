@@ -24,6 +24,10 @@ class Main {
     }
 }
 
+interface Function0<A1> {
+  public A1 apply();
+}
+
 final class AClass<T> {
     public final T x;
     public AClass(T x) {

@@ -5,6 +5,10 @@ class Main {
     }
 }
 
+interface Function0<A1> {
+  public A1 apply();
+}
+
 interface Function1<A1, A2> {
     public A2 apply(A1 a1);
 }
