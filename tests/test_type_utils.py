@@ -213,7 +213,7 @@ def test_find_subtypes_param_type_covariant():
     baz = tp.SimpleClassifier("Baz", [bar])
     unrel = tp.SimpleClassifier("Unrel", [])
     qux_con = tp.TypeConstructor(
-        "Qux", [tp.TypeParameter("T", tp.TypeParameter.COVARIANT)],
+        "Qux", [tp.TypeParameter("T", tp.Covariant)],
         supertypes=[])
     qux = tp.ParameterizedType(qux_con, [foo])
     subtypes = set(tutils.find_subtypes(qux, [foo, bar, baz, unrel, qux_con]))
@@ -237,7 +237,7 @@ def test_find_subtypes_param_type_contravariant():
     baz = tp.SimpleClassifier("Baz", [bar])
     unrel = tp.SimpleClassifier("Unrel", [])
     qux_con = tp.TypeConstructor(
-        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)],
+        "Qux", [tp.TypeParameter("T", tp.Contravariant)],
         supertypes=[])
     qux = tp.ParameterizedType(qux_con, [bar])
     subtypes = set(
@@ -263,9 +263,9 @@ def test_find_subtypes_param_type_mul_args():
     unrel = tp.SimpleClassifier("Unrel", [])
 
     type_parameters = [
-        tp.TypeParameter("T1", tp.TypeParameter.INVARIANT),
-        tp.TypeParameter("T2", tp.TypeParameter.CONTRAVARIANT),
-        tp.TypeParameter("T3", tp.TypeParameter.COVARIANT)
+        tp.TypeParameter("T1", tp.Invariant),
+        tp.TypeParameter("T2", tp.Contravariant),
+        tp.TypeParameter("T3", tp.Covariant)
     ]
     qux_con = tp.TypeConstructor("Qux", type_parameters, supertypes=[])
     qux = tp.ParameterizedType(qux_con, [bar, bar, bar])
@@ -297,14 +297,14 @@ def test_find_subtypes_param_nested():
     unrel = tp.SimpleClassifier("Unrel", [])
 
     qux_con = tp.TypeConstructor(
-        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)])
+        "Qux", [tp.TypeParameter("T", tp.Contravariant)])
     qux = tp.ParameterizedType(qux_con, [bar])
 
     fox = tp.SimpleClassifier("Fox", [qux])
     po = tp.SimpleClassifier("Po", [fox])
 
     quux_con = tp.TypeConstructor(
-        "Quux", [tp.TypeParameter("T", tp.TypeParameter.COVARIANT)])
+        "Quux", [tp.TypeParameter("T", tp.Covariant)])
     quux = tp.ParameterizedType(quux_con, [qux])
 
     subtypes = set(tutils.find_subtypes(
@@ -357,9 +357,9 @@ def test_find_supertypes_param_type():
     unrel = tp.SimpleClassifier("Unrel", [])
 
     type_parameters = [
-        tp.TypeParameter("T1", tp.TypeParameter.INVARIANT),
-        tp.TypeParameter("T2", tp.TypeParameter.CONTRAVARIANT),
-        tp.TypeParameter("T3", tp.TypeParameter.COVARIANT)
+        tp.TypeParameter("T1", tp.Invariant),
+        tp.TypeParameter("T2", tp.Contravariant),
+        tp.TypeParameter("T3", tp.Covariant)
     ]
     qux_con = tp.TypeConstructor("Qux", type_parameters, supertypes=[])
     qux = tp.ParameterizedType(qux_con, [bar, bar, bar])
@@ -384,14 +384,14 @@ def test_find_supertypes_nested():
     unrel = tp.SimpleClassifier("Unrel", [])
 
     qux_con = tp.TypeConstructor(
-        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)])
+        "Qux", [tp.TypeParameter("T", tp.Contravariant)])
     qux = tp.ParameterizedType(qux_con, [bar])
 
     fox = tp.SimpleClassifier("Fox", [qux])
     po = tp.SimpleClassifier("Po", [fox])
 
     quux_con = tp.TypeConstructor(
-        "Quux", [tp.TypeParameter("T", tp.TypeParameter.COVARIANT)], [qux])
+        "Quux", [tp.TypeParameter("T", tp.Covariant)], [qux])
     quux = tp.ParameterizedType(quux_con, [qux])
 
     supertypes = set(tutils.find_supertypes(
@@ -423,7 +423,7 @@ def test_find_subtypes_with_bound():
     baz = tp.SimpleClassifier("Baz", [bar])
     unrel = tp.SimpleClassifier("Unrel", [])
     qux_con = tp.TypeConstructor(
-        "Qux", [tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT,
+        "Qux", [tp.TypeParameter("T", tp.Contravariant,
                                  bound=foo)], [])
     qux = tp.ParameterizedType(qux_con, [baz])
     subtypes = set(tutils.find_subtypes(
@@ -461,7 +461,7 @@ def test_find_types_with_classes():
                                  fields=[], functions=[])
     qux_cls = ast.ClassDeclaration(
         "Qux", [], ast.ClassDeclaration.REGULAR, fields=[], functions=[],
-        type_parameters=[tp.TypeParameter("T", tp.TypeParameter.COVARIANT)])
+        type_parameters=[tp.TypeParameter("T", tp.Covariant)])
 
     classes = [foo, bar, baz, unrel, qux_cls]
 
@@ -517,7 +517,7 @@ def test_find_irrelevant_type_parameterized():
     assert not t.is_subtype(ir_type)
 
     con = tp.TypeConstructor(
-        "X", [tp.TypeParameter("T", variance=tp.TypeParameter.COVARIANT)])
+        "X", [tp.TypeParameter("T", variance=tp.Covariant)])
     t = con.new([bar])
     ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con], KT_FACTORY)
     assert ir_type is not None
@@ -531,7 +531,7 @@ def test_find_irrelevant_type_parameterized():
     assert not t.is_subtype(ir_type)
 
     con = tp.TypeConstructor(
-        "X", [tp.TypeParameter("T", variance=tp.TypeParameter.CONTRAVARIANT)])
+        "X", [tp.TypeParameter("T", variance=tp.Contravariant)])
     t = con.new([bar])
     ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con], KT_FACTORY)
     assert ir_type is not None

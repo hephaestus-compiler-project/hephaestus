@@ -137,8 +137,8 @@ def test_parameterized_with_bound_abstract():
 
 
 def test_subtype_covariant_parameterized():
-    type_param = tp.TypeParameter("T", tp.TypeParameter.COVARIANT)
-    type_param2 = tp.TypeParameter("K", tp.TypeParameter.COVARIANT)
+    type_param = tp.TypeParameter("T", tp.Covariant)
+    type_param2 = tp.TypeParameter("K", tp.Covariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
     bar = tp.SimpleClassifier("Bar",
                               [foo.new([kt.String])])
@@ -163,7 +163,7 @@ def test_subtype_covariant_parameterized():
 
 
 def test_subtype_contravariant_parameterized():
-    type_param = tp.TypeParameter("T", tp.TypeParameter.CONTRAVARIANT)
+    type_param = tp.TypeParameter("T", tp.Contravariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
     bar = tp.TypeConstructor("Bar", [type_param],
                              [foo.new([type_param])])

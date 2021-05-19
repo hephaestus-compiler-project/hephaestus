@@ -60,7 +60,7 @@ def test_parameterized_type():
 
     # Invariant
     cls1 = SimpleClassifier("Cls1", [])
-    tp1 = [TypeParameter("T", TypeParameter.INVARIANT)]
+    tp1 = [TypeParameter("T", Invariant)]
     tc1 = TypeConstructor("Tp1", tp1, [cls1])
     ta1 = [NumberType()]
     pt1 = ParameterizedType(tc1, ta1)
@@ -73,7 +73,7 @@ def test_parameterized_type():
     assert not pt1.is_subtype(ParameterizedType(tc1, [IntegerType()]))
 
     # Covariant
-    tp2 = [TypeParameter("T", TypeParameter.COVARIANT)]
+    tp2 = [TypeParameter("T", Covariant)]
     tc2 = TypeConstructor("Tp2", tp2, [cls1])
     ta2 = [NumberType()]
     pt2 = ParameterizedType(tc2, ta2)
@@ -84,7 +84,7 @@ def test_parameterized_type():
     assert not pt2.is_subtype(ParameterizedType(tc2, [IntegerType()]))
 
     # Contravariant
-    tp3 = [TypeParameter("T", TypeParameter.CONTRAVARIANT)]
+    tp3 = [TypeParameter("T", Contravariant)]
     tc3 = TypeConstructor("Tp3", tp3, [cls1])
     ta3 = [NumberType()]
     pt3 = ParameterizedType(tc3, ta3)
@@ -95,9 +95,9 @@ def test_parameterized_type():
     assert not pt3.is_subtype(ParameterizedType(tc3, [AnyType()]))
 
     # Recursive
-    tp4 = [TypeParameter("T", TypeParameter.COVARIANT)]
+    tp4 = [TypeParameter("T", Covariant)]
     tc4 = TypeConstructor("Tp4", tp4, [cls1])
-    temp_tp = [TypeParameter("T", TypeParameter.COVARIANT)]
+    temp_tp = [TypeParameter("T", Covariant)]
     temp_tc = TypeConstructor("Temp", temp_tp, [cls1])
     ta1 = [ParameterizedType(temp_tc, [NumberType()])]
     ta2 = [ParameterizedType(temp_tc, [AnyType()])]

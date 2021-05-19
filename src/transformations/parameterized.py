@@ -11,9 +11,9 @@ from src.transformations.base import Transformation, change_namespace
 from src.analysis.use_analysis import UseAnalysis, GNode, FUNC_RET
 
 
-INVARIANT = types.TypeParameter.INVARIANT
-COVARIANT = types.TypeParameter.COVARIANT
-CONTRAVARIANT = types.TypeParameter.CONTRAVARIANT
+INVARIANT = types.Invariant
+COVARIANT = types.Covariant
+CONTRAVARIANT = types.Contravariant
 VARIANCE = (INVARIANT, COVARIANT, CONTRAVARIANT)
 
 
