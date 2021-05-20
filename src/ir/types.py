@@ -363,8 +363,6 @@ class TypeConstructor(AbstractType):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
         type_con = perform_type_substitution(self, type_map)
-        if any(not isinstance(ta, TypeArgument) for ta in type_args):
-            import pdb; pdb.set_trace()
         return ParameterizedType(type_con, type_args)
 
 
@@ -493,22 +491,18 @@ class ParameterizedType(SimpleClassifier):
             return True
         if isinstance(other, ParameterizedType):
             if self.t_constructor == other.t_constructor:
-                try:
-                    for tp, sarg, targ in zip(self.t_constructor.type_parameters,
-                                              self.type_args, other.type_args):
-                        if tp.is_invariant() and not sarg.is_subtype(targ):
-                            return False
-                        if tp.is_covariant() and not sarg.concrete_type.is_subtype(
-                                targ.concrete_type):
-                            return False
-                        if tp.is_contravariant() and (
-                                not targ.concrete_type.is_subtype(
-                                    sarg.concrete_type)):
-                            return False
-                    return True
-                except AttributeError as err:
-                    print(err)
-                    import pdb; pdb.set_trace()
+                for tp, sarg, targ in zip(self.t_constructor.type_parameters,
+                                          self.type_args, other.type_args):
+                    if tp.is_invariant() and not sarg.is_subtype(targ):
+                        return False
+                    if tp.is_covariant() and not sarg.concrete_type.is_subtype(
+                            targ.concrete_type):
+                        return False
+                    if tp.is_contravariant() and (
+                            not targ.concrete_type.is_subtype(
+                                sarg.concrete_type)):
+                        return False
+                return True
         return False
 
     def is_assignable(self, other: Type):

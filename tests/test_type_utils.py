@@ -74,33 +74,33 @@ def test_update_type_type_arg():
     foo = tp.SimpleClassifier("Foo", [])
 
     bar_con = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
-    bar = tp.ParameterizedType(bar_con, [foo])
+    bar = tp.ParameterizedType(bar_con, [foo.to_type_arg()])
 
     baz_con = tp.TypeConstructor("Baz", [tp.TypeParameter("T")])
-    baz = tp.ParameterizedType(baz_con, [bar])
+    baz = tp.ParameterizedType(baz_con, [bar.to_type_arg()])
 
     foo_con = tp.TypeConstructor("Foo", [tp.TypeParameter("T")])
-    new_foo = tp.ParameterizedType(foo_con, [kt.String])
+    new_foo = tp.ParameterizedType(foo_con, [kt.String.to_type_arg()])
 
     new_type = up.update_type(baz, new_foo)
 
     assert isinstance(new_type, tp.ParameterizedType)
     assert len(new_type.type_args) == 1
 
-    assert isinstance(new_type.type_args[0], tp.ParameterizedType)
+    assert isinstance(new_type.type_args[0].to_type(), tp.ParameterizedType)
     assert new_type.type_args[0].name == "Bar"
-    assert len(new_type.type_args[0].type_args) == 1
-    assert new_type.type_args[0].type_args[0] == new_foo
+    assert len(new_type.type_args[0].to_type().type_args) == 1
+    assert new_type.type_args[0].to_type().type_args[0] == new_foo.to_type_arg()
 
 
 def test_update_supertypes_type_arg():
     up = tutils.TypeUpdater()
     foo = tp.SimpleClassifier("Foo", [])
     bar_con = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
-    bar = tp.ParameterizedType(bar_con, [foo])
+    bar = tp.ParameterizedType(bar_con, [foo.to_type_arg()])
 
     baz_con = tp.TypeConstructor("Baz", [tp.TypeParameter("T")])
-    baz = tp.ParameterizedType(baz_con, [bar])
+    baz = tp.ParameterizedType(baz_con, [bar.to_type_arg()])
 
     new_foo = tp.SimpleClassifier("Foo", [tp.SimpleClassifier("New")])
 
@@ -108,17 +108,17 @@ def test_update_supertypes_type_arg():
     assert isinstance(new_type, tp.ParameterizedType)
     assert len(new_type.type_args) == 1
 
-    assert isinstance(new_type.type_args[0], tp.ParameterizedType)
+    assert isinstance(new_type.type_args[0].to_type(), tp.ParameterizedType)
     assert new_type.type_args[0].name == "Bar"
-    assert len(new_type.type_args[0].type_args) == 1
-    assert new_type.type_args[0].type_args[0] == new_foo
+    assert len(new_type.type_args[0].to_type().type_args) == 1
+    assert new_type.type_args[0].to_type().type_args[0] == new_foo.to_type_arg()
 
 
 def test_update_bound():
     up = tutils.TypeUpdater()
     foo = tp.SimpleClassifier("Foo", [])
     bar_con = tp.TypeConstructor("Bar", [tp.TypeParameter("T", bound=foo)])
-    bar = tp.ParameterizedType(bar_con, [foo])
+    bar = tp.ParameterizedType(bar_con, [foo.to_type_arg()])
     baz = tp.SimpleClassifier("Baz", [bar])
 
     new_foo = tp.SimpleClassifier("Foo", [tp.SimpleClassifier("New")])
@@ -126,7 +126,7 @@ def test_update_bound():
     supertypes = new_type.supertypes
     assert len(supertypes) == 1
     assert supertypes[0].name == 'Bar'
-    assert supertypes[0].type_args == [new_foo]
+    assert supertypes[0].type_args == [new_foo.to_type_arg()]
 
     assert len(supertypes[0].t_constructor.type_parameters) == 1
     assert supertypes[0].t_constructor.type_parameters[0].bound == new_foo
