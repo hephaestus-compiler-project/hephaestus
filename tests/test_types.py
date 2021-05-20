@@ -196,3 +196,56 @@ def test_primitives_arrays():
     assert groovy_boxed_double_array.is_assignable(groovy_double_array)
     assert not java_double_array.is_assignable(java_boxed_double_array)
     assert not java_boxed_double_array.is_assignable(java_double_array)
+
+
+def test_use_site_variance():
+    type_param = tp.TypeParameter("T")
+    foo = tp.TypeConstructor("Foo", [type_param], [])
+    foo_any_co = foo.new([kt.Any.to_type_arg(tp.Covariant)])
+
+    foo_any = foo.new([kt.Any.to_type_arg()])
+    foo_string = foo.new([kt.String.to_type_arg()])
+    assert foo_any.is_subtype(foo_any_co)
+    assert foo_string.is_subtype(foo_any_co)
+    assert not foo_any_co.is_subtype(foo_any)
+
+    foo_number_contra = foo.new([kt.Number.to_type_arg(tp.Contravariant)])
+    foo_number = foo.new([kt.Number.to_type_arg()])
+    foo_integer = foo.new([kt.Integer.to_type_arg()])
+
+    assert foo_number.is_subtype(foo_number_contra)
+    assert foo_any.is_subtype(foo_number_contra)
+    assert not foo_integer.is_subtype(foo_number_contra)
+    assert not foo_string.is_subtype(foo_number_contra)
+    assert not foo_any_co.is_subtype(foo_number_contra)
+    assert not foo_number_contra.is_subtype(foo_any_co)
+
+
+def test_use_site_variance_covariant_decl():
+    type_param = tp.TypeParameter("T", tp.Covariant)
+    foo = tp.TypeConstructor("Foo", [type_param], [])
+    foo_any_co = foo.new([kt.Any.to_type_arg(tp.Covariant)])
+
+    foo_any = foo.new([kt.Any.to_type_arg()])
+    foo_string = foo.new([kt.String.to_type_arg()])
+    foo_string_co = foo.new([kt.String.to_type_arg(tp.Covariant)])
+    assert foo_any.is_subtype(foo_any_co)
+    assert foo_string.is_subtype(foo_any_co)
+    assert foo_any_co.is_subtype(foo_any)
+    assert foo_string_co.is_subtype(foo_any_co)
+
+
+def test_use_site_variance_contravariant_decl():
+    type_param = tp.TypeParameter("T", tp.Contravariant)
+    foo = tp.TypeConstructor("Foo", [type_param], [])
+    foo_number_contra = foo.new([kt.Number.to_type_arg(tp.Contravariant)])
+
+    foo_any = foo.new([kt.Any.to_type_arg()])
+    foo_number = foo.new([kt.Number.to_type_arg()])
+    foo_integer = foo.new([kt.Integer.to_type_arg()])
+    foo_integer_co = foo.new([kt.Integer.to_type_arg(tp.Contravariant)])
+    assert foo_any.is_subtype(foo_number_contra)
+    assert not foo_integer.is_subtype(foo_number_contra)
+    assert foo_number_contra.is_subtype(foo_number)
+    assert not foo_integer.is_subtype(foo_number_contra)
+    assert not foo_integer_co.is_subtype(foo_number_contra)
