@@ -22,7 +22,7 @@ class JavaCompiler(BaseCompiler):
         return ['javac', '-version']
 
     def get_compiler_cmd(self):
-        return ['javac', self.input_name]
+        return ['javac', '-nowarn', self.input_name]
 
     def analyze_compiler_output(self, output):
         self.crashed = None
