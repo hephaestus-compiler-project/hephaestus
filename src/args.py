@@ -16,7 +16,6 @@ parser.add_argument(
 parser.add_argument(
     "-i", "--iterations",
     type=int,
-    required=True,
     help="Iterations to run (default: 3)"
 )
 parser.add_argument(
