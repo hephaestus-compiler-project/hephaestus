@@ -226,7 +226,7 @@ class JavaTranslator(ASTVisitor):
         children_len = len(children)
         for i, c in enumerate(children):
             # Cast return statement if it's a number literal
-            if is_func_non_void_block and i == children_len - 1:
+            if i == children_len - 1:
                 prev_cast_number = self._cast_number
                 self._cast_number = True
                 c.accept(self)
