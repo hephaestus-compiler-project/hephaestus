@@ -45,14 +45,16 @@ def test_parameterized_nested_params():
     bar_con = tp.TypeConstructor(
         "Bar", [tp.TypeParameter("T2")], [])
     type_param = tp.TypeParameter("T")
-    bar_parent = bar_con.new([foo_con.new([type_param.to_type_arg()])])
+    bar_parent = bar_con.new(
+        [foo_con.new([type_param.to_type_arg()]).to_type_arg()])
 
     baz_con = tp.TypeConstructor("Baz", [type_param], [bar_parent])
     baz = baz_con.new([kt.Boolean.to_type_arg()])
 
     supertypes = baz.supertypes
     assert supertypes[0] == tp.ParameterizedType(
-        bar_con, [tp.ParameterizedType(foo_con, [kt.Boolean.to_type_arg()])])
+        bar_con, [tp.ParameterizedType(
+            foo_con, [kt.Boolean.to_type_arg()]).to_type_arg()])
 
 def test_parameterized_with_chain_inheritance():
     foo_con = tp.TypeConstructor(
@@ -105,7 +107,7 @@ def test_parameterized_with_chain_inheritance_and_nested():
     assert len(st.type_args) == 1
     assert st.type_args[0].name == "R"
     assert st.type_args[0].to_type().type_args == [kt.Boolean.to_type_arg()]
-    assert st.type_args[0].supertypes[0] == \
+    assert st.type_args[0].to_type().supertypes[0] == \
         tp.ParameterizedType(k_con, [kt.Boolean.to_type_arg()])
 
     st = st.supertypes[0]
