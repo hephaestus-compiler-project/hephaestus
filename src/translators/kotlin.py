@@ -126,7 +126,7 @@ class KotlinTranslator(ASTVisitor):
     def visit_type_param(self, node):
         self._children_res.append("{}{}{}{}".format(
             node.variance_to_string(),
-            ' ' if node.variance != node.INVARIANT else '',
+            ' ' if node.variance != tp.Invariant else '',
             node.name,
             ': ' + get_type_name(node.bound) if node.bound is not None else ''
         ))
@@ -182,7 +182,7 @@ class KotlinTranslator(ASTVisitor):
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
         param_type = (
-            node.param_type.type_args[0]
+            node.param_type.type_args[0].to_type()
             if node.vararg and isinstance(node.param_type,
                                           tp.ParameterizedType)
             else node.param_type)
@@ -266,10 +266,10 @@ class KotlinTranslator(ASTVisitor):
             if not is_specialized:
                 self._children_res.append("{}emptyArray<{}>()".format(
                     " " * self.ident,
-                    get_type_name(node.array_type.type_args[0])))
+                    get_type_name(node.array_type.type_args[0].to_type())))
             else:
                 # Specialized array
-                t_arg = get_type_name(node.array_type.type_args[0])
+                t_arg = get_type_name(node.array_type.type_args[0].to_type())
                 self._children_res.append("{}{}Array(0)".format(
                     " " * self.ident, t_arg))
             return
@@ -286,7 +286,7 @@ class KotlinTranslator(ASTVisitor):
             if not is_specialized
             else "{}{}ArrayOf({})"
         )
-        t_arg = get_type_name(node.array_type.type_args[0])
+        t_arg = get_type_name(node.array_type.type_args[0].to_type())
         if is_specialized:
             t_arg = t_arg.lower()
         return self._children_res.append(template.format(
