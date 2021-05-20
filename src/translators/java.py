@@ -459,8 +459,15 @@ class JavaTranslator(ASTVisitor):
         var_type = "var"
         # Global variables declared as fields in Main, thus we must specify
         # their type.
+        #
+        # We should also declare the type when a variable is an Object.
+        # The following example does not compile if we don't:
+        #
+        # var foo = 'B'
+        # if (foo == new Object()) {...}
         if (node.var_type is not None or
-                self._namespace == ast.GLOBAL_NAMESPACE):
+                self._namespace == ast.GLOBAL_NAMESPACE or
+                node.inferred_type == jt.Object):
             var_type = get_type_name(node.inferred_type)
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
