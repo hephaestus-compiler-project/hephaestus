@@ -363,7 +363,11 @@ class TypeConstructor(AbstractType):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
         type_con = perform_type_substitution(self, type_map)
-        return ParameterizedType(type_con, type_args)
+        # If any of the provided type arguments is not an instance of
+        # TypeArgument class, then implicitly convert to a type argument
+        # with the default variance (i.e., invariant).
+        new_type_args = [t.to_type_arg() for t in type_args]
+        return ParameterizedType(type_con, new_type_args)
 
 
 class TypeArgument(Classifier):
