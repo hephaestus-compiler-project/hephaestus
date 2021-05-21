@@ -11,7 +11,7 @@ class Main {
     static final void foo2(AClass<Object> n) {
 
     }
-    public static void main() {
+    static public void main() {
         final var a1 = new AClass<String>("a1");
         final var a2 = new AClass<Object>("a2");
         final var a3 = new AClass<Object>("a3");

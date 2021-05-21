@@ -1,5 +1,5 @@
 class Main {
-    public static final void main() {
+    static public final void main() {
         B b = new B("b");
         A ba = new B("ba");
     }
