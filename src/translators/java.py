@@ -49,7 +49,7 @@ class JavaTranslator(ASTVisitor):
     executable = "Main.jar"
     ident_value = " "
 
-    def __init__(self, package=None):
+    def __init__(self, package=None, options={}):
         self._children_res = []
         self.program = None
         self.ident = 0
@@ -493,7 +493,14 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_param_decl(self, node):
-        res = get_type_name(node.param_type) + " " + node.name
+        vararg_str = '...' if node.vararg else ''
+        # Recall that varargs ara actually arrays in the signature of
+        # the corresponding parameters.
+        param_type = (
+            node.param_type.type_args[0]
+            if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
+            else node.param_type)
+        res = get_type_name(param_type) + vararg_str + " " + node.name
         return res
 
     @append_to
