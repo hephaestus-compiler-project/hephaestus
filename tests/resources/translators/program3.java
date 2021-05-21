@@ -1,5 +1,5 @@
 class Main {
-    public static final void main() {
+    static public final void main() {
         A a = new A("a");
         a.foo();
     }
@@ -20,7 +20,7 @@ class A {
         this.a = a;
     }
 
-    void foo() {
+    public void foo() {
         Function1<String, String> clos = (i) -> {
             String s = "s";
             return s;

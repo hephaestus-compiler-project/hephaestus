@@ -1,13 +1,13 @@
 class Main {
     static final String z = "z";
     static final String y = "y";
-    static final String bar(String y) {
+    static public final String bar(String y) {
         return (Main.z + y);
     }
-    static final A buz() {
+    static public final A buz() {
         return new A("a");
     }
-    public static final void main() {
+    static public final void main() {
         A a = new A("a");
         a.foo();
         Main.buz().foo();
@@ -25,7 +25,7 @@ class A {
         this.a = a;
     }
 
-    void foo() {
+    public void foo() {
         println(Main.bar(a));
         println(Main.bar(Main.z));
     }

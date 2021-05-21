@@ -1,5 +1,5 @@
 class Main {
-    public static final void main() {
+    static public final void main() {
         Object b = new B("b");
         B ba = new B("ba");
         B bb = ((b instanceof A b_is) ?
