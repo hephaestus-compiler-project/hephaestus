@@ -331,32 +331,22 @@ class Generator():
         return ast.ArrayExpr(expr_type, arr_len, exprs)
 
     def gen_type(self, ret_types=True):
-        class_decls = self.context.get_classes(self.namespace)
+        class_decls = list(self.context.get_classes(self.namespace).values())
         # Randomly choose whether we should generate a builtin type or not.
         if not class_decls or ut.random.bool():
             builtins = self.ret_builtin_types if ret_types \
                 else self.builtin_types
             etype = ut.random.choice(builtins)
         else:
-            etype = ut.random.choice(list(class_decls.values())).get_type()
+            etype = ut.random.choice(class_decls).get_type()
         if not isinstance(etype, types.TypeConstructor):
             return etype
         # We have to instantiate type constructor with random type arguments.
-        t_args = []
         candiate_types = list(self.ret_builtin_types)
         candiate_types.remove(self.bt_factory.get_array_type())
-        usr_types = [
-            c.get_type()
-            for c in self.context.get_classes(self.namespace).values()
-        ]
-        candiate_types.extend(usr_types)
-
-        for _ in etype.type_parameters:
-            selected_type = ut.random.choice(candiate_types)
-            if selected_type.is_primitive():
-                selected_type = selected_type.box_type()
-            t_args.append(selected_type.to_type_arg())
-        return etype.new(t_args)
+        new_type, _ = tu.instantiate_type_constructor(
+            etype, class_decls + candiate_types)
+        return new_type
 
     def gen_variable_decl(self, etype=None, only_leaves=False,
                           expr=None):
