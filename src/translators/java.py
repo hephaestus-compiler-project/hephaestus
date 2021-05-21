@@ -13,6 +13,19 @@ from src.transformations.base import change_namespace
 from src.translators.utils import get_type_name
 
 
+PRIMITIVES_TO_BOXED = {
+    'boolean': 'Boolean',
+    'byte': 'Byte',
+    'char': 'Character',
+    'short': 'Short',
+    'int': 'Integer',
+    'long': 'Long',
+    'float': 'Float',
+    'double': 'Double',
+    'void': 'Void',
+}
+
+
 def append_to(visit):
     """There are three scenarios:
 
@@ -314,8 +327,10 @@ class JavaTranslator(ASTVisitor):
                                       jt.JavaBuiltinFactory(),
                                       self.types,
                                       smart_casts=self.smart_casts)
+            etype_str = get_type_name(etype, get_boxed_void=True)
+            etype_str = PRIMITIVES_TO_BOXED.get(etype_str, etype_str)
             res = "((Function0<{etype}>) (() -> {res})).apply()".format(
-                etype=get_type_name(etype, get_boxed_void=True),
+                etype=etype_str,
                 res=res
             )
         return res
@@ -550,7 +565,11 @@ class JavaTranslator(ASTVisitor):
                 body = body_res
         if is_nested_func():
             types = list(map(lambda x: x.rsplit(' ', 1)[0], param_res))
+            # Convert vararg to array
+            types = list(map(lambda x: x.replace('...', '[]'), types))
             types.append(get_type_name(node.inferred_type, True))
+            types = list(map(
+                lambda x: PRIMITIVES_TO_BOXED.get(x, x), types))
             params = list(map(lambda x: x.split()[-1], param_res))
             self._function_interfaces.add(len(params))
             res_t = "{ident}Function{n}<{tp}> {name} = ({params}) -> {body};"
@@ -563,6 +582,8 @@ class JavaTranslator(ASTVisitor):
                 body=body
             )
         else:
+            if node.name == 'swig':
+                __import__('ipdb').set_trace()
             res = ("{ident}{public}{final}{abstract}{ret_type} "
                    "{name}({params}) {body}{semicolon}").format(
                 ident=self.get_ident(old_ident=old_ident),
@@ -680,11 +701,13 @@ class JavaTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
 
-        new_stmt = "new {etype}".format(
-            etype=get_type_name(node.array_type)
-        )
-        if isinstance(node.array_type, tp.ParameterizedType):
+        if (isinstance(node.array_type, tp.ParameterizedType) and
+                not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
+                etype=get_type_name(node.array_type)
+            )
+        else:
+            new_stmt = "new {etype}".format(
                 etype=get_type_name(node.array_type)
             )
 
@@ -857,25 +880,48 @@ class JavaTranslator(ASTVisitor):
     @append_to
     def visit_func_call(self, node):
         def is_nested_func():
-            # From where we are in the AST we search backwards for declarations
-            # with the same name.
-            decl = get_decl(self.context, self._namespace, node.func)
-            # decl[0][-1] is the parent.
-            if decl and decl[0][-1] != 'global' and decl[0][-1][0].islower():
+            # fdecl[0][-1] is the parent.
+            if fdecl and fdecl[0][-1] != 'global' and fdecl[0][-1][0].islower():
                 return True
             return False
         old_ident = self.ident
         self.ident = 0
         prev_cast_number = self._cast_number
         self._cast_number = True
+
         children = node.children()
         for c in children:
             c.accept(self)
+
         self.ident = old_ident
+
+        # From where we are in the AST we search backwards for declarations
+        # with the same name.
+        fdecl = get_decl(self.context, self._namespace, node.func)
+
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
         receiver = children_res[0] if node.receiver else None
         args = children_res[1:] if node.receiver else children_res
+        # In case of a nested class with vararg as the last parameter,
+        # we have to create an array with the vararg arguments.
+        if (is_nested_func() and len(fdecl[1].params) > 0 and
+                fdecl[1].params[-1].vararg):
+            varargs = args[len(fdecl[1].params)-1:]
+            varargs_type = fdecl[1].params[-1].param_type
+            if not varargs_type.type_args[0].is_primitive():
+                new_stmt = "({etype}) new Object[]".format(
+                    etype=get_type_name(varargs_type)
+                )
+            else:
+                new_stmt = "new {etype}".format(
+                    etype=get_type_name(varargs_type)
+                )
+            varargs = "{new}{{{args}}}".format(
+                new=new_stmt,
+                args=", ".join(varargs)
+            )
+            args = args[:len(fdecl[1].params)-1] + [varargs]
         res = "{ident}{receiver}{name}{nested}({args}){semicolon}".format(
             ident=self.get_ident(),
             receiver=receiver + "." if receiver else "",
