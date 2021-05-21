@@ -457,10 +457,13 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_type_param(self, node):
+        bound = node.bound if node.bound is not None else ''
+        if bound:
+            bound_str = get_type_name(bound)
+            bound = ' extends ' + PRIMITIVES_TO_BOXED.get(bound_str, bound_str)
         return "{name}{bound}".format(
             name=node.name,
-            bound=' extends ' + get_type_name(node.bound)
-            if node.bound is not None else ''
+            bound=bound
         )
 
     @append_to
