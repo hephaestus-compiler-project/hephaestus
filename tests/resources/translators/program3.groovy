@@ -13,7 +13,7 @@ class A {
     }
 
     void foo() {
-        def clos = { String i -> {
+        Closure<String> clos = { String i -> {
             String s = "s"
             s
         }}
