@@ -1,14 +1,14 @@
 class Main {
-    static final void bar(BClass<Double, Integer> y) {
+    static public final void bar(BClass<Double, Integer> y) {
 
     }
-    static final BClass<Object, Integer> buz() {
+    static public final BClass<Object, Integer> buz() {
         return new BClass<Object, Integer>();
     }
-    static final void foo1(AClass<String> k) {
+    static public final void foo1(AClass<String> k) {
 
     }
-    static final void foo2(AClass<Object> n) {
+    static public final void foo2(AClass<Object> n) {
 
     }
     static public void main() {
@@ -34,7 +34,7 @@ final class AClass<T> {
         this.x = x;
     }
 
-    final String tmp() {
+    public final String tmp() {
         return "xxx";
     }
 }
