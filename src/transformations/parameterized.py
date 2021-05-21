@@ -608,12 +608,16 @@ class ParameterizedSubstitution(Transformation):
     def visit_is(self, node):
         if self._in_select_type_params:
             return node
+        new_node = super().visit_is(node)
         if self._in_find_classes_blacklist:
             etype = node.rexpr
             class_decl = self.program.context.get_decl(
                 ast.GLOBAL_NAMESPACE, etype.name)
             self._blacklist_classes.add(class_decl)
-        return super().visit_is(node)
+            return new_node
+        new_node = self._update_type(new_node, 'rexpr',
+                                     self._parameterized_type)
+        return new_node
 
     def visit_func_call(self, node):
         if self._in_select_type_params:
