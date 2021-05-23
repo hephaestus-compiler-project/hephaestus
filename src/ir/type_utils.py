@@ -8,12 +8,6 @@ import src.ir.builtins as bt
 from src import utils
 
 
-class IsEqualDict(dict):
-    def get(self, key):
-        key = next((k for k in self.keys() if k.is_equal(key)), None)
-        return dict.get(self, key)
-
-
 def _construct_related_types(etype, types, get_subtypes):
     valid_args = []
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
@@ -359,6 +353,8 @@ def find_nearest_supertype(etype, types, pred=lambda x, y: x in y):
 
 def find_lub(type_a, type_b, types, any_type):
     # FIXME use a proper algorithm
+    if type_a == type_b:
+        return type_a
     super_types_a = find_supertypes(type_a, types, include_self=True)
     super_types_b = find_supertypes(type_b, types, include_self=True)
     super_types = list(set(super_types_a) & set(super_types_b))
@@ -398,7 +394,7 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
 
 def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
                   factory: bt.BuiltinFactory, types: List[tp.Type],
-                  smart_casts=IsEqualDict()) -> tp.Type:
+                  smart_casts=[]) -> tp.Type:
     """
     Get a hint of the type of the expression.
 
@@ -437,6 +433,10 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
                 return None
         return t
 
+    def smart_cast_get(expr):
+        return next((e[1] for e in reversed(smart_casts)
+                     if e[0].is_equal(expr)), None)
+
     while True:
         if isinstance(expr, ast.IntegerConstant):
             return _return_type_hint(expr.integer_type or
@@ -465,10 +465,11 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
 
         if isinstance(expr, ast.Block):
             return _return_type_hint(get_type_hint(
-                expr.body[-1], context, namespace, factory, types))
+                expr.body[-1], context, namespace, factory, types,
+                smart_casts=smart_casts))
 
         if isinstance(expr, ast.Variable):
-            smart_type = smart_casts.get(expr)
+            smart_type = smart_cast_get(expr)
             if smart_type:
                 vardecl = ctx.get_decl(context, namespace, expr.name)
                 return _return_type_hint(smart_type)
@@ -479,10 +480,31 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if isinstance(expr, ast.Conditional):
             expr1 = expr.true_branch
             expr2 = expr.false_branch
-            e1_type = get_type_hint(expr1, context, namespace, factory, types,
-                                    smart_casts=smart_casts)
-            e2_type = get_type_hint(expr2, context, namespace, factory, types,
-                                    smart_casts=smart_casts)
+
+
+            if isinstance(expr.cond, ast.Is):
+                # true branch smart cast
+                if not expr.cond.operator.is_not:
+                    smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
+                    e1_type = get_type_hint(expr1, context, namespace, factory,
+                                            types, smart_casts=smart_casts)
+                    smart_casts.pop()
+                    e2_type = get_type_hint(expr2, context, namespace, factory,
+                                            types, smart_casts=smart_casts)
+                # false branch smart cast
+                else:
+                    e1_type = get_type_hint(expr1, context, namespace, factory,
+                                            types, smart_casts=smart_casts)
+                    smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
+                    e2_type = get_type_hint(expr2, context, namespace, factory,
+                                            types, smart_casts=smart_casts)
+                    smart_casts.pop()
+            else:
+                e1_type = get_type_hint(expr1, context, namespace, factory,
+                                        types, smart_casts=smart_casts)
+                e2_type = get_type_hint(expr2, context, namespace, factory,
+                                        types, smart_casts=smart_casts)
+
             return _return_type_hint(find_lub(
                 e1_type, e2_type, types, factory.get_any_type()))
 
