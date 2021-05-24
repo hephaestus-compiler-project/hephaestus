@@ -876,3 +876,76 @@ def test_find_nearest_supertype():
     t3 = tp.SimpleClassifier("Baz", [t2])
     assert tutils.find_nearest_supertype(t3, [kt.Any]) == None
     assert tutils.find_nearest_supertype(t3, [t2, t1, t3]) == t2
+
+
+def test_instantiate_type_constructor_simple():
+    t_con = tp.TypeConstructor("Con", [tp.TypeParameter("T1"),
+                                       tp.TypeParameter("T2")])
+    types = [kt.String]
+
+    ptype, params = tutils.instantiate_type_constructor(t_con, types)
+    assert ptype == tp.ParameterizedType(t_con, [kt.String.to_type_arg(),
+                                                 kt.String.to_type_arg()])
+    params == {t_con.type_parameters[0]: kt.String,
+               t_con.type_parameters[1]: kt.String}
+
+
+def test_instantiate_type_constructor_nested():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    types = [kt.String]
+    t_con = tp.TypeConstructor("Con",
+                               type_parameters=[type_param1, type_param2])
+
+    ptype, params = tutils.instantiate_type_constructor(t_con, types)
+    t_con.type_parameters[1].bound = kt.String
+    assert ptype == tp.ParameterizedType(t_con, [kt.String.to_type_arg(),
+                                                 kt.String.to_type_arg()])
+    params == {t_con.type_parameters[0]: kt.String,
+               t_con.type_parameters[1]: kt.String}
+
+
+def test_instantiate_type_constructor_nested2():
+    foo = tp.TypeConstructor("Foo", [tp.TypeParameter("T3")])
+
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=foo.new(
+        [type_param1.to_type_arg()]))
+    types = [kt.String]
+    t_con = tp.TypeConstructor("Con",
+                               type_parameters=[type_param1, type_param2])
+
+    ptype, params = tutils.instantiate_type_constructor(t_con, types)
+
+    assert ptype.type_args[0] == kt.String.to_type_arg()
+    assert ptype.type_args[1].to_type().name == "Foo"
+    assert ptype.type_args[1].to_type().type_args == [kt.String.to_type_arg()]
+
+    foo_string = foo.new([kt.String.to_type_arg()])
+    assert params == {
+        type_param1: kt.String,
+        type_param2: foo_string
+    }
+
+
+def test_instantiate_type_constructor_nested3():
+    foo = tp.TypeConstructor("Foo", [tp.TypeParameter("T4")])
+    bar = tp.TypeConstructor("Bar", [tp.TypeParameter("T3")])
+    type_param1 = tp.TypeParameter("T1")
+    bar_foo = bar.new([foo.new([type_param1.to_type_arg()]).to_type_arg()])
+    type_param2 = tp.TypeParameter("T2", bound=bar_foo)
+    types = [kt.String]
+    t_con = tp.TypeConstructor("Con",
+                               type_parameters=[type_param1, type_param2])
+
+    ptype, params = tutils.instantiate_type_constructor(t_con, types)
+    bar_foo_string = bar.new([foo.new([kt.String.to_type_arg()]).to_type_arg()])
+
+    assert ptype.type_args[0] == kt.String.to_type_arg()
+    assert ptype.type_args[1].to_type().name == "Bar"
+    assert ptype.type_args[1].to_type() == bar_foo_string
+
+    assert params == {
+        type_param1: kt.String,
+        type_param2: bar_foo_string
+    }

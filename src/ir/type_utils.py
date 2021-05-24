@@ -289,15 +289,25 @@ def _get_available_types(types, only_regular, primitives=True):
 
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                                  types: List[tp.Type],
-                                 only_regular=True):
+                                 only_regular=True,
+                                 params_map=None):
     types = _get_available_types(types, only_regular, primitives=False)
     # Instantiate a type constructor with random type arguments.
     t_args = []
+    params_map = params_map or {}
     for t_param in type_constructor.type_parameters:
         if t_param.bound:
-            # If the type parameter has a bound, then find types that
-            # are subtypes to this bound.
-            a_types = find_subtypes(t_param.bound, types, True)
+            if not isinstance(t_param.bound, tp.AbstractType):
+                # If the type parameter has a bound, then find types that
+                # are subtypes to this bound.
+                a_types = find_subtypes(t_param.bound, types, True)
+                for i, t in enumerate(a_types):
+                    if isinstance(t, tp.ParameterizedType):
+                        a_types[i] = tp.substitute_type_args(t, params_map)
+                print(a_types, params_map)
+
+            else:
+                a_types = [params_map[t_param.bound].to_type()]
         else:
             a_types = types
         c = utils.random.choice(a_types)
@@ -311,12 +321,11 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             # depthy instantiations.
             types = [t for t in types if t != c]
             cls_type, _ = instantiate_type_constructor(
-                cls_type, types, only_regular)
-        t_args.append(cls_type.to_type_arg())
+                cls_type, types, only_regular, params_map)
+        t_arg = cls_type.to_type_arg()
+        t_args.append(t_arg)
+        params_map[t_param] = t_arg.to_type()
     # Also return a map of type parameters and their instantiations.
-    params_map = {t_param: t_args[i].to_type()
-                  for i, t_param in enumerate(
-                      type_constructor.type_parameters)}
     return type_constructor.new(t_args), params_map
 
 
