@@ -39,11 +39,18 @@ class TypeArgumentErasureSubstitution(Transformation):
         # (namespace, var_decl)
         self._var_decl: Tuple[Tuple, ast.VariableDeclaration] = None
 
+        # We use this variable to find to which assignment does a `New`
+        # assignment belongs.
+        self._assign: ast.Assignment = None
+
         # We use this variable to find the return statements of function
         # declarations. We don't want to infer type arguments for `New` nodes
         # that are in return statements. We select to infer type arguments for
         # such statements in _check_func_decl_infer
         self._ret_stmt: ast.Expr = None
+
+        # A stack of tuples with expressions and their types provided by smart
+        self.smart_casts = []
 
     def get_parent_decl(self, namespace):
         if namespace == ast.GLOBAL_NAMESPACE:
@@ -123,6 +130,37 @@ class TypeArgumentErasureSubstitution(Transformation):
                         gnode = GNode(namespace, var_decl.name)
                         if len(use_graph[gnode]) != 0:
                             return node
+                # If assign is a field of the analyzed new and its type is a
+                # type parameter in the class declaration, then we should check
+                # that the appropriate argument in the new has the same type
+                # with the expr.
+                #
+                #  open class A {}
+                #  class B: A() {}
+                #  class C<T: A>(var x: T) {}
+                #
+                #  fun main() {
+                #    C(B()).x = A() // Error Here
+                #  }
+                if (self._assign is not None and
+                        # OK assign is a field of this class, and its type
+                        # is a type parameter
+                        any(f for f in cdecl.fields
+                            if f.name == self._assign.name)):
+                    # We should now check if the argument has the same type
+                    # with the expression of assign.
+                    arg_pos = next(i for i, f in enumerate(cdecl.fields)
+                                   if f.name == self._assign.name)
+                    arg_type = tp.get_type_hint(
+                        node.args[arg_pos], self.program.context,
+                        self._namespace, self.program.bt_factory,
+                        self.types, smart_casts=self.smart_casts)
+                    expr_type = tp.get_type_hint(
+                        self._assign.expr, self.program.context,
+                        self._namespace, self.program.bt_factory,
+                        self.types, smart_casts=self.smart_casts)
+                    if not expr_type == arg_type:
+                        return node
                 self.is_transformed = True
                 node.class_type.can_infer_type_args = True
         return node
@@ -226,6 +264,12 @@ class TypeArgumentErasureSubstitution(Transformation):
         self._var_decl = None
         return new_node
 
+    def visit_assign(self, node):
+        self._assign = node
+        new_node = super().visit_assign(node)
+        self._assign = None
+        return new_node
+
     @change_namespace
     def visit_func_decl(self, node):
         old_ret_stmt = self._ret_stmt
@@ -249,3 +293,33 @@ class TypeArgumentErasureSubstitution(Transformation):
         new_node = super().visit_func_call(node)
         new_node = self._check_func_call_infer(new_node)
         return new_node
+
+    def visit_conditional(self, node):
+        children = node.children()
+        new_children = []
+
+        # Visit children
+        cond = children[0]
+        new_children.append(cond.accept(self))
+        true_branch = children[1]
+        false_branch = children[2]
+        # Handle Smart Cast and is suffix
+        if isinstance(cond, ast.Is):
+            # true branch smart cast
+            if not cond.operator.is_not:
+                self.smart_casts.append((cond.lexpr, cond.rexpr))
+                new_children.append(true_branch.accept(self))
+                self.smart_casts.pop()
+                new_children.append(false_branch.accept(self))
+            # false branch smart cast
+            else:
+                new_children.append(true_branch.accept(self))
+                self.smart_casts.append((cond.lexpr, cond.rexpr))
+                new_children.append(false_branch.accept(self))
+                self.smart_casts.pop()
+        else:
+            new_children.append(true_branch.accept(self))
+            new_children.append(false_branch.accept(self))
+
+        node.update_children(new_children)
+        return node
