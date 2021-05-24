@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 from src import utils as ut
 from src.generators import utils as gu
-from src.ir import ast, types, type_utils as tu, kotlin_types as kt
+from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
@@ -13,7 +13,7 @@ from src.ir import BUILTIN_FACTORIES
 class Generator():
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
-                 max_var_decls=3, max_side_effects=1,
+                 max_var_decls=3, max_side_effects=1, max_type_params=3,
                  language=None,
                  options={},
                  context=None):
@@ -25,6 +25,7 @@ class Generator():
         self.max_fields = max_fields
         self.max_funcs = max_funcs
         self.max_params = max_params
+        self.max_type_params = max_type_params
         self.max_var_decls = max_var_decls
         self.max_side_effects = max_side_effects
         self.disable_inference_in_closures = options.get(
@@ -41,6 +42,14 @@ class Generator():
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
+
+    @property
+    def types(self):
+        usr_types = [
+            c.get_type()
+            for c in self.context.get_classes(self.namespace).values()
+        ]
+        return usr_types + self.ret_builtin_types
 
     # pylint: disable=unused-argument
     def gen_equality_expr(self, expr_type=None, only_leaves=False):
@@ -291,6 +300,30 @@ class Generator():
         funcs.append(func)
         self.context.add_func(self.namespace, func.name, func)
 
+    def gen_type_params(self):
+        if ut.random.bool():
+            return []
+        type_params = []
+        type_param_names = []
+        variances = [tp.Invariant, tp.Covariant, tp.Contravariant]
+        for _ in range(1, self.max_type_params):
+            name = ut.random.caps(blacklist=type_param_names)
+            type_param_names.append(name)
+            variance = None
+            if self.language == 'kotlin' and ut.random.bool():
+                variance = ut.random.choice(variances)
+            bound = None
+            if ut.random.bool():
+                bound = ut.random.choice(self.types)
+                if isinstance(bound, tp.TypeConstructor):
+                    bound, _ = tu.instantiate_type_constructor(bound,
+                                                               self.types)
+                if bound.is_primitive():
+                    bound = bound.box_type()
+            type_param = tp.TypeParameter(name, variance=variance, bound=bound)
+            type_params.append(type_param)
+        return type_params
+
     def gen_class_decl(self, field_type=None, fret_type=None, not_void=False):
         class_name = gu.gen_identifier('capitalize')
         initial_namespace = self.namespace
@@ -300,6 +333,7 @@ class Generator():
         fields = []
         max_fields = self.max_fields - 1 if field_type else self.max_fields
         max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
+        type_params = self.gen_type_params()
         if field_type:
             self._add_field_to_class(self.gen_field_decl(field_type),
                                      fields)
@@ -318,7 +352,8 @@ class Generator():
             class_name,
             superclasses=[],
             fields=fields,
-            functions=funcs
+            functions=funcs,
+            type_parameters=type_params
         )
 
     def gen_array_expr(self, expr_type, only_leaves=False, subtype=True):
@@ -339,7 +374,7 @@ class Generator():
             etype = ut.random.choice(builtins)
         else:
             etype = ut.random.choice(class_decls).get_type()
-        if not isinstance(etype, types.TypeConstructor):
+        if not isinstance(etype, tp.TypeConstructor):
             return etype
         # We have to instantiate type constructor with random type arguments.
         candiate_types = list(self.ret_builtin_types)
@@ -527,7 +562,7 @@ class Generator():
         receiver, func = ut.random.choice(objs)
         return ast.FieldAccess(receiver, func.name)
 
-    def _get_class(self, etype: types.Type):
+    def _get_class(self, etype: tp.Type):
         # Get class declaration based on the given type.
         class_decls = self.context.get_classes(self.namespace).values()
         for c in class_decls:
@@ -541,7 +576,7 @@ class Generator():
                 return c
         return None
 
-    def _get_subclass(self, etype: types.Type):
+    def _get_subclass(self, etype: tp.Type):
         class_decls = self.context.get_classes(self.namespace).values()
         # Get all classes that are subtype of the given type, and there
         # are regular classes (no interfaces or abstract classes).
@@ -578,6 +613,8 @@ class Generator():
         class_decl = (
             from_class
             if etype2 == etype else self._get_subclass(etype))
+        if isinstance(etype, tp.TypeConstructor):
+            etype, _ = tu.instantiate_type_constructor(etype, self.types)
         # If the matching class is a parameterized one, we need to create
         # a map mapping the class's type parameters with the corresponding
         # type arguments as given by the `etype` variable.
@@ -657,7 +694,7 @@ class Generator():
         # instantiate_type_constructor. To do so, we need to pass types as
         # argument to Generator's constructor.
         classes = [c for c in classes
-                   if not isinstance(c[0].get_type(), types.TypeConstructor)]
+                   if not isinstance(c[0].get_type(), tp.TypeConstructor)]
         if not classes:
             return None
         return ut.random.choice(classes)
