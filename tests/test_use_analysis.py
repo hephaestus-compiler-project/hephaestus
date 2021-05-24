@@ -50,6 +50,32 @@ def test_program1():
     assert_nodes(ug[NONE_NODE], {bar_y})
 
 
+def test_program1_foo():
+    ua = UseAnalysis(program1.program)
+    ua._namespace = ("global", "A")
+    ua.visit(program1.foo_func)
+    ug = ua.result()
+
+    field_x = str2node("global/A/x")
+    bar_ret = str2node("global/A/bar/__RET__")
+    bar_arg = str2node("global/A/bar/arg")
+    bar_y = str2node("global/A/bar/y")
+    bar_z = str2node("global/A/bar/z")
+    buz_ret = str2node("global/A/buz/__RET__")
+    foo_ret = str2node("global/A/foo/__RET__")
+    foo_q = str2node("global/A/foo/q")
+    foo_x = str2node("global/A/foo/x")
+    foo_y = str2node("global/A/foo/y")
+    foo_z = str2node("global/A/foo/z")
+    spam_ret = str2node("global/A/spam/__RET__")
+
+    assert_nodes(ug[foo_ret], set())
+    assert_nodes(ug[foo_q], {foo_x, bar_z})
+    assert_nodes(ug[foo_x], set())
+    assert_nodes(ug[foo_y], {bar_arg})
+    assert_nodes(ug[foo_z], {foo_q})
+
+
 def test_program2():
     ua = UseAnalysis(program2.program)
     ua.visit(program2.bam_cls)
