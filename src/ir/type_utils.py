@@ -352,6 +352,9 @@ def find_nearest_supertype(etype, types, pred=lambda x, y: x in y):
 
 
 def find_lub(type_a, type_b, types, any_type):
+    # We must handle None to not throw run time exceptions
+    if type_a is None or type_b is None:
+        return None
     # FIXME use a proper algorithm
     if type_a == type_b:
         return type_a
