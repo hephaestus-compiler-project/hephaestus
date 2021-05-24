@@ -778,6 +778,49 @@ def test_type_hint_field_access_inheritance():
                                 KT_FACTORY, types) == kt.Integer
 
 
+def test_type_hint_smart_cast():
+    context = ctx.Context()
+    field = ast.FieldDeclaration("f", kt.Integer)
+    cls = ast.ClassDeclaration("Foo", [], 0, fields=[field])
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_var(ast.GLOBAL_NAMESPACE + (cls.name,), field.name, field)
+
+    new_expr = ast.New(cls.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=kt.Any)
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr = ast.Variable("x")
+
+    decl2 = ast.VariableDeclaration("y", new_expr,
+                                    var_type=kt.Any)
+    context.add_var(ast.GLOBAL_NAMESPACE, decl2.name, decl2)
+    expr2 = ast.Variable("y")
+
+    decl3 = ast.VariableDeclaration("z", new_expr,
+                                    var_type=cls.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl3.name, decl3)
+    expr3 = ast.Variable("z")
+
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr2, expr3)
+    cond2 = ast.Conditional(ast.Is(expr2, cls.get_type()), expr2, expr3)
+
+    smart_casts = [(expr, cls.get_type())]
+    program = ast.Program(context, language="kotlin")
+    types = program.get_types()
+
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types) == kt.Any
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types,
+                                smart_casts) == cls.get_type()
+    assert tutils.get_type_hint(expr3, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types) == cls.get_type()
+    assert tutils.get_type_hint(cond1, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types) == kt.Any
+    assert tutils.get_type_hint(cond2, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types) == cls.get_type()
+
+
 def test_find_nearest_supertype():
     t1 = tp.SimpleClassifier("Foo", [])
     t2 = tp.SimpleClassifier("Bar", [t1])
