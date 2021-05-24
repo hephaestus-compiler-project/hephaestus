@@ -304,8 +304,6 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                 for i, t in enumerate(a_types):
                     if isinstance(t, tp.ParameterizedType):
                         a_types[i] = tp.substitute_type_args(t, params_map)
-                print(a_types, params_map)
-
             else:
                 a_types = [params_map[t_param.bound].to_type()]
         else:
