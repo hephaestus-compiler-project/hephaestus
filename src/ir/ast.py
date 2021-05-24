@@ -590,6 +590,14 @@ class Constant(Expr):
             return self.literal == other.literal
         return False
 
+    def __eq__(self, other):
+        return self.is_equal(other)
+
+
+# This is a constant representing a value whose type is the Bottom type,
+# meaning that it's subtype of any other type.
+Bottom = Constant("_B_")
+
 
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
