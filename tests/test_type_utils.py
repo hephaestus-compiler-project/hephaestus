@@ -2,6 +2,9 @@ from src.ir import types as tp, kotlin_types as kt
 from src.ir import ast, type_utils as tutils, context as ctx
 
 
+KT_FACTORY = kt.KotlinBuiltinFactory()
+
+
 def test_update_type_builtins():
     up = tutils.TypeUpdater()
     new_type = up.update_type(kt.Integer, kt.Unit)
@@ -485,10 +488,11 @@ def test_find_irrelevant_type():
     baz = tp.SimpleClassifier("Baz", [bar])
     qux = tp.SimpleClassifier("Qux", [])
 
-    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz])
+    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz], KT_FACTORY)
     assert ir_type is None
 
-    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz, qux])
+    ir_type = tutils.find_irrelevant_type(bar, [foo, bar, baz, qux],
+                                          KT_FACTORY)
     assert ir_type == qux
 
 
@@ -501,12 +505,13 @@ def test_find_irrelevant_type_parameterized():
     con = tp.TypeConstructor("X", [tp.TypeParameter("T")])
     t = con.new([bar])
 
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con], KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
 
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con],
+                                          KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
@@ -514,12 +519,13 @@ def test_find_irrelevant_type_parameterized():
     con = tp.TypeConstructor(
         "X", [tp.TypeParameter("T", variance=tp.TypeParameter.COVARIANT)])
     t = con.new([bar])
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con], KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
 
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con],
+                                          KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
@@ -527,12 +533,13 @@ def test_find_irrelevant_type_parameterized():
     con = tp.TypeConstructor(
         "X", [tp.TypeParameter("T", variance=tp.TypeParameter.CONTRAVARIANT)])
     t = con.new([bar])
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, con], KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
 
-    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con])
+    ir_type = tutils.find_irrelevant_type(t, [foo, bar, baz, qux, con],
+                                          KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
@@ -543,7 +550,7 @@ def test_find_irrelevant_type_parameterized2():
     t = con.new([foo])
     bar = tp.SimpleClassifier("Bar", [t])
 
-    ir_type = tutils.find_irrelevant_type(t, [foo, con, bar])
+    ir_type = tutils.find_irrelevant_type(t, [foo, con, bar], KT_FACTORY)
     assert ir_type is not None
     assert not ir_type.is_subtype(t)
     assert not t.is_subtype(ir_type)
@@ -561,7 +568,8 @@ def test_find_irrelevant_type_parameterized_parent():
             bar.get_type().new([foo.get_type()]))], 0)
     qux = ast.ClassDeclaration("Qux", [], 0)
 
-    ir_type = tutils.find_irrelevant_type(baz.get_type(), [foo, bar, baz])
+    ir_type = tutils.find_irrelevant_type(baz.get_type(), [foo, bar, baz],
+                                          KT_FACTORY)
     # TODO
     assert ir_type is not None
 
@@ -574,52 +582,64 @@ def test_find_irrelevant_type_with_given_classes():
         "Baz", [ast.SuperClassInstantiation(bar.get_type())], 0)
     qux = ast.ClassDeclaration("Qux", [], 0)
 
-    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz])
+    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz],
+                                          KT_FACTORY)
     assert ir_type is None
 
-    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz, qux])
+    ir_type = tutils.find_irrelevant_type(bar.get_type(), [foo, bar, baz, qux],
+                                          KT_FACTORY)
     assert ir_type == qux.get_type()
 
 
 def test_type_hint_constants_and_binary_ops():
     context = ctx.Context()
     expr = ast.IntegerConstant(10, kt.Long)
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Long
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Long)
 
     expr = ast.RealConstant("10.9", kt.Float)
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Float
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Float)
 
     expr = ast.BooleanConstant("true")
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Boolean
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Boolean)
 
     expr = ast.CharConstant("d")
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Char
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Char)
 
     expr = ast.StringConstant("true")
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.String
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.String)
 
     expr = ast.LogicalExpr(ast.StringConstant("true"),
                            ast.StringConstant("false"),
                            ast.Operator("&&"))
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Boolean
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Boolean)
 
 
 def test_type_hint_variables():
     context = ctx.Context()
     expr = ast.Variable("x")
-    assert tutils.get_type_hint(expr, context, tuple()) is None
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is
+            None)
 
     decl = ast.VariableDeclaration("x", ast.StringConstant("foo"),
                                    var_type=kt.String)
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.String
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is
+            None)
+    assert (tutils.get_type_hint(
+        expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.String)
 
 
 def test_type_hint_new():
     context = ctx.Context()
     expr = ast.New(kt.Any, [])
-    assert tutils.get_type_hint(expr, context, tuple()) == kt.Any
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) ==
+            kt.Any)
 
 
 def test_type_hint_conditional():
@@ -633,7 +653,8 @@ def test_type_hint_conditional():
     cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, expr1)
     cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr2)
 
-    assert tutils.get_type_hint(cond3, context, ast.GLOBAL_NAMESPACE) == kt.String
+    assert tutils.get_type_hint(cond3, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, []) == kt.String
 
 
 def test_type_hint_func_call():
@@ -643,8 +664,9 @@ def test_type_hint_func_call():
                                    func_type=ast.FunctionDeclaration.FUNCTION)
     context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
     expr = ast.FunctionCall("func", [])
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Unit
+    assert tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is None
+    assert (tutils.get_type_hint(
+        expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.Unit)
 
 
 def test_type_hint_func_call_receiver():
@@ -666,8 +688,10 @@ def test_type_hint_func_call_receiver():
     cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
 
     expr = ast.FunctionCall("func", [], cond3)
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+    assert tutils.get_type_hint(
+            expr, context, tuple(), KT_FACTORY, []) is None
+    assert (tutils.get_type_hint(
+        expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.Integer)
 
 
 def test_type_hint_field_access():
@@ -687,8 +711,9 @@ def test_type_hint_field_access():
     cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
 
     expr = ast.FieldAccess(cond3, "f")
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+    assert tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, []) == kt.Integer
 
 
 def test_type_hint_func_call_inheritance():
@@ -716,8 +741,9 @@ def test_type_hint_func_call_inheritance():
     cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
 
     expr = ast.FunctionCall("func", [], cond3)
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+    assert tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is None
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, []) == kt.Integer
 
 
 def test_type_hint_field_access_inheritance():
@@ -743,8 +769,13 @@ def test_type_hint_field_access_inheritance():
     cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
 
     expr = ast.FieldAccess(cond3, "f")
-    assert tutils.get_type_hint(expr, context, tuple()) is None
-    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE) == kt.Integer
+
+    program = ast.Program(context, language="kotlin")
+    types = program.get_types()
+    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, types) is
+            None)
+    assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
+                                KT_FACTORY, types) == kt.Integer
 
 
 def test_find_nearest_supertype():
