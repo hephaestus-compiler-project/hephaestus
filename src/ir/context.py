@@ -13,6 +13,7 @@ class Context():
             self._context[namespace][entity][name] = value
         else:
             self._context[namespace] = {
+                'types': {},
                 'funcs': {},
                 'vars': {},
                 'classes': {},
@@ -26,6 +27,9 @@ class Context():
         if name in self._context[namespace][entity]:
             del self._context[namespace][entity][name]
 
+    def add_type(self, namespace, type_name, t):
+        self._add_entity(namespace, 'types', type_name, t)
+
     def add_func(self, namespace, func_name, func):
         self._add_entity(namespace, 'funcs', func_name, func)
         self._add_entity(namespace, 'decls', func_name, func)
@@ -37,6 +41,9 @@ class Context():
     def add_class(self, namespace, class_name, cls):
         self._add_entity(namespace, 'classes', class_name, cls)
         self._add_entity(namespace, 'decls', class_name, cls)
+
+    def remove_type(self, namespace, type_name):
+        self._remove_entity(namespace, 'types', type_name)
 
     def remove_var(self, namespace, var_name):
         self._remove_entity(namespace, 'vars', var_name)
@@ -107,6 +114,9 @@ class Context():
     def get_decl(self, namespace, name):
         return self._context.get(namespace, {}).get('decls', {}).get(
             name, None)
+
+    def get_types(self, namespace, only_current=False, glob=False):
+        return self._get_declarations(namespace, 'types', only_current, glob)
 
     def get_funcs(self, namespace, only_current=False, glob=False):
         return self._get_declarations(namespace, 'funcs', only_current, glob)
