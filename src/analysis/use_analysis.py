@@ -47,6 +47,9 @@ class UseAnalysis(DefaultVisitor):
         self._ret_vars = set()
         self._selected_namespace = None
 
+    def set_namespace(self, namespace):
+        self._namespace = namespace
+
     def result(self):
         return self._use_graph
 
@@ -134,6 +137,9 @@ class UseAnalysis(DefaultVisitor):
 
     @change_namespace
     def visit_func_decl(self, node):
+        """NOTE that you should set the namespace (use set_namespace), in case
+        the function is not a top_level declaration.
+        """
         ret_node = None
         if node.get_type() != self.program.bt_factory.get_void_type():
             # We add a special node for representing the return of a function.

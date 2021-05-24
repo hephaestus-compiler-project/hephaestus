@@ -115,12 +115,14 @@ class TypeArgumentErasureSubstitution(Transformation):
                     namespace, var_decl = self._var_decl
                     analysis = UseAnalysis(self.program)
                     parent_decl = self.get_parent_decl(namespace)
-                    # FIXME @schaliasos parent_decl may be None
-                    analysis.visit(parent_decl)
-                    use_graph = analysis.result()
-                    gnode = GNode(namespace, var_decl.name)
-                    if len(use_graph[gnode]) != 0:
-                        return node
+                    if parent_decl is not None:
+                        initial_namespace = namespace[:-1]
+                        analysis.set_namespace(initial_namespace)
+                        analysis.visit(parent_decl)
+                        use_graph = analysis.result()
+                        gnode = GNode(namespace, var_decl.name)
+                        if len(use_graph[gnode]) != 0:
+                            return node
                 self.is_transformed = True
                 node.class_type.can_infer_type_args = True
         return node
