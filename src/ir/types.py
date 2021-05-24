@@ -292,6 +292,10 @@ def substitute_type_args(etype, type_map):
     return ParameterizedType(type_con, type_args)
 
 
+def substitute_type(t, type_map):
+    return _get_type_substitution(t, type_map)
+
+
 def perform_type_substitution(etype, type_map):
     # This function performs the following substitution.
     # Imagine that we have the following case.
@@ -318,7 +322,8 @@ def perform_type_substitution(etype, type_map):
             type_params.append(t_param)
             continue
 
-        new_bound = _get_type_substitution(t_param.bound, type_map).to_type()
+        # TODO: revisit
+        new_bound = t_param.bound
         t_param = TypeParameter(t_param.name, t_param.variance, new_bound)
         type_params.append(t_param)
 

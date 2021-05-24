@@ -139,7 +139,7 @@ def test_parameterized_with_bound_abstract():
 
     assert x.supertypes == []
     assert x.t_constructor.type_parameters == \
-        [type_param, tp.TypeParameter("K", bound=kt.Any)]
+        [type_param, tp.TypeParameter("K", bound=type_param)]
 
 
 def test_subtype_covariant_parameterized():

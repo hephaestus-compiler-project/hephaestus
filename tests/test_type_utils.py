@@ -898,7 +898,6 @@ def test_instantiate_type_constructor_nested():
                                type_parameters=[type_param1, type_param2])
 
     ptype, params = tutils.instantiate_type_constructor(t_con, types)
-    t_con.type_parameters[1].bound = kt.String
     assert ptype == tp.ParameterizedType(t_con, [kt.String.to_type_arg(),
                                                  kt.String.to_type_arg()])
     params == {t_con.type_parameters[0]: kt.String,
