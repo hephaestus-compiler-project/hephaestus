@@ -222,6 +222,11 @@ class KotlinTranslator(ASTVisitor):
         self._cast_integers = prev_c
         self._children_res.append(res)
 
+    def visit_constant(self, node):
+        if node == ast.Bottom:
+            self._children_re.append(self.get_ident() + "TODO()")
+        raise NotImplementedError("Unreachable case")
+
     def visit_integer_constant(self, node):
         if not self._cast_integers:
             self._children_res.append(" " * self.ident + str(node.literal))

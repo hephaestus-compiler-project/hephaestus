@@ -431,6 +431,12 @@ class GroovyTranslator(ASTVisitor):
         return res
 
     @append_to
+    def visit_constant(self, node):
+        if node == ast.Bottom:
+            return self.get_ident() + "null"
+        raise NotImplementedError("Unreachable case")
+
+    @append_to
     def visit_integer_constant(self, node):
         if not self._cast_number and (
                 not self.always_cast_numbers and
