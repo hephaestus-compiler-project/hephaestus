@@ -52,7 +52,7 @@ def test_program1():
 
 def test_program1_foo():
     ua = UseAnalysis(program1.program)
-    ua._namespace = ("global", "A")
+    ua.set_namespace(("global", "A"))
     ua.visit(program1.foo_func)
     ug = ua.result()
 
