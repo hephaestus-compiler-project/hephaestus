@@ -290,30 +290,33 @@ def _get_available_types(types, only_regular, primitives=True):
 def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                                  types: List[tp.Type],
                                  only_regular=True,
-                                 params_map=None,
-                                 first_type_arg=None):
+                                 type_var_map=None):
     types = _get_available_types(types, only_regular, primitives=False)
-    # Instantiate a type constructor with random type arguments.
     t_args = []
-    params_map = params_map or {}
+    type_var_map = dict(type_var_map or {})
     for i, t_param in enumerate(type_constructor.type_parameters):
-        # We may want to provide the first type argument of the type
-        # constructor.
-        if i == 0 and first_type_arg is not None:
-            a_types = [first_type_arg]
+        t = type_var_map.get(t_param)
+        if t:
+            a_types = [t]
         else:
-            if t_param.bound:
-                if not isinstance(t_param.bound, tp.AbstractType):
-                    # If the type parameter has a bound, then find types that
-                    # are subtypes to this bound.
-                    a_types = find_subtypes(t_param.bound, types, True)
-                    for i, t in enumerate(a_types):
-                        if isinstance(t, tp.ParameterizedType):
-                            a_types[i] = tp.substitute_type_args(t, params_map)
+            a_types = []
+            for k, v in type_var_map.items():
+                if k.bound == t_param:
+                    a_types = [v]
+            if not a_types:
+                if t_param.bound:
+                    if not isinstance(t_param.bound, tp.AbstractType):
+                        # If the type parameter has a bound, then find types
+                        # that are subtypes to this bound.
+                        a_types = find_subtypes(t_param.bound, types, True)
+                        for i, t in enumerate(a_types):
+                            if isinstance(t, tp.ParameterizedType):
+                                a_types[i] = tp.substitute_type_args(
+                                    t, type_var_map)
+                    else:
+                        a_types = [type_var_map[t_param.bound].to_type()]
                 else:
-                    a_types = [params_map[t_param.bound].to_type()]
-            else:
-                a_types = types
+                    a_types = types
         c = utils.random.choice(a_types)
         if isinstance(c, ast.ClassDeclaration):
             cls_type = c.get_type()
@@ -325,12 +328,11 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             # depthy instantiations.
             types = [t for t in types if t != c]
             cls_type, _ = instantiate_type_constructor(
-                cls_type, types, only_regular, params_map)
+                cls_type, types, True, type_var_map)
         t_arg = cls_type.to_type_arg()
         t_args.append(t_arg)
-        params_map[t_param] = t_arg.to_type()
-    # Also return a map of type parameters and their instantiations.
-    return type_constructor.new(t_args), params_map
+        type_var_map[t_param] = t_arg.to_type()
+    return type_constructor.new(t_args), type_var_map
 
 
 def choose_type(types: List[tp.Type], only_regular=True):
@@ -568,7 +570,7 @@ def is_builtin(t, builtin_factory):
     )
 
 
-def _get_bound(t: tp.Type):
+def get_bound(t: tp.Type):
     t = getattr(t, 'bound', None)
     if not t:
         return None
