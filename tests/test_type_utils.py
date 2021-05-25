@@ -950,6 +950,39 @@ def test_instantiate_type_constructor_nested3():
     }
 
 
+def test_instantiate_type_constructor_with_type_var_map():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    type_param3 = tp.TypeParameter("T3")
+    t_con = tp.TypeConstructor("Con", [type_param1, type_param2, type_param3])
+
+    types = [kt.String]
+    type_map = {type_param2: kt.Integer}
+    ptype, params = tutils.instantiate_type_constructor(
+        t_con, types=types, type_var_map=type_map)
+    assert ptype.type_args == [kt.Integer.to_type_arg(),
+                               kt.Integer.to_type_arg(),
+                               kt.String.to_type_arg()]
+    assert params == {
+        type_param1: kt.Integer,
+        type_param2: kt.Integer,
+        type_param3: kt.String
+    }
+
+    # Change the bound of the third type parameter
+    type_param3.bound = type_param2
+    ptype, params = tutils.instantiate_type_constructor(
+        t_con, types=types, type_var_map=type_map)
+    assert ptype.type_args == [kt.Integer.to_type_arg(),
+                               kt.Integer.to_type_arg(),
+                               kt.Integer.to_type_arg()]
+    assert params == {
+        type_param1: kt.Integer,
+        type_param2: kt.Integer,
+        type_param3: kt.Integer
+    }
+
+
 def test_unify_types():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
