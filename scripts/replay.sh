@@ -68,7 +68,7 @@ for i in $(ls $TRANSFORMATIONS | sort -nr); do
     if check $bin; then
         echo "$LAST_I: $LAST_TRANS"
         echo "You can use the following command to try to reproduce the bug"
-        echo "python3 main.py -i 1 -t 1 -T $LAST_TRANS -R $bin -d --language $LANGUAGE"
+        echo "python3 main.py -i 1 -t 1 -T $LAST_TRANS -R $bin -d --language $LANGUAGE -P"
         rm -rf replay_tmp
         exit
     fi
