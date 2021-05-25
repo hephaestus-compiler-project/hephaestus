@@ -384,6 +384,23 @@ class ParameterizedType(SimpleClassifier):
                 return True
         return False
 
+    def is_assignable(self, other: Type):
+        # Import here to prevent circular dependency.
+        from src.ir import java_types as jt
+        # We should handle Java primitive arrays
+        # In Java Byte[] is not assignable to byte[] and vice versa.
+        if (self.t_constructor == jt.Array and
+                isinstance(other, ParameterizedType) and
+                other.t_constructor == jt.Array):
+            self_is_primitive = getattr(self.type_args[0], 'primitive', False)
+            other_is_primitive = getattr(other.type_args[0], 'primitive', False)
+            if self_is_primitive or other_is_primitive:
+                if (self.type_args[0] == other.type_args[0] and
+                        self_is_primitive and other_is_primitive):
+                    return True
+                return False
+        return self.is_subtype(other)
+
 
 class Function(Classifier):
     # FIXME: Represent function as a parameterized type
