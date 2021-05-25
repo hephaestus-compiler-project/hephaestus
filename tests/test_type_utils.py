@@ -950,6 +950,22 @@ def test_instantiate_type_constructor_nested3():
     }
 
 
+def test_instantiate_type_constructor_bound():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    bar = tp.TypeConstructor("Bar", [type_param1, type_param2])
+
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3", bound=bar.new(
+        [type_param2.to_type_arg(), type_param2.to_type_arg()]))
+    foo = tp.TypeConstructor("Foo", [type_param2, type_param3])
+    types = [kt.String]
+    ptype, params = tutils.instantiate_type_constructor(foo, types)
+    assert ptype.type_args[0] == kt.String.to_type_arg()
+    assert ptype.type_args[1] == bar.new(
+        [kt.String.to_type_arg(), kt.String.to_type_arg()]).to_type_arg()
+
+
 def test_instantiate_type_constructor_with_type_var_map():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2", bound=type_param1)
@@ -1021,3 +1037,27 @@ def test_unify_types_with_bounds():
     assert tutils.unify_types(foo5, foo3) == {type_param4: kt.String}
     type_param3.bound = kt.String
     assert tutils.unify_types(foo1, foo3) == {type_param4: type_param3}
+
+
+def test_unify_types_with_paramerized_bounds():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    bar = tp.TypeConstructor("Bar", [type_param1, type_param2])
+
+
+    type_param3 = tp.TypeParameter("T3")
+    type_param4 = tp.TypeParameter("T4", bound=bar.new(
+        [kt.String.to_type_arg(), type_param3.to_type_arg()]))
+    type_param5 = tp.TypeParameter("T5")
+    foo = tp.TypeConstructor("Foo", [type_param3, type_param4])
+
+    foo1 = foo.new([kt.String.to_type_arg(),
+                    bar.new([kt.String.to_type_arg(),
+                             kt.Integer.to_type_arg()]).to_type_arg()])
+    foo2 = foo.new([type_param5.to_type_arg(),
+                    bar.new([kt.String.to_type_arg(),
+                             type_param5.to_type_arg()]).to_type_arg()])
+    assert tutils.unify_types(foo1, foo2) == {
+        type_param5: bar.new([kt.String.to_type_arg(),
+                              kt.Integer.to_type_arg()])
+    }

@@ -265,3 +265,17 @@ def test_get_type_variables():
     foo3 = foo.new([type_param1.to_type_arg(),
                     bar.new([type_param2.to_type_arg()]).to_type_arg()])
     assert foo3.get_type_variables() == [type_param1, type_param2]
+
+
+def test_type_substitution():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3")
+    type_param4 = tp.TypeParameter("T4")
+
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    foo_p = foo.new([kt.Integer.to_type_arg(), type_param3.to_type_arg()])
+
+    ptype = tp.substitute_type(foo_p, {type_param3: type_param4})
+    assert ptype.type_args[0] == kt.Integer.to_type_arg()
+    assert ptype.type_args[1] == type_param4.to_type_arg()
