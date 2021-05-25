@@ -277,37 +277,41 @@ class TypeParameter(AbstractType):
         )
 
 
-def _get_type_substitution(etype, type_map):
+def _get_type_substitution(etype, type_map,
+                           cond=lambda t: t.has_type_variables()):
     if isinstance(etype, ParameterizedType):
-        return substitute_type_args(etype, type_map)
+        return substitute_type_args(etype, type_map, cond)
     t = type_map.get(etype)
-    if t is None or t.has_type_variables():
+    if t is None or cond(t):
         # The type parameter does not correspond to an abstract type
         # so, there is nothing to substitute.
         return etype
     return t
 
 
-def substitute_type_args(etype, type_map):
+def substitute_type_args(etype, type_map,
+                         cond=lambda t: t.has_type_variables()):
     assert isinstance(etype, ParameterizedType)
     type_args = []
     for t_arg in etype.type_args:
         type_args.append(_get_type_substitution(
-            t_arg.to_type(), type_map).to_type_arg(t_arg.variance))
+            t_arg.to_type(), type_map, cond).to_type_arg(t_arg.variance))
     new_type_map = {
         tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
     }
     type_con = perform_type_substitution(
-        etype.t_constructor, new_type_map)
+        etype.t_constructor, new_type_map, cond)
     return ParameterizedType(type_con, type_args)
 
 
 def substitute_type(t, type_map):
-    return _get_type_substitution(t, type_map)
+    # TODO: revisit argument 'cond'
+    return _get_type_substitution(t, type_map, lambda t: False)
 
 
-def perform_type_substitution(etype, type_map):
+def perform_type_substitution(etype, type_map,
+                              cond=lambda t: t.has_type_variables()):
     # This function performs the following substitution.
     # Imagine that we have the following case.
     #
@@ -324,7 +328,7 @@ def perform_type_substitution(etype, type_map):
     supertypes = []
     for t in etype.supertypes:
         if isinstance(t, ParameterizedType):
-            supertypes.append(substitute_type_args(t, type_map))
+            supertypes.append(substitute_type_args(t, type_map, cond))
         else:
             supertypes.append(t)
     type_params = []
