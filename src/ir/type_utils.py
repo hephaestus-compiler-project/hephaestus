@@ -568,6 +568,18 @@ def is_builtin(t, builtin_factory):
     )
 
 
+def _get_bound(t: tp.Type):
+    t = getattr(t, 'bound', None)
+    if not t:
+        return None
+    while True:
+        b = getattr(t, 'bound', None)
+        if b is None:
+            return t
+        else:
+            t = b
+
+
 def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
     assert isinstance(t1, tp.ParameterizedType)
     assert isinstance(t2, tp.ParameterizedType)
@@ -586,5 +598,10 @@ def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
             if t_arg1 != t_arg2:
                 return {}
         else:
-            type_vars[t_arg2] = t_arg1
+            if t_arg2.bound is not None and t_arg1.is_subtype(t_arg2.bound):
+                type_vars[t_arg2] = t_arg1
+            elif t_arg2.bound is None:
+                type_vars[t_arg2] = t_arg1
+            else:
+                return {}
     return type_vars
