@@ -1,4 +1,5 @@
-from src.ir import types as tp, kotlin_types as kt
+from src.ir import types as tp, kotlin_types as kt, java_types as jt, \
+        groovy_types as gt
 
 
 def test_parameterized_supertypes_simple():
@@ -176,3 +177,15 @@ def test_subtype_contravariant_parameterized():
     assert not bar_str.is_subtype(bar_any)
     assert foo_any.is_subtype(foo_str)
     assert bar_any.is_subtype(foo_str)
+
+
+def test_primitives_arrays():
+    groovy_double_array = gt.Array.new([gt.DoubleType(primitive=True)])
+    groovy_boxed_double_array = gt.Array.new([gt.Double])
+    java_double_array = jt.Array.new([jt.DoubleType(primitive=True)])
+    java_boxed_double_array = jt.Array.new([jt.Double])
+
+    assert groovy_double_array.is_assignable(groovy_boxed_double_array)
+    assert groovy_boxed_double_array.is_assignable(groovy_double_array)
+    assert not java_double_array.is_assignable(java_boxed_double_array)
+    assert not java_boxed_double_array.is_assignable(java_double_array)
