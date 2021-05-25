@@ -474,6 +474,18 @@ class ParameterizedType(SimpleClassifier):
     def has_type_variables(self):
         return any(t_arg.has_type_variables() for t_arg in self.type_args)
 
+    def get_type_variables(self):
+        type_vars = []
+        for t_arg in self.type_args:
+            t_arg = t_arg.to_type()
+            if isinstance(t_arg, TypeParameter):
+                type_vars.append(t_arg)
+            elif isinstance(t_arg, ParameterizedType):
+                type_vars.extend(t_arg.get_type_variables())
+            else:
+                continue
+        return type_vars
+
     @property
     def can_infer_type_args(self):
         return self._can_infer_type_args

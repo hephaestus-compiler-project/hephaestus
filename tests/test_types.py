@@ -249,3 +249,19 @@ def test_use_site_variance_contravariant_decl():
     assert foo_number_contra.is_subtype(foo_number)
     assert not foo_integer.is_subtype(foo_number_contra)
     assert not foo_integer_co.is_subtype(foo_number_contra)
+
+
+def test_get_type_variables():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    foo1 = foo.new([kt.String.to_type_arg(), kt.Integer.to_type_arg()])
+    assert foo1.get_type_variables() == []
+
+    foo2 = foo.new([type_param1.to_type_arg(), kt.String.to_type_arg()])
+    assert foo2.get_type_variables() == [type_param1]
+
+    bar = tp.TypeConstructor("Bar", [type_param2])
+    foo3 = foo.new([type_param1.to_type_arg(),
+                    bar.new([type_param2.to_type_arg()]).to_type_arg()])
+    assert foo3.get_type_variables() == [type_param1, type_param2]
