@@ -589,21 +589,36 @@ def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
     if t1.t_constructor != t2.t_constructor:
         return {}
 
-    type_vars = {}
+    type_var_map = {}
     for i, t_arg in enumerate(t1.type_args):
         t_arg1 = t_arg.to_type()
         t_arg2 = t2.type_args[i].to_type()
 
-        is_type_var = isinstance(t_arg2, tp.TypeParameter)
+        is_type_var = t_arg2.has_type_variables()
 
         if not is_type_var:
             if t_arg1 != t_arg2:
                 return {}
         else:
-            if t_arg2.bound is not None and t_arg1.is_subtype(t_arg2.bound):
-                type_vars[t_arg2] = t_arg1
-            elif t_arg2.bound is None:
-                type_vars[t_arg2] = t_arg1
-            else:
-                return {}
-    return type_vars
+            type_vars = (
+                [t_arg2] if isinstance(t_arg2, tp.TypeParameter)
+                else t_arg2.get_type_variables()
+            )
+            for t_var in type_vars:
+                if t_var.bound is not None:
+                    if t_arg1.is_subtype(t_var.bound):
+                        type_var_map[t_var] = t_arg1
+                    is_parameterized = isinstance(t_var.bound,
+                                                  tp.ParameterizedType)
+                    is_parameterized2 = isinstance(t_arg1,
+                                                   tp.ParameterizedType)
+                    if is_parameterized and is_parameterized2:
+                        res = unify_types(t_arg1, t_var.bound)
+                        if not res:
+                            return {}
+                        type_var_map.update(res)
+                elif t_var.bound is None:
+                    type_var_map[t_var] = t_arg1
+                else:
+                    return {}
+    return type_var_map
