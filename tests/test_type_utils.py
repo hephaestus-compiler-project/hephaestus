@@ -948,3 +948,21 @@ def test_instantiate_type_constructor_nested3():
         type_param1: kt.String,
         type_param2: bar_foo_string
     }
+
+
+def test_unify_types():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3")
+    type_param4 = tp.TypeParameter("T4")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+
+    foo1 = foo.new([type_param3.to_type_arg(), kt.String.to_type_arg()])
+    foo2 = foo.new([kt.Integer.to_type_arg(), kt.String.to_type_arg()])
+    foo3 = foo.new([type_param4.to_type_arg(), kt.String.to_type_arg()])
+    foo4 = foo.new([type_param4.to_type_arg(), kt.Integer.to_type_arg()])
+
+    assert tutils.unify_types(foo1, foo2) == {}
+    assert tutils.unify_types(foo1, foo3) == {type_param4: type_param3}
+    assert tutils.unify_types(foo1, foo4) == {}
+    assert tutils.unify_types(foo2, foo3) == {type_param4: kt.Integer}

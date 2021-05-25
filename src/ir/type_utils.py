@@ -566,3 +566,25 @@ def is_builtin(t, builtin_factory):
     return isinstance(t, tp.Builtin) or (
         t.name == builtin_factory.get_array_type().name
     )
+
+
+def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
+    assert isinstance(t1, tp.ParameterizedType)
+    assert isinstance(t2, tp.ParameterizedType)
+
+    if t1.t_constructor != t2.t_constructor:
+        return {}
+
+    type_vars = {}
+    for i, t_arg in enumerate(t1.type_args):
+        t_arg1 = t_arg.to_type()
+        t_arg2 = t2.type_args[i].to_type()
+
+        is_type_var = isinstance(t_arg2, tp.TypeParameter)
+
+        if not is_type_var:
+            if t_arg1 != t_arg2:
+                return {}
+        else:
+            type_vars[t_arg2] = t_arg1
+    return type_vars
