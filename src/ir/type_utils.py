@@ -312,7 +312,7 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                         for i, t in enumerate(a_types):
                             if isinstance(t, tp.ParameterizedType):
                                 a_types[i] = tp.substitute_type_args(
-                                    t, type_var_map)
+                                    t, type_var_map, cond=lambda t: False)
                     else:
                         a_types = [type_var_map[t_param.bound].to_type()]
                 else:

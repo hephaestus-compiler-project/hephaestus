@@ -951,20 +951,32 @@ def test_instantiate_type_constructor_nested3():
 
 
 def test_instantiate_type_constructor_bound():
+    # class Foo<T>
+    # class Bar<X, Y, Z>
+    # class Test<K, T extends Foo<String>, R extends Bar<K, K, Int>>
+    foo = tp.TypeConstructor("Foo", [tp.TypeParameter("T")])
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
-    bar = tp.TypeConstructor("Bar", [type_param1, type_param2])
+    type_param3 = tp.TypeParameter("T3")
+    bar = tp.TypeConstructor("Bar", [type_param1, type_param2, type_param3])
 
-    type_param2 = tp.TypeParameter("T2")
-    type_param3 = tp.TypeParameter("T3", bound=bar.new(
-        [type_param2.to_type_arg(), type_param2.to_type_arg()]))
-    foo = tp.TypeConstructor("Foo", [type_param2, type_param3])
-    types = [kt.String]
-    ptype, params = tutils.instantiate_type_constructor(foo, types)
-    assert ptype.type_args[0] == kt.String.to_type_arg()
-    assert ptype.type_args[1] == bar.new(
-        [kt.String.to_type_arg(), kt.String.to_type_arg()]).to_type_arg()
+    type_param4 = tp.TypeParameter("T4")
+    type_param5 = tp.TypeParameter("T5",
+                                   bound=foo.new([kt.String.to_type_arg()]))
+    type_param6 = tp.TypeParameter(
+        "T6", bound=bar.new([type_param4.to_type_arg(),
+                             type_param4.to_type_arg(),
+                             kt.Integer.to_type_arg()]))
+    test_con = tp.TypeConstructor("Test",
+                                  [type_param4, type_param5, type_param6])
 
+    t = tp.TypeParameter("K")
+    test_t, params = tutils.instantiate_type_constructor(test_con, [t])
+    assert test_t.type_args[0] == t.to_type_arg()
+    assert test_t.type_args[1] == foo.new(
+        [kt.String.to_type_arg()]).to_type_arg()
+    assert test_t.type_args[2] == bar.new(
+        [t.to_type_arg(), t.to_type_arg(), kt.Integer.to_type_arg()]).to_type_arg()
 
 def test_instantiate_type_constructor_with_type_var_map():
     type_param1 = tp.TypeParameter("T1")
