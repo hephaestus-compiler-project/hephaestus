@@ -455,7 +455,7 @@ class Generator():
                     else attr_type == etype
                 if not cond:
                     continue
-                decls.append((ast.Variable(var.name), attr))
+                decls.append((ast.Variable(var.name), type_map_var, attr))
         return decls
 
     def _get_function_declarations(self, etype, subtype) -> \
@@ -471,7 +471,9 @@ class Generator():
             # The receiver object for this kind of functions is None.
             if not cond:
                 continue
-            functions.append((None, func))
+            # FIXME: Consider creating a utility class that contains
+            # class_type + instantiation_map
+            functions.append((None, {}, func))
         return functions + self._get_matching_objects(etype, subtype,
                                                       'functions')
 
@@ -603,7 +605,6 @@ class Generator():
 
     def gen_func_call(self, etype, only_leaves=False, subtype=True):
         funcs = self._get_function_declarations(etype, subtype)
-        params_map = {}
         if not funcs:
             type_fun = self._get_matching_class(etype, subtype, 'functions')
             if type_fun is None:
@@ -613,8 +614,8 @@ class Generator():
             cls_type, params_map, func = type_fun
             receiver = None if cls_type is None else self.generate_expr(
                 tp.substitute_type(cls_type, params_map), only_leaves)
-            funcs.append((receiver, func))
-        receiver, func = ut.random.choice(funcs)
+            funcs.append((receiver, params_map, func))
+        receiver, params_map, func = ut.random.choice(funcs)
         args = []
         initial_depth = self.depth
         self.depth += 1
@@ -650,7 +651,8 @@ class Generator():
             type_f, params_map, func = type_f
             expr_type = tp.substitute_type(type_f, params_map)
             receiver = self.generate_expr(expr_type, only_leaves)
-            objs.append((receiver, func))
+            objs.append((receiver, None, func))
+        objs = [(r, f) for r, _, f in objs]
         receiver, func = ut.random.choice(objs)
         return ast.FieldAccess(receiver, func.name)
 
