@@ -518,7 +518,7 @@ class Generator():
             return []
 
         if isinstance(etype, tp.TypeParameter):
-            type_params = self.gen_type_params()
+            type_params = self.gen_type_params(count=1)
             type_params[0].bound = None
             return type_params, {etype: type_params[0]}
 
@@ -563,13 +563,10 @@ class Generator():
         self.context.add_class(self.namespace, cls.name, cls)
         self.namespace = initial_namespace
         if cls.is_parameterized():
-            type_map = None
-            if etype2.is_primitive():
-                type_map = (
-                    None
-                    if etype2.box_type() == self.bt_factory.get_void_type()
-                    else {v: k for k, v in type_var_map.items()}
-                )
+            type_map = {v: k for k, v in type_var_map.items()}
+            if etype2.is_primitive() and (
+                    etype2.box_type() == self.bt_factory.get_void_type()):
+                type_map = None
             cls_type, params_map = tu.instantiate_type_constructor(
                 cls.get_type(),
                 self.get_types(),
@@ -578,7 +575,8 @@ class Generator():
         else:
             cls_type, params_map = cls.get_type(), {}
         for attr in getattr(cls, attr_name):
-            if params_map.get(attr.get_type(), attr.get_type()) == etype2:
+            attr_type = tp.substitute_type(attr.get_type(), params_map)
+            if attr_type == etype:
                 return cls_type, params_map, attr
         return None
 
