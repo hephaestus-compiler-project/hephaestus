@@ -978,6 +978,7 @@ def test_instantiate_type_constructor_bound():
     assert test_t.type_args[2] == bar.new(
         [t.to_type_arg(), t.to_type_arg(), kt.Integer.to_type_arg()]).to_type_arg()
 
+
 def test_instantiate_type_constructor_with_type_var_map():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2", bound=type_param1)
@@ -1008,6 +1009,20 @@ def test_instantiate_type_constructor_with_type_var_map():
         type_param1: kt.Integer,
         type_param2: kt.Integer,
         type_param3: kt.Integer
+    }
+
+    # Case 3: map to another type variable
+    type_var = tp.TypeParameter("K", bound=kt.Any)
+    type_map = {type_param2: type_var}
+    ptype, params = tutils.instantiate_type_constructor(
+        t_con, types=types, type_var_map=type_map)
+    assert ptype.type_args == [type_var.to_type_arg(),
+                               type_var.to_type_arg(),
+                               type_var.to_type_arg()]
+    assert params == {
+        type_param1: type_var,
+        type_param2: type_var,
+        type_param3: type_var
     }
 
 
