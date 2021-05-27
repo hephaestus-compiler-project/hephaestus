@@ -251,13 +251,7 @@ class TypeParameter(AbstractType):
     def is_subtype(self, other):
         if not self.bound:
             return False
-        if isinstance(other, TypeParameter):
-            if other.bound is not None:
-                return self.bound.is_subtype(other.bound)
-            else:
-                return False
-        else:
-            return self.bound == other
+        return self.bound == other
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
