@@ -543,7 +543,7 @@ class Generator():
             # is a type parameter. The only way to achieve this is to create
             # a parameterized class, and pass the type parameter 'etype'
             # as a type argument to the corresponding type constructor.
-            self.namespace += (class_name,)
+            self.namespace = ast.GLOBAL_NAMESPACE + (class_name,)
             type_params, type_var_map = self._create_type_params_from_etype(
                 etype)
             etype2 = tp.substitute_type(etype, type_var_map)
@@ -733,7 +733,6 @@ class Generator():
             old = etype
             etype, _ = tu.instantiate_type_constructor(
                 etype, self.get_types())
-            print(etype, old)
         # If the matching class is a parameterized one, we need to create
         # a map mapping the class's type parameters with the corresponding
         # type arguments as given by the `etype` variable.
