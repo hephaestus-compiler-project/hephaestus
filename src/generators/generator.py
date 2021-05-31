@@ -634,7 +634,7 @@ class Generator():
                 for _ in range(ut.random.integer(0, 3)):
                     args.append(ast.CallArgument(
                         self.generate_expr(
-                            param.get_type().type_args[0].to_type(),
+                            expr_type.type_args[0].to_type(),
                             only_leaves)))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
