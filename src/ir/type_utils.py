@@ -582,6 +582,14 @@ def get_bound(t: tp.Type):
             t = b
 
 
+def _update_type_var_map(type_var_map, key, value):
+    v = type_var_map.get(key)
+    if v and v != value:
+        return False
+    type_var_map[key] = value
+    return True
+
+
 def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
     assert isinstance(t1, tp.ParameterizedType)
     assert isinstance(t2, tp.ParameterizedType)
@@ -600,25 +608,41 @@ def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
             if t_arg1 != t_arg2:
                 return {}
         else:
-            type_vars = (
-                [t_arg2] if isinstance(t_arg2, tp.TypeParameter)
-                else t_arg2.get_type_variables()
+            t_var = (
+                t_arg2 if isinstance(t_arg2, tp.TypeParameter)
+                else None
             )
-            for t_var in type_vars:
-                if t_var.bound is not None:
-                    if t_arg1.is_subtype(t_var.bound):
-                        type_var_map[t_var] = t_arg1
-                    is_parameterized = isinstance(t_var.bound,
-                                                  tp.ParameterizedType)
-                    is_parameterized2 = isinstance(t_arg1,
-                                                   tp.ParameterizedType)
-                    if is_parameterized and is_parameterized2:
-                        res = unify_types(t_arg1, t_var.bound)
-                        if not res:
-                            return {}
-                        type_var_map.update(res)
-                elif t_var.bound is None:
-                    type_var_map[t_var] = t_arg1
+            if t_var and t_var.bound is not None:
+                if t_arg1.is_subtype(t_var.bound):
+                    # This means that we found another mapping for the
+                    # same type variable and this mapping does not
+                    # correspond to t_arg1.
+                    if not _update_type_var_map(type_var_map, t_var, t_arg1):
+                        return {}
+                    continue
+                is_parameterized = isinstance(t_var.bound,
+                                              tp.ParameterizedType)
+                is_parameterized2 = isinstance(t_arg1,
+                                               tp.ParameterizedType)
+                if is_parameterized and is_parameterized2:
+                    res = unify_types(t_arg1, t_var.bound)
+                    if not res or any(
+                            not _update_type_var_map(type_var_map, k, v)
+                            for k, v in res.items()):
+                        return {}
                 else:
                     return {}
+            elif t_var and t_var.bound is None:
+                # The same as the above comment.
+                if not _update_type_var_map(type_var_map, t_var, t_arg1):
+                    return {}
+            elif isinstance(t_arg2, tp.ParameterizedType) and (
+                  isinstance(t_arg1, tp.ParameterizedType)):
+                res = unify_types(t_arg1, t_arg2)
+                if not res or any(
+                        not _update_type_var_map(type_var_map, k, v)
+                        for k, v in res.items()):
+                    return {}
+            else:
+                return {}
     return type_var_map
