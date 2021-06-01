@@ -43,25 +43,51 @@ class Generator():
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
 
-    def get_types(self, exclude_array=False):
+    def get_types(self, ret_types=True, exclude_arrays=False,
+                  exclude_covariants=False,
+                  exclude_contravariants=False):
         usr_types = [
             c.get_type()
             for c in self.context.get_classes(self.namespace).values()
         ]
-        type_params = list(self.context.get_types(self.namespace).values())
-        builtins = list(self.ret_builtin_types)
-        if exclude_array:
+        type_params = []
+        for t_param in self.context.get_types(self.namespace).values():
+            variance = getattr(t_param, 'variance', None)
+            if exclude_covariants and variance == tp.Covariant:
+                continue
+            if exclude_contravariants and variance == tp.Contravariant:
+                continue
+            type_params.append(t_param)
+
+        builtins = list(self.ret_builtin_types
+                        if ret_types
+                        else self.builtin_types)
+        if exclude_arrays:
             builtins = [
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
         return usr_types + builtins + (type_params * 5)
 
+    def select_type(self, ret_types=True, exclude_arrays=False,
+                    exclude_covariants=False, exclude_contravariants=False):
+        types = self.get_types(ret_types=ret_types,
+                               exclude_arrays=exclude_arrays,
+                               exclude_covariants=exclude_covariants,
+                               exclude_contravariants=exclude_contravariants)
+        t = ut.random.choice(types)
+        if isinstance(t, tp.TypeConstructor):
+            t, _ = tu.instantiate_type_constructor(
+                t, self.get_types(exclude_arrays=True,
+                                  exclude_covariants=True,
+                                  exclude_contravariants=True))
+        return t
+
     # pylint: disable=unused-argument
     def gen_equality_expr(self, expr_type=None, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
-        etype = self.gen_type()
+        etype = self.select_type()
         prev = self._new_from_class
         if not tu.is_builtin(etype, self.bt_factory):
             # We need this because if are going to create two
@@ -140,13 +166,14 @@ class Generator():
 
     def gen_field_decl(self, etype=None):
         name = gu.gen_identifier('lower')
-        field_type = etype or self.gen_type()
-        return ast.FieldDeclaration(name, field_type,
-                                    is_final=ut.random.bool())
+        is_final = ut.random.bool()
+        field_type = etype or self.select_type(exclude_contravariants=True,
+                                               exclude_covariants=is_final)
+        return ast.FieldDeclaration(name, field_type, is_final=is_final)
 
     def gen_param_decl(self, etype=None):
         name = gu.gen_identifier('lower')
-        param_type = etype or self.gen_type()
+        param_type = etype or self.select_type(exclude_covariants=True)
         return ast.ParameterDeclaration(name, param_type)
 
     def _get_func_ret_type(self, params, etype, not_void=False):
@@ -155,7 +182,7 @@ class Generator():
         param_types = [p.param_type for p in params]
         if param_types and ut.random.bool():
             return ut.random.choice(param_types)
-        return self.gen_type(ret_types=not_void)
+        return self.select_type(exclude_contravariants=True)
 
     def can_infer_function_ret_type(self, func_expr, decls):
         if not self.disable_inference_in_closures:
@@ -267,7 +294,7 @@ class Generator():
             if ut.random.bool(prob=0.25) or self.language == 'java'
             else self._gen_func_params_with_default())
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
-        expr_type = self.gen_type(False) \
+        expr_type = self.select_type(ret_types=False) \
             if ret_type == self.bt_factory.get_void_type() else ret_type
         expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
@@ -320,10 +347,13 @@ class Generator():
                 variance = ut.random.choice(variances)
             bound = None
             if ut.random.bool():
-                bound = ut.random.choice(self.get_types(exclude_array=True))
-                if isinstance(bound, tp.TypeConstructor):
-                    bound, _ = tu.instantiate_type_constructor(
-                        bound, self.get_types(exclude_array=True))
+                exclude_covariants = variance == tp.Contravariant
+                exclude_contravariants = variance == tp.Covariant
+                bound = self.select_type(
+                    exclude_arrays=True,
+                    exclude_covariants=exclude_covariants,
+                    exclude_contravariants=exclude_contravariants
+                )
                 if bound.is_primitive():
                     bound = bound.box_type()
             type_param = tp.TypeParameter(name, variance=variance, bound=bound)
@@ -374,25 +404,9 @@ class Generator():
         ]
         return ast.ArrayExpr(expr_type, arr_len, exprs)
 
-    def gen_type(self, ret_types=True):
-        class_decls = list(self.context.get_classes(self.namespace).values())
-        # Randomly choose whether we should generate a builtin type or not.
-        if not class_decls or ut.random.bool():
-            builtins = self.ret_builtin_types if ret_types \
-                else self.builtin_types
-            etype = ut.random.choice(builtins)
-        else:
-            etype = ut.random.choice(class_decls).get_type()
-        if not isinstance(etype, tp.TypeConstructor):
-            return etype
-        # We have to instantiate type constructor with random type arguments.
-        new_type, _ = tu.instantiate_type_constructor(
-            etype, self.get_types(exclude_array=True))
-        return new_type
-
     def gen_variable_decl(self, etype=None, only_leaves=False,
                           expr=None):
-        var_type = etype if etype else self.gen_type()
+        var_type = etype if etype else self.select_type()
         initial_depth = self.depth
         self.depth += 1
         expr = expr or self.generate_expr(var_type, only_leaves)
@@ -427,7 +441,8 @@ class Generator():
             return None
         if isinstance(var_type, tp.TypeParameter):
             bound = tu.get_bound(var_type)
-            if not bound or tu.is_builtin(bound, self.bt_factory):
+            if not bound or tu.is_builtin(bound, self.bt_factory) or (
+                  isinstance(bound, tp.TypeParameter)):
                 return None
             var_type = bound
         return var_type
@@ -836,7 +851,8 @@ class Generator():
         if not variables:
             # Nothing of the above worked, so generate a 'var' variable,
             # and perform the assignment
-            etype = self.gen_type()
+            etype = self.select_type(exclude_covariants=True,
+                                     exclude_contravariants=True)
             self._vars_in_context[self.namespace] += 1
             # If there are not variable declarations that match our criteria,
             # we have to create a new variable declaration.
@@ -949,7 +965,7 @@ class Generator():
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
                       exclude_var=False):
-        expr_type = expr_type or self.gen_type()
+        expr_type = expr_type or self.select_type()
         gens = self.get_generators(expr_type, only_leaves, subtype,
                                    exclude_var)
         expr = ut.random.choice(gens)(expr_type)
