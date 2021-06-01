@@ -45,19 +45,21 @@ class Generator():
 
     def get_types(self, ret_types=True, exclude_arrays=False,
                   exclude_covariants=False,
-                  exclude_contravariants=False):
+                  exclude_contravariants=False,
+                  exclude_type_vars=False):
         usr_types = [
             c.get_type()
             for c in self.context.get_classes(self.namespace).values()
         ]
         type_params = []
-        for t_param in self.context.get_types(self.namespace).values():
-            variance = getattr(t_param, 'variance', None)
-            if exclude_covariants and variance == tp.Covariant:
-                continue
-            if exclude_contravariants and variance == tp.Contravariant:
-                continue
-            type_params.append(t_param)
+        if not exclude_type_vars:
+            for t_param in self.context.get_types(self.namespace).values():
+                variance = getattr(t_param, 'variance', None)
+                if exclude_covariants and variance == tp.Covariant:
+                    continue
+                if exclude_contravariants and variance == tp.Contravariant:
+                    continue
+                type_params.append(t_param)
 
         builtins = list(self.ret_builtin_types
                         if ret_types
@@ -77,10 +79,13 @@ class Generator():
                                exclude_contravariants=exclude_contravariants)
         t = ut.random.choice(types)
         if isinstance(t, tp.TypeConstructor):
+            exclude_type_vars = self.language == 'kotlin' and (
+                t.name == self.bt_factory.get_array_type().name)
             t, _ = tu.instantiate_type_constructor(
                 t, self.get_types(exclude_arrays=True,
                                   exclude_covariants=True,
-                                  exclude_contravariants=True))
+                                  exclude_contravariants=True,
+                                  exclude_type_vars=exclude_type_vars))
         return t
 
     # pylint: disable=unused-argument
@@ -168,7 +173,7 @@ class Generator():
         name = gu.gen_identifier('lower')
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
-                                               exclude_covariants=is_final)
+                                               exclude_covariants=not is_final)
         return ast.FieldDeclaration(name, field_type, is_final=is_final)
 
     def gen_param_decl(self, etype=None):
@@ -179,7 +184,9 @@ class Generator():
     def _get_func_ret_type(self, params, etype, not_void=False):
         if etype is not None:
             return etype
-        param_types = [p.param_type for p in params]
+        param_types = [p.param_type for p in params
+                       if getattr(p.param_type,
+                                  'variance', None) != tp.Contravariant]
         if param_types and ut.random.bool():
             return ut.random.choice(param_types)
         return self.select_type(exclude_contravariants=True)
@@ -309,7 +316,10 @@ class Generator():
             inferred_type = ret_type
             body = expr
             # If the return type is Number, then this must be explicit.
-            if ret_type != self.bt_factory.get_number_type():
+            # If the return value is the bottom constant, then again the
+            # return type must be explicit.
+            if ret_type != self.bt_factory.get_number_type() and not (
+                  expr == ast.Bottom):
                 ret_type = None
         else:
             inferred_type = None
@@ -348,7 +358,7 @@ class Generator():
             bound = None
             if ut.random.bool():
                 exclude_covariants = variance == tp.Contravariant
-                exclude_contravariants = variance == tp.Covariant
+                exclude_contravariants = True
                 bound = self.select_type(
                     exclude_arrays=True,
                     exclude_covariants=exclude_covariants,
@@ -412,12 +422,15 @@ class Generator():
         expr = expr or self.generate_expr(var_type, only_leaves)
         self.depth = initial_depth
         is_final = ut.random.bool()
-        # We never omit type in non-final variables.
-        vtype = (
-            var_type
-            if ut.random.bool() or
-            not is_final or etype == self.bt_factory.get_number_type()
-            else None)
+        # We never omit type in non-final variables or in variables that
+        # correspond to a bottom constant.
+        omit_type = (
+            ut.random.bool() and
+            not is_final and
+            etype != self.bt_factory.get_number_type() and
+            expr != ast.Bottom
+        )
+        vtype = None if omit_type else var_type
         return ast.VariableDeclaration(
             gu.gen_identifier('lower'),
             expr=expr,
@@ -537,6 +550,7 @@ class Generator():
         if isinstance(etype, tp.TypeParameter):
             type_params = self.gen_type_params(count=1)
             type_params[0].bound = None
+            type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}
 
         # the given type is parameterized
@@ -549,6 +563,7 @@ class Generator():
             type_param = ut.random.choice(available_type_params)
             available_type_params.remove(type_param)
             type_param.bound = None
+            type_param.variance = tp.Invariant
             type_var_map[type_var] = type_param
         return type_params, type_var_map
 
@@ -739,15 +754,9 @@ class Generator():
         # a bound, generate a value of this bound. Otherwise, generate a bottom
         # value.
         if class_decl is None:
-            bound = getattr(etype, 'bound', None)
-            if bound is not None:
-                return self.gen_new(bound, only_leaves,
-                                    subtype=False)
-            else:
-                return ast.Bottom
+            return ast.Bottom
 
         if isinstance(etype, tp.TypeConstructor):
-            old = etype
             etype, _ = tu.instantiate_type_constructor(
                 etype, self.get_types())
         # If the matching class is a parameterized one, we need to create
