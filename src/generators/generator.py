@@ -461,7 +461,6 @@ class Generator():
             if not var_type:
                 continue
             cls, type_map_var = self._get_class(var_type)
-            assert cls is not None
             for attr in getattr(cls, attr_name):  # function or field
                 attr_type = tp.substitute_type(
                     attr.get_type(), type_map_var)
