@@ -51,7 +51,10 @@ class Generator():
         type_params = list(self.context.get_types(self.namespace).values())
         builtins = list(self.ret_builtin_types)
         if exclude_array:
-            builtins.remove(self.bt_factory.get_array_type())
+            builtins = [
+                t for t in builtins
+                if t.name != self.bt_factory.get_array_type().name
+            ]
         return usr_types + builtins + (type_params * 5)
 
     # pylint: disable=unused-argument
