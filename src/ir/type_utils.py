@@ -8,28 +8,55 @@ import src.ir.builtins as bt
 from src import utils
 
 
-def _construct_related_types(etype, types, get_subtypes):
+def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
     valid_args = []
+    type_param_assigns = {}
+
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
-        if t_param.is_invariant():
-            t_args = [etype.type_args[i]]
-        elif t_param.is_covariant():
-            t_args = _find_types(etype.type_args[i].concrete_type, types,
-                                 get_subtypes, True,
-                                 t_param.bound, concrete_only=True)
+        if t_param.bound in type_param_assigns:
+            # Here we have a case like the following.
+            # class X<T1, T2: T1>
+            # Therefore the type assignments for the type variable T2 must keep
+            # up with the assignments of the type variable T1.
+            # To do so, we track the index of the type variable T1.
+            # Later, when instantiating the corresponding type constructor,
+            # we replace this index with the type assigned to the type variable
+            # T1. In this way, we guarantee that T1 and T2 have compatible
+            # types.
+            bound_index = type_param_assigns[t_param.bound]
+            t_args = [bound_index]
+            if t_param.is_invariant():
+                # OK, if T2 is invariant, then the possible types that T1
+                # can have is etype.type_args[i].
+                # This prevents us from situtations like the following.
+                # A<out T1, T2: T1>
+                # A<Double, Double> is not subtype of A<Number, Number>.
+                valid_args[bound_index] = [etype.type_args[i]]
         else:
-            t_args = _find_types(etype.type_args[i].concrete_type, types,
-                                 not get_subtypes, True,
-                                 t_param.bound, concrete_only=True)
-        # Type argument should not be primitives.
-        t_args = [t.to_type_arg() for t in t_args if not t.is_primitive()]
+            if t_param.is_invariant():
+                t_args = [etype.type_args[i]]
+            elif t_param.is_covariant():
+                t_args = _find_types(etype.type_args[i].concrete_type, types,
+                                     get_subtypes, True,
+                                     t_param.bound, concrete_only=True)
+            else:
+                t_args = _find_types(etype.type_args[i].concrete_type, types,
+                                     not get_subtypes, True,
+                                     t_param.bound, concrete_only=True)
+            # Type argument should not be primitives.
+            t_args = [t.to_type_arg() for t in t_args if not t.is_primitive()]
+        type_param_assigns[t_param] = i
         valid_args.append(t_args)
 
-    return [
-        etype.t_constructor.new(type_args)
-        for type_args in itertools.product(*valid_args)
-        if type_args != tuple(etype.type_args)
-    ]
+    constructed_types = []
+    for type_args in itertools.product(*valid_args):
+        new_type_args = []
+        for t_arg in type_args:
+            while isinstance(t_arg, int):
+                t_arg = type_args[t_arg]
+            new_type_args.append(t_arg)
+        constructed_types.append(etype.t_constructor.new(new_type_args))
+    return constructed_types
 
 
 def to_type(stype, types):
