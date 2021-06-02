@@ -427,7 +427,7 @@ class Generator():
         omit_type = (
             ut.random.bool() and
             not is_final and
-            etype != self.bt_factory.get_number_type() and
+            var_type != self.bt_factory.get_number_type() and
             not expr.is_bottom()
         )
         vtype = None if omit_type else var_type
@@ -817,10 +817,18 @@ class Generator():
             var_type = self._get_var_type_to_search(var.get_type())
             if not var_type:
                 continue
-            cls, _ = self._get_class(var_type)
+            cls, type_var_map = self._get_class(var_type)
             for field in cls.fields:
+                # Ok here we create a new field whose type corresponds
+                # to the type argument with which the class 'c' is
+                # instantiated.
+                field_sub = ast.FieldDeclaration(
+                    field.name,
+                    field_type=tp.substitute_type(field.get_type(),
+                                                  type_var_map)
+                )
                 if not field.is_final:
-                    variables.append((ast.Variable(var.name), field))
+                    variables.append((ast.Variable(var.name), field_sub))
         return variables
 
     def _get_classes_with_assignable_fields(self):
@@ -830,14 +838,25 @@ class Generator():
             for field in c.fields:
                 if not field.is_final:
                     classes.append((c, field))
-        # Instead of filtering out TypeConstructors we can
-        # instantiate_type_constructor. To do so, we need to pass types as
-        # argument to Generator's constructor.
-        classes = [c for c in classes
-                   if not isinstance(c[0].get_type(), tp.TypeConstructor)]
-        if not classes:
+        assignable_types = []
+        for c, f in classes:
+            t, type_var_map = c.get_type(), {}
+            if isinstance(t, tp.TypeConstructor):
+                t, type_var_map = tu.instantiate_type_constructor(
+                    t, self.get_types(exclude_arrays=True))
+                # Ok here we create a new field whose type corresponds
+                # to the type argument with which the class 'c' is
+                # instantiated.
+                f = ast.FieldDeclaration(
+                    f.name,
+                    field_type=tp.substitute_type(f.get_type(),
+                                                  type_var_map)
+                )
+            assignable_types.append((t, f))
+
+        if not assignable_types:
             return None
-        return ut.random.choice(classes)
+        return ut.random.choice(assignable_types)
 
     # pylint: disable=unused-argument
     def gen_assignment(self, expr_type, only_leaves=False, subtype=True):
@@ -850,8 +869,8 @@ class Generator():
             # generate an object of this class, and perform the assignment.
             res = self._get_classes_with_assignable_fields()
             if res:
-                cls, field = res
-                variables = [(self.generate_expr(cls.get_type(),
+                expr_type, field = res
+                variables = [(self.generate_expr(expr_type,
                                                  only_leaves, subtype), field)]
         if not variables:
             # Nothing of the above worked, so generate a 'var' variable,
@@ -941,8 +960,7 @@ class Generator():
 
         if expr_type == self.bt_factory.get_void_type():
             return [gen_fun_call,
-                    #lambda x: self.gen_assignment(x, only_leaves)]
-                    ]
+                    lambda x: self.gen_assignment(x, only_leaves)]
 
         if self.depth >= self.max_depth or only_leaves:
             gen_con = constant_candidates.get(expr_type.name)
