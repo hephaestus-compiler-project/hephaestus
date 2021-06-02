@@ -1044,6 +1044,20 @@ def test_unify_types():
     assert tutils.unify_types(foo2, foo3) == {type_param4: kt.Integer}
 
 
+def test_unify_type_vars():
+    type_var1 = tp.TypeParameter("T1")
+    type_var2 = tp.TypeParameter("T2")
+
+    assert tutils.unify_types(type_var1, type_var2) == {type_var2: type_var1}
+
+    type_var2.bound = kt.String
+    assert tutils.unify_types(type_var1, type_var2) == {}
+
+    type_var2.bound = None
+    type_var1.bound = kt.String
+    assert tutils.unify_types(type_var1, type_var2) == {type_var2: type_var1}
+
+
 def test_unify_types_mul_type_var():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
@@ -1102,7 +1116,7 @@ def test_unify_types_with_paramerized_bounds():
     assert tutils.unify_types(foo1, foo2) == {}
     assert tutils.unify_types(foo3, foo2) == {type_param5: kt.String}
 
-    # test case 2:
+    # test case 2
     type_param2.bound = kt.Long
     type_param4.bound = kt.Boolean
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2, type_param3])

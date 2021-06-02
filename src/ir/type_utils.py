@@ -591,8 +591,22 @@ def _update_type_var_map(type_var_map, key, value):
 
 
 def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
-    assert isinstance(t1, tp.ParameterizedType)
-    assert isinstance(t2, tp.ParameterizedType)
+    if type(t1) != type(t2):
+        return {}
+
+    is_type_var = isinstance(t1, tp.TypeParameter)
+    is_type_var2 = isinstance(t2, tp.TypeParameter)
+    if is_type_var and is_type_var2:
+        bound1 = get_bound(t1)
+        bound2 = get_bound(t2)
+        if not bound1 and not bound2:
+            return {t2: t1}
+
+        if not bound2 or (bound1 and bound1.is_subtype(bound2)):
+            return {t2: t1}
+
+    if not isinstance(t1, tp.ParameterizedType):
+        return {}
 
     if t1.t_constructor != t2.t_constructor:
         return {}
