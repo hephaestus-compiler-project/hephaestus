@@ -979,6 +979,22 @@ def test_instantiate_type_constructor_bound():
         [t.to_type_arg(), t.to_type_arg(), kt.Integer.to_type_arg()]).to_type_arg()
 
 
+def test_instantiate_type_constructor_type_var_bound():
+    type_param1 = tp.TypeParameter("T1", variance=tp.Covariant)
+    type_param2 = tp.TypeParameter("T2", bound=type_param1,
+                                   variance=tp.Covariant)
+
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    types = [kt.Double, kt.Integer]
+    foo_t, _ = tutils.instantiate_type_constructor(foo, types=types,
+                                                   type_var_map=None)
+    assert foo_t in [
+        foo.new([kt.Integer, kt.Integer]),
+        foo.new([kt.Double, kt.Double])
+    ]
+
+
+
 def test_instantiate_type_constructor_with_type_var_map():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2", bound=type_param1)
