@@ -306,7 +306,7 @@ class GroovyTranslator(ASTVisitor):
         res = "{ident}{final}{var_type}{main_prefix}{name} = {expr}".format(
             ident=self.get_ident(),
             final="final " if node.is_final else "",
-            var_type=var_type,
+            var_type=var_type or "def ",
             main_prefix=main_prefix,
             name=node.name,
             expr=expr
