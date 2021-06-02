@@ -319,7 +319,7 @@ class Generator():
             # If the return value is the bottom constant, then again the
             # return type must be explicit.
             if ret_type != self.bt_factory.get_number_type() and not (
-                  expr == ast.Bottom):
+                  expr.is_bottom()):
                 ret_type = None
         else:
             inferred_type = None
@@ -428,7 +428,7 @@ class Generator():
             ut.random.bool() and
             not is_final and
             etype != self.bt_factory.get_number_type() and
-            expr != ast.Bottom
+            not expr.is_bottom()
         )
         vtype = None if omit_type else var_type
         return ast.VariableDeclaration(
@@ -522,10 +522,8 @@ class Generator():
                     if subtype else
                     attr_type == etype
                 )
-                is_parameterized = isinstance(etype, tp.ParameterizedType)
-                is_parameterized2 = isinstance(attr_type, tp.ParameterizedType)
                 type_var_map = None
-                if not cond and is_parameterized and is_parameterized2:
+                if not cond:
                     type_var_map = tu.unify_types(etype, attr_type)
                 if not type_var_map and not cond:
                     continue
@@ -643,7 +641,7 @@ class Generator():
                 type_fun = self._gen_matching_func(etype, not_void=True)
             cls_type, params_map, func = type_fun
             receiver = None if cls_type is None else self.generate_expr(
-                tp.substitute_type(cls_type, params_map), only_leaves)
+                cls_type, only_leaves)
             funcs.append((receiver, params_map, func))
         receiver, params_map, func = ut.random.choice(funcs)
         args = []
@@ -679,8 +677,7 @@ class Generator():
                 type_f = self._gen_matching_class(
                     etype, 'fields', not_void=True)
             type_f, params_map, func = type_f
-            expr_type = tp.substitute_type(type_f, params_map)
-            receiver = self.generate_expr(expr_type, only_leaves)
+            receiver = self.generate_expr(type_f, only_leaves)
             objs.append((receiver, None, func))
         objs = [(r, f) for r, _, f in objs]
         receiver, func = ut.random.choice(objs)
