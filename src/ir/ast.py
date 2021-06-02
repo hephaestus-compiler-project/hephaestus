@@ -134,6 +134,11 @@ class Block(Node):
         super().update_children(children)
         self.body = children
 
+    def is_bottom(self):
+        if self.body:
+            return self.body[-1].is_bottom()
+        return True
+
     def __str__(self):
         return "{{\n  {}\n}}".format("\n  ".join(map(str, self.body)))
 
@@ -590,6 +595,9 @@ class Constant(Expr):
             return self.literal == other.literal
         return False
 
+    def is_bottom(self):
+        return self == Bottom
+
     def __eq__(self, other):
         return self.is_equal(other)
 
@@ -711,6 +719,9 @@ class Conditional(Expr):
         self.cond = children[0]
         self.true_branch = children[1]
         self.false_branch = children[2]
+
+    def is_bottom(self):
+        return self.true_branch.is_bottom() and self.false_branch.is_bottom()
 
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
