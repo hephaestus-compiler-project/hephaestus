@@ -12,6 +12,10 @@ Reported Bugs
 
 * <https://issues.apache.org/jira/browse/GROOVY-9945?filter=-2&jql=reporter%20%3D%20%22Thodoris%20Sotiropoulos%22%20OR%20reporter%20%3D%20schaliasos>
 
+#### Java
+
+* <https://github.com/theosotr/check-type-system/issues/37>
+
 Installation
 ------------
 
