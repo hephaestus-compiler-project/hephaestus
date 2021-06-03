@@ -79,7 +79,7 @@ class Generator():
                                exclude_contravariants=exclude_contravariants)
         t = ut.random.choice(types)
         if isinstance(t, tp.TypeConstructor):
-            exclude_type_vars = self.language == 'kotlin' and (
+            exclude_type_vars = self.language in ['kotlin', 'java'] and (
                 t.name == self.bt_factory.get_array_type().name)
             t, _ = tu.instantiate_type_constructor(
                 t, self.get_types(exclude_arrays=True,
@@ -426,11 +426,10 @@ class Generator():
         # correspond to a bottom constant.
         omit_type = (
             ut.random.bool() and
-            not is_final and
-            var_type != self.bt_factory.get_number_type() and
-            not expr.is_bottom()
+            is_final and
+            var_type != self.bt_factory.get_number_type()
         )
-        vtype = None if omit_type else var_type
+        vtype = None if omit_type and not expr.is_bottom() else var_type
         return ast.VariableDeclaration(
             gu.gen_identifier('lower'),
             expr=expr,
@@ -523,7 +522,11 @@ class Generator():
                     attr_type == etype
                 )
                 type_var_map = None
-                if not cond:
+                # if the type of the attribute has type variables,
+                # then we have to unify it with the expected type so that
+                # we can instantiate the corresponding type constructor
+                # accordingly
+                if not cond or attr_type.has_type_variables():
                     type_var_map = tu.unify_types(etype, attr_type)
                 if not type_var_map and not cond:
                     continue
