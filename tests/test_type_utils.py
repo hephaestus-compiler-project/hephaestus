@@ -1143,3 +1143,15 @@ def test_unify_types_with_paramerized_bounds():
 
     params = tutils.unify_types(foo_e, foo_p)
     assert params == {}
+
+
+def test_unify_types_with_conflicted_type_vars():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    bar = tp.TypeConstructor("Bar", [type_param1, type_param2])
+    foo_d = foo.new([type_param1, type_param2])
+    foo_a = foo.new([type_param1, type_param2])
+
+    params = tutils.unify_types(foo_a, foo_d)
+    assert params == {type_param1: type_param1, type_param2: type_param2}
