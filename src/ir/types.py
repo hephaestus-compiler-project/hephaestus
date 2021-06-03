@@ -463,8 +463,8 @@ class ParameterizedType(SimpleClassifier):
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
-        assert all(not t.to_type().is_primitive() for t in type_args), (
-            "Type argument cannot be a primitive type")
+        #assert all(not t.to_type().is_primitive() for t in type_args), (
+        #    "Type argument cannot be a primitive type")
         self._can_infer_type_args = can_infer_type_args
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
@@ -543,10 +543,12 @@ class ParameterizedType(SimpleClassifier):
         if (self.t_constructor == jt.Array and
                 isinstance(other, ParameterizedType) and
                 other.t_constructor == jt.Array):
-            self_is_primitive = getattr(self.type_args[0], 'primitive', False)
-            other_is_primitive = getattr(other.type_args[0], 'primitive', False)
+            self_t = self.type_args[0].to_type()
+            other_t = other.type_args[0].to_type()
+            self_is_primitive = getattr(self_t, 'primitive', False)
+            other_is_primitive = getattr(other_t, 'primitive', False)
             if self_is_primitive or other_is_primitive:
-                if (self.type_args[0] == other.type_args[0] and
+                if (self_t == other_t and
                         self_is_primitive and other_is_primitive):
                     return True
                 return False
