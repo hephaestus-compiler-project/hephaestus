@@ -12,9 +12,9 @@ class Main {
 
     }
     public static void main() {
-        final a1 = new AClass<String>("a1")
-        final a2 = new AClass<Object>("a2")
-        final a3 = new AClass<Object>("a3")
+        final def a1 = new AClass<String>("a1")
+        final def a2 = new AClass<Object>("a2")
+        final def a3 = new AClass<Object>("a3")
         final BClass<Object, Integer> b = new BClass<Object, Integer>()
         final BClass<Double, Integer> c = new BClass<Double, Integer>()
         Main.bar(c)
