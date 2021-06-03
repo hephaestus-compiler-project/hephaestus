@@ -341,7 +341,7 @@ class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
         # In Java, arrays are covariant.
         super().__init__(name, [tp.TypeParameter(
-            "T", variance=tp.TypeParameter.COVARIANT)])
+            "T", variance=tp.Covariant)])
         self.supertypes.append(ObjectType())
 
 
