@@ -289,7 +289,12 @@ class JavaTranslator(ASTVisitor):
                                    (ast.VariableDeclaration,
                                     ast.FunctionCall,
                                     ast.Assignment))):
-                sugar = "var x_{x} = ".format(x=self._x_counter)
+                var_prefix = (
+                    'var '
+                    if not children[-1].is_bottom()
+                    else 'Object '
+                )
+                sugar = "{p}x_{x} = ".format(p=var_prefix, x=self._x_counter)
                 self._x_counter += 1
 
         # A block could be the body of a function or the body of an if statement
@@ -335,6 +340,24 @@ class JavaTranslator(ASTVisitor):
                 res=res
             )
         return res
+
+    @append_to
+    def visit_call_argument(self, node):
+        old_ident = self.ident
+        self.ident = 0
+        children = node.children()
+        for c in node.children():
+            c.accept(self)
+        self.ident = old_ident
+        children_res = self.pop_children_res(children)
+        return children_res[0]
+
+    @append_to
+    def visit_constant(self, node):
+        if node == ast.Bottom:
+            return self.get_ident() + "null" + (
+                ";" if self._parent_is_block() else "")
+        raise NotImplementedError("Unreachable case")
 
     @append_to
     def visit_super_instantiation(self, node):
