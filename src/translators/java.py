@@ -6,11 +6,10 @@ from collections import OrderedDict
 
 import src.utils as ut
 from src.ir import ast, java_types as jt, types as tp
-from src.ir.visitors import ASTVisitor
 from src.ir.context import get_decl
 from src.ir.type_utils import get_type_hint
 from src.transformations.base import change_namespace
-from src.translators.utils import get_type_name
+from src.translators.base import BaseTranslator
 
 
 PRIMITIVES_TO_BOXED = {
@@ -55,7 +54,7 @@ def append_to(visit):
     return inner
 
 
-class JavaTranslator(ASTVisitor):
+class JavaTranslator(BaseTranslator):
 
     filename = "Main.java"
     incorrect_filename = "Incorrect.java"
@@ -63,10 +62,9 @@ class JavaTranslator(ASTVisitor):
     ident_value = " "
 
     def __init__(self, package=None, options={}):
+        super().__init__(package, options)
         self._children_res = []
-        self.program = None
         self.ident = 0
-        self.package = package
         self.context = None
         self.types = []
         self._generator = None
@@ -119,8 +117,6 @@ class JavaTranslator(ASTVisitor):
         # casts.
         self.smart_casts = []
 
-
-
     def _reset_state(self):
         # Clear the state
         self.types = []
@@ -154,10 +150,26 @@ class JavaTranslator(ASTVisitor):
     def get_incorrect_filename():
         return JavaTranslator.incorrect_filename
 
-    def result(self) -> str:
-        if self.program is None:
-            raise Exception('You have to translate the program first')
-        return self.program
+    def type_arg2str(self, t_arg):
+        if t_arg.variance == tp.Invariant:
+            return self.get_type_name(t_arg.to_type(), True)
+        elif t_arg.variance == tp.Covariant:
+            return "? extends " + self.get_type_name(
+                t_arg.to_type(), True)
+        else:
+            return "? super " + self.get_type_name(
+                t_arg.to_type(), True)
+
+    def get_type_name(self, t, get_boxed_void=False):
+        t_constructor = getattr(t, 't_constructor', None)
+        if not t_constructor:
+            if get_boxed_void and isinstance(t, jt.VoidType):
+                return "Void"
+            return t.get_name()
+        if isinstance(t_constructor, jt.ArrayType):
+            return "{}[]".format(self.get_type_name(t.type_args[0].to_type()))
+        return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
+                                                  for ta in t.type_args]))
 
     def pop_children_res(self, children):
         len_c = len(children)
@@ -333,7 +345,7 @@ class JavaTranslator(ASTVisitor):
                                       jt.JavaBuiltinFactory(),
                                       self.types,
                                       smart_casts=self.smart_casts)
-            etype_str = get_type_name(etype, get_boxed_void=True)
+            etype_str = self.get_type_name(etype, get_boxed_void=True)
             etype_str = PRIMITIVES_TO_BOXED.get(etype_str, etype_str)
             res = "((Function0<{etype}>) (() -> {res})).apply()".format(
                 etype=etype_str,
@@ -361,7 +373,7 @@ class JavaTranslator(ASTVisitor):
 
     @append_to
     def visit_super_instantiation(self, node):
-        return get_type_name(node.class_type)
+        return self.get_type_name(node.class_type)
 
     @append_to
     @change_namespace
@@ -372,7 +384,7 @@ class JavaTranslator(ASTVisitor):
             interfaces = []
             for cls_inst in node.superclasses:
                 cls_name = cls_inst.class_type.name
-                cls_inst = get_type_name(cls_inst.class_type)
+                cls_inst = self.get_type_name(cls_inst.class_type)
                 cls_decl = self.context.get_classes(
                     self._namespace, glob=True)[cls_name]
                 if cls_decl.class_type == ast.ClassDeclaration.INTERFACE:
@@ -384,7 +396,7 @@ class JavaTranslator(ASTVisitor):
         def get_constructor_params():
             constructor_fields = OrderedDict()
             for field in node.fields:
-                constructor_fields[field.name] = get_type_name(
+                constructor_fields[field.name] = self.get_type_name(
                     field.field_type)
             return constructor_fields
 
@@ -483,7 +495,7 @@ class JavaTranslator(ASTVisitor):
     def visit_type_param(self, node):
         bound = node.bound if node.bound is not None else ''
         if bound:
-            bound_str = get_type_name(bound)
+            bound_str = self.get_type_name(bound)
             bound = ' extends ' + PRIMITIVES_TO_BOXED.get(bound_str, bound_str)
         return "{name}{bound}".format(
             name=node.name,
@@ -510,7 +522,7 @@ class JavaTranslator(ASTVisitor):
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE or
                 node.inferred_type == jt.Object):
-            var_type = get_type_name(node.inferred_type)
+            var_type = self.get_type_name(node.inferred_type)
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
@@ -529,7 +541,7 @@ class JavaTranslator(ASTVisitor):
     def visit_field_decl(self, node):
         return "public {final}{field_type} {name};".format(
             final="final " if node.is_final else "",
-            field_type=get_type_name(node.field_type),
+            field_type=self.get_type_name(node.field_type),
             name=node.name
         )
 
@@ -542,7 +554,7 @@ class JavaTranslator(ASTVisitor):
             node.param_type.type_args[0]
             if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
             else node.param_type)
-        res = get_type_name(param_type) + vararg_str + " " + node.name
+        res = self.get_type_name(param_type) + vararg_str + " " + node.name
         return res
 
     @append_to
@@ -594,7 +606,7 @@ class JavaTranslator(ASTVisitor):
             types = list(map(lambda x: x.rsplit(' ', 1)[0], param_res))
             # Convert vararg to array
             types = list(map(lambda x: x.replace('...', '[]'), types))
-            types.append(get_type_name(node.inferred_type, True))
+            types.append(self.get_type_name(node.inferred_type, True))
             types = list(map(
                 lambda x: PRIMITIVES_TO_BOXED.get(x, x), types))
             params = list(map(lambda x: x.split()[-1], param_res))
@@ -615,7 +627,7 @@ class JavaTranslator(ASTVisitor):
                 public="public ",
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
-                ret_type=get_type_name(node.inferred_type),
+                ret_type=self.get_type_name(node.inferred_type),
                 name=node.name,
                 params=", ".join(param_res),
                 body=body,
@@ -705,11 +717,11 @@ class JavaTranslator(ASTVisitor):
     def visit_array_expr(self, node):
         if not node.length:
             new_stmt = "new {etype}".format(
-                etype=get_type_name(node.array_type.type_args[0])
+                etype=self.get_type_name(node.array_type.type_args[0])
             )
             if isinstance(node.array_type.type_args[0], tp.ParameterizedType):
                 new_stmt = "({etype}[]) new Object".format(
-                    etype=get_type_name(node.array_type.type_args[0])
+                    etype=self.get_type_name(node.array_type.type_args[0])
                 )
 
             return "{ident}{new}[0]{semicolon}".format(
@@ -729,11 +741,11 @@ class JavaTranslator(ASTVisitor):
         if (isinstance(node.array_type, tp.ParameterizedType) and
                 not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
-                etype=get_type_name(node.array_type)
+                etype=self.get_type_name(node.array_type)
             )
         else:
             new_stmt = "new {etype}".format(
-                etype=get_type_name(node.array_type)
+                etype=self.get_type_name(node.array_type)
             )
 
         self._cast_number = prev_cast_number
@@ -876,7 +888,7 @@ class JavaTranslator(ASTVisitor):
         if getattr(node.class_type, 'can_infer_type_args', None) is True:
             cls = node.class_type.name + "<>"
         else:
-            cls = get_type_name(node.class_type)
+            cls = self.get_type_name(node.class_type)
         res = "{ident}new {cls}({args}){semicolon}".format(
             ident=self.get_ident(),
             cls=cls,
@@ -936,11 +948,11 @@ class JavaTranslator(ASTVisitor):
             varargs_type = fdecl[1].params[-1].param_type
             if not varargs_type.type_args[0].is_primitive():
                 new_stmt = "({etype}) new Object[]".format(
-                    etype=get_type_name(varargs_type)
+                    etype=self.get_type_name(varargs_type)
                 )
             else:
                 new_stmt = "new {etype}".format(
-                    etype=get_type_name(varargs_type)
+                    etype=self.get_type_name(varargs_type)
                 )
             varargs = "{new}{{{args}}}".format(
                 new=new_stmt,

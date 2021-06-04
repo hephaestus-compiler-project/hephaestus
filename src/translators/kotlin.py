@@ -1,9 +1,8 @@
 from src.ir import ast, kotlin_types as kt, types as tp
-from src.ir.visitors import ASTVisitor
-from src.translators.utils import get_type_name
+from src.translators.base import BaseTranslator
 
 
-class KotlinTranslator(ASTVisitor):
+class KotlinTranslator(BaseTranslator):
     # TODO: Add a decorator for bottom-up traversal.
 
     filename = "program.kt"
@@ -11,12 +10,11 @@ class KotlinTranslator(ASTVisitor):
     executable = "program.jar"
 
     def __init__(self, package=None, options={}):
+        super().__init__(package, options)
         self._children_res = []
-        self.program = None
         self.ident = 0
         self.is_func_block = False
         self._cast_integers = False
-        self.package = package
 
     @staticmethod
     def get_filename():
@@ -30,6 +28,24 @@ class KotlinTranslator(ASTVisitor):
         if self.program is None:
             raise Exception('You have to translate the program first')
         return self.program
+
+    def type_arg2str(self, t_arg):
+        if t_arg.variance == tp.Invariant:
+            return self.get_type_name(t_arg.to_type())
+        elif t_arg.variance == tp.Covariant:
+            return "out " + self.get_type_name(t_arg.to_type())
+        else:
+            return "in " + self.get_type_name(t_arg.to_type())
+
+    def get_type_name(self, t):
+        t_constructor = getattr(t, 't_constructor', None)
+        if not t_constructor:
+            return t.get_name()
+        if isinstance(t_constructor, kt.SpecializedArrayType):
+            return "{}Array".format(self.get_type_name(
+                t.type_args[0].to_type()))
+        return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
+                                                  for ta in t.type_args]))
 
     def pop_children_res(self, children):
         len_c = len(children)
@@ -78,10 +94,10 @@ class KotlinTranslator(ASTVisitor):
             c.accept(self)
         children_res = self.pop_children_res(children)
         if node.args is None:
-            self._children_res.append(get_type_name(node.class_type))
+            self._children_res.append(self.get_type_name(node.class_type))
             return
         self._children_res.append(
-            get_type_name(node.class_type) + "(" + ", ".join(
+            self.get_type_name(node.class_type) + "(" + ", ".join(
                 children_res) + ")")
 
     def visit_class_decl(self, node):
@@ -128,7 +144,7 @@ class KotlinTranslator(ASTVisitor):
             node.variance_to_string(),
             ' ' if node.variance != tp.Invariant else '',
             node.name,
-            ': ' + get_type_name(node.bound) if node.bound is not None else ''
+            ': ' + self.get_type_name(node.bound) if node.bound is not None else ''
         ))
 
     def visit_var_decl(self, node):
@@ -145,7 +161,7 @@ class KotlinTranslator(ASTVisitor):
         var_type = "val " if node.is_final else "var "
         res = prefix + var_type + node.name
         if node.var_type is not None:
-            res += ": " + get_type_name(node.var_type)
+            res += ": " + self.get_type_name(node.var_type)
         res += " = " + children_res[0]
         self.ident = old_ident
         self._cast_integers = prev
@@ -168,7 +184,7 @@ class KotlinTranslator(ASTVisitor):
         prefix = '' if node.can_override else 'open '
         prefix += '' if not node.override else 'override '
         prefix += 'val ' if node.is_final else 'var '
-        res = prefix + node.name + ": " + get_type_name(node.field_type)
+        res = prefix + node.name + ": " + self.get_type_name(node.field_type)
         self._children_res.append(res)
 
     def visit_param_decl(self, node):
@@ -186,7 +202,7 @@ class KotlinTranslator(ASTVisitor):
             if node.vararg and isinstance(node.param_type,
                                           tp.ParameterizedType)
             else node.param_type)
-        res = vararg_str + node.name + ": " + get_type_name(param_type)
+        res = vararg_str + node.name + ": " + self.get_type_name(param_type)
         if len(children):
             children_res = self.pop_children_res(children)
             res += " = " + children_res[0]
@@ -213,7 +229,7 @@ class KotlinTranslator(ASTVisitor):
         prefix += "" if node.body is not None else "abstract "
         res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
         if node.ret_type:
-            res += ": " + get_type_name(node.ret_type)
+            res += ": " + self.get_type_name(node.ret_type)
         if body_res:
             sign = "=" if is_expression and node.get_type() != kt.Unit else ""
             res += " " + sign + "\n" + body_res
@@ -272,10 +288,10 @@ class KotlinTranslator(ASTVisitor):
             if not is_specialized:
                 self._children_res.append("{}emptyArray<{}>()".format(
                     " " * self.ident,
-                    get_type_name(node.array_type.type_args[0].to_type())))
+                    self.get_type_name(node.array_type.type_args[0].to_type())))
             else:
                 # Specialized array
-                t_arg = get_type_name(node.array_type.type_args[0].to_type())
+                t_arg = self.get_type_name(node.array_type.type_args[0].to_type())
                 self._children_res.append("{}{}Array(0)".format(
                     " " * self.ident, t_arg))
             return
@@ -292,7 +308,7 @@ class KotlinTranslator(ASTVisitor):
             if not is_specialized
             else "{}{}ArrayOf({})"
         )
-        t_arg = get_type_name(node.array_type.type_args[0].to_type())
+        t_arg = self.get_type_name(node.array_type.type_args[0].to_type())
         if is_specialized:
             t_arg = t_arg.lower()
         return self._children_res.append(template.format(
@@ -361,7 +377,7 @@ class KotlinTranslator(ASTVisitor):
         children_res = self.pop_children_res(children)
         res = "{}{} {} {}".format(
             " " * old_ident, children_res[0], str(node.operator),
-            get_type_name(node.rexpr))
+            self.get_type_name(node.rexpr))
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -380,7 +396,7 @@ class KotlinTranslator(ASTVisitor):
                 ", ".join(children_res)))
         else:
             self._children_res.append("{}({})".format(
-                " " * self.ident + get_type_name(node.class_type),
+                " " * self.ident + self.get_type_name(node.class_type),
                 ", ".join(children_res)))
 
     def visit_field_access(self, node):
