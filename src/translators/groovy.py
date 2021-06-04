@@ -91,11 +91,6 @@ class GroovyTranslator(BaseTranslator):
     def get_incorrect_filename():
         return GroovyTranslator.incorrect_filename
 
-    def result(self) -> str:
-        if self.program is None:
-            raise Exception('You have to translate the program first')
-        return self.program
-
     def type_arg2str(self, t_arg):
         if t_arg.variance == tp.Invariant:
             return self.get_type_name(t_arg.to_type())
