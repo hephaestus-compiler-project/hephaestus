@@ -1,4 +1,5 @@
 # pylint: disable=too-many-instance-attributes,too-many-arguments,dangerous-default-value
+import functools
 from collections import defaultdict
 from typing import Tuple, List
 
@@ -452,7 +453,7 @@ class Generator():
         if tu.is_builtin(var_type, self.bt_factory):
             return None
         if isinstance(var_type, tp.TypeParameter):
-            bound = tu.get_bound(var_type)
+            bound = var_type.get_bound_rec(self.bt_factory)
             if not bound or tu.is_builtin(bound, self.bt_factory) or (
                   isinstance(bound, tp.TypeParameter)):
                 return None
@@ -527,7 +528,8 @@ class Generator():
                 # we can instantiate the corresponding type constructor
                 # accordingly
                 if not cond or attr_type.has_type_variables():
-                    type_var_map = tu.unify_types(etype, attr_type)
+                    type_var_map = tu.unify_types(etype, attr_type,
+                                                  self.bt_factory)
                 if not type_var_map and not cond:
                     continue
                 # Now here we keep the class and the function that match
@@ -550,20 +552,26 @@ class Generator():
 
         if isinstance(etype, tp.TypeParameter):
             type_params = self.gen_type_params(count=1)
-            type_params[0].bound = None
+            type_params[0].bound = etype.get_bound_rec(self.bt_factory)
             type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}
 
         # the given type is parameterized
         assert isinstance(etype, tp.ParameterizedType)
-        type_vars = etype.get_type_variables()
+        type_vars = etype.get_type_variables(self.bt_factory)
         type_params = self.gen_type_params(len(type_vars))
         type_var_map = {}
         available_type_params = list(type_params)
-        for type_var in type_vars:
+        for type_var, bounds in type_vars.items():
+            bounds = list(bounds)
             type_param = ut.random.choice(available_type_params)
             available_type_params.remove(type_param)
-            type_param.bound = None
+            if bounds != [None]:
+                type_param.bound = functools.reduce(
+                    lambda acc, t: t if t.is_subtype(acc) else acc,
+                    filter(lambda t: t is not None, bounds), bounds[0])
+            else:
+                type_param.bound = None
             type_param.variance = tp.Invariant
             type_var_map[type_var] = type_param
         return type_params, type_var_map
@@ -732,6 +740,8 @@ class Generator():
 
     # pylint: disable=unused-argument
     def gen_new(self, etype, only_leaves=False, subtype=True):
+        if isinstance(etype, tp.ParameterizedType):
+            etype = etype.to_variance_free()
         news = {
             self.bt_factory.get_any_type(): ast.New(
                 self.bt_factory.get_any_type(), args=[]),
