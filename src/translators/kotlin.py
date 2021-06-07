@@ -139,7 +139,11 @@ class KotlinTranslator(BaseTranslator):
             node.variance_to_string(),
             ' ' if node.variance != tp.Invariant else '',
             node.name,
-            ': ' + self.get_type_name(node.bound) if node.bound is not None else ''
+            ': ' + (
+                self.get_type_name(node.bound)
+                if node.bound is not None
+                else kt.Any.name
+            )
         ))
 
     def visit_var_decl(self, node):
