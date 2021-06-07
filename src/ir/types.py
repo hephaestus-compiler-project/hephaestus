@@ -2,7 +2,7 @@
 from __future__ import annotations
 from copy import deepcopy
 from collections import defaultdict
-from typing import List
+from typing import List, Dict, Set
 
 from src.ir.node import Node
 
@@ -248,6 +248,16 @@ class TypeParameter(AbstractType):
     def children(self):
         return []
 
+    def get_bound_rec(self, factory):
+        if not self.bound:
+            return None
+        t = self.bound
+        if isinstance(t, TypeParameter):
+            return t.get_bound_rec(factory)
+        if not t.has_type_variables():
+            return t
+        return t.to_type_variable_free(factory)
+
     def is_subtype(self, other):
         if not self.bound:
             return False
@@ -463,8 +473,6 @@ class ParameterizedType(SimpleClassifier):
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
                 len(self.t_constructor.type_parameters), self.t_constructor)
-        #assert all(not t.to_type().is_primitive() for t in type_args), (
-        #    "Type argument cannot be a primitive type")
         self._can_infer_type_args = can_infer_type_args
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
@@ -472,14 +480,51 @@ class ParameterizedType(SimpleClassifier):
     def has_type_variables(self):
         return any(t_arg.has_type_variables() for t_arg in self.type_args)
 
-    def get_type_variables(self):
-        type_vars = []
+    def to_variance_free(self):
+        type_args = []
         for t_arg in self.type_args:
+            type_args.append(t_arg.to_type().to_type_arg())
+        return self.t_constructor.new(type_args)
+
+    def to_type_variable_free(self, factory):
+        # We translate a parameterized type that contains
+        # type variables into a parameterized type that is
+        # type variable free.
+        type_args = []
+        for t_arg in self.type_args:
+            if isinstance(t_arg.to_type(), TypeParameter):
+                bound = t_arg.to_type().get_bound_rec(factory)
+                if bound is None:
+                    # If the type variable has no bound, then create
+                    # a variant type argument on the top type.
+                    # X<T> => X<? extends Object>
+                    type_args.append(
+                        factory.get_any_type().to_type_arg(Covariant))
+                else:
+                    # Get the bound of type variable and create variant type
+                    # argument based on its bound, e.g.,
+                    # T <: Number, X<T> => X<? extends Number>
+                    type_args.append(bound.to_type_arg(Covariant))
+            elif isinstance(t_arg.to_type(), ParameterizedType):
+                type_args.append(
+                    t_arg.to_type().to_type_variable_free(
+                        factory).to_type_arg())
+            else:
+                type_args.append(t_arg)
+        return self.t_constructor.new(type_args)
+
+    def get_type_variables(self, factory) -> Dict[TypeParameter, Set[Type]]:
+        # This function actually returns a dict of the enclosing type variables
+        # along with the set of their bounds.
+        type_vars = defaultdict(set)
+        for i, t_arg in enumerate(self.type_args):
             t_arg = t_arg.to_type()
             if isinstance(t_arg, TypeParameter):
-                type_vars.append(t_arg)
+                type_vars[t_arg].add(
+                    t_arg.get_bound_rec(factory))
             elif isinstance(t_arg, ParameterizedType):
-                type_vars.extend(t_arg.get_type_variables())
+                for k, v in t_arg.get_type_variables(factory).items():
+                    type_vars[k].update(v)
             else:
                 continue
         return type_vars

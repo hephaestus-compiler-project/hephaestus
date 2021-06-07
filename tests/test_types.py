@@ -252,19 +252,25 @@ def test_use_site_variance_contravariant_decl():
 
 
 def test_get_type_variables():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
     foo1 = foo.new([kt.String.to_type_arg(), kt.Integer.to_type_arg()])
-    assert foo1.get_type_variables() == []
+    assert not foo1.get_type_variables(factory)
 
     foo2 = foo.new([type_param1.to_type_arg(), kt.String.to_type_arg()])
-    assert foo2.get_type_variables() == [type_param1]
+    type_vars = foo2.get_type_variables(factory)
+    assert len(type_vars) == 1
+    assert type_vars[type_param1] == {None}
 
     bar = tp.TypeConstructor("Bar", [type_param2])
     foo3 = foo.new([type_param1.to_type_arg(),
                     bar.new([type_param2.to_type_arg()]).to_type_arg()])
-    assert foo3.get_type_variables() == [type_param1, type_param2]
+    type_vars = foo3.get_type_variables(factory)
+    assert len(type_vars) == 2
+    assert type_vars[type_param1] == {None}
+    assert type_vars[type_param2] == {None}
 
 
 def test_type_substitution():
@@ -279,3 +285,28 @@ def test_type_substitution():
     ptype = tp.substitute_type(foo_p, {type_param3: type_param4})
     assert ptype.type_args[0] == kt.Integer.to_type_arg()
     assert ptype.type_args[1] == type_param4.to_type_arg()
+
+
+def test_to_type_variable_free():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1])
+    foo_t = foo.new([type_param2.to_type_arg()])
+
+    foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
+    assert foo_n.type_args[0] == tp.TypeArgument(kt.Any, variance=tp.Covariant)
+
+    type_param2.bound = kt.Number
+    foo_t = foo.new([type_param2.to_type_arg()])
+
+    foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
+    assert foo_n.type_args[0] == tp.TypeArgument(kt.Number, variance=tp.Covariant)
+
+    bar = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
+    bar_p = bar.new([type_param2])
+    foo_t = foo.new([bar_p])
+
+    foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
+    assert foo_n.type_args[0] == tp.TypeArgument(
+        bar.new([tp.TypeArgument(kt.Number, variance=tp.Covariant)]),
+        variance=tp.Invariant)

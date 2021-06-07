@@ -1043,6 +1043,7 @@ def test_instantiate_type_constructor_with_type_var_map():
 
 
 def test_unify_types():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     type_param3 = tp.TypeParameter("T3")
@@ -1054,27 +1055,31 @@ def test_unify_types():
     foo3 = foo.new([type_param4.to_type_arg(), kt.String.to_type_arg()])
     foo4 = foo.new([type_param4.to_type_arg(), kt.Integer.to_type_arg()])
 
-    assert tutils.unify_types(foo1, foo2) == {}
-    assert tutils.unify_types(foo1, foo3) == {type_param4: type_param3}
-    assert tutils.unify_types(foo1, foo4) == {}
-    assert tutils.unify_types(foo2, foo3) == {type_param4: kt.Integer}
+    assert tutils.unify_types(foo1, foo2, factory) == {}
+    assert tutils.unify_types(foo1, foo3, factory) == {type_param4: type_param3}
+    assert tutils.unify_types(foo1, foo4, factory) == {}
+    assert tutils.unify_types(foo2, foo3, factory) == {type_param4: kt.Integer}
 
 
 def test_unify_type_vars():
+    factory = kt.KotlinBuiltinFactory()
     type_var1 = tp.TypeParameter("T1")
     type_var2 = tp.TypeParameter("T2")
 
-    assert tutils.unify_types(type_var1, type_var2) == {type_var2: type_var1}
+    assert tutils.unify_types(type_var1, type_var2,
+                              factory) == {type_var2: type_var1}
 
     type_var2.bound = kt.String
-    assert tutils.unify_types(type_var1, type_var2) == {}
+    assert tutils.unify_types(type_var1, type_var2, factory) == {}
 
     type_var2.bound = None
     type_var1.bound = kt.String
-    assert tutils.unify_types(type_var1, type_var2) == {type_var2: type_var1}
+    assert tutils.unify_types(type_var1, type_var2,
+                              factory) == {type_var2: type_var1}
 
 
 def test_unify_types_mul_type_var():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     type_param3 = tp.TypeParameter("T3")
@@ -1082,11 +1087,12 @@ def test_unify_types_mul_type_var():
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
     foo_p = foo.new([type_param3.to_type_arg(), type_param3.to_type_arg()])
     foo_e = foo.new([kt.Integer.to_type_arg(), kt.Number.to_type_arg()])
-    assert tutils.unify_types(foo_p, foo_e) == {}
-    assert tutils.unify_types(foo_e, foo_p) == {}
+    assert tutils.unify_types(foo_p, foo_e, factory) == {}
+    assert tutils.unify_types(foo_e, foo_p, factory) == {}
 
 
 def test_unify_types_with_bounds():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     type_param3 = tp.TypeParameter("T3")
@@ -1099,16 +1105,17 @@ def test_unify_types_with_bounds():
     foo4 = foo.new([type_param4.to_type_arg(), kt.Integer.to_type_arg()])
     foo5 = foo.new([kt.String.to_type_arg(), kt.String.to_type_arg()])
 
-    assert tutils.unify_types(foo1, foo2) == {}
-    assert tutils.unify_types(foo1, foo3) == {}
-    assert tutils.unify_types(foo1, foo4) == {}
-    assert tutils.unify_types(foo2, foo3) == {}
-    assert tutils.unify_types(foo5, foo3) == {type_param4: kt.String}
+    assert tutils.unify_types(foo1, foo2, factory) == {}
+    assert tutils.unify_types(foo1, foo3, factory) == {}
+    assert tutils.unify_types(foo1, foo4, factory) == {}
+    assert tutils.unify_types(foo2, foo3, factory) == {}
+    assert tutils.unify_types(foo5, foo3, factory) == {type_param4: kt.String}
     type_param3.bound = kt.String
-    assert tutils.unify_types(foo1, foo3) == {type_param4: type_param3}
+    assert tutils.unify_types(foo1, foo3, factory) == {type_param4: type_param3}
 
 
 def test_unify_types_with_paramerized_bounds():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     bar = tp.TypeConstructor("Bar", [type_param1, type_param2])
@@ -1129,8 +1136,8 @@ def test_unify_types_with_paramerized_bounds():
     foo3 = foo.new([kt.String.to_type_arg(),
                     bar.new([kt.String.to_type_arg(),
                              kt.String.to_type_arg()]).to_type_arg()])
-    assert tutils.unify_types(foo1, foo2) == {}
-    assert tutils.unify_types(foo3, foo2) == {type_param5: kt.String}
+    assert tutils.unify_types(foo1, foo2, factory) == {}
+    assert tutils.unify_types(foo3, foo2, factory) == {type_param5: kt.String}
 
     # test case 2
     type_param2.bound = kt.Long
@@ -1141,11 +1148,12 @@ def test_unify_types_with_paramerized_bounds():
     foo_e = foo.new([kt.Integer.to_type_arg(), kt.Long.to_type_arg(),
                      kt.Float.to_type_arg()])
 
-    params = tutils.unify_types(foo_e, foo_p)
+    params = tutils.unify_types(foo_e, foo_p, factory)
     assert params == {}
 
 
 def test_unify_types_with_conflicted_type_vars():
+    factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
@@ -1153,5 +1161,5 @@ def test_unify_types_with_conflicted_type_vars():
     foo_d = foo.new([type_param1, type_param2])
     foo_a = foo.new([type_param1, type_param2])
 
-    params = tutils.unify_types(foo_a, foo_d)
+    params = tutils.unify_types(foo_a, foo_d, factory)
     assert params == {type_param1: type_param1, type_param2: type_param2}

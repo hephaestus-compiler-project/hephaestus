@@ -597,18 +597,6 @@ def is_builtin(t, builtin_factory):
     )
 
 
-def get_bound(t: tp.Type):
-    t = getattr(t, 'bound', None)
-    if not t:
-        return None
-    while True:
-        b = getattr(t, 'bound', None)
-        if b is None:
-            return t
-        else:
-            t = b
-
-
 def _update_type_var_map(type_var_map, key, value):
     v = type_var_map.get(key)
     if v and v != value:
@@ -617,15 +605,15 @@ def _update_type_var_map(type_var_map, key, value):
     return True
 
 
-def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
+def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
     if type(t1) != type(t2):
         return {}
 
     is_type_var = isinstance(t1, tp.TypeParameter)
     is_type_var2 = isinstance(t2, tp.TypeParameter)
     if is_type_var and is_type_var2:
-        bound1 = get_bound(t1)
-        bound2 = get_bound(t2)
+        bound1 = t1.get_bound_rec(factory)
+        bound2 = t2.get_bound_rec(factory)
         if not bound1 and not bound2:
             return {t2: t1}
 
@@ -666,7 +654,7 @@ def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
                 is_parameterized2 = isinstance(t_arg1,
                                                tp.ParameterizedType)
                 if is_parameterized and is_parameterized2:
-                    res = unify_types(t_arg1, t_var.bound)
+                    res = unify_types(t_arg1, t_var.bound, factory)
                     if not res or any(
                             not _update_type_var_map(type_var_map, k, v)
                             for k, v in res.items()):
@@ -679,7 +667,7 @@ def unify_types(t1: tp.Type, t2: tp.Type) -> dict:
                     return {}
             elif isinstance(t_arg2, tp.ParameterizedType) and (
                   isinstance(t_arg1, tp.ParameterizedType)):
-                res = unify_types(t_arg1, t_arg2)
+                res = unify_types(t_arg1, t_arg2, factory)
                 if not res or any(
                         not _update_type_var_map(type_var_map, k, v)
                         for k, v in res.items()):
