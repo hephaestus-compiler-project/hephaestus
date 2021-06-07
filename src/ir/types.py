@@ -304,6 +304,7 @@ def substitute_type_args(etype, type_map,
         tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
     }
+    print(etype, etype.t_constructor, type_map, new_type_map)
     type_con = perform_type_substitution(
         etype.t_constructor, new_type_map, cond)
     return ParameterizedType(type_con, type_args)
@@ -332,7 +333,7 @@ def perform_type_substitution(etype, type_map,
     supertypes = []
     for t in etype.supertypes:
         if isinstance(t, ParameterizedType):
-            supertypes.append(substitute_type_args(t, type_map, cond))
+            supertypes.append(substitute_type_args(t, type_map))
         else:
             supertypes.append(t)
     type_params = []
