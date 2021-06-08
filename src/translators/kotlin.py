@@ -238,7 +238,8 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     def visit_bottom_constant(self, node):
-        self._children_res.append((self.ident * " ") + "TODO()")
+        self._children_res.append((self.ident * " ") + "TODO() as {}".format(
+            self.get_type_name(node.t)))
 
     def visit_integer_constant(self, node):
         if not self._cast_integers:
@@ -403,7 +404,12 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        res = "{}{}.{}".format(" " * self.ident, children_res[0], node.field)
+        receiver_expr = (
+            '({})'.format(children_res[0])
+            if isinstance(node.expr, ast.BottomConstant)
+            else children_res[0]
+        )
+        res = "{}{}.{}".format(" " * self.ident, receiver_expr, node.field)
         self._children_res.append(res)
 
     def visit_func_call(self, node):
@@ -415,8 +421,13 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         if node.receiver:
+            receiver_expr = (
+                '({})'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0]
+            )
             res = "{}{}.{}({})".format(
-                " " * self.ident, children_res[0], node.func,
+                " " * self.ident, receiver_expr, node.func,
                 ", ".join(children_res[1:]))
         else:
             res = "{}{}({})".format(
@@ -434,7 +445,12 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         if node.receiver:
-            res = "{}{}.{} = {}".format(" " * old_ident, children_res[0],
+            receiver_expr = (
+                '({})'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0]
+            )
+            res = "{}{}.{} = {}".format(" " * old_ident, receiver_expr,
                                         node.name, children_res[1])
         else:
             res = "{}{} = {}".format(" " * old_ident, node.name,

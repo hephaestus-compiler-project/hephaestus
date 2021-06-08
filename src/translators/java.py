@@ -907,9 +907,14 @@ class JavaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
+        receiver = (
+            '({})'.format(children_res[0])
+            if isinstance(node.expr, ast.BottomConstant)
+            else children_res[0]
+        )
         return "{ident}{expr}.{field}{semicolon}".format(
             ident=self.get_ident(),
-            expr=children_res[0],
+            expr=receiver,
             field=node.field,
             semicolon=";" if self._parent_is_block() else ""
         )
@@ -959,9 +964,17 @@ class JavaTranslator(BaseTranslator):
                 args=", ".join(varargs)
             )
             args = args[:len(fdecl[1].params)-1] + [varargs]
+        if receiver:
+            receiver_expr = (
+                '({}).'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0] + '.'
+            )
+        else:
+            receiver_expr = ''
         res = "{ident}{receiver}{name}{nested}({args}){semicolon}".format(
             ident=self.get_ident(),
-            receiver=receiver + "." if receiver else "",
+            receiver=receiver_expr,
             name=func,
             nested=".apply" if is_nested_func() else "",
             args=", ".join(args),
@@ -984,9 +997,17 @@ class JavaTranslator(BaseTranslator):
         name = self._get_main_prefix('vars', node.name) + node.name
         receiver = children_res[0] if node.receiver else None
         expr = children_res[1] if node.receiver else children_res[0]
+        if receiver:
+            receiver_expr = (
+                '({}).'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0] + '.'
+            )
+        else:
+            receiver_expr = ''
         res = "{ident}{receiver}{name} = {expr};".format(
             ident=self.get_ident(old_ident=old_ident),
-            receiver=receiver + "." if receiver else "",
+            receiver=receiver_expr,
             name=name,
             expr=expr
         )
