@@ -638,9 +638,14 @@ class GroovyTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
+        receiver = (
+            '({})'.format(children_res[0])
+            if isinstance(node.expr, ast.BottomConstant)
+            else children_res[0]
+        )
         return "{ident}{expr}.{field}".format(
             ident=self.get_ident(),
-            expr=children_res[0],
+            expr=receiver,
             field=node.field
         )
 
@@ -658,9 +663,17 @@ class GroovyTranslator(BaseTranslator):
         func = self._get_main_prefix('funcs', node.func) + node.func
         receiver = children_res[0] if node.receiver else None
         args = children_res[1:] if node.receiver else children_res
+        if receiver:
+            receiver_expr = (
+                '({}).'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0] + '.'
+            )
+        else:
+            receiver_expr = ''
         res = "{ident}{receiver}{name}({args})".format(
             ident=self.get_ident(),
-            receiver=receiver + "." if receiver else "",
+            receiver=receiver_expr,
             name=func,
             args=", ".join(args)
         )
@@ -681,9 +694,17 @@ class GroovyTranslator(BaseTranslator):
         name = self._get_main_prefix('vars', node.name) + node.name
         receiver = children_res[0] if node.receiver else None
         expr = children_res[1] if node.receiver else children_res[0]
+        if receiver:
+            receiver_expr = (
+                '({}).'.format(children_res[0])
+                if isinstance(node.receiver, ast.BottomConstant)
+                else children_res[0] + '.'
+            )
+        else:
+            receiver_expr = ''
         res = "{ident}{receiver}{name} = {expr}".format(
             ident=self.get_ident(old_ident=old_ident),
-            receiver=receiver + "." if receiver else "",
+            receiver=receiver_expr,
             name=name,
             expr=expr
         )
