@@ -595,16 +595,24 @@ class Constant(Expr):
             return self.literal == other.literal
         return False
 
-    def is_bottom(self):
-        return self == Bottom
-
     def __eq__(self, other):
         return self.is_equal(other)
 
 
 # This is a constant representing a value whose type is the Bottom type,
 # meaning that it's subtype of any other type.
-Bottom = Constant("_B_")
+class BottomConstant(Constant):
+    def __init__(self, t: types.Type):
+        super().__init__("_B_")
+        self.t = t
+
+    def is_equal(self, other):
+        if isinstance(other, BottomConstant):
+            return self.t == other.t
+        return False
+
+    def is_bottom(self):
+        return True
 
 
 class IntegerConstant(Constant):

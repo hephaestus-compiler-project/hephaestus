@@ -237,11 +237,8 @@ class KotlinTranslator(BaseTranslator):
         self._cast_integers = prev_c
         self._children_res.append(res)
 
-    def visit_constant(self, node):
-        if node == ast.Bottom:
-            self._children_res.append((self.ident * " ") + "TODO()")
-            return
-        raise NotImplementedError("Unreachable case")
+    def visit_bottom_constant(self, node):
+        self._children_res.append((self.ident * " ") + "TODO()")
 
     def visit_integer_constant(self, node):
         if not self._cast_integers:
