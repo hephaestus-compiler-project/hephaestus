@@ -12,6 +12,14 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
     valid_args = []
     type_param_assigns = {}
 
+    # FIXME add is_array() method on type class
+    if etype.name == 'Array':
+        types = [t for t in types
+                 if not isinstance(t, tp.TypeParameter) and
+                 not isinstance(t, tp.ParameterizedType) and
+                 not isinstance(t, tp.TypeConstructor)
+                 ]
+
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
         if t_param.bound in type_param_assigns:
             # Here we have a case like the following.
@@ -78,10 +86,6 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
         t_set = set()
         for c in types:
             selected_type = c.get_type() if hasattr(c, 'get_type') else c
-            if isinstance(selected_type, tp.AbstractType) and (
-                    not isinstance(selected_type, tp.TypeConstructor)):
-                # TODO: revisit
-                continue
             if etype == selected_type:
                 continue
             if selected_type.is_subtype(etype):
@@ -298,11 +302,17 @@ class TypeUpdater():
         return etype
 
 
-def _get_available_types(types, only_regular, primitives=True):
+def _get_available_types(type_constructor,
+                         types, only_regular, primitives=True):
     if not only_regular:
         return types
     available_types = []
     for ptype in types:
+        if type_constructor.name == 'Array':
+            forbidden_types = (tp.TypeParameter, tp.ParameterizedType,
+                               tp.TypeConstructor)
+            if isinstance(ptype, forbidden_types):
+                continue
         if isinstance(ptype, ast.ClassDeclaration) and (
                 ptype.class_type != ast.ClassDeclaration.REGULAR):
             continue
@@ -318,7 +328,8 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                                  types: List[tp.Type],
                                  only_regular=True,
                                  type_var_map=None):
-    types = _get_available_types(types, only_regular, primitives=False)
+    types = _get_available_types(type_constructor,
+                                 types, only_regular, primitives=False)
     t_args = []
     type_var_map = dict(type_var_map or {})
     for i, t_param in enumerate(type_constructor.type_parameters):
