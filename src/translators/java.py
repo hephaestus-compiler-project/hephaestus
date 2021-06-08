@@ -365,11 +365,11 @@ class JavaTranslator(BaseTranslator):
         return children_res[0]
 
     @append_to
-    def visit_constant(self, node):
-        if node == ast.Bottom:
-            return self.get_ident() + "null" + (
-                ";" if self._parent_is_block() else "")
-        raise NotImplementedError("Unreachable case")
+    def visit_bottom_constant(self, node):
+        return self.get_ident() + "({}) null{}".format(
+            self.get_type_name(node.t),
+            ';' if self._parent_is_block() else ''
+        )
 
     @append_to
     def visit_super_instantiation(self, node):
@@ -551,7 +551,7 @@ class JavaTranslator(BaseTranslator):
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
         param_type = (
-            node.param_type.type_args[0]
+            node.param_type.type_args[0].to_type()
             if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
             else node.param_type)
         res = self.get_type_name(param_type) + vararg_str + " " + node.name
@@ -717,11 +717,11 @@ class JavaTranslator(BaseTranslator):
     def visit_array_expr(self, node):
         if not node.length:
             new_stmt = "new {etype}".format(
-                etype=self.get_type_name(node.array_type.type_args[0])
+                etype=self.get_type_name(node.array_type.type_args[0].to_type())
             )
             if isinstance(node.array_type.type_args[0], tp.ParameterizedType):
                 new_stmt = "({etype}[]) new Object".format(
-                    etype=self.get_type_name(node.array_type.type_args[0])
+                    etype=self.get_type_name(node.array_type.type_args[0].to_type())
                 )
 
             return "{ident}{new}[0]{semicolon}".format(
@@ -739,7 +739,7 @@ class JavaTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
 
         if (isinstance(node.array_type, tp.ParameterizedType) and
-                not node.array_type.type_args[0].is_primitive()):
+                not node.array_type.type_args[0].to_type().is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
                 etype=self.get_type_name(node.array_type)
             )
@@ -946,7 +946,7 @@ class JavaTranslator(BaseTranslator):
                 fdecl[1].params[-1].vararg):
             varargs = args[len(fdecl[1].params)-1:]
             varargs_type = fdecl[1].params[-1].param_type
-            if not varargs_type.type_args[0].is_primitive():
+            if not varargs_type.type_args[0].to_type().is_primitive():
                 new_stmt = "({etype}) new Object[]".format(
                     etype=self.get_type_name(varargs_type)
                 )

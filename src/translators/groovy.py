@@ -443,10 +443,9 @@ class GroovyTranslator(BaseTranslator):
         return res
 
     @append_to
-    def visit_constant(self, node):
-        if node == ast.Bottom:
-            return self.get_ident() + "null"
-        raise NotImplementedError("Unreachable case")
+    def visit_bottom_constant(self, node):
+        return self.get_ident() + "({}) null".format(
+            self.get_type_name(node.t))
 
     @append_to
     def visit_integer_constant(self, node):
