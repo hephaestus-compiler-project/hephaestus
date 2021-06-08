@@ -373,6 +373,30 @@ class Generator():
             type_params.append(type_param)
         return type_params
 
+    def _select_superclasses(self):
+        class_decls = [
+            c for c in self.context.get_classes(self.namespace).values()
+            if not c.is_final
+        ]
+        if not class_decls:
+            return []
+        class_decl = ut.random.choice(class_decls)
+        if class_decl.is_parameterized():
+            cls_type, type_var_map = tu.instantiate_type_constructor(
+                class_decl.get_type(),
+                self.get_types(exclude_covariants=True,
+                               exclude_contravariants=True),
+                only_regular=True,
+            )
+        else:
+            cls_type, type_var_map = class_decl.get_type(), {}
+        con_args = []
+        for f in class_decl.fields:
+            field_type = tp.substitute_type(f.get_type(), type_var_map)
+            con_args.append(self.generate_expr(field_type,
+                                               only_leaves=True))
+        return [ast.SuperClassInstantiation(cls_type, con_args)]
+
     def gen_class_decl(self, field_type=None, fret_type=None, not_void=False,
                        type_params=None, class_name=None):
         class_name = class_name or gu.gen_identifier('capitalize')
@@ -384,6 +408,7 @@ class Generator():
         max_fields = self.max_fields - 1 if field_type else self.max_fields
         max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
         type_params = type_params or self.gen_type_params()
+        is_final = ut.random.bool()
         if field_type:
             self._add_field_to_class(self.gen_field_decl(field_type),
                                      fields)
@@ -396,14 +421,16 @@ class Generator():
         for _ in range(ut.random.integer(0, max_funcs)):
             self._add_func_to_class(
                 self.gen_func_decl(not_void=not_void), funcs)
+        superclasses = [] if is_final else self._select_superclasses()
         self.namespace = initial_namespace
         self.depth = initial_depth
         return ast.ClassDeclaration(
             class_name,
-            superclasses=[],
+            superclasses=superclasses,
             fields=fields,
             functions=funcs,
-            type_parameters=type_params
+            type_parameters=type_params,
+            is_final=is_final
         )
 
     def gen_array_expr(self, expr_type, only_leaves=False, subtype=True):
