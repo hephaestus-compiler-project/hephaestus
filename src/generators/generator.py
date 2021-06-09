@@ -220,8 +220,7 @@ class Generator():
                 exprs.append(expr)
         # These are the new declarations that we created as part of the side-
         # effects.
-        decls = list(self.context.get_declarations(self.namespace,
-                                                   True).values())
+        decls = self.context.get_declarations(self.namespace, True).values()
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
         return exprs, decls
@@ -508,8 +507,11 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                cond = attr_type.is_assignable(etype) if subtype \
+                cond = (
+                    attr_type.is_assignable(etype)
+                    if subtype
                     else attr_type == etype
+                )
                 if not cond:
                     continue
                 decls.append((ast.Variable(var.name), type_map_var, attr))
@@ -524,7 +526,8 @@ class Generator():
             cond = (
                 func.get_type() != self.bt_factory.get_void_type() and
                 func.get_type().is_assignable(etype)
-                if subtype else func.get_type() == etype)
+                if subtype else func.get_type() == etype
+            )
             # The receiver object for this kind of functions is None.
             if not cond:
                 continue
@@ -708,6 +711,8 @@ class Generator():
         return ast.FunctionCall(func.name, args, receiver)
 
     def gen_field_access(self, etype, only_leaves=False, subtype=True):
+        initial_depth = self.depth
+        self.depth += 1
         objs = self._get_matching_objects(etype, subtype, 'fields')
         if not objs:
             type_f = self._get_matching_class(etype, subtype, 'fields')
@@ -719,6 +724,7 @@ class Generator():
             objs.append((receiver, None, func))
         objs = [(r, f) for r, _, f in objs]
         receiver, func = ut.random.choice(objs)
+        self.depth = initial_depth
         return ast.FieldAccess(receiver, func.name)
 
     def _get_class(self, etype: tp.Type):
@@ -791,7 +797,7 @@ class Generator():
         # a bound, generate a value of this bound. Otherwise, generate a bottom
         # value.
         if class_decl is None:
-            return ast.Bottom
+            return ast.BottomConstant(etype)
 
         if isinstance(etype, tp.TypeConstructor):
             etype, _ = tu.instantiate_type_constructor(
@@ -811,7 +817,10 @@ class Generator():
         self._new_from_class = None
         for field in class_decl.fields:
             expr_type = tp.substitute_type(field.get_type(), type_param_map)
-            args.append(self.generate_expr(expr_type, only_leaves))
+            # FIXME We set subtype=False to prevent infinite object
+            # initialization.
+            args.append(self.generate_expr(expr_type, only_leaves,
+                                           subtype=False))
         self._new_from_class = prev
         self.depth = initial_depth
         new_type = class_decl.get_type()
@@ -1028,7 +1037,15 @@ class Generator():
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
                       exclude_var=False):
+        find_subtype = (
+            expr_type and
+            subtype and expr_type != self.bt_factory.get_void_type()
+        )
         expr_type = expr_type or self.select_type()
+        if find_subtype:
+            subtypes = tu.find_subtypes(expr_type, self.get_types(),
+                                        include_self=True, concrete_only=True)
+            expr_type = ut.random.choice(subtypes)
         gens = self.get_generators(expr_type, only_leaves, subtype,
                                    exclude_var)
         expr = ut.random.choice(gens)(expr_type)
