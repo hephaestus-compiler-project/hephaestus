@@ -475,6 +475,36 @@ class ClassDeclaration(Declaration):
     def is_parameterized(self):
         return bool(self.type_parameters)
 
+    def is_interface(self):
+        return self.class_type == self.INTERFACE
+
+    def is_abstract(self):
+        return self.class_type == self.ABSTRACT
+
+    def is_regular(self):
+        return self.class_type == self.REGULAR
+
+    def get_overridable_functions(self):
+        return [
+            f
+            for f in self.functions
+            if f.can_override
+        ]
+
+    def get_overridable_fields(self):
+        return [
+            f
+            for f in self.fields
+            if f.can_override
+        ]
+
+    def get_abstract_functions(self):
+        return [
+            f
+            for f in self.functions
+            if f.body is None
+        ]
+
     def inherits_from(self, cls):
         """
         Check if the current class directly inherits from the given class.
