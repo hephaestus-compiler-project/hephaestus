@@ -1,5 +1,6 @@
 # pylint: disable=dangerous-default-value
 from typing import List
+from copy import copy
 
 import src.ir.type_utils as tu
 import src.ir.types as types
@@ -202,7 +203,7 @@ class VariableDeclaration(Declaration):
 
 class FieldDeclaration(Declaration):
     def __init__(self, name: str, field_type: types.Type, is_final=True,
-                 can_override=True, override=False):
+                 can_override=False, override=False):
         self.name = name
         self.field_type = field_type
         self.is_final = is_final
@@ -392,10 +393,14 @@ class FunctionDeclaration(Declaration):
             str(self.body))
 
     def is_equal(self, other):
-        if isinstance(other, ):
+        if isinstance(other,  FunctionDeclaration):
             return (self.name == other.name and
                     self.ret_type == other.ret_type and
-                    self.body.is_equal(other.body) and
+                    (
+                        self.body == other.body
+                        if self.body is None
+                        else self.body.is_equal(other.body)
+                    ) and
                     self.func_type == other.func_type and
                     self.is_final == other.is_final and
                     check_list_eq(self.params, other.params) and
@@ -488,7 +493,7 @@ class ClassDeclaration(Declaration):
         return [
             f
             for f in self.functions
-            if f.can_override
+            if not f.is_final
         ]
 
     def get_overridable_fields(self):
@@ -498,12 +503,55 @@ class ClassDeclaration(Declaration):
             if f.can_override
         ]
 
-    def get_abstract_functions(self):
-        return [
+    def get_abstract_functions(self, class_decls):
+        # Get the abstract functions that are declared in the current class.
+        functions = {
             f
             for f in self.functions
             if f.body is None
-        ]
+        }
+        if not self.superclasses:
+            return functions
+
+        # Retrieve any abstract function from the inheritance chain.
+        super_cls = self.superclasses[0]
+        class_decl = None
+        for c in class_decls:
+            if isinstance(super_cls.class_type, types.ParameterizedType):
+                if super_cls.class_type.t_constructor == c.get_type():
+                    class_decl = c
+            else:
+                if super_cls.class_type == c.get_type():
+                    class_decl = c
+        if not class_decl:
+            return functions
+        if class_decl.is_parameterized():
+            type_var_map = {
+                t_param: super_cls.class_type.type_args[i].to_type()
+                for i, t_param in enumerate(class_decl.type_parameters)
+            }
+        else:
+            type_var_map = {}
+        funcs = class_decl.get_abstract_functions(class_decls)
+        implemented_funcs = {f.name for f in self.functions
+                             if f.body is not None}
+        for f in funcs:
+            if f.name in implemented_funcs:
+                continue
+            new_f = copy(f)
+            params = []
+            for p in f.params:
+                new_p = copy(p)
+                new_p.param_type = types.substitute_type(p.get_type(),
+                                                         type_var_map)
+                params.append(new_p)
+            ret_type = types.substitute_type(f.get_type(),
+                                             type_var_map)
+            new_f.params = params
+            new_f.inferred_type = ret_type
+            new_f.ret_type = ret_type
+            functions.add(new_f)
+        return functions
 
     def inherits_from(self, cls):
         """
