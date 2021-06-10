@@ -82,6 +82,9 @@ class Generator():
                     continue
                 type_params.append(t_param)
 
+        if type_params and ut.random.bool():
+            return type_params
+
         builtins = list(self.ret_builtin_types
                         if ret_types
                         else self.builtin_types)
@@ -346,7 +349,11 @@ class Generator():
         self._inside_java_nested_fun = nested_function and self.language == "java"
         params = params if params is not None else (
             self._gen_func_params()
-            if ut.random.bool(prob=0.25) or self.language == 'java'
+            if (
+                ut.random.bool(prob=0.25) or
+                self.language == 'java' or
+                self.language == 'groovy' and is_interface
+            )
             else self._gen_func_params_with_default())
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         if is_interface or (abstract and ut.random.bool()):
@@ -1193,6 +1200,7 @@ class Generator():
         find_subtype = (
             expr_type and
             subtype and expr_type != self.bt_factory.get_void_type()
+            and ut.random.bool()
         )
         expr_type = expr_type or self.select_type()
         if find_subtype:
