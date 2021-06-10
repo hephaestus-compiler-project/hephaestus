@@ -180,7 +180,7 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     def visit_field_decl(self, node):
-        prefix = '' if node.can_override else 'open '
+        prefix = 'open ' if node.can_override else ''
         prefix += '' if not node.override else 'override '
         prefix += 'val ' if node.is_final else 'var '
         res = prefix + node.name + ": " + self.get_type_name(node.field_type)
