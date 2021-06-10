@@ -1,7 +1,18 @@
+from copy import deepcopy
+
 import pytest
+
 from src.ir.ast import *
 from src.ir.types import *
 from src.ir.kotlin_types import *
+
+
+def assert_abstract_funcs(actual, expected):
+    assert len(actual) == len(expected)
+    table = {f.name: f for f in expected}
+    for f in actual:
+        exp = table.get(f.name)
+        assert exp.is_equal(exp)
 
 
 def test_simple_classifier():
@@ -161,3 +172,95 @@ def test_inherits_from_parameterized_with_abstract():
     )
     assert cls2.inherits_from(cls1)
     assert not cls1.inherits_from(cls2)
+
+
+def test_get_abstract_functions():
+    func1 = FunctionDeclaration("foo", [], String, None, 0)
+    func2 = FunctionDeclaration("bar", [], Any, None, 0)
+    cls1 = ClassDeclaration("A", [], 0, functions=[func1])
+    cls2 = ClassDeclaration("B",
+                            [SuperClassInstantiation(cls1.get_type(), [])],
+                            functions=[func2])
+
+    assert cls1.get_abstract_functions([cls1, cls2]) == {func1}
+    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2]),
+                          {func1, func2})
+
+
+def test_get_abstract_functions_chain():
+    func1 = FunctionDeclaration("foo", [], String, None, 0)
+    func2 = FunctionDeclaration("bar", [], Any, None, 0)
+    cls1 = ClassDeclaration("A", [], functions=[func1])
+    cls2 = ClassDeclaration("B",
+                            [SuperClassInstantiation(cls1.get_type(), [])],
+                            functions=[])
+    cls3 = ClassDeclaration("C",
+                            [SuperClassInstantiation(cls2.get_type(), [])],
+                            functions=[func2])
+
+    assert cls1.get_abstract_functions([cls1, cls2, cls3]) == {func1}
+    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
+                          {func1})
+    assert_abstract_funcs(cls3.get_abstract_functions([cls1, cls2, cls3]),
+                          {func1, func2})
+
+    override_func = deepcopy(func1)
+    func1.body = IntegerConstant(1, Integer)
+    cls2.functions = [func1]
+    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
+                          [])
+    assert_abstract_funcs(cls3.get_abstract_functions([cls1, cls2, cls3]),
+                          {func2})
+
+
+def test_get_abstract_functions_parameterized():
+    type_param1 = TypeParameter("T")
+    func1 = FunctionDeclaration(
+        "foo", [ParameterDeclaration("x", type_param1)], type_param1, None, 0)
+    func2 = FunctionDeclaration(
+        "bar", [], type_param1, IntegerConstant(1, Integer), 0)
+    cls1 = ClassDeclaration("A", [],
+                            type_parameters=[type_param1],
+                            functions=[func1, func2])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([String]), [])],
+        functions=[]
+    )
+
+    assert cls1.get_abstract_functions([cls1, cls2]) == {func1}
+    exp_func1 = deepcopy(func1)
+    exp_func1.params[0].param_type = String
+    exp_func1.ret_type = String
+    exp_func1.inferred_type = String
+    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2]),
+                          [exp_func1])
+
+
+def test_get_abstract_functions_parameterized_chain():
+    type_param1 = TypeParameter("T")
+    func1 = FunctionDeclaration(
+        "foo", [ParameterDeclaration("x", type_param1)], type_param1, None, 0)
+    cls1 = ClassDeclaration("A", [],
+                            type_parameters=[type_param1],
+                            functions=[func1])
+
+    t_con = TypeConstructor("Foo", [TypeParameter("T")])
+    type_param2 = TypeParameter("T")
+    t = t_con.new([type_param2])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([t]), [])],
+        type_parameters=[type_param2],
+        functions=[]
+    )
+
+    cls3 = ClassDeclaration(
+        "C", [SuperClassInstantiation(cls2.get_type().new([String]), [])],
+        functions=[]
+    )
+    actual_t = t_con.new([String])
+    exp_func1 = deepcopy(func1)
+    exp_func1.params[0].param_type = actual_t
+    exp_func1.ret_type = actual_t
+    exp_func1.inferred_type = actual_t
+    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
+                          [exp_func1])
