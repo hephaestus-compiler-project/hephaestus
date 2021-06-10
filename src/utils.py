@@ -117,8 +117,8 @@ class RandomUtils():
     def choice(self, choices):
         return self.r.choice(choices)
 
-    def sample(self, choices):
-        k = self.integer(0, len(choices))
+    def sample(self, choices, k=None):
+        k = k or self.integer(0, len(choices))
         return self.r.sample(choices, k)
 
     def str(self, length=5):
