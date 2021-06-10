@@ -1,6 +1,8 @@
 # pylint: disable=too-many-instance-attributes,too-many-arguments,dangerous-default-value
 import functools
 from collections import defaultdict
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Tuple, List
 
 from src import utils as ut
@@ -9,6 +11,24 @@ from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
+
+
+def select_class_type(contain_fields):
+    # there's higher probability to generate a regular class.
+    if ut.random.bool():
+        return ast.ClassDeclaration.REGULAR
+
+    candidates = [ast.ClassDeclaration.ABSTRACT]
+    if not contain_fields:
+        candidates.append(ast.ClassDeclaration.INTERFACE)
+    return ut.random.choice(candidates)
+
+
+@dataclass
+class SuperClassInfo:
+    super_cls: ast.ClassDeclaration
+    type_var_map: dict
+    super_inst: ast.SuperClassInstantiation
 
 
 class Generator():
@@ -94,17 +114,9 @@ class Generator():
         initial_depth = self.depth
         self.depth += 1
         etype = self.select_type()
-        prev = self._new_from_class
-        if not tu.is_builtin(etype, self.bt_factory):
-            # We need this because if are going to create two
-            # 'New' expressions, they must stem from the same
-            # constructor.
-            class_decl = self._get_subclass(etype)
-            self._new_from_class = (etype, class_decl)
         op = ut.random.choice(ast.EqualityExpr.VALID_OPERATORS[self.language])
         e1 = self.generate_expr(etype, only_leaves, subtype=False)
         e2 = self.generate_expr(etype, only_leaves, subtype=False)
-        self._new_from_class = prev
         self.depth = initial_depth
         return ast.EqualityExpr(e1, e2, op)
 
@@ -170,12 +182,14 @@ class Generator():
             return ast.EqualityExpr(e1, e2, op)
         return ast.ComparisonExpr(e1, e2, op)
 
-    def gen_field_decl(self, etype=None):
+    def gen_field_decl(self, etype=None, class_is_final=True):
         name = gu.gen_identifier('lower')
+        can_override = not class_is_final and ut.random.bool()
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
                                                exclude_covariants=not is_final)
-        return ast.FieldDeclaration(name, field_type, is_final=is_final)
+        return ast.FieldDeclaration(name, field_type, is_final=is_final,
+                                    can_override=can_override)
 
     def gen_param_decl(self, etype=None):
         name = gu.gen_identifier('lower')
@@ -277,32 +291,12 @@ class Generator():
             params[len_p - 1], params[arr_index] = vararg, params[len_p - 1]
         return params
 
-    def gen_func_decl(self, etype=None, not_void=False):
-        func_name = gu.gen_identifier('lower')
-        initial_namespace = self.namespace
-        self.namespace += (func_name,)
-        initial_depth = self.depth
-        self.depth += 1
-        # Check if this function we want to generate is a class method, by
-        # checking the name of the outer namespace. If we are in class then
-        # the outer namespace begins with capital letter.
-        class_method = self.namespace[-1][0].isupper()
-        # Check if this function we want to generate is a nested functions.
-        # To do so, we want to find if the function is directly inside the
-        # namespace of another function.
-        nested_function = (len(self.namespace) > 1 and
-                           self.namespace[-2] != 'global' and
-                           self.namespace[-2][0].islower())
-
-        prev_inside_java_nested_fun = self._inside_java_nested_fun
-        self._inside_java_nested_fun = nested_function and self.language == "java"
-        params = (
-            self._gen_func_params()
-            if ut.random.bool(prob=0.25) or self.language == 'java'
-            else self._gen_func_params_with_default())
-        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
-        expr_type = self.select_type(ret_types=False) \
-            if ret_type == self.bt_factory.get_void_type() else ret_type
+    def _gen_func_body(self, ret_type):
+        expr_type = (
+            self.select_type(ret_types=False)
+            if ret_type == self.bt_factory.get_void_type()
+            else ret_type
+        )
         expr = self.generate_expr(expr_type)
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
@@ -325,6 +319,40 @@ class Generator():
             inferred_type = None
             exprs, decls = self._gen_side_effects()
             body = ast.Block(decls + exprs + [expr])
+        return body, inferred_type
+
+    def gen_func_decl(self, etype=None, not_void=False,
+                      class_is_final=False, func_name=None, params=None,
+                      abstract=False, is_interface=False):
+        func_name = func_name or gu.gen_identifier('lower')
+        initial_namespace = self.namespace
+        self.namespace += (func_name,)
+        initial_depth = self.depth
+        self.depth += 1
+        # Check if this function we want to generate is a class method, by
+        # checking the name of the outer namespace. If we are in class then
+        # the outer namespace begins with capital letter.
+        class_method = self.namespace[-1][0].isupper()
+        can_override = abstract or is_interface or (class_method and not
+                                    class_is_final and ut.random.bool())
+        # Check if this function we want to generate is a nested functions.
+        # To do so, we want to find if the function is directly inside the
+        # namespace of another function.
+        nested_function = (len(self.namespace) > 1 and
+                           self.namespace[-2] != 'global' and
+                           self.namespace[-2][0].islower())
+
+        prev_inside_java_nested_fun = self._inside_java_nested_fun
+        self._inside_java_nested_fun = nested_function and self.language == "java"
+        params = params if params is not None else (
+            self._gen_func_params()
+            if ut.random.bool(prob=0.25) or self.language == 'java'
+            else self._gen_func_params_with_default())
+        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
+        if is_interface or (abstract and ut.random.bool()):
+            body, inferred_type = None, None
+        else:
+            body, inferred_type = self._gen_func_body(ret_type)
         self._inside_java_nested_fun = prev_inside_java_nested_fun
         self.depth = initial_depth
         self.namespace = initial_namespace
@@ -333,6 +361,7 @@ class Generator():
             func_type=(ast.FunctionDeclaration.CLASS_METHOD
                        if class_method
                        else ast.FunctionDeclaration.FUNCTION),
+            is_final=not can_override,
             inferred_type=inferred_type)
 
     def _add_field_to_class(self, field, fields):
@@ -372,13 +401,13 @@ class Generator():
             type_params.append(type_param)
         return type_params
 
-    def _select_superclasses(self):
+    def _select_superclass(self, only_interfaces):
         class_decls = [
             c for c in self.context.get_classes(self.namespace).values()
-            if not c.is_final
+            if not c.is_final and (c.is_interface() if only_interfaces else True)
         ]
         if not class_decls:
-            return []
+            return None
         class_decl = ut.random.choice(class_decls)
         if class_decl.is_parameterized():
             cls_type, type_var_map = tu.instantiate_type_constructor(
@@ -389,12 +418,141 @@ class Generator():
             )
         else:
             cls_type, type_var_map = class_decl.get_type(), {}
-        con_args = []
+        con_args = None if class_decl.is_interface() else []
         for f in class_decl.fields:
             field_type = tp.substitute_type(f.get_type(), type_var_map)
             con_args.append(self.generate_expr(field_type,
                                                only_leaves=True))
-        return [ast.SuperClassInstantiation(cls_type, con_args)]
+        return SuperClassInfo(
+            class_decl,
+            type_var_map,
+            ast.SuperClassInstantiation(cls_type, con_args)
+        )
+
+    def gen_class_fields(self, curr_cls, super_cls_info,
+                         field_type=None):
+        max_fields = self.max_fields - 1 if field_type else self.max_fields
+        fields = []
+        if field_type:
+            self._add_field_to_class(
+                self.gen_field_decl(field_type, curr_cls.is_final), fields)
+        if not super_cls_info:
+            for _ in range(ut.random.integer(0, max_fields)):
+                self._add_field_to_class(
+                    self.gen_field_decl(class_is_final=curr_cls.is_final),
+                    fields)
+        else:
+            overridable_fields = super_cls_info.super_cls \
+                .get_overridable_fields()
+            k = ut.random.integer(0, min(max_fields, len(overridable_fields)))
+            if overridable_fields:
+                chosen_fields = ut.random.sample(overridable_fields, k=k)
+                for f in chosen_fields:
+
+                    field_type = tp.substitute_type(
+                        f.get_type(), super_cls_info.type_var_map)
+                    new_f = self.gen_field_decl(field_type, curr_cls.is_final)
+                    new_f.name = f.name
+                    new_f.override = True
+                    new_f.is_final = f.is_final
+                    self._add_field_to_class(new_f, fields)
+                max_fields = max_fields - len(chosen_fields)
+            if max_fields < 0:
+                return fields
+            for _ in range(ut.random.integer(0, max_fields)):
+                self._add_field_to_class(
+                    self.gen_field_decl(class_is_final=curr_cls.is_final),
+                    fields)
+        return fields
+
+    def _gen_func_from_existing(self, func, type_var_map, class_is_final,
+                                is_interface):
+        params = []
+        for p in func.params:
+            new_p = deepcopy(p)
+            new_p.param_type = tp.substitute_type(p.get_type(), type_var_map)
+            new_p.default = None
+            params.append(new_p)
+        ret_type = tp.substitute_type(func.get_type(), type_var_map)
+        new_func = self.gen_func_decl(func_name=func.name, etype=ret_type,
+                                      not_void=False,
+                                      class_is_final=class_is_final,
+                                      params=params,
+                                      is_interface=is_interface)
+        if func.body is None:
+            new_func.is_final = False
+        new_func.override = True
+        return new_func
+
+    def gen_class_functions(self, curr_cls, super_cls_info,
+                            not_void=False, fret_type=None):
+        funcs = []
+        max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
+        abstract = not curr_cls.is_regular()
+        if fret_type:
+            self._add_func_to_class(
+                self.gen_func_decl(fret_type, not_void=not_void,
+                                   class_is_final=curr_cls.is_final,
+                                   abstract=abstract,
+                                   is_interface=curr_cls.is_interface()),
+                funcs)
+        if not super_cls_info:
+            for _ in range(ut.random.integer(0, max_funcs)):
+                self._add_func_to_class(
+                    self.gen_func_decl(not_void=not_void,
+                                       class_is_final=curr_cls.is_final,
+                                       abstract=abstract,
+                                       is_interface=curr_cls.is_interface()),
+                    funcs)
+        else:
+            abstract_funcs = []
+            class_decls = self.context.get_classes(self.namespace).values()
+            if curr_cls.is_regular():
+                abstract_funcs = super_cls_info.super_cls\
+                    .get_abstract_functions(class_decls)
+                for f in abstract_funcs:
+                    self._add_func_to_class(
+                        self._gen_func_from_existing(
+                            f,
+                            super_cls_info.type_var_map,
+                            curr_cls.is_final,
+                            curr_cls.is_interface()
+                        ),
+                        funcs
+                    )
+                max_funcs = max_funcs - len(abstract_funcs)
+            overridable_funcs = super_cls_info.super_cls \
+                .get_overridable_functions()
+            abstract_funcs = {f.name for f in abstract_funcs}
+            overridable_funcs = [f for f in overridable_funcs
+                                 if f.name not in abstract_funcs]
+            len_over_f = len(overridable_funcs)
+            if len_over_f > max_funcs:
+                return funcs
+            k = ut.random.integer(0, min(max_funcs, len_over_f))
+            chosen_funcs = (
+                []
+                if not max_funcs or curr_cls.is_interface()
+                else ut.random.sample(overridable_funcs, k=k)
+            )
+            for f in chosen_funcs:
+                self._add_func_to_class(
+                    self._gen_func_from_existing(f,
+                                                 super_cls_info.type_var_map,
+                                                 curr_cls.is_final,
+                                                 curr_cls.is_interface()),
+                    funcs)
+            max_funcs = max_funcs - len(chosen_funcs)
+            if max_funcs < 0:
+                return funcs
+            for _ in range(ut.random.integer(0, max_funcs)):
+                self._add_func_to_class(
+                    self.gen_func_decl(not_void=not_void,
+                                       class_is_final=curr_cls.is_final,
+                                       abstract=abstract,
+                                       is_interface=curr_cls.is_interface()),
+                    funcs)
+        return funcs
 
     def gen_class_decl(self, field_type=None, fret_type=None, not_void=False,
                        type_params=None, class_name=None):
@@ -403,34 +561,31 @@ class Generator():
         self.namespace += (class_name,)
         initial_depth = self.depth
         self.depth += 1
-        fields = []
-        max_fields = self.max_fields - 1 if field_type else self.max_fields
-        max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
+        class_type = select_class_type(field_type is not None)
+        is_final = ut.random.bool() and class_type == \
+            ast.ClassDeclaration.REGULAR
         type_params = type_params or self.gen_type_params()
-        is_final = ut.random.bool()
-        if field_type:
-            self._add_field_to_class(self.gen_field_decl(field_type),
-                                     fields)
-        for _ in range(ut.random.integer(0, max_fields)):
-            self._add_field_to_class(self.gen_field_decl(), fields)
-        funcs = []
-        if fret_type:
-            self._add_func_to_class(
-                self.gen_func_decl(fret_type, not_void=not_void), funcs)
-        for _ in range(ut.random.integer(0, max_funcs)):
-            self._add_func_to_class(
-                self.gen_func_decl(not_void=not_void), funcs)
-        superclasses = [] if is_final else self._select_superclasses()
-        self.namespace = initial_namespace
-        self.depth = initial_depth
-        return ast.ClassDeclaration(
+        super_cls_info = self._select_superclass(
+            class_type == ast.ClassDeclaration.INTERFACE)
+        cls = ast.ClassDeclaration(
             class_name,
-            superclasses=superclasses,
-            fields=fields,
-            functions=funcs,
+            class_type=class_type,
+            superclasses=[super_cls_info.super_inst] if super_cls_info else [],
             type_parameters=type_params,
             is_final=is_final
         )
+        fields = (
+            self.gen_class_fields(cls, super_cls_info, field_type)
+            if not cls.is_interface()
+            else []
+        )
+        funcs = self.gen_class_functions(cls, super_cls_info,
+                                         not_void, fret_type)
+        self.namespace = initial_namespace
+        self.depth = initial_depth
+        cls.fields = fields
+        cls.functions = funcs
+        return cls
 
     def gen_array_expr(self, expr_type, only_leaves=False, subtype=True):
         arr_len = ut.random.integer(0, 3)
@@ -748,7 +903,7 @@ class Generator():
                 return c, type_var_map
         return None
 
-    def _get_subclass(self, etype: tp.Type):
+    def _get_subclass(self, etype: tp.Type, subtype=True):
         class_decls = self.context.get_classes(self.namespace).values()
         # Get all classes that are subtype of the given type, and there
         # are regular classes (no interfaces or abstract classes).
@@ -758,11 +913,12 @@ class Generator():
                 continue
             if c.is_parameterized():
                 t_con = getattr(etype, 't_constructor', None)
-                if c.get_type() == t_con or c.get_type().is_subtype(etype):
+                if c.get_type() == t_con or (
+                        subtype and c.get_type().is_subtype(etype)):
                     subclasses.append(c)
             else:
-
-                if c.get_type().is_subtype(etype):
+                if c.get_type() == etype or (
+                        subtype and c.get_type().is_subtype(etype)):
                     subclasses.append(c)
         if not subclasses:
             return None
@@ -784,14 +940,7 @@ class Generator():
         con = news.get(etype)
         if con is not None:
             return con
-        etype2, from_class = (
-            self._new_from_class
-            if self._new_from_class else (None, None))
-        class_decl = (
-            from_class
-            if etype2 == etype
-            else self._get_subclass(etype)
-        )
+        class_decl = self._get_subclass(etype, subtype)
         # No class was found corresponding to the given type. Probably,
         # the given type is a type parameter. So, if this type parameter has
         # a bound, generate a value of this bound. Otherwise, generate a bottom
@@ -802,6 +951,10 @@ class Generator():
         if isinstance(etype, tp.TypeConstructor):
             etype, _ = tu.instantiate_type_constructor(
                 etype, self.get_types())
+        if class_decl.is_parameterized() and (
+              class_decl.get_type().name != etype.name):
+            etype, _ = tu.instantiate_type_constructor(
+                class_decl.get_type(), self.get_types())
         # If the matching class is a parameterized one, we need to create
         # a map mapping the class's type parameters with the corresponding
         # type arguments as given by the `etype` variable.
