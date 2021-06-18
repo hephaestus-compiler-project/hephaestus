@@ -44,15 +44,15 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             if t_param.is_invariant():
                 t_args = [etype.type_args[i]]
             elif t_param.is_covariant():
-                t_args = _find_types(etype.type_args[i].concrete_type, types,
+                t_args = _find_types(etype.type_args[i], types,
                                      get_subtypes, True,
                                      t_param.bound, concrete_only=True)
             else:
-                t_args = _find_types(etype.type_args[i].concrete_type, types,
+                t_args = _find_types(etype.type_args[i], types,
                                      not get_subtypes, True,
                                      t_param.bound, concrete_only=True)
             # Type argument should not be primitives.
-            t_args = [t.to_type_arg() for t in t_args if not t.is_primitive()]
+            t_args = [t for t in t_args if not t.is_primitive()]
         type_param_assigns[t_param] = i
         valid_args.append(t_args)
 
@@ -134,14 +134,13 @@ def get_irrelevant_parameterized_type(etype, types, type_args_map,
         if t_param.is_invariant():
             type_list = [to_type(t, types)
                          for t in types
-                         if t != type_args[i].concrete_type]
-            new_type_args[i] = utils.random.choice(type_list).to_type_arg()
+                         if t != type_args[i]]
+            new_type_args[i] = utils.random.choice(type_list)
         else:
-            t = find_irrelevant_type(type_args[i].concrete_type, types,
-                                     factory)
+            t = find_irrelevant_type(type_args[i], types, factory)
             if t is None:
                 continue
-            new_type_args[i] = t.to_type_arg()
+            new_type_args[i] = t
 
     if new_type_args == type_args:
         return None
@@ -229,7 +228,7 @@ class TypeUpdater():
     def _update_type(self, etype, new_type,
                      test_pred=lambda x, y: x.name == y.name):
         if isinstance(etype, tp.TypeParameter) or (
-            isinstance(etype, tp.TypeArgument)) or (
+            isinstance(etype, tp.WildCardType)) or (
                 isinstance(etype, tp.ParameterizedType)) or (
                     isinstance(etype, tp.TypeConstructor)):
             # We must re-compute parameterized types, as they may involve
@@ -245,7 +244,7 @@ class TypeUpdater():
             new_type = self.update_type(etype, new_type, test_pred)
             # We do not store builtin types into cache, because we never
             # update builtin types.
-            if not isinstance(new_type, (tp.Builtin, tp.TypeArgument)):
+            if not isinstance(new_type, (tp.Builtin, tp.WildCardType)):
                 self._cache[key] = new_type
             return new_type
         return updated_type
@@ -258,9 +257,9 @@ class TypeUpdater():
             return etype
 
         self.update_supertypes(etype, new_type, test_pred)
-        is_type_arg = isinstance(etype, tp.TypeArgument)
+        is_wildcard = isinstance(etype, tp.WildCardType)
         # Case 1: The test_pred func of the two types match.
-        if test_pred(etype, new_type) and not is_type_arg:
+        if test_pred(etype, new_type) and not is_wildcard:
             # So if the new type is a type constructor update the type
             # constructor of 'etype' (if it is applicable)
             if isinstance(new_type, tp.TypeConstructor):
@@ -271,7 +270,7 @@ class TypeUpdater():
         # Case 2: If etype is a parameterized type, recursively inspect its
         # type arguments and type constructor for updates.
         if isinstance(etype, tp.ParameterizedType):
-            new_type_args = [self._update_type(ta, new_type).to_type_arg()
+            new_type_args = [self._update_type(ta, new_type)
                              for ta in etype.type_args]
             new_t_constructor = self._update_type(
                 etype.t_constructor, new_type, test_pred)
@@ -295,10 +294,9 @@ class TypeUpdater():
                 etype.bound = self._update_type(etype.bound, new_type,
                                                 test_pred)
 
-        # Case 5: If etype is a type argument, then update the enclosing type.
-        if is_type_arg:
-            etype.concrete_type = self._update_type(etype.concrete_type,
-                                                    new_type, test_pred)
+        # Case 5: If etype is a wildcard, then update the enclosing bound.
+        if is_wildcard and etype.bound:
+            etype.bound = self._update_type(etype.bound, new_type, test_pred)
         return etype
 
 
@@ -324,10 +322,28 @@ def _get_available_types(type_constructor,
     return available_types
 
 
-def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
-                                 types: List[tp.Type],
-                                 only_regular=True,
-                                 type_var_map=None):
+def _get_type_arg_variance(t_param, variance_choices):
+    if variance_choices is None:
+        return tp.Invariant
+    can_variant, can_contravariant = variance_choices.get(t_param,
+                                                          (True, True))
+    covariance = [tp.Covariant] if can_variant else []
+    contravariance = [tp.Contravariant] if can_contravariant else []
+    if t_param.is_invariant():
+        variances = [tp.Invariant] + covariance + contravariance
+    elif t_param.is_covariant():
+        variances = [tp.Invariant] + covariance
+    else:
+        variances = [tp.Invariant] + contravariance
+    return utils.random.choice(variances)
+
+
+def instantiate_type_constructor(
+        type_constructor: tp.TypeConstructor,
+        types: List[tp.Type],
+        only_regular=True,
+        type_var_map=None,
+        variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None):
     types = _get_available_types(type_constructor,
                                  types, only_regular, primitives=False)
     t_args = []
@@ -352,7 +368,7 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
                                 a_types[i] = tp.substitute_type_args(
                                     t, type_var_map, cond=lambda t: False)
                     else:
-                        a_types = [type_var_map[t_param.bound].to_type()]
+                        a_types = [type_var_map[t_param.bound]]
                 else:
                     a_types = types
         c = utils.random.choice(a_types)
@@ -366,10 +382,14 @@ def instantiate_type_constructor(type_constructor: tp.TypeConstructor,
             # depthy instantiations.
             types = [t for t in types if t != c]
             cls_type, _ = instantiate_type_constructor(
-                cls_type, types, True, type_var_map)
-        t_arg = cls_type.to_type_arg()
-        t_args.append(t_arg)
-        type_var_map[t_param] = t_arg.to_type()
+                cls_type, types, True, type_var_map,
+                None if variance_choices is None else {}
+            )
+        variance = _get_type_arg_variance(t_param, variance_choices)
+        t_arg = cls_type
+        # TODO
+        t_args.append(cls_type)
+        type_var_map[t_param] = t_arg
     return type_constructor.new(t_args), type_var_map
 
 
@@ -394,7 +414,7 @@ def get_parameterized_type_instantiation(etype):
     if not isinstance(etype, tp.ParameterizedType):
         return {}
     return {
-        t_param: etype.type_args[i].to_type()
+        t_param: etype.type_args[i]
         for i, t_param in enumerate(etype.t_constructor.type_parameters)
     }
 
@@ -481,7 +501,7 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if isinstance(decl.get_type(), tp.AbstractType):
             assert isinstance(rec_t, tp.ParameterizedType)
             type_param_map = {
-                t_param: rec_t.type_args[i].to_type()
+                t_param: rec_t.type_args[i]
                 for i, t_param in enumerate(
                     rec_t.t_constructor.type_parameters)
             }
@@ -639,8 +659,8 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
 
     type_var_map = {}
     for i, t_arg in enumerate(t1.type_args):
-        t_arg1 = t_arg.to_type()
-        t_arg2 = t2.type_args[i].to_type()
+        t_arg1 = t_arg
+        t_arg2 = t2.type_args[i]
 
         is_type_var = t_arg2.has_type_variables()
 

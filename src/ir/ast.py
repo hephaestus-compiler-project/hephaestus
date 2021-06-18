@@ -527,7 +527,7 @@ class ClassDeclaration(Declaration):
             return functions
         if class_decl.is_parameterized():
             type_var_map = {
-                t_param: super_cls.class_type.type_args[i].to_type()
+                t_param: super_cls.class_type.type_args[i]
                 for i, t_param in enumerate(class_decl.type_parameters)
             }
         else:

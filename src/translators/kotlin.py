@@ -25,12 +25,14 @@ class KotlinTranslator(BaseTranslator):
         return KotlinTranslator.incorrect_filename
 
     def type_arg2str(self, t_arg):
+        if not isinstance(t_arg, tp.WildCardType):
+            return self.get_type_name(t_arg)
         if t_arg.variance == tp.Invariant:
-            return self.get_type_name(t_arg.to_type())
+            return "*"
         elif t_arg.variance == tp.Covariant:
-            return "out " + self.get_type_name(t_arg.to_type())
+            return "out " + self.get_type_name(t_arg.bound)
         else:
-            return "in " + self.get_type_name(t_arg.to_type())
+            return "in " + self.get_type_name(t_arg.bound)
 
     def get_type_name(self, t):
         t_constructor = getattr(t, 't_constructor', None)
