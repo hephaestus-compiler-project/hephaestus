@@ -275,6 +275,14 @@ def test_get_type_variables():
     assert type_vars[type_param2] == {None}
 
 
+    # with wildcard type
+    foo4 = foo.new([type_param1, tp.WildCardType(type_param2, tp.Covariant)])
+    type_vars = foo4.get_type_variables(factory)
+    assert len(type_vars) == 2
+    assert type_vars[type_param1] == {None}
+    assert type_vars[type_param2] == {None}
+
+
 def test_type_substitution():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
@@ -311,3 +319,23 @@ def test_to_type_variable_free():
     foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
     assert foo_n.type_args[0] == bar.new(
         [tp.WildCardType(kt.Number, variance=tp.Covariant)])
+
+
+def test_types():
+    t1 = tp.WildCardType()
+    t2 = tp.WildCardType()
+
+    assert not t1.is_subtype(t2)
+    assert not t2.is_subtype(t1)
+
+    t1 = tp.WildCardType(kt.Any, tp.Covariant)
+    t2 = tp.WildCardType(kt.Number, tp.Covariant)
+
+    assert t2.is_subtype(t1)
+    assert not t1.is_subtype(t2)
+
+    t1 = tp.WildCardType(kt.Any, tp.Covariant)
+    t2 = tp.WildCardType(kt.Any, tp.Contravariant)
+
+    assert not t1.is_subtype(t2)
+    assert not t2.is_subtype(t1)
