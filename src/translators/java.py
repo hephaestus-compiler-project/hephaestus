@@ -151,14 +151,14 @@ class JavaTranslator(BaseTranslator):
         return JavaTranslator.incorrect_filename
 
     def type_arg2str(self, t_arg):
+        if not isinstance(t_arg, tp.WildCardType):
+            return self.get_type_name(t_arg, True)
         if t_arg.variance == tp.Invariant:
-            return self.get_type_name(t_arg.to_type(), True)
+            return "?"
         elif t_arg.variance == tp.Covariant:
-            return "? extends " + self.get_type_name(
-                t_arg.to_type(), True)
+            return "? extends " + self.get_type_name(t_arg.bound, True)
         else:
-            return "? super " + self.get_type_name(
-                t_arg.to_type(), True)
+            return "? super " + self.get_type_name(t_arg.bound, True)
 
     def get_type_name(self, t, get_boxed_void=False):
         t_constructor = getattr(t, 't_constructor', None)

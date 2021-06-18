@@ -66,16 +66,6 @@ class Type(Node):
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
-    def to_type_arg(self, variance=Invariant):
-        if isinstance(self, TypeArgument):
-            return self
-        return TypeArgument(self, variance=variance)
-
-    def to_type(self):
-        if isinstance(self, TypeArgument):
-            return self.concrete_type
-        return self
-
     def is_assignable(self, other: Type):
         """
         Checks of a value of the current type is assignable to 'other' type.
@@ -89,6 +79,9 @@ class Type(Node):
 
     def is_primitive(self):
         raise NotImplementedError("You have to implement 'is_primitive()'")
+
+    def is_type_var(self):
+        raise False
 
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
@@ -248,6 +241,9 @@ class TypeParameter(AbstractType):
     def children(self):
         return []
 
+    def is_type_var(self):
+        return True
+
     def get_bound_rec(self, factory):
         if not self.bound:
             return None
@@ -281,6 +277,42 @@ class TypeParameter(AbstractType):
         )
 
 
+class WildCardType(Type):
+    def __init__(self, bound=None, variance=Invariant):
+        super().__init__("*")
+        self.bound = bound
+        self.variance = variance
+
+    def is_subtype(self, other):
+        if isinstance(other, WildCardType):
+            if other.bound is not None:
+                if self.variance.is_covariant() and (
+                        other.variance.is_covariant()):
+                    return self.bound.is_subtype(other.bound)
+        return False
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                self.variance == other.variance and
+                self.bound == other.bound)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.variance))
+
+    def __str__(self):
+        if not self.bound:
+            return "*"
+        else:
+            return "{}{}".format(
+                self.variance.variance_to_str() +
+                ' ' if self.variance != Invariant else '',
+                self.bound.get_name()
+            )
+
+    def is_primitive(self):
+        return False
+
+
 def _get_type_substitution(etype, type_map,
                            cond=lambda t: t.has_type_variables()):
     if isinstance(etype, ParameterizedType):
@@ -298,8 +330,7 @@ def substitute_type_args(etype, type_map,
     assert isinstance(etype, ParameterizedType)
     type_args = []
     for t_arg in etype.type_args:
-        type_args.append(_get_type_substitution(
-            t_arg.to_type(), type_map, cond).to_type_arg(t_arg.variance))
+        type_args.append(_get_type_substitution(t_arg, type_map, cond))
     new_type_map = {
         tp: type_args[i]
         for i, tp in enumerate(etype.t_constructor.type_parameters)
@@ -383,89 +414,16 @@ class TypeConstructor(AbstractType):
         #    t.t_constructor == self
         return other in self.get_supertypes()
 
-    def new(self, type_args: List[TypeArgument]):
+    def new(self, type_args: List[Type]):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
         type_con = perform_type_substitution(self, type_map)
-        # If any of the provided type arguments is not an instance of
-        # TypeArgument class, then implicitly convert to a type argument
-        # with the default variance (i.e., invariant).
-        new_type_args = [t.to_type_arg() for t in type_args]
-        return ParameterizedType(type_con, new_type_args)
-
-
-class TypeArgument(Classifier):
-    def __init__(self, concrete_type: Type, variance=Invariant):
-        super().__init__(concrete_type.name)
-        assert not isinstance(concrete_type, TypeArgument), (
-            "The enclosing type of a type argument cannot be a type argument")
-        self.concrete_type = concrete_type
-        self.variance = variance
-
-    def has_type_variables(self):
-        return self.concrete_type.has_type_variables()
-
-    def is_covariant(self):
-        return self.variance.is_covariant()
-
-    def is_contravariant(self):
-        return self.variance.is_contravariant()
-
-    def is_invariant(self):
-        return self.variance.is_invariant()
-
-    def to_type(self):
-        return self.concrete_type
-
-    def _is_subtype_type_arg(self, other: Type):
-        if self.is_invariant():
-            if other.is_invariant():
-                return self.concrete_type == other.concrete_type
-            elif other.is_covariant():
-                return self.concrete_type.is_subtype(other.concrete_type)
-            else:
-                return other.concrete_type.is_subtype(self.concrete_type)
-        elif self.is_covariant():
-            if other.is_invariant() or other.is_contravariant():
-                return False
-            else:
-                return self.concrete_type.is_subtype(other.concrete_type)
-        else:
-            if other.is_invariant() or other.is_covariant():
-                return False
-            return other.concrete_type.is_subtype(self.concrete_type)
-
-    def is_subtype(self, other: Type):
-        if isinstance(other, TypeArgument):
-            return self._is_subtype_type_arg(other)
-        if self.is_invariant():
-            return self.concrete_type == other
-        elif self.is_covariant():
-            return self.concrete_type.is_subtype(other)
-        else:
-            return other.is_subtype(self.concrete_type)
-
-    def __str__(self):
-        if self.variance == Invariant:
-            return str(self.concrete_type)
-        else:
-            return self.variance.variance_to_str() + " " + str(
-                self.concrete_type)
-
-    def __hash__(self):
-        return hash(str(self.concrete_type) + str(self.variance))
-
-    def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__ and
-            self.concrete_type == other.concrete_type and
-            self.variance == other.variance
-        )
+        return ParameterizedType(type_con, type_args)
 
 
 class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor,
-                 type_args: List[TypeArgument],
+                 type_args: List[Type],
                  can_infer_type_args=False):
         self.t_constructor = deepcopy(t_constructor)
         # TODO check bounds
@@ -483,7 +441,7 @@ class ParameterizedType(SimpleClassifier):
     def to_variance_free(self):
         type_args = []
         for t_arg in self.type_args:
-            type_args.append(t_arg.to_type().to_type_arg())
+            type_args.append(t_arg)
         return self.t_constructor.new(type_args)
 
     def to_type_variable_free(self, factory):
@@ -492,23 +450,22 @@ class ParameterizedType(SimpleClassifier):
         # type variable free.
         type_args = []
         for t_arg in self.type_args:
-            if isinstance(t_arg.to_type(), TypeParameter):
-                bound = t_arg.to_type().get_bound_rec(factory)
+            if isinstance(t_arg, TypeParameter):
+                bound = t_arg.get_bound_rec(factory)
                 if bound is None:
                     # If the type variable has no bound, then create
                     # a variant type argument on the top type.
                     # X<T> => X<? extends Object>
                     type_args.append(
-                        factory.get_any_type().to_type_arg(Covariant))
+                        WildCardType(factory.get_any_type(), Covariant))
                 else:
                     # Get the bound of type variable and create variant type
                     # argument based on its bound, e.g.,
                     # T <: Number, X<T> => X<? extends Number>
-                    type_args.append(bound.to_type_arg(Covariant))
-            elif isinstance(t_arg.to_type(), ParameterizedType):
+                    type_args.append(WildCardType(bound, Covariant))
+            elif isinstance(t_arg, ParameterizedType):
                 type_args.append(
-                    t_arg.to_type().to_type_variable_free(
-                        factory).to_type_arg())
+                    t_arg.to_type_variable_free(factory))
             else:
                 type_args.append(t_arg)
         return self.t_constructor.new(type_args)
@@ -518,7 +475,7 @@ class ParameterizedType(SimpleClassifier):
         # along with the set of their bounds.
         type_vars = defaultdict(set)
         for i, t_arg in enumerate(self.type_args):
-            t_arg = t_arg.to_type()
+            t_arg = t_arg
             if isinstance(t_arg, TypeParameter):
                 type_vars[t_arg].add(
                     t_arg.get_bound_rec(factory))
@@ -561,6 +518,39 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
+    def is_contained(self, t, other, type_param):
+        # We implement this function based on the containment rules described
+        # here:
+        # https://kotlinlang.org/spec/type-system.html#type-containment
+        is_wildcard = isinstance(t, WildCardType)
+        is_wildcard2 = isinstance(other, WildCardType)
+        if not is_wildcard and not is_wildcard2:
+            if type_param.is_invariant():
+                return t == other
+            elif type_param.is_covariant():
+                return t.is_subtype(other)
+            else:
+                return other.is_subtype(t)
+        if is_wildcard2 and not is_wildcard and other.bound:
+            if other.variance.is_covariant():
+                return t.is_subtype(other.bound)
+            elif other.variance.is_contravariant():
+                return other.bound.is_subtype(t)
+        elif is_wildcard and is_wildcard2 and other.bound and t.bound:
+            if t.variance.is_covariant() and other.variance.is_covariant():
+                return t.bound.is_subtype(other.bound)
+            elif t.variance.is_contravariant() and other.variance.is_contravariant():
+                return other.bound.is_subtype(t.bound)
+        elif is_wildcard and not is_wildcard2 and t.bound:
+            if type_param.is_covariant():
+                return t.bound.is_subtype(other)
+            elif type_param.is_contravariant():
+                return other.is_subtype(t.bound)
+        if is_wildcard2 and not other.bound:
+            if not (is_wildcard and not t.bound):
+                return True
+        return False
+
     def is_subtype(self, other: Type) -> bool:
         if super().is_subtype(other):
             return True
@@ -568,14 +558,7 @@ class ParameterizedType(SimpleClassifier):
             if self.t_constructor == other.t_constructor:
                 for tp, sarg, targ in zip(self.t_constructor.type_parameters,
                                           self.type_args, other.type_args):
-                    if tp.is_invariant() and not sarg.is_subtype(targ):
-                        return False
-                    if tp.is_covariant() and not sarg.concrete_type.is_subtype(
-                            targ.concrete_type):
-                        return False
-                    if tp.is_contravariant() and (
-                            not targ.concrete_type.is_subtype(
-                                sarg.concrete_type)):
+                    if not self.is_contained(sarg, targ, tp):
                         return False
                 return True
         return False
@@ -588,8 +571,8 @@ class ParameterizedType(SimpleClassifier):
         if (self.t_constructor == jt.Array and
                 isinstance(other, ParameterizedType) and
                 other.t_constructor == jt.Array):
-            self_t = self.type_args[0].to_type()
-            other_t = other.type_args[0].to_type()
+            self_t = self.type_args[0]
+            other_t = other.type_args[0]
             self_is_primitive = getattr(self_t, 'primitive', False)
             other_is_primitive = getattr(other_t, 'primitive', False)
             if self_is_primitive or other_is_primitive:

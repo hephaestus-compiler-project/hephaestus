@@ -9,17 +9,17 @@ def test_parameterized_supertypes_simple():
     type_param = tp.TypeParameter("K")
 
     bar_con = tp.TypeConstructor("Bar", [type_param],
-                                 [foo_con.new([type_param.to_type_arg()])])
-    bar = bar_con.new([kt.String.to_type_arg()])
+                                 [foo_con.new([type_param])])
+    bar = bar_con.new([kt.String])
 
     supertypes = bar.supertypes
     assert len(supertypes) == 1
     assert isinstance(supertypes[0], tp.ParameterizedType)
-    assert supertypes[0].type_args == [kt.String.to_type_arg()]
+    assert supertypes[0].type_args == [kt.String]
 
     # Type constructor hasn't changed.
     assert bar_con.supertypes[0] == tp.ParameterizedType(
-        foo_con, [type_param.to_type_arg()])
+        foo_con, [type_param])
 
 
 def test_parameterized_mix_type_arguments():
@@ -27,15 +27,15 @@ def test_parameterized_mix_type_arguments():
         "Foo", [tp.TypeParameter("T1"), tp.TypeParameter("T2")], [])
 
     type_param = tp.TypeParameter("T1")
-    foo_parent = foo_con.new([kt.String.to_type_arg(),
-                              type_param.to_type_arg()])
+    foo_parent = foo_con.new([kt.String,
+                              type_param])
     bar_con = tp.TypeConstructor("Bar", [type_param], [foo_parent])
-    bar = bar_con.new([kt.Integer.to_type_arg()])
+    bar = bar_con.new([kt.Integer])
 
     supertypes = bar.supertypes
     assert len(supertypes) == 1
-    assert supertypes[0].type_args == [kt.String.to_type_arg(),
-                                       kt.Integer.to_type_arg()]
+    assert supertypes[0].type_args == [kt.String,
+                                       kt.Integer]
     assert bar_con.supertypes[0] == foo_parent
 
 
@@ -46,35 +46,35 @@ def test_parameterized_nested_params():
         "Bar", [tp.TypeParameter("T2")], [])
     type_param = tp.TypeParameter("T")
     bar_parent = bar_con.new(
-        [foo_con.new([type_param.to_type_arg()]).to_type_arg()])
+        [foo_con.new([type_param])])
 
     baz_con = tp.TypeConstructor("Baz", [type_param], [bar_parent])
-    baz = baz_con.new([kt.Boolean.to_type_arg()])
+    baz = baz_con.new([kt.Boolean])
 
     supertypes = baz.supertypes
     assert supertypes[0] == tp.ParameterizedType(
         bar_con, [tp.ParameterizedType(
-            foo_con, [kt.Boolean.to_type_arg()]).to_type_arg()])
+            foo_con, [kt.Boolean])])
 
 def test_parameterized_with_chain_inheritance():
     foo_con = tp.TypeConstructor(
         "Foo", [tp.TypeParameter("T1")], [])
     bar_con = tp.TypeConstructor(
         "Bar", [tp.TypeParameter("T1")],
-        [foo_con.new([tp.TypeParameter("T1").to_type_arg()])]
+        [foo_con.new([tp.TypeParameter("T1")])]
     )
     baz_con = tp.TypeConstructor(
         "Bar", [tp.TypeParameter("T1")],
-        [bar_con.new([tp.TypeParameter("T1").to_type_arg()])])
+        [bar_con.new([tp.TypeParameter("T1")])])
 
-    baz = baz_con.new([kt.String.to_type_arg()])
+    baz = baz_con.new([kt.String])
 
     supertypes = baz.supertypes
 
     assert supertypes[0].name == "Bar"
-    assert supertypes[0].type_args == [kt.String.to_type_arg()]
+    assert supertypes[0].type_args == [kt.String]
     assert supertypes[0].supertypes[0].name == "Foo"
-    assert supertypes[0].supertypes[0].type_args == [kt.String.to_type_arg()]
+    assert supertypes[0].supertypes[0].type_args == [kt.String]
     assert len(baz.get_supertypes()) == 3
 
 
@@ -85,49 +85,49 @@ def test_parameterized_with_chain_inheritance_and_nested():
     x_con = tp.TypeConstructor(
         "X", [type_param], [])
     z_con = tp.TypeConstructor(
-        "Z", [type_param, type_param2], [x_con.new([type_param.to_type_arg()])])
+        "Z", [type_param, type_param2], [x_con.new([type_param])])
     y_con = tp.TypeConstructor(
-        "Y", [type_param], [z_con.new([kt.String.to_type_arg(),
-                                       type_param.to_type_arg()])])
+        "Y", [type_param], [z_con.new([kt.String,
+                                       type_param])])
     w_con = tp.TypeConstructor(
-        "W", [type_param], [y_con.new([type_param.to_type_arg()])])
+        "W", [type_param], [y_con.new([type_param])])
     k_con = tp.TypeConstructor(
         "K", [type_param], [])
     r_con = tp.TypeConstructor(
-        "R", [type_param], [k_con.new([type_param.to_type_arg()])])
+        "R", [type_param], [k_con.new([type_param])])
     test_con = tp.TypeConstructor(
         "Test", [type_param, type_param2],
-        [w_con.new([r_con.new([type_param2.to_type_arg()]).to_type_arg()])])
+        [w_con.new([r_con.new([type_param2])])])
 
-    test_type = test_con.new([kt.String.to_type_arg(),
-                              kt.Boolean.to_type_arg()])
+    test_type = test_con.new([kt.String,
+                              kt.Boolean])
 
     st = test_type.supertypes[0]
     assert st.name == "W"
     assert len(st.type_args) == 1
     assert st.type_args[0].name == "R"
-    assert st.type_args[0].to_type().type_args == [kt.Boolean.to_type_arg()]
-    assert st.type_args[0].to_type().supertypes[0] == \
-        tp.ParameterizedType(k_con, [kt.Boolean.to_type_arg()])
+    assert st.type_args[0].type_args == [kt.Boolean]
+    assert st.type_args[0].supertypes[0] == \
+        tp.ParameterizedType(k_con, [kt.Boolean])
 
     st = st.supertypes[0]
     assert st.name == "Y"
     assert st.type_args[0].name == "R"
-    assert st.type_args[0].to_type().type_args == [kt.Boolean.to_type_arg()]
-    assert st.type_args[0].to_type().supertypes[0] == \
-        tp.ParameterizedType(k_con, [kt.Boolean.to_type_arg()])
+    assert st.type_args[0].type_args == [kt.Boolean]
+    assert st.type_args[0].supertypes[0] == \
+        tp.ParameterizedType(k_con, [kt.Boolean])
 
     st = st.supertypes[0]
     assert st.name == "Z"
-    assert st.type_args[0] == kt.String.to_type_arg()
+    assert st.type_args[0] == kt.String
     assert st.type_args[1].name == "R"
-    assert st.type_args[1].to_type().type_args == [kt.Boolean.to_type_arg()]
-    assert st.type_args[1].to_type().supertypes[0] == \
-        tp.ParameterizedType(k_con, [kt.Boolean.to_type_arg()])
+    assert st.type_args[1].type_args == [kt.Boolean]
+    assert st.type_args[1].supertypes[0] == \
+        tp.ParameterizedType(k_con, [kt.Boolean])
 
     st = st.supertypes[0]
     assert st.name == "X"
-    assert st.type_args == [kt.String.to_type_arg()]
+    assert st.type_args == [kt.String]
 
 
 def test_parameterized_with_bound_abstract():
@@ -135,7 +135,7 @@ def test_parameterized_with_bound_abstract():
     type_param2 = tp.TypeParameter("K", bound=type_param)
 
     x_con = tp.TypeConstructor("X", [type_param, type_param2], [])
-    x = x_con.new([kt.Any.to_type_arg(), kt.String.to_type_arg()])
+    x = x_con.new([kt.Any, kt.String])
 
     assert x.supertypes == []
     assert x.t_constructor.type_parameters == \
@@ -147,21 +147,21 @@ def test_subtype_covariant_parameterized():
     type_param2 = tp.TypeParameter("K", tp.Covariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
     bar = tp.SimpleClassifier("Bar",
-                              [foo.new([kt.String.to_type_arg()])])
+                              [foo.new([kt.String])])
 
-    assert bar.is_subtype(foo.new([kt.String.to_type_arg()]))
-    assert bar.is_subtype(foo.new([kt.Any.to_type_arg()]))
+    assert bar.is_subtype(foo.new([kt.String]))
+    assert bar.is_subtype(foo.new([kt.Any]))
 
 
     foo = tp.TypeConstructor("Foo", [type_param, type_param2], [])
     bar = tp.TypeConstructor("Bar", [type_param, type_param2],
-                             [foo.new([type_param.to_type_arg(),
-                                       type_param2.to_type_arg()])])
+                             [foo.new([type_param,
+                                       type_param2])])
 
-    bar_str = bar.new([kt.String.to_type_arg(), kt.Long.to_type_arg()])
-    bar_any = bar.new([kt.Any.to_type_arg(), kt.Long.to_type_arg()])
-    foo_str = foo.new([kt.String.to_type_arg(), kt.Long.to_type_arg()])
-    foo_any = foo.new([kt.Any.to_type_arg(), kt.Long.to_type_arg()])
+    bar_str = bar.new([kt.String, kt.Long])
+    bar_any = bar.new([kt.Any, kt.Long])
+    foo_str = foo.new([kt.String, kt.Long])
+    foo_any = foo.new([kt.Any, kt.Long])
 
     assert bar_str.is_subtype(foo_str)
     assert bar_str.is_subtype(bar_any)
@@ -173,12 +173,12 @@ def test_subtype_contravariant_parameterized():
     type_param = tp.TypeParameter("T", tp.Contravariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
     bar = tp.TypeConstructor("Bar", [type_param],
-                             [foo.new([type_param.to_type_arg()])])
+                             [foo.new([type_param])])
 
-    bar_str = bar.new([kt.String.to_type_arg()])
-    bar_any = bar.new([kt.Any.to_type_arg()])
-    foo_str = foo.new([kt.String.to_type_arg()])
-    foo_any = foo.new([kt.Any.to_type_arg()])
+    bar_str = bar.new([kt.String])
+    bar_any = bar.new([kt.Any])
+    foo_str = foo.new([kt.String])
+    foo_any = foo.new([kt.Any])
 
     assert bar_str.is_subtype(foo_str)
     assert not bar_str.is_subtype(bar_any)
@@ -201,17 +201,18 @@ def test_primitives_arrays():
 def test_use_site_variance():
     type_param = tp.TypeParameter("T")
     foo = tp.TypeConstructor("Foo", [type_param], [])
-    foo_any_co = foo.new([kt.Any.to_type_arg(tp.Covariant)])
+    foo_any_co = foo.new([tp.WildCardType(kt.Any, tp.Covariant)])
 
-    foo_any = foo.new([kt.Any.to_type_arg()])
-    foo_string = foo.new([kt.String.to_type_arg()])
+    foo_any = foo.new([kt.Any])
+    foo_string = foo.new([kt.String])
     assert foo_any.is_subtype(foo_any_co)
     assert foo_string.is_subtype(foo_any_co)
     assert not foo_any_co.is_subtype(foo_any)
 
-    foo_number_contra = foo.new([kt.Number.to_type_arg(tp.Contravariant)])
-    foo_number = foo.new([kt.Number.to_type_arg()])
-    foo_integer = foo.new([kt.Integer.to_type_arg()])
+    foo_number_contra = foo.new([tp.WildCardType(
+        kt.Number, tp.Contravariant)])
+    foo_number = foo.new([kt.Number])
+    foo_integer = foo.new([kt.Integer])
 
     assert foo_number.is_subtype(foo_number_contra)
     assert foo_any.is_subtype(foo_number_contra)
@@ -224,11 +225,11 @@ def test_use_site_variance():
 def test_use_site_variance_covariant_decl():
     type_param = tp.TypeParameter("T", tp.Covariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
-    foo_any_co = foo.new([kt.Any.to_type_arg(tp.Covariant)])
+    foo_any_co = foo.new([tp.WildCardType(kt.Any, tp.Covariant)])
 
-    foo_any = foo.new([kt.Any.to_type_arg()])
-    foo_string = foo.new([kt.String.to_type_arg()])
-    foo_string_co = foo.new([kt.String.to_type_arg(tp.Covariant)])
+    foo_any = foo.new([kt.Any])
+    foo_string = foo.new([kt.String])
+    foo_string_co = foo.new([tp.WildCardType(kt.String, tp.Covariant)])
     assert foo_any.is_subtype(foo_any_co)
     assert foo_string.is_subtype(foo_any_co)
     assert foo_any_co.is_subtype(foo_any)
@@ -238,12 +239,13 @@ def test_use_site_variance_covariant_decl():
 def test_use_site_variance_contravariant_decl():
     type_param = tp.TypeParameter("T", tp.Contravariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
-    foo_number_contra = foo.new([kt.Number.to_type_arg(tp.Contravariant)])
+    foo_number_contra = foo.new([tp.WildCardType(kt.Number, tp.Contravariant)])
 
-    foo_any = foo.new([kt.Any.to_type_arg()])
-    foo_number = foo.new([kt.Number.to_type_arg()])
-    foo_integer = foo.new([kt.Integer.to_type_arg()])
-    foo_integer_co = foo.new([kt.Integer.to_type_arg(tp.Contravariant)])
+    foo_any = foo.new([kt.Any])
+    foo_number = foo.new([kt.Number])
+    foo_integer = foo.new([kt.Integer])
+    foo_integer_co = foo.new([tp.WildCardType(kt.Integer, tp.Contravariant)])
+    print('HEEERE')
     assert foo_any.is_subtype(foo_number_contra)
     assert not foo_integer.is_subtype(foo_number_contra)
     assert foo_number_contra.is_subtype(foo_number)
@@ -256,17 +258,17 @@ def test_get_type_variables():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
-    foo1 = foo.new([kt.String.to_type_arg(), kt.Integer.to_type_arg()])
+    foo1 = foo.new([kt.String, kt.Integer])
     assert not foo1.get_type_variables(factory)
 
-    foo2 = foo.new([type_param1.to_type_arg(), kt.String.to_type_arg()])
+    foo2 = foo.new([type_param1, kt.String])
     type_vars = foo2.get_type_variables(factory)
     assert len(type_vars) == 1
     assert type_vars[type_param1] == {None}
 
     bar = tp.TypeConstructor("Bar", [type_param2])
-    foo3 = foo.new([type_param1.to_type_arg(),
-                    bar.new([type_param2.to_type_arg()]).to_type_arg()])
+    foo3 = foo.new([type_param1,
+                    bar.new([type_param2])])
     type_vars = foo3.get_type_variables(factory)
     assert len(type_vars) == 2
     assert type_vars[type_param1] == {None}
@@ -280,33 +282,32 @@ def test_type_substitution():
     type_param4 = tp.TypeParameter("T4")
 
     foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
-    foo_p = foo.new([kt.Integer.to_type_arg(), type_param3.to_type_arg()])
+    foo_p = foo.new([kt.Integer, type_param3])
 
     ptype = tp.substitute_type(foo_p, {type_param3: type_param4})
-    assert ptype.type_args[0] == kt.Integer.to_type_arg()
-    assert ptype.type_args[1] == type_param4.to_type_arg()
+    assert ptype.type_args[0] == kt.Integer
+    assert ptype.type_args[1] == type_param4
 
 
 def test_to_type_variable_free():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     foo = tp.TypeConstructor("Foo", [type_param1])
-    foo_t = foo.new([type_param2.to_type_arg()])
+    foo_t = foo.new([type_param2])
 
     foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
-    assert foo_n.type_args[0] == tp.TypeArgument(kt.Any, variance=tp.Covariant)
+    assert foo_n.type_args[0] == tp.WildCardType(kt.Any, variance=tp.Covariant)
 
     type_param2.bound = kt.Number
-    foo_t = foo.new([type_param2.to_type_arg()])
+    foo_t = foo.new([type_param2])
 
     foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
-    assert foo_n.type_args[0] == tp.TypeArgument(kt.Number, variance=tp.Covariant)
+    assert foo_n.type_args[0] == tp.WildCardType(kt.Number, variance=tp.Covariant)
 
     bar = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
     bar_p = bar.new([type_param2])
     foo_t = foo.new([bar_p])
 
     foo_n = foo_t.to_type_variable_free(kt.KotlinBuiltinFactory())
-    assert foo_n.type_args[0] == tp.TypeArgument(
-        bar.new([tp.TypeArgument(kt.Number, variance=tp.Covariant)]),
-        variance=tp.Invariant)
+    assert foo_n.type_args[0] == bar.new(
+        [tp.WildCardType(kt.Number, variance=tp.Covariant)])
