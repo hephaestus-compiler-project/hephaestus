@@ -81,7 +81,10 @@ class Type(Node):
         raise NotImplementedError("You have to implement 'is_primitive()'")
 
     def is_type_var(self):
-        raise False
+        return False
+
+    def is_wildcard(self):
+        return False
 
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
@@ -291,6 +294,21 @@ class WildCardType(Type):
                     return self.bound.is_subtype(other.bound)
         return False
 
+    def has_type_variables(self):
+        return self.bound and self.bound.has_type_variables()
+
+    def is_wildcard(self):
+        return True
+
+    def is_invariant(self):
+        return self.variance.is_invariant()
+
+    def is_covariant(self):
+        return self.variance.is_covariant()
+
+    def is_contravariant(self):
+        return self.variance.is_contravariant()
+
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
                 self.variance == other.variance and
@@ -441,7 +459,12 @@ class ParameterizedType(SimpleClassifier):
     def to_variance_free(self):
         type_args = []
         for t_arg in self.type_args:
-            type_args.append(t_arg)
+            # TODO: revisit
+            if t_arg.is_wildcard() and t_arg.bound:
+                t = t_arg.bound
+            else:
+                t = t_arg
+            type_args.append(t)
         return self.t_constructor.new(type_args)
 
     def to_type_variable_free(self, factory):
