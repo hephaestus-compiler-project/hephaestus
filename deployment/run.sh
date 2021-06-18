@@ -18,6 +18,15 @@ simple_run_groovy() {
         --language groovy --cast-numbers
 }
 
+simple_run_java() {
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    # sdk install groovy
+    cd $CHECK_TYPE_SYSTEMS
+    git pull
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
+        --language java
+}
+
 simple_run() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     sdk install kotlin
@@ -68,7 +77,7 @@ then
         exit 0
 fi
 
-while getopts "hksagS" OPTION; do
+while getopts "hksagSj" OPTION; do
         case $OPTION in
 
                 k)
@@ -91,6 +100,10 @@ while getopts "hksagS" OPTION; do
                         run_groovy_from_source
                         ;;
 
+                j)
+                        simple_run_java
+                        ;;
+
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
@@ -98,12 +111,14 @@ while getopts "hksagS" OPTION; do
                         echo "init.sh -a "
                         echo "init.sh -g "
                         echo "init.sh -S "
+                        echo "init.sh -j "
                         echo ""
                         echo "   -k     Simple run"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
                         echo "   -g     Simple run groovy"
                         echo "   -S     Run groovy from source"
+                        echo "   -j     Simple run java"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;

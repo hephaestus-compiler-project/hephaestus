@@ -30,16 +30,20 @@ install_deps() {
     echo "source $HOME/.bash_profile >> $HOME/.bashrc"
 }
 
-install_java() {
+install_java_dep() {
     sdk install java 8.0.265-open
 }
 
 install_groovy() {
-    install_java
+    install_java_dep
     sdk install groovy 4.0.0-alpha-2
     echo "PATH=\"\$PATH:/root/.sdkman/candidates/kotlin/current/bin/\"" >> $HOME/.bash_profile
 }
 
+install_java() {
+    sdk install java 18.ea.2-open
+    echo "PATH=\"\$PATH:/root/.sdkman/candidates/java/current/bin/\"" >> $HOME/.bash_profile
+}
 
 install_kotlin_from_source() {
     sdk install java 9.0.4-open
@@ -78,13 +82,13 @@ install_groovy_from_source() {
 }
 
 install_kotlin() {
-    install_java
+    install_java_dep
     sdk install kotlin
     echo "PATH=\"\$PATH:/root/.sdkman/candidates/kotlin/current/bin/\"" >> $HOME/.bash_profile
 }
 
 install_kotlin_all() {
-    install_java
+    install_java_dep
     sdk install kotlin 1.4.21  && \
     sdk install kotlin 1.4.20  && \
     sdk install kotlin 1.4.10  && \
@@ -170,7 +174,7 @@ then
         exit 0
 fi
 
-while getopts "hskagS" OPTION; do
+while getopts "hskagSjJ" OPTION; do
         case $OPTION in
 
                 k)
@@ -201,9 +205,23 @@ while getopts "hskagS" OPTION; do
                         add_run_script_to_path
                         ;;
 
-                g)
+                S)
                         install_deps
                         install_groovy_from_source
+                        install_check_type_systems
+                        add_run_script_to_path
+                        ;;
+
+                j)
+                        install_deps
+                        install_java
+                        install_check_type_systems
+                        add_run_script_to_path
+                        ;;
+
+                J)
+                        install_deps
+                        install_java_from_source
                         install_check_type_systems
                         add_run_script_to_path
                         ;;
@@ -221,6 +239,8 @@ while getopts "hskagS" OPTION; do
                         echo "   -a     Install all kotlin versions"
                         echo "   -g     Install latest groovy version"
                         echo "   -S     Install groovy from source"
+                        echo "   -j     Install latest Java version"
+                        echo "   -J     Install Java from source"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;
