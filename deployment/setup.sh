@@ -81,6 +81,23 @@ install_groovy_from_source() {
     source $HOME/.bash_profile
 }
 
+install_java_from_source() {
+    sdk install java 16.0.1-open
+    apt -yqq install build-essential autoconf zip libxss-dev libxxf86vm-dev \
+        libxkbfile-dev libxv-dev libx11-dev libxext-dev libxrender-dev \
+        libxrandr-dev libxtst-dev libxt-dev libcups2 libcups2-dev \
+        libfontconfig-dev libasound2-dev
+    apt -yqq install python3.9-distutils
+    apt remove python3-apt && apt autoremove && apt autoclean
+    apt install python3-apt software-properties-common -yqq
+    # TODO we need gcc 10
+
+    git clone https://github.com/openjdk/jdk.git
+    cd jdk
+    bash configure
+    make java.Compiler
+}
+
 install_kotlin() {
     install_java_dep
     sdk install kotlin

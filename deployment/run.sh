@@ -35,6 +35,17 @@ simple_run() {
     python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P
 }
 
+run_groovy_from_source() {
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+    cd $GROOVY_INSTALLATION
+    git pull
+    ./gradlew clean dist --continue
+    cd $CHECK_TYPE_SYSTEMS
+    git pull
+    python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
+        --language groovy
+}
+
 run_from_source() {
     cd $KOTLIN_INSTALLATION
     git pull
@@ -104,14 +115,19 @@ while getopts "hksagSj" OPTION; do
                         simple_run_java
                         ;;
 
+                J)
+                        run_java_from_source
+                        ;;
+
                 h)
                         echo "Usage:"
-                        echo "init.sh -k "
-                        echo "init.sh -s "
-                        echo "init.sh -a "
-                        echo "init.sh -g "
-                        echo "init.sh -S "
-                        echo "init.sh -j "
+                        echo "run.sh -k "
+                        echo "run.sh -s "
+                        echo "run.sh -a "
+                        echo "run.sh -g "
+                        echo "run.sh -S "
+                        echo "run.sh -j "
+                        echo "run.sh -J "
                         echo ""
                         echo "   -k     Simple run"
                         echo "   -s     Run from source"
@@ -119,6 +135,7 @@ while getopts "hksagSj" OPTION; do
                         echo "   -g     Simple run groovy"
                         echo "   -S     Run groovy from source"
                         echo "   -j     Simple run java"
+                        echo "   -J     Run java from source"
                         echo "   -h     help (this output)"
                         exit 0
                         ;;
