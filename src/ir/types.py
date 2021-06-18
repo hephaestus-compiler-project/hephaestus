@@ -297,6 +297,18 @@ class WildCardType(Type):
     def has_type_variables(self):
         return self.bound and self.bound.has_type_variables()
 
+    def get_type_variables(self, factory):
+        if not self.bound:
+            return {}
+        if self.bound.is_wildcard():
+            return self.bound.get_type_variables(factory)
+        elif self.bound.is_type_var():
+            return {self.bound: {self.bound.get_bound_rec(factory)}}
+        elif isinstance(self.bound, ParameterizedType):
+            return self.bound.get_type_variables(factory)
+        else:
+            return {}
+
     def is_wildcard(self):
         return True
 
@@ -502,7 +514,7 @@ class ParameterizedType(SimpleClassifier):
             if isinstance(t_arg, TypeParameter):
                 type_vars[t_arg].add(
                     t_arg.get_bound_rec(factory))
-            elif isinstance(t_arg, ParameterizedType):
+            elif isinstance(t_arg, ParameterizedType) or t_arg.is_wildcard():
                 for k, v in t_arg.get_type_variables(factory).items():
                     type_vars[k].update(v)
             else:
