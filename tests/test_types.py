@@ -297,6 +297,18 @@ def test_type_substitution():
     assert ptype.type_args[1] == type_param4
 
 
+def test_type_substitution_wildcard():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    wildcard = tp.WildCardType(type_param1, tp.Covariant)
+    type_map = {type_param1: type_param2}
+
+    ptype = tp.substitute_type(wildcard, type_map)
+
+    assert ptype.variance.is_covariant()
+    assert ptype.bound == type_param2
+
+
 def test_to_type_variable_free():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
