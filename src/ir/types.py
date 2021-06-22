@@ -347,6 +347,9 @@ def _get_type_substitution(etype, type_map,
                            cond=lambda t: t.has_type_variables()):
     if isinstance(etype, ParameterizedType):
         return substitute_type_args(etype, type_map, cond)
+    if etype.is_wildcard() and etype.bound is not None:
+        new_bound = _get_type_substitution(etype.bound, type_map, cond)
+        return WildCardType(new_bound, variance=etype.variance)
     t = type_map.get(etype)
     if t is None or cond(t):
         # The type parameter does not correspond to an abstract type
