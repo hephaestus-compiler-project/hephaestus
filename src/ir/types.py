@@ -309,6 +309,18 @@ class WildCardType(Type):
         else:
             return {}
 
+    def get_bound_rec(self, factory):
+        if not self.bound:
+            return None
+        t = self.bound
+        if t.is_wildcard():
+            return t.get_bound_rec(factory)
+        if not t.has_type_variables():
+            return t
+        if t.is_type_var():
+            return t
+        return t.to_type_variable_free(factory)
+
     def is_wildcard(self):
         return True
 
@@ -471,12 +483,11 @@ class ParameterizedType(SimpleClassifier):
     def has_type_variables(self):
         return any(t_arg.has_type_variables() for t_arg in self.type_args)
 
-    def to_variance_free(self):
+    def to_variance_free(self, factory):
         type_args = []
         for t_arg in self.type_args:
-            # TODO: revisit
             if t_arg.is_wildcard() and t_arg.bound:
-                t = t_arg.bound
+                t = t_arg.get_bound_rec(factory)
             else:
                 t = t_arg
             type_args.append(t)
@@ -556,7 +567,8 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
-    def is_contained(self, t, other, type_param):
+    @classmethod
+    def is_contained(cls, t, other, type_param):
         # We implement this function based on the containment rules described
         # here:
         # https://kotlinlang.org/spec/type-system.html#type-containment
