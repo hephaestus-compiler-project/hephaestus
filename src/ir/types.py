@@ -86,6 +86,9 @@ class Type(Node):
     def is_wildcard(self):
         return False
 
+    def is_parameterized(self):
+        return False
+
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
         stack = [self]
@@ -200,7 +203,7 @@ class SimpleClassifier(Classifier):
         """
         tconst = defaultdict(list)  # Type Constructors
         for supertype in filter(
-                lambda x: isinstance(x, ParameterizedType),
+                lambda x: x.is_parameterized(),
                 self.get_supertypes()):
             tconst[supertype.t_constructor] = \
                 tconst[supertype.t_constructor] + [supertype]
@@ -304,7 +307,7 @@ class WildCardType(Type):
             return self.bound.get_type_variables(factory)
         elif self.bound.is_type_var():
             return {self.bound: {self.bound.get_bound_rec(factory)}}
-        elif isinstance(self.bound, ParameterizedType):
+        elif self.bound.is_parameterized():
             return self.bound.get_type_variables(factory)
         else:
             return {}
@@ -357,7 +360,7 @@ class WildCardType(Type):
 
 def _get_type_substitution(etype, type_map,
                            cond=lambda t: t.has_type_variables()):
-    if isinstance(etype, ParameterizedType):
+    if etype.is_parameterized():
         return substitute_type_args(etype, type_map, cond)
     if etype.is_wildcard() and etype.bound is not None:
         new_bound = _get_type_substitution(etype.bound, type_map, cond)
@@ -372,7 +375,7 @@ def _get_type_substitution(etype, type_map,
 
 def substitute_type_args(etype, type_map,
                          cond=lambda t: t.has_type_variables()):
-    assert isinstance(etype, ParameterizedType)
+    assert etype.is_parameterized()
     type_args = []
     for t_arg in etype.type_args:
         type_args.append(_get_type_substitution(t_arg, type_map, cond))
@@ -407,7 +410,7 @@ def perform_type_substitution(etype, type_map,
     # class X<T> : Y<Z<T>>()
     supertypes = []
     for t in etype.supertypes:
-        if isinstance(t, ParameterizedType):
+        if t.is_parameterized():
             supertypes.append(substitute_type_args(t, type_map))
         else:
             supertypes.append(t)
@@ -480,8 +483,19 @@ class ParameterizedType(SimpleClassifier):
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
 
+    def is_parameterized(self):
+        return True
+
     def has_type_variables(self):
         return any(t_arg.has_type_variables() for t_arg in self.type_args)
+
+    def has_wildcards(self):
+        return any(
+            t_arg.is_wildcard() or (
+                t_arg.is_parameterized() and t_arg.has_wildcards()
+            )
+            for t_arg in self.type_args
+        )
 
     def to_variance_free(self, factory):
         type_args = []
@@ -512,7 +526,7 @@ class ParameterizedType(SimpleClassifier):
                     # argument based on its bound, e.g.,
                     # T <: Number, X<T> => X<? extends Number>
                     type_args.append(WildCardType(bound, Covariant))
-            elif isinstance(t_arg, ParameterizedType):
+            elif t_arg.is_parameterized():
                 type_args.append(
                     t_arg.to_type_variable_free(factory))
             else:
@@ -525,10 +539,10 @@ class ParameterizedType(SimpleClassifier):
         type_vars = defaultdict(set)
         for i, t_arg in enumerate(self.type_args):
             t_arg = t_arg
-            if isinstance(t_arg, TypeParameter):
+            if t_arg.is_type_var():
                 type_vars[t_arg].add(
                     t_arg.get_bound_rec(factory))
-            elif isinstance(t_arg, ParameterizedType) or t_arg.is_wildcard():
+            elif t_arg.is_parameterized() or t_arg.is_wildcard():
                 for k, v in t_arg.get_type_variables(factory).items():
                     type_vars[k].update(v)
             else:
@@ -604,7 +618,7 @@ class ParameterizedType(SimpleClassifier):
     def is_subtype(self, other: Type) -> bool:
         if super().is_subtype(other):
             return True
-        if isinstance(other, ParameterizedType):
+        if other.is_parameterized():
             if self.t_constructor == other.t_constructor:
                 for tp, sarg, targ in zip(self.t_constructor.type_parameters,
                                           self.type_args, other.type_args):
@@ -619,7 +633,7 @@ class ParameterizedType(SimpleClassifier):
         # We should handle Java primitive arrays
         # In Java Byte[] is not assignable to byte[] and vice versa.
         if (self.t_constructor == jt.Array and
-                isinstance(other, ParameterizedType) and
+                other.is_parameterized() and
                 other.t_constructor == jt.Array):
             self_t = self.type_args[0]
             other_t = other.type_args[0]
