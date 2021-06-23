@@ -222,6 +222,18 @@ def test_use_site_variance():
     assert not foo_number_contra.is_subtype(foo_any_co)
 
 
+def test_use_site_variance_type_vars():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    type_param3 = tp.TypeParameter("T3", bound=kt.String)
+    foo_t = foo.new([type_param3, type_param3])
+    foo_c = foo.new([type_param3, tp.WildCardType(type_param3, tp.Covariant)])
+
+    assert not foo_c.is_subtype(foo_t)
+    assert not foo_t.is_subtype(foo_c)
+
+
 def test_use_site_variance_covariant_decl():
     type_param = tp.TypeParameter("T", tp.Covariant)
     foo = tp.TypeConstructor("Foo", [type_param], [])
@@ -297,7 +309,7 @@ def test_type_substitution():
     assert ptype.type_args[1] == type_param4
 
 
-def test_type_substitution_wildcard():
+def test_type_substitution_wildcards():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     wildcard = tp.WildCardType(type_param1, tp.Covariant)
@@ -307,6 +319,17 @@ def test_type_substitution_wildcard():
 
     assert ptype.variance.is_covariant()
     assert ptype.bound == type_param2
+
+    # case 2: substitute a parameterized type with wildcards
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    foo_t = foo.new([type_param1, tp.WildCardType(type_param1,
+                                                  tp.Covariant)])
+    t = tp.WildCardType(type_param2, tp.Covariant)
+    type_map = {type_param1: t}
+
+    ptype = tp.substitute_type(foo_t, type_map)
+    assert ptype.type_args[0] == t
+    assert ptype.type_args[1] == tp.WildCardType(t, tp.Covariant)
 
 
 def test_to_type_variable_free():
@@ -333,7 +356,7 @@ def test_to_type_variable_free():
         [tp.WildCardType(kt.Number, variance=tp.Covariant)])
 
 
-def test_types():
+def test_wildcard_types():
     t1 = tp.WildCardType()
     t2 = tp.WildCardType()
 
@@ -351,3 +374,9 @@ def test_types():
 
     assert not t1.is_subtype(t2)
     assert not t2.is_subtype(t1)
+
+
+def test_get_bound_rec_wildcards():
+    type_param = tp.TypeParameter("T")
+    wildcard = tp.WildCardType(type_param, tp.Covariant)
+    assert wildcard.get_bound_rec(kt.KotlinBuiltinFactory()) == type_param
