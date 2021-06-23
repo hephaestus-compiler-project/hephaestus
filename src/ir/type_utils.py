@@ -372,7 +372,7 @@ def instantiate_type_constructor(
                     a_types = [v]
             if not a_types:
                 if t_param.bound:
-                    if not isinstance(t_param.bound, tp.AbstractType):
+                    if not t_param.bound.is_type_var():
                         # If the type parameter has a bound, then find types
                         # that are subtypes to this bound.
                         a_types = find_subtypes(t_param.bound, types, True)
