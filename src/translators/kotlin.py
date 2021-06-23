@@ -35,12 +35,15 @@ class KotlinTranslator(BaseTranslator):
             return "in " + self.get_type_name(t_arg.bound)
 
     def get_type_name(self, t):
+        if t.is_wildcard():
+            t = t.get_bound_rec(kt.KotlinBuiltinFactory())
+            return self.get_type_name(t)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
             return t.get_name()
         if isinstance(t_constructor, kt.SpecializedArrayType):
             return "{}Array".format(self.get_type_name(
-                t.type_args[0].to_type()))
+                t.type_args[0]))
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
                                                   for ta in t.type_args]))
 
@@ -199,7 +202,7 @@ class KotlinTranslator(BaseTranslator):
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
         param_type = (
-            node.param_type.type_args[0].to_type()
+            node.param_type.type_args[0]
             if node.vararg and isinstance(node.param_type,
                                           tp.ParameterizedType)
             else node.param_type)
@@ -240,8 +243,10 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     def visit_bottom_constant(self, node):
-        self._children_res.append((self.ident * " ") + "TODO() as {}".format(
-            self.get_type_name(node.t)))
+        bottom = "TODO(){}".format(
+            " as " + self.get_type_name(node.t) if node.t else ""
+        )
+        self._children_res.append((self.ident * " ") + bottom)
 
     def visit_integer_constant(self, node):
         if not self._cast_integers:
@@ -287,10 +292,10 @@ class KotlinTranslator(BaseTranslator):
             if not is_specialized:
                 self._children_res.append("{}emptyArray<{}>()".format(
                     " " * self.ident,
-                    self.get_type_name(node.array_type.type_args[0].to_type())))
+                    self.get_type_name(node.array_type.type_args[0])))
             else:
                 # Specialized array
-                t_arg = self.get_type_name(node.array_type.type_args[0].to_type())
+                t_arg = self.get_type_name(node.array_type.type_args[0])
                 self._children_res.append("{}{}Array(0)".format(
                     " " * self.ident, t_arg))
             return
@@ -307,7 +312,7 @@ class KotlinTranslator(BaseTranslator):
             if not is_specialized
             else "{}{}ArrayOf({})"
         )
-        t_arg = self.get_type_name(node.array_type.type_args[0].to_type())
+        t_arg = self.get_type_name(node.array_type.type_args[0])
         if is_specialized:
             t_arg = t_arg.lower()
         return self._children_res.append(template.format(

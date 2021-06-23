@@ -151,23 +151,26 @@ class JavaTranslator(BaseTranslator):
         return JavaTranslator.incorrect_filename
 
     def type_arg2str(self, t_arg):
-        if not isinstance(t_arg, tp.WildCardType):
+        if not t_arg.is_wildcard():
             return self.get_type_name(t_arg, True)
-        if t_arg.variance == tp.Invariant:
+        if t_arg.is_invariant():
             return "?"
-        elif t_arg.variance == tp.Covariant:
+        elif t_arg.is_covariant():
             return "? extends " + self.get_type_name(t_arg.bound, True)
         else:
             return "? super " + self.get_type_name(t_arg.bound, True)
 
     def get_type_name(self, t, get_boxed_void=False):
+        if t.is_wildcard():
+            t = t.get_bound_rec(jt.JavaBuiltinFactory())
+            return self.get_type_name(t, get_boxed_void)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
             if get_boxed_void and isinstance(t, jt.VoidType):
                 return "Void"
             return t.get_name()
         if isinstance(t_constructor, jt.ArrayType):
-            return "{}[]".format(self.get_type_name(t.type_args[0].to_type()))
+            return "{}[]".format(self.get_type_name(t.type_args[0]))
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
                                                   for ta in t.type_args]))
 
@@ -366,8 +369,8 @@ class JavaTranslator(BaseTranslator):
 
     @append_to
     def visit_bottom_constant(self, node):
-        return self.get_ident() + "({}) null{}".format(
-            self.get_type_name(node.t),
+        return self.get_ident() + "{}null{}".format(
+            "(" + self.get_type_name(node.t) + ") " if node.t else "",
             ';' if self._parent_is_block() else ''
         )
 
@@ -551,7 +554,7 @@ class JavaTranslator(BaseTranslator):
         # Recall that varargs ara actually arrays in the signature of
         # the corresponding parameters.
         param_type = (
-            node.param_type.type_args[0].to_type()
+            node.param_type.type_args[0]
             if node.vararg and isinstance(node.param_type, tp.ParameterizedType)
             else node.param_type)
         res = self.get_type_name(param_type) + vararg_str + " " + node.name
@@ -717,11 +720,11 @@ class JavaTranslator(BaseTranslator):
     def visit_array_expr(self, node):
         if not node.length:
             new_stmt = "new {etype}".format(
-                etype=self.get_type_name(node.array_type.type_args[0].to_type())
+                etype=self.get_type_name(node.array_type.type_args[0])
             )
             if isinstance(node.array_type.type_args[0], tp.ParameterizedType):
                 new_stmt = "({etype}[]) new Object".format(
-                    etype=self.get_type_name(node.array_type.type_args[0].to_type())
+                    etype=self.get_type_name(node.array_type.type_args[0])
                 )
 
             return "{ident}{new}[0]{semicolon}".format(
@@ -739,7 +742,7 @@ class JavaTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
 
         if (isinstance(node.array_type, tp.ParameterizedType) and
-                not node.array_type.type_args[0].to_type().is_primitive()):
+                not node.array_type.type_args[0].is_primitive()):
             new_stmt = "({etype}) new Object[]".format(
                 etype=self.get_type_name(node.array_type)
             )
@@ -951,7 +954,7 @@ class JavaTranslator(BaseTranslator):
                 fdecl[1].params[-1].vararg):
             varargs = args[len(fdecl[1].params)-1:]
             varargs_type = fdecl[1].params[-1].param_type
-            if not varargs_type.type_args[0].to_type().is_primitive():
+            if not varargs_type.type_args[0].is_primitive():
                 new_stmt = "({etype}) new Object[]".format(
                     etype=self.get_type_name(varargs_type)
                 )
