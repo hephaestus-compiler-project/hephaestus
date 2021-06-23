@@ -38,13 +38,11 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             # types.
             bound_index = type_param_assigns[t_param.bound]
             t_args = [bound_index]
-            is_contained = tp.ParameterizedType.is_contained(
-                _get_type_arg_bound(
-                    valid_args[bound_index][0],
-                    valid_args,
-                    lambda x, y: x[y][0]
-                ),
-                etype.type_args[i], t_param
+            type_arg_bound = _get_type_arg_bound(valid_args[bound_index][0],
+                                                 valid_args,
+                                                 lambda x, y: x[y][0])
+            is_contained = etype.type_args[i].is_wildcard() and (
+                etype.type_args[i].bound == type_arg_bound
             )
             if t_param.is_invariant() and not is_contained:
                 # OK, if T2 is invariant, then the possible types that T1
