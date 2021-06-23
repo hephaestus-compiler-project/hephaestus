@@ -24,6 +24,18 @@ def select_class_type(contain_fields):
     return ut.random.choice(candidates)
 
 
+def init_variance_choices(type_var_map):
+    variance_choices = {}
+    for type_var in type_var_map.keys():
+        variance_choices[type_var] = (False, False)
+        # If disable variance on specific type parameters, then we have to
+        # do the same on its bound (if it is another type variable).
+        while type_var.bound and type_var.bound.is_type_var():
+            type_var = type_var.bound
+            variance_choices[type_var] = (False, False)
+    return variance_choices
+
+
 @dataclass
 class SuperClassInfo:
     super_cls: ast.ClassDeclaration
@@ -652,9 +664,7 @@ class Generator():
             var_type = bound
         return var_type
 
-    def _get_matching_objects(self, etype, subtype, attr_name,
-                              covariant_pos=False,
-                              contravariant_pos=False) -> \
+    def _get_matching_objects(self, etype, subtype, attr_name) -> \
             List[Tuple[ast.Expr, ast.Declaration]]:
         decls = []
         variables = self.context.get_vars(self.namespace).values()
@@ -682,29 +692,6 @@ class Generator():
                 )
                 if not cond:
                     continue
-                if cls.is_parameterized():
-                    indexes = {t_param: var_type.type_args[i]
-                               for i, t_param in enumerate(
-                                   cls.get_type().type_parameters)}
-                    val = indexes.get(attr.get_type())
-                    if attr_name == 'functions':
-                        exclude = False
-                        for p in attr.params:
-                            if isinstance(p.get_type(), tp.TypeParameter):
-                                if val and val.is_wildcard() and (
-                                        val.is_covariant()):
-                                    exclude = True
-                                    break
-                        if exclude:
-                            continue
-
-                    if isinstance(attr.get_type(), tp.TypeParameter):
-                        if val and val.is_wildcard() and contravariant_pos and (
-                                val.is_covariant()):
-                            continue
-                        if val and val.is_wildcard() and covariant_pos and (
-                                val.is_contravariant()):
-                            continue
                 decls.append((ast.Variable(var.name), type_map_var, attr))
         return decls
 
@@ -726,11 +713,9 @@ class Generator():
             # class_type + instantiation_map
             functions.append((None, {}, func))
         return functions + self._get_matching_objects(etype, subtype,
-                                                      'functions',
-                                                      covariant_pos=True)
+                                                      'functions')
 
-    def _get_matching_class(self, etype, subtype, attr_name,
-                            covariant_pos=False, contravariant_pos=False) -> \
+    def _get_matching_class(self, etype, subtype, attr_name) -> \
             Tuple[ast.ClassDeclaration, ast.Declaration]:
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
@@ -762,17 +747,11 @@ class Generator():
             return None
         cls, type_var_map, attr = ut.random.choice(class_decls)
         if cls.is_parameterized():
-            variance_choices = {etype: (not contravariant_pos,
-                                        not covariant_pos)}
-            if isinstance(attr.get_type(), tp.ParameterizedType) and (
-                    attr.get_type().has_type_variables()):
-                variance_choices = None
-            if attr_name == 'functions':
-                for p in attr.params:
-                    if variance_choices and p.get_type().is_type_var():
-                        variance_choices[p.get_type()] = (
-                            False, not covariant_pos)
-                # print(variance_choices)
+            variance_choices = (
+                None
+                if type_var_map is None
+                else init_variance_choices(type_var_map)
+            )
             cls_type, params_map = tu.instantiate_type_constructor(
                 cls.get_type(), self.get_types(),
                 only_regular=True, type_var_map=type_var_map,
@@ -824,8 +803,7 @@ class Generator():
             type_var_map[type_var] = type_param
         return type_params, type_var_map, can_wildcard
 
-    def _gen_matching_class(self, etype, attr_name, not_void=False,
-                            covariant_pos=False, contravariant_pos=False) -> \
+    def _gen_matching_class(self, etype, attr_name, not_void=False) -> \
             Tuple[ast.ClassDeclaration, ast.Declaration]:
         initial_namespace = self.namespace
         class_name = gu.gen_identifier('capitalize')
@@ -858,8 +836,7 @@ class Generator():
                 type_map = None
 
             if can_wildcard:
-                variance_choices = {etype2: (not contravariant_pos,
-                                             not covariant_pos)}
+                variance_choices = init_variance_choices(type_map)
             else:
                 variance_choices = None
             cls_type, params_map = tu.instantiate_type_constructor(
@@ -871,30 +848,11 @@ class Generator():
         else:
             cls_type, params_map = cls.get_type(), {}
         for attr in getattr(cls, attr_name):
-            # TODO: Revisit
-            new_params_map = {
-                k: v.bound if v.is_wildcard() else v
-                for k, v in params_map.items()
-            }
-            attr_type = tp.substitute_type(attr.get_type(), new_params_map)
+            attr_type = tp.substitute_type(attr.get_type(), params_map)
             if attr_type != etype:
                 continue
-            if attr_name == 'functions' and cls.is_parameterized():
-                indexes = {
-                    t_param: i
-                    for i, t_param in enumerate(cls.get_type().type_parameters)
-                }
-                for p in attr.params:
-                    if isinstance(p.get_type(), tp.TypeParameter):
-                        t_arg = params_map[p.get_type()]
-                        if t_arg.is_wildcard():
-                            new_type = t_arg.get_bound_rec(self.bt_factory)
-                            params_map[p.get_type()] = new_type
-                            cls_type.type_args[indexes[p.get_type()]] = \
-                                new_type
 
             return cls_type, params_map, attr
-        import pdb; pdb.set_trace()
         return None
 
     def _gen_matching_func(self, etype, not_void=False) -> \
@@ -916,19 +874,16 @@ class Generator():
             self.namespace = initial_namespace
             return None, {}, func
         # Generate a class containing the requested function
-        return self._gen_matching_class(etype, 'functions',
-                                        covariant_pos=True)
+        return self._gen_matching_class(etype, 'functions')
 
     def gen_func_call(self, etype, only_leaves=False, subtype=True):
         funcs = self._get_function_declarations(etype, subtype)
         cls_type = None
         if not funcs:
-            type_fun = self._get_matching_class(etype, subtype, 'functions',
-                                                covariant_pos=True)
+            type_fun = self._get_matching_class(etype, subtype, 'functions')
             if type_fun is None:
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
-                # print('here', etype)
                 type_fun = self._gen_matching_func(etype, not_void=True)
             cls_type, params_map, func = type_fun
             receiver = None if cls_type is None else self.generate_expr(
@@ -938,11 +893,13 @@ class Generator():
         args = []
         initial_depth = self.depth
         self.depth += 1
-        # print("HERE", etype, func.name, params_map, receiver, cls_type)
         for param in func.params:
             expr_type = tp.substitute_type(param.get_type(), params_map)
+            gen_bottom = expr_type.is_wildcard() or (
+                expr_type.is_parameterized() and expr_type.has_wildcards())
             if not param.vararg:
-                arg = self.generate_expr(expr_type, only_leaves)
+                arg = self.generate_expr(expr_type, only_leaves,
+                                         gen_bottom=gen_bottom)
                 if param.default:
                     if self.language == 'kotlin' and ut.random.bool():
                         # Randomly skip some default arguments.
@@ -957,7 +914,8 @@ class Generator():
                     args.append(ast.CallArgument(
                         self.generate_expr(
                             expr_type.type_args[0],
-                            only_leaves)))
+                            only_leaves,
+                            gen_bottom=gen_bottom)))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
 
@@ -967,19 +925,16 @@ class Generator():
         objs = self._get_matching_objects(etype, subtype, 'fields')
         params_map = {} # Remove
         if not objs:
-            type_f = self._get_matching_class(etype, subtype, 'fields',
-                                              covariant_pos=True)
+            type_f = self._get_matching_class(etype, subtype, 'fields')
             if type_f is None:
                 type_f = self._gen_matching_class(
                     etype, 'fields', not_void=True,
-                    covariant_pos=True,
                 )
             type_f, params_map, func = type_f
             receiver = self.generate_expr(type_f, only_leaves)
             objs.append((receiver, None, func))
         objs = [(r, f) for r, _, f in objs]
         receiver, func = ut.random.choice(objs)
-        # print("FIELD", func.name, etype, params_map)
         self.depth = initial_depth
         return ast.FieldAccess(receiver, func.name)
 
@@ -1002,7 +957,6 @@ class Generator():
                 else:
                     type_var_map = {}
                 return c, type_var_map
-        import pdb; pdb.set_trace()
         return None
 
     def _get_subclass(self, etype: tp.Type, subtype=True):
@@ -1131,15 +1085,6 @@ class Generator():
                     field_type=tp.substitute_type(field.get_type(),
                                                   type_var_map)
                 )
-                if cls.is_parameterized():
-                    indexes = {
-                        t_param: var_type.type_args[i]
-                        for i, t_param in enumerate(
-                            cls.get_type().type_parameters)
-                    }
-                    val = indexes.get(field.get_type())
-                    if val and val.is_wildcard() and val.is_covariant():
-                        continue
                 if not field.is_final:
                     variables.append((ast.Variable(var.name), field_sub))
         return variables
@@ -1306,19 +1251,19 @@ class Generator():
         return other_candidates + candidates
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
-                      exclude_var=False):
+                      exclude_var=False, gen_bottom=False):
+        if gen_bottom:
+            return ast.BottomConstant(None)
         find_subtype = (
             expr_type and
             subtype and expr_type != self.bt_factory.get_void_type()
             and ut.random.bool()
         )
         expr_type = expr_type or self.select_type()
-        # print('INITIAL TYPE', expr_type)
         if find_subtype:
             subtypes = tu.find_subtypes(expr_type, self.get_types(),
                                         include_self=True, concrete_only=True)
             expr_type = ut.random.choice(subtypes)
-        # print('FINAL_TYPE', expr_type)
         gens = self.get_generators(expr_type, only_leaves, subtype,
                                    exclude_var)
         expr = ut.random.choice(gens)(expr_type)
