@@ -9,6 +9,11 @@ from src import utils
 
 
 def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
+    def _get_type_arg_bound(t_arg, type_args, getter=lambda x, y: x[y]):
+        while isinstance(t_arg, int):
+            t_arg = getter(type_args, t_arg)
+        return t_arg
+
     valid_args = []
     type_param_assigns = {}
 
@@ -33,7 +38,15 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             # types.
             bound_index = type_param_assigns[t_param.bound]
             t_args = [bound_index]
-            if t_param.is_invariant():
+            is_contained = tp.ParameterizedType.is_contained(
+                _get_type_arg_bound(
+                    valid_args[bound_index][0],
+                    valid_args,
+                    lambda x, y: x[y][0]
+                ),
+                etype.type_args[i], t_param
+            )
+            if t_param.is_invariant() and not is_contained:
                 # OK, if T2 is invariant, then the possible types that T1
                 # can have is etype.type_args[i].
                 # This prevents us from situtations like the following.
@@ -60,8 +73,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
     for type_args in itertools.product(*valid_args):
         new_type_args = []
         for t_arg in type_args:
-            while isinstance(t_arg, int):
-                t_arg = type_args[t_arg]
+            t_arg = _get_type_arg_bound(t_arg, type_args)
             new_type_args.append(t_arg)
         constructed_types.append(etype.t_constructor.new(new_type_args))
     return constructed_types
@@ -328,13 +340,14 @@ def _get_type_arg_variance(t_param, variance_choices):
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
     covariance = [tp.Covariant] if can_variant else []
+    # TODO: Add contravariance.
     contravariance = [tp.Contravariant] if can_contravariant else []
     if t_param.is_invariant():
-        variances = [tp.Invariant] + covariance + contravariance
+        variances = [tp.Invariant] + covariance
     elif t_param.is_covariant():
         variances = [tp.Invariant] + covariance
     else:
-        variances = [tp.Invariant] + contravariance
+        variances = [tp.Invariant]
     return utils.random.choice(variances)
 
 
@@ -365,8 +378,9 @@ def instantiate_type_constructor(
                         a_types = find_subtypes(t_param.bound, types, True)
                         for i, t in enumerate(a_types):
                             if isinstance(t, tp.ParameterizedType):
-                                a_types[i] = tp.substitute_type_args(
+                                tmp_t = tp.substitute_type_args(
                                     t, type_var_map, cond=lambda t: False)
+                                a_types[i] = tmp_t.to_variance_free(None)
                     else:
                         a_types = [type_var_map[t_param.bound]]
                 else:
@@ -387,8 +401,9 @@ def instantiate_type_constructor(
             )
         variance = _get_type_arg_variance(t_param, variance_choices)
         t_arg = cls_type
-        # TODO
-        t_args.append(cls_type)
+        if not variance.is_invariant() and not cls_type.is_wildcard():
+            t_arg = tp.WildCardType(cls_type, variance)
+        t_args.append(t_arg)
         type_var_map[t_param] = t_arg
     return type_constructor.new(t_args), type_var_map
 
