@@ -338,14 +338,13 @@ def _get_type_arg_variance(t_param, variance_choices):
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
     covariance = [tp.Covariant] if can_variant else []
-    # TODO: Add contravariance.
     contravariance = [tp.Contravariant] if can_contravariant else []
     if t_param.is_invariant():
-        variances = [tp.Invariant] + covariance
+        variances = [tp.Invariant] + covariance + contravariance
     elif t_param.is_covariant():
         variances = [tp.Invariant] + covariance
     else:
-        variances = [tp.Invariant]
+        variances = [tp.Invariant] + contravariance
     return utils.random.choice(variances)
 
 
@@ -359,10 +358,22 @@ def instantiate_type_constructor(
                                  types, only_regular, primitives=False)
     t_args = []
     type_var_map = dict(type_var_map or {})
+    indexes = {}
     for i, t_param in enumerate(type_constructor.type_parameters):
+        indexes[t_param] = i
         t = type_var_map.get(t_param)
         if t:
             a_types = [t]
+            if t_param.bound and t_param.bound.is_type_var():
+                # We must assign the same type argument to the bound of the
+                # current ype parameter.
+                if t.is_wildcard() and t.is_contravariant():
+                    # See the comment below, regarding wildcard types.
+                    t = t.bound
+                    if variance_choices:
+                        variance_choices[t_param] = (False, False)
+                t_args[indexes[t_param.bound]] = t
+                type_var_map[t_param.bound] = t
         else:
             a_types = []
             for k, v in type_var_map.items():
@@ -380,7 +391,18 @@ def instantiate_type_constructor(
                                     t, type_var_map, cond=lambda t: False)
                                 a_types[i] = tmp_t.to_variance_free(None)
                     else:
-                        a_types = [type_var_map[t_param.bound]]
+                        t_bound = type_var_map[t_param.bound]
+                        if t_bound.is_wildcard() and t_bound.is_contravariant():
+                            # Here we have the following case:
+                            # We have two type parameters X, Y where Y <: X
+                            # and we have assigned a contravariant wildcard
+                            # type to the type parameter X.
+                            # Then, a subtype of this wildcard type is its
+                            # lower bound.
+                            t_bound = t_bound.bound
+                            if variance_choices:
+                                variance_choices[t_param] = (False, False)
+                        a_types = [t_bound]
                 else:
                     a_types = types
         c = utils.random.choice(a_types)
