@@ -116,8 +116,7 @@ class Generator():
                                exclude_contravariants=exclude_contravariants)
         t = ut.random.choice(types)
         if isinstance(t, tp.TypeConstructor):
-            exclude_type_vars = self.language in ['kotlin', 'java'] and (
-                t.name == self.bt_factory.get_array_type().name)
+            exclude_type_vars = t.name == self.bt_factory.get_array_type().name
             t, _ = tu.instantiate_type_constructor(
                 t, self.get_types(exclude_arrays=True,
                                   exclude_covariants=True,
@@ -1153,8 +1152,16 @@ class Generator():
                                                      only_leaves, subtype))
         receiver, variable = ut.random.choice(variables)
         self.depth = initial_depth
+        gen_bottom = (
+            variable.get_type().is_wildcard() or
+            (
+                variable.get_type().is_parameterized() and
+                variable.get_type().has_wildcards()
+            )
+        )
         return ast.Assignment(variable.name, self.generate_expr(
-            variable.get_type(), only_leaves, subtype), receiver=receiver)
+            variable.get_type(), only_leaves, subtype, gen_bottom=gen_bottom),
+                              receiver=receiver,)
 
     def generate_main_func(self):
         initial_namespace = self.namespace
@@ -1223,8 +1230,7 @@ class Generator():
 
         if expr_type == self.bt_factory.get_void_type():
             return [gen_fun_call,
-                    #lambda x: self.gen_assignment(x, only_leaves)]
-                    ]
+                    lambda x: self.gen_assignment(x, only_leaves)]
 
         if self.depth >= self.max_depth or only_leaves:
             gen_con = constant_candidates.get(expr_type.name)
