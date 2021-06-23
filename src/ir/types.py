@@ -254,7 +254,7 @@ class TypeParameter(AbstractType):
         if not self.bound:
             return None
         t = self.bound
-        if isinstance(t, TypeParameter):
+        if t.is_type_var():
             return t.get_bound_rec(factory)
         if not t.has_type_variables():
             return t
@@ -318,11 +318,7 @@ class WildCardType(Type):
         t = self.bound
         if t.is_wildcard():
             return t.get_bound_rec(factory)
-        if not t.has_type_variables():
-            return t
-        if t.is_type_var():
-            return t
-        return t.to_type_variable_free(factory)
+        return t
 
     def is_wildcard(self):
         return True
