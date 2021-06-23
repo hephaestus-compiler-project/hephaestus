@@ -102,11 +102,14 @@ class GroovyTranslator(BaseTranslator):
             return "? super " + self.get_type_name(t_arg.bound)
 
     def get_type_name(self, t):
+        if t.is_wildcard():
+            t = t.get_bound_rec(gt.GroovyBuiltinFactory())
+            return self.get_type_name(t)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
             return t.get_name()
         if isinstance(t_constructor, gt.ArrayType):
-            return "{}[]".format(self.get_type_name(t.type_args[0].to_type()))
+            return "{}[]".format(self.get_type_name(t.type_args[0]))
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
                                                   for ta in t.type_args]))
 
@@ -444,8 +447,9 @@ class GroovyTranslator(BaseTranslator):
 
     @append_to
     def visit_bottom_constant(self, node):
-        return self.get_ident() + "({}) null".format(
-            self.get_type_name(node.t))
+        return self.get_ident() + "{}null".format(
+            "( " + self.get_type_name(node.t) + ") " if node.t else ""
+        )
 
     @append_to
     def visit_integer_constant(self, node):
