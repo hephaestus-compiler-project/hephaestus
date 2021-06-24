@@ -8,6 +8,37 @@ import src.ir.builtins as bt
 from src import utils
 
 
+def _find_candidate_type_args(t_param: tp.TypeParameter,
+                              base_targ: tp.Type,
+                              types,
+                              get_subtypes):
+
+    if t_param.is_invariant():
+        t_args = [base_targ]
+    elif t_param.is_covariant():
+        t_args = _find_types(base_targ, types,
+                             get_subtypes, True,
+                             t_param.bound, concrete_only=True)
+    else:
+        t_args = _find_types(base_targ, types,
+                             not get_subtypes, True,
+                             t_param.bound, concrete_only=True)
+    if not base_targ.is_wildcard():
+        return t_args
+    if base_targ.is_covariant():
+        new_types = _find_types(base_targ.bound, types, get_subtypes, True,
+                                t_param.bound, concrete_only=True)
+        new_types.extend([tp.WildCardType(t, tp.Covariant)
+                          for t in new_types])
+    elif base_targ.is_contravariant():
+        new_types = _find_types(base_targ.bound, types, not get_subtypes, True,
+                                t_param.bound, concrete_only=True)
+    else:
+        new_types = types
+    t_args.extend(new_types)
+    return t_args
+
+
 def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
     def _get_type_arg_bound(t_arg, type_args, getter=lambda x, y: x[y]):
         while isinstance(t_arg, int):
@@ -52,16 +83,8 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
                 # A<Double, Double> is not subtype of A<Number, Number>.
                 valid_args[bound_index] = [etype.type_args[i]]
         else:
-            if t_param.is_invariant():
-                t_args = [etype.type_args[i]]
-            elif t_param.is_covariant():
-                t_args = _find_types(etype.type_args[i], types,
-                                     get_subtypes, True,
-                                     t_param.bound, concrete_only=True)
-            else:
-                t_args = _find_types(etype.type_args[i], types,
-                                     not get_subtypes, True,
-                                     t_param.bound, concrete_only=True)
+            t_args = _find_candidate_type_args(t_param, etype.type_args[i],
+                                               types, get_subtypes)
             # Type argument should not be primitives.
             t_args = [t for t in t_args if not t.is_primitive()]
         type_param_assigns[t_param] = i
@@ -370,7 +393,7 @@ def instantiate_type_constructor(
                 if t.is_wildcard() and t.is_contravariant():
                     # See the comment below, regarding wildcard types.
                     t = t.bound
-                    if variance_choices:
+                    if variance_choices is not None:
                         variance_choices[t_param] = (False, False)
                 t_args[indexes[t_param.bound]] = t
                 type_var_map[t_param.bound] = t
@@ -400,7 +423,7 @@ def instantiate_type_constructor(
                             # Then, a subtype of this wildcard type is its
                             # lower bound.
                             t_bound = t_bound.bound
-                            if variance_choices:
+                            if variance_choices is not None:
                                 variance_choices[t_param] = (False, False)
                         a_types = [t_bound]
                 else:
