@@ -85,15 +85,14 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             is_contravariant = (
                 base_targ.is_wildcard() and base_targ.is_contravariant()
             )
-            if t_param.is_invariant() and is_type_var and not is_same_type_var:
+            if is_type_var and not is_same_type_var:
                 # OK, if T2 is invariant, then the possible types that T1
                 # can have is etype.type_args[i].
                 # This prevents us from situtations like the following.
                 # A<out T1, T2: T1>
                 # A<Double, Double> is not subtype of A<Number, Number>.
                 valid_args[bound_index] = [base_targ]
-            elif t_param.is_invariant() and not is_type_var and \
-                    not is_contravariant:
+            elif not is_type_var and not is_contravariant:
                 if not is_subtype:
                     # Suppose we have two type parameters X, Y, where Y <: X
                     # If the current type argument of Y is not subtype of
@@ -424,6 +423,12 @@ def instantiate_type_constructor(
                     t = t.bound
                     if variance_choices is not None:
                         variance_choices[t_param] = (False, False)
+                is_covariant = t.is_wildcard() and t.is_covariant()
+                if t_param.is_contravariant() and is_covariant:
+                    # See the comment below, regarding wildcard types.
+                    t = t.bound
+                    if variance_choices is not None:
+                        variance_choices[t_param] = (False, False)
                 t_args[indexes[t_param.bound]] = t
                 type_var_map[t_param.bound] = t
         else:
@@ -451,6 +456,15 @@ def instantiate_type_constructor(
                             # type to the type parameter X.
                             # Then, a subtype of this wildcard type is its
                             # lower bound.
+                            t_bound = t_bound.bound
+                            if variance_choices is not None:
+                                variance_choices[t_param] = (False, False)
+                        is_covariant = (
+                            t_bound.is_wildcard() and t_bound.is_covariant())
+                        # Here the variance of the type argument clashes with
+                        # the variance of the corresponding parameter. So
+                        # we assign the bound of the wildcard.
+                        if t_param.is_contravariant() and is_covariant:
                             t_bound = t_bound.bound
                             if variance_choices is not None:
                                 variance_choices[t_param] = (False, False)

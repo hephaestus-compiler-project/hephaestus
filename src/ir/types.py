@@ -537,9 +537,9 @@ class ParameterizedType(SimpleClassifier):
             if t_arg.is_wildcard() and t_arg.is_contravariant():
                 if t_arg.bound.has_type_variables():
                     bound, variance = (
-                        None, Invariant
+                        (None, Invariant)
                         if t_param.is_contravariant()
-                        else factory.get_any_type(), Covariant
+                        else (factory.get_any_type(), Covariant)
                     )
                     type_args.append(WildCardType(bound, variance))
                 else:
