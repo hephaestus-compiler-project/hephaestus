@@ -34,7 +34,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
         new_types = _find_types(base_targ.bound, types, not get_subtypes, True,
                                 t_param.bound, concrete_only=True)
     else:
-        new_types = types
+        new_types = []
     t_args.extend(new_types)
     return t_args
 
@@ -58,7 +58,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
 
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
         if t_param.bound in type_param_assigns:
-            # Here we have a case like the following.
+            # Here we are trying to handle cases like the following.
             # class X<T1, T2: T1>
             # Therefore the type assignments for the type variable T2 must keep
             # up with the assignments of the type variable T1.
@@ -72,16 +72,45 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             type_arg_bound = _get_type_arg_bound(valid_args[bound_index][0],
                                                  valid_args,
                                                  lambda x, y: x[y][0])
-            is_contained = etype.type_args[i].is_wildcard() and (
-                etype.type_args[i].bound == type_arg_bound
+            base_targ = etype.type_args[i]
+            is_same_type_var = (
+                base_targ.is_wildcard() and
+                base_targ.bound.name == type_arg_bound.name
             )
-            if t_param.is_invariant() and not is_contained:
+            is_subtype = (
+                base_targ.is_wildcard() and
+                base_targ.bound.is_subtype(type_arg_bound)
+            )
+            is_type_var = type_arg_bound.is_type_var()
+            is_contravariant = (
+                base_targ.is_wildcard() and base_targ.is_contravariant()
+            )
+            if t_param.is_invariant() and is_type_var and not is_same_type_var:
                 # OK, if T2 is invariant, then the possible types that T1
                 # can have is etype.type_args[i].
                 # This prevents us from situtations like the following.
                 # A<out T1, T2: T1>
                 # A<Double, Double> is not subtype of A<Number, Number>.
-                valid_args[bound_index] = [etype.type_args[i]]
+                valid_args[bound_index] = [base_targ]
+            elif t_param.is_invariant() and not is_type_var and \
+                    not is_contravariant:
+                if not is_subtype:
+                    # Suppose we have two type parameters X, Y, where Y <: X
+                    # If the current type argument of Y is not subtype of
+                    # X, then, we must replace the assignment we have done
+                    # previously for X with a type that is a subtype of
+                    # the current type argument of X.
+                    valid_args[bound_index] = [base_targ]
+            elif is_contravariant and not is_type_var:
+                # Here we handle case like the following.
+
+                # Foo<out X, Y : X>
+                # Foo<A, in A> current type
+                # Foo<B, in B> this is not subtype of Foo<A, in A>
+                # Therefore, here we replace B with the bound of in A.
+                if type_arg_bound.is_subtype(base_targ.bound) and (
+                      type_arg_bound.name != base_targ.bound.name):
+                    valid_args[bound_index] = [base_targ.bound]
         else:
             t_args = _find_candidate_type_args(t_param, etype.type_args[i],
                                                types, get_subtypes)
