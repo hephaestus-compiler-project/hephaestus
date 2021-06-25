@@ -465,19 +465,21 @@ class TypeConstructor(AbstractType):
         return ParameterizedType(type_con, type_args)
 
 
-def _to_type_variable_free(t: Type, factory) -> Type:
+def _to_type_variable_free(t: Type, t_param, factory) -> Type:
     if t.is_type_var():
         bound = t.get_bound_rec(factory)
-        if bound is None:
-            # If the type variable has no bound, then create
-            # a variant type argument on the top type.
-            # X<T> => X<? extends Object>
-            return WildCardType(factory.get_any_type(), Covariant)
-        else:
-            # Get the bound of type variable and create variant type
-            # argument based on its bound, e.g.,
-            # T <: Number, X<T> => X<? extends Number>
-            return WildCardType(bound, Covariant)
+        # If the type variable has no bound, then create
+        # a variant type argument on the top type.
+        # X<T> => X<? extends Object>
+        bound, variance = (
+            None, Invariant
+            if t_param.is_contravariant()
+            else (
+                factory.get_any_type() if bound is None else bound,
+                Covariant
+            )
+        )
+        return WildCardType(bound, variance)
     elif t.is_parameterized():
         return t.to_type_variable_free(factory)
     else:
@@ -527,22 +529,28 @@ class ParameterizedType(SimpleClassifier):
         # type variables into a parameterized type that is
         # type variable free.
         type_args = []
-        for t_arg in self.type_args:
+        for i, t_arg in enumerate(self.type_args):
+            t_param = self.t_constructor.type_parameters[i]
             if t_arg.is_wildcard() and t_arg.is_contravariant():
                 if t_arg.bound.has_type_variables():
-                    type_args.append(
-                        WildCardType(factory.get_any_type(), Covariant))
+                    bound, variance = (
+                        None, Invariant
+                        if t_param.is_contravariant()
+                        else factory.get_any_type(), Covariant
+                    )
+                    type_args.append(WildCardType(bound, variance))
                 else:
                     type_args.append(t_arg)
             elif t_arg.is_wildcard() and t_arg.is_covariant():
                 bound = t_arg.get_bound_rec()
                 if bound.has_type_variables():
                     type_args.append(
-                        _to_type_variable_free(bound, factory))
+                        _to_type_variable_free(bound, t_param, factory))
                 else:
                     type_args.append(t_arg)
             else:
-                type_args.append(_to_type_variable_free(t_arg, factory))
+                type_args.append(_to_type_variable_free(t_arg, t_param,
+                                                        factory))
         return self.t_constructor.new(type_args)
 
     def get_type_variables(self, factory) -> Dict[TypeParameter, Set[Type]]:
