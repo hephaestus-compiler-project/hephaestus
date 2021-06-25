@@ -36,7 +36,7 @@ class KotlinTranslator(BaseTranslator):
 
     def get_type_name(self, t):
         if t.is_wildcard():
-            t = t.get_bound_rec(kt.KotlinBuiltinFactory())
+            t = t.get_bound_rec()
             return self.get_type_name(t)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
