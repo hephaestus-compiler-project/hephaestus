@@ -471,6 +471,9 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
         # If the type variable has no bound, then create
         # a variant type argument on the top type.
         # X<T> => X<? extends Object>
+        #
+        # If the corresponding type parameter is contravariant, then
+        # use the wildcard type X<T> => X<?>
         bound, variance = (
             None, Invariant
             if t_param.is_contravariant()
