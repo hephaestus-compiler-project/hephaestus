@@ -441,7 +441,7 @@ def instantiate_type_constructor(
                             if isinstance(t, tp.ParameterizedType):
                                 tmp_t = tp.substitute_type_args(
                                     t, type_var_map, cond=lambda t: False)
-                                a_types[i] = tmp_t.to_variance_free(None)
+                                a_types[i] = tmp_t.to_variance_free()
                     else:
                         t_bound = type_var_map[t_param.bound]
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
