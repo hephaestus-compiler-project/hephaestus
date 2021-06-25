@@ -162,7 +162,7 @@ class JavaTranslator(BaseTranslator):
 
     def get_type_name(self, t, get_boxed_void=False):
         if t.is_wildcard():
-            t = t.get_bound_rec(jt.JavaBuiltinFactory())
+            t = t.get_bound_rec()
             return self.get_type_name(t, get_boxed_void)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:

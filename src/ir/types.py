@@ -312,12 +312,12 @@ class WildCardType(Type):
         else:
             return {}
 
-    def get_bound_rec(self, factory):
+    def get_bound_rec(self):
         if not self.bound:
             return None
         t = self.bound
         if t.is_wildcard():
-            return t.get_bound_rec(factory)
+            return t.get_bound_rec()
         return t
 
     def is_wildcard(self):
@@ -465,6 +465,25 @@ class TypeConstructor(AbstractType):
         return ParameterizedType(type_con, type_args)
 
 
+def _to_type_variable_free(t: Type, factory) -> Type:
+    if t.is_type_var():
+        bound = t.get_bound_rec(factory)
+        if bound is None:
+            # If the type variable has no bound, then create
+            # a variant type argument on the top type.
+            # X<T> => X<? extends Object>
+            return WildCardType(factory.get_any_type(), Covariant)
+        else:
+            # Get the bound of type variable and create variant type
+            # argument based on its bound, e.g.,
+            # T <: Number, X<T> => X<? extends Number>
+            return WildCardType(bound, Covariant)
+    elif t.is_parameterized():
+        return t.to_type_variable_free(factory)
+    else:
+        return t
+
+
 class ParameterizedType(SimpleClassifier):
     def __init__(self, t_constructor: TypeConstructor,
                  type_args: List[Type],
@@ -493,11 +512,11 @@ class ParameterizedType(SimpleClassifier):
             for t_arg in self.type_args
         )
 
-    def to_variance_free(self, factory):
+    def to_variance_free(self):
         type_args = []
         for t_arg in self.type_args:
             if t_arg.is_wildcard() and t_arg.bound:
-                t = t_arg.get_bound_rec(factory)
+                t = t_arg.get_bound_rec()
             else:
                 t = t_arg
             type_args.append(t)
@@ -509,24 +528,21 @@ class ParameterizedType(SimpleClassifier):
         # type variable free.
         type_args = []
         for t_arg in self.type_args:
-            if isinstance(t_arg, TypeParameter):
-                bound = t_arg.get_bound_rec(factory)
-                if bound is None:
-                    # If the type variable has no bound, then create
-                    # a variant type argument on the top type.
-                    # X<T> => X<? extends Object>
+            if t_arg.is_wildcard() and t_arg.is_contravariant():
+                if t_arg.bound.has_type_variables():
                     type_args.append(
                         WildCardType(factory.get_any_type(), Covariant))
                 else:
-                    # Get the bound of type variable and create variant type
-                    # argument based on its bound, e.g.,
-                    # T <: Number, X<T> => X<? extends Number>
-                    type_args.append(WildCardType(bound, Covariant))
-            elif t_arg.is_parameterized():
-                type_args.append(
-                    t_arg.to_type_variable_free(factory))
+                    type_args.append(t_arg)
+            elif t_arg.is_wildcard() and t_arg.is_covariant():
+                bound = t_arg.get_bound_rec()
+                if bound.has_type_variables():
+                    type_args.append(
+                        _to_type_variable_free(bound, factory))
+                else:
+                    type_args.append(t_arg)
             else:
-                type_args.append(t_arg)
+                type_args.append(_to_type_variable_free(t_arg, factory))
         return self.t_constructor.new(type_args)
 
     def get_type_variables(self, factory) -> Dict[TypeParameter, Set[Type]]:

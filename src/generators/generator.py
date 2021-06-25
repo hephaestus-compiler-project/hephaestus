@@ -121,7 +121,8 @@ class Generator():
                 t, self.get_types(exclude_arrays=True,
                                   exclude_covariants=True,
                                   exclude_contravariants=True,
-                                  exclude_type_vars=exclude_type_vars)
+                                  exclude_type_vars=exclude_type_vars),
+                variance_choices={}
             )
         return t
 
@@ -633,7 +634,7 @@ class Generator():
         )
         vtype = None if omit_type and not expr.is_bottom() else var_type
         if vtype is not None and vtype.is_wildcard():
-            vtype = vtype.get_bound_rec(self.bt_factory)
+            vtype = vtype.get_bound_rec()
         return ast.VariableDeclaration(
             gu.gen_identifier('lower'),
             expr=expr,
@@ -656,7 +657,8 @@ class Generator():
         if tu.is_builtin(var_type, self.bt_factory):
             return None
         if var_type.is_type_var() or var_type.is_wildcard():
-            bound = var_type.get_bound_rec(self.bt_factory)
+            args = [] if var_type.is_wildcard() else [self.bt_factory]
+            bound = var_type.get_bound_rec(*args)
             if not bound or tu.is_builtin(bound, self.bt_factory) or (
                   isinstance(bound, tp.TypeParameter)):
                 return None
@@ -985,7 +987,7 @@ class Generator():
     # pylint: disable=unused-argument
     def gen_new(self, etype, only_leaves=False, subtype=True):
         if isinstance(etype, tp.ParameterizedType):
-            etype = etype.to_variance_free(self.bt_factory)
+            etype = etype.to_variance_free()
         news = {
             self.bt_factory.get_any_type(): ast.New(
                 self.bt_factory.get_any_type(), args=[]),
