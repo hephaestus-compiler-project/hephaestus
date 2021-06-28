@@ -27,9 +27,9 @@ class KotlinTranslator(BaseTranslator):
     def type_arg2str(self, t_arg):
         if not isinstance(t_arg, tp.WildCardType):
             return self.get_type_name(t_arg)
-        if t_arg.variance == tp.Invariant:
+        if t_arg.is_invariant():
             return "*"
-        elif t_arg.variance == tp.Covariant:
+        elif t_arg.is_covariant():
             return "out " + self.get_type_name(t_arg.bound)
         else:
             return "in " + self.get_type_name(t_arg.bound)
