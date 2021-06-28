@@ -1,4 +1,4 @@
-import itertools
+from collections import OrderedDict
 from typing import List, Tuple, Dict
 
 import src.ir.ast as ast
@@ -8,31 +8,112 @@ import src.ir.builtins as bt
 from src import utils
 
 
+def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
+                           has_type_variables):
+    # If the bound of the corresponding parameter does not contain type
+    # variables, then we are unable to seek another matching type argument.
+    # So, return the current type argument.
+    if not has_type_variables:
+        return base_targ
+    if base_targ.is_wildcard() and not base_targ.is_invariant():
+        base_targ = base_targ.bound
+    if not base_targ.is_parameterized():
+        return base_targ if base_targ.is_subtype(bound) else None
+
+    if base_targ.name == bound.name:
+        # Here we have a case like the following.
+        # bound: A<Number, X>
+        # current type argument: A<Number, Any>
+        # So, we try to unify those types by initially replacing all type
+        # arguments of `base_targ` with fresh type variables.
+        # If unification succeeds, instantiate the underlying type constructor
+        # with the concrete types assigned to each type variable.
+        template_t = base_targ.t_constructor.new(
+            base_targ.t_constructor.type_parameters)
+        type_var_map = unify_types(bound, template_t, None)
+        if not type_var_map:
+            return None
+        base_targ, _ = instantiate_type_constructor(
+            base_targ.t_constructor, types, only_regular=True,
+            type_var_map=type_var_map, variance_choices=None
+        )
+        return base_targ.to_variance_free()
+
+    # Here, we have a case like the following.
+    # bound: A<Number, X>
+    # current type argument: B<Any>
+    supertypes = base_targ.t_constructor.get_supertypes()
+    supertype = None
+    for st in supertypes:
+        # We first check the type constructor of B has A<Number, X> as one of
+        # its supertypes.
+        if st.name == bound.name:
+            supertype = st
+            break
+    if not supertype:
+        return None
+    # If we found matching supertype, we try to unify it with the given bound.
+    type_var_map = unify_types(bound, supertype, None)
+    if not type_var_map:
+        return None
+    # If unification succeeds, we try to instantiate the type contructor
+    # of `base_targ` with the proper type arguments so that the returned
+    # type is a subtype of `bound`.
+    type_args = []
+    for i, t_param in enumerate(base_targ.t_constructor.type_parameters):
+        t_arg = type_var_map.get(t_param, base_targ.type_args[i])
+        type_args.append(t_arg)
+    return base_targ.t_constructor.new(type_args)
+
+
 def _find_candidate_type_args(t_param: tp.TypeParameter,
                               base_targ: tp.Type,
                               types,
-                              get_subtypes):
+                              get_subtypes,
+                              type_var_map={}):
+
+    bound = None
+    if t_param.bound:
+        # If the bound of the current type parameter contains other type
+        # parameters, substitute it based on the current type assignments
+        # of those type parameters.
+        bound = tp.substitute_type(t_param.bound, type_var_map)
+
+    if bound and bound.is_parameterized():
+        # If bound is `paramterized`, we seek another type argument that
+        # is subtype of the the `new` bound.
+        base_targ = _replace_type_argument(base_targ, bound, types,
+                                           t_param.bound.has_type_variables())
+    # If `base_targ` is None, this means that
+    # we cannot find candidate type arguments that satisfy the bound of
+    # the corresponding type parameter.
+    if not base_targ:
+        return None
 
     if t_param.is_invariant():
         t_args = [base_targ]
     elif t_param.is_covariant():
-        t_args = _find_types(base_targ, types,
-                             get_subtypes, True,
-                             t_param.bound, concrete_only=True)
+        t_args = _find_types(
+            base_targ, types,
+            get_subtypes, True, bound, concrete_only=True)
     else:
-        t_args = _find_types(base_targ, types,
-                             not get_subtypes, True,
-                             t_param.bound, concrete_only=True)
+        t_args = _find_types(
+            base_targ, types,
+            not get_subtypes, True, bound, concrete_only=True)
+
     if not base_targ.is_wildcard():
         return t_args
     if base_targ.is_covariant():
-        new_types = _find_types(base_targ.bound, types, get_subtypes, True,
-                                t_param.bound, concrete_only=True)
+        new_types = _find_types(
+            base_targ.bound,
+            types, get_subtypes, True, bound,
+            concrete_only=True)
         new_types.extend([tp.WildCardType(t, tp.Covariant)
                           for t in new_types])
     elif base_targ.is_contravariant():
-        new_types = _find_types(base_targ.bound, types, not get_subtypes, True,
-                                t_param.bound, concrete_only=True)
+        new_types = _find_types(
+            base_targ.bound, types,
+            not get_subtypes, True, bound, concrete_only=True)
     else:
         new_types = []
     t_args.extend(new_types)
@@ -40,24 +121,16 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
 
 
 def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
-    def _get_type_arg_bound(t_arg, type_args, getter=lambda x, y: x[y]):
-        while isinstance(t_arg, int):
-            t_arg = getter(type_args, t_arg)
-        return t_arg
-
-    valid_args = []
-    type_param_assigns = {}
-
+    type_var_map = OrderedDict()
     # FIXME add is_array() method on type class
     if etype.name == 'Array':
         types = [t for t in types
-                 if not isinstance(t, tp.TypeParameter) and
-                 not isinstance(t, tp.ParameterizedType) and
+                 if not t.is_type_var() and
+                 not t.is_parameterized() and
                  not isinstance(t, tp.TypeConstructor)
                  ]
-
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
-        if t_param.bound in type_param_assigns:
+        if t_param.bound in type_var_map:
             # Here we are trying to handle cases like the following.
             # class X<T1, T2: T1>
             # Therefore the type assignments for the type variable T2 must keep
@@ -67,11 +140,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
             # we replace this index with the type assigned to the type variable
             # T1. In this way, we guarantee that T1 and T2 have compatible
             # types.
-            bound_index = type_param_assigns[t_param.bound]
-            t_args = [bound_index]
-            type_arg_bound = _get_type_arg_bound(valid_args[bound_index][0],
-                                                 valid_args,
-                                                 lambda x, y: x[y][0])
+            type_arg_bound = type_var_map[t_param.bound]
             base_targ = etype.type_args[i]
             is_same_type_var = (
                 base_targ.is_wildcard() and
@@ -91,7 +160,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
                 # This prevents us from situtations like the following.
                 # A<out T1, T2: T1>
                 # A<Double, Double> is not subtype of A<Number, Number>.
-                valid_args[bound_index] = [base_targ]
+                type_var_map[t_param.bound] = base_targ
             elif not is_type_var and not is_contravariant:
                 if not is_subtype:
                     # Suppose we have two type parameters X, Y, where Y <: X
@@ -99,7 +168,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
                     # X, then, we must replace the assignment we have done
                     # previously for X with a type that is a subtype of
                     # the current type argument of X.
-                    valid_args[bound_index] = [base_targ]
+                    type_var_map[t_param.bound] = base_targ
             elif is_contravariant and not is_type_var:
                 # Here we handle case like the following.
 
@@ -109,23 +178,22 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
                 # Therefore, here we replace B with the bound of in A.
                 if type_arg_bound.is_subtype(base_targ.bound) and (
                       type_arg_bound.name != base_targ.bound.name):
-                    valid_args[bound_index] = [base_targ.bound]
+                    type_var_map[t_param.bound] = base_targ.bound
+            type_var_map[t_param] = type_var_map[t_param.bound]
         else:
             t_args = _find_candidate_type_args(t_param, etype.type_args[i],
-                                               types, get_subtypes)
+                                               types, get_subtypes,
+                                               type_var_map)
+            if not t_args:
+                # We were not able to construct a subtype of the given
+                # parameterized type. Therefore, we give back the given
+                # type.
+                return etype
             # Type argument should not be primitives.
             t_args = [t for t in t_args if not t.is_primitive()]
-        type_param_assigns[t_param] = i
-        valid_args.append(t_args)
-
-    constructed_types = []
-    for type_args in itertools.product(*valid_args):
-        new_type_args = []
-        for t_arg in type_args:
-            t_arg = _get_type_arg_bound(t_arg, type_args)
-            new_type_args.append(t_arg)
-        constructed_types.append(etype.t_constructor.new(new_type_args))
-    return constructed_types
+            t_arg = utils.random.choice(t_args)
+            type_var_map[t_param] = t_arg
+    return etype.t_constructor.new(list(type_var_map.values()))
 
 
 def to_type(stype, types):
@@ -154,7 +222,7 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 continue
 
     if isinstance(etype, tp.ParameterizedType):
-        t_set.update(_construct_related_types(etype, types, get_subtypes))
+        t_set.add(_construct_related_types(etype, types, get_subtypes))
     if include_self:
         t_set.add(etype)
     else:
