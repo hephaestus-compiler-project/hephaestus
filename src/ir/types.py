@@ -475,7 +475,7 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
         # If the corresponding type parameter is contravariant, then
         # use the wildcard type X<T> => X<?>
         bound, variance = (
-            None, Invariant
+            (None, Invariant)
             if t_param.is_contravariant()
             else (
                 factory.get_any_type() if bound is None else bound,
