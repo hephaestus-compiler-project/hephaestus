@@ -13,7 +13,7 @@ class KotlinTranslator(BaseTranslator):
         super().__init__(package, options)
         self._children_res = []
         self.ident = 0
-        self.is_func_block = False
+        self.is_unit = False
         self._cast_integers = False
 
     @staticmethod
@@ -68,15 +68,15 @@ class KotlinTranslator(BaseTranslator):
 
     def visit_block(self, node):
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = False
+        is_unit = self.is_unit
+        self.is_unit = False
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
         res = "{\n" + "\n".join(children_res[:-1])
         if children_res[:-1]:
             res += "\n"
-        ret_keyword = "return " if prev else ""
+        ret_keyword = "return " if node.is_func_block and not is_unit else ""
         if children_res:
             res += " " * self.ident + ret_keyword + \
                    children_res[-1][self.ident:] + "\n" + \
@@ -84,7 +84,7 @@ class KotlinTranslator(BaseTranslator):
         else:
             res += " " * self.ident + ret_keyword + "\n" + \
                    " " * (self.ident - 2) + "}"
-        self.is_func_block = prev
+        self.is_unit = is_unit
         self._children_res.append(res)
 
     def visit_super_instantiation(self, node):
@@ -216,8 +216,8 @@ class KotlinTranslator(BaseTranslator):
         old_ident = self.ident
         self.ident += 2
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = node.get_type() != kt.Unit
+        prev = self.is_unit
+        self.is_unit = node.get_type() == kt.Unit
         prev_c = self._cast_integers
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
@@ -238,7 +238,7 @@ class KotlinTranslator(BaseTranslator):
             sign = "=" if is_expression and node.get_type() != kt.Unit else ""
             res += " " + sign + "\n" + body_res
         self.ident = old_ident
-        self.is_func_block = prev
+        self.is_unit = prev
         self._cast_integers = prev_c
         self._children_res.append(res)
 
