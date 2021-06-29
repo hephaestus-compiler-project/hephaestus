@@ -125,8 +125,9 @@ class Program(Node):
 
 
 class Block(Node):
-    def __init__(self, body: List[Node]):
+    def __init__(self, body: List[Node], is_func_block=True):
         self.body = body
+        self.is_func_block = is_func_block
 
     def children(self):
         return self.body
