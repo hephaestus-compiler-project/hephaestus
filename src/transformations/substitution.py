@@ -82,7 +82,7 @@ class ValueSubstitution(Transformation):
             }
             return self._generate_new(class_decl, etype, params_map)
 
-        if isinstance(etype, tp.TypeConstructor):
+        if etype.is_type_constructor():
             # We selected a class that is parameterized. So before its use,
             # we need to instantiate it.
             class_type, params_map = tu.instantiate_type_constructor(

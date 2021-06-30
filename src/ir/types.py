@@ -89,6 +89,9 @@ class Type(Node):
     def is_parameterized(self):
         return False
 
+    def is_type_constructor(self):
+        return False
+
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
         stack = [self]
@@ -447,6 +450,9 @@ class TypeConstructor(AbstractType):
     def __hash__(self):
         return hash(str(self.__class__) + str(self.name) + str(self.supertypes)
                     + str(self.type_parameters))
+
+    def is_type_constructor(self):
+        return True
 
     def is_subtype(self, other: Type):
         return other in self.get_supertypes()

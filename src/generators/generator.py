@@ -115,7 +115,7 @@ class Generator():
                                exclude_covariants=exclude_covariants,
                                exclude_contravariants=exclude_contravariants)
         t = ut.random.choice(types)
-        if isinstance(t, tp.TypeConstructor):
+        if t.is_type_constructor():
             exclude_type_vars = t.name == self.bt_factory.get_array_type().name
             t, _ = tu.instantiate_type_constructor(
                 t, self.get_types(exclude_arrays=True,
@@ -1005,7 +1005,7 @@ class Generator():
         if class_decl is None:
             return ast.BottomConstant(etype)
 
-        if isinstance(etype, tp.TypeConstructor):
+        if etype.is_type_constructor():
             etype, _ = tu.instantiate_type_constructor(
                 etype, self.get_types())
         if class_decl.is_parameterized() and (
@@ -1097,7 +1097,7 @@ class Generator():
         assignable_types = []
         for c, f in classes:
             t, type_var_map = c.get_type(), {}
-            if isinstance(t, tp.TypeConstructor):
+            if t.is_type_constructor():
                 variance_choices = {
                     t_param: (False, True)
                     for t_param in t.type_parameters
