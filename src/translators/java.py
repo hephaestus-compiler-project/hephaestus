@@ -186,7 +186,7 @@ class JavaTranslator(BaseTranslator):
         ns_decls = list(self.context.get_namespaces_decls(
             self._namespace, name, decl_type))
         if len(ns_decls) == 1 and ns_decls[0][0][:-1] == ast.GLOBAL_NAMESPACE:
-            if name not in self._visit_is_stack:
+            if not self._visit_is_stack.count(name):
                 return "Main."
         return ""
 
