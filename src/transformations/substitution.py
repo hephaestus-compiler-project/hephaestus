@@ -85,7 +85,6 @@ class ValueSubstitution(Transformation):
         if isinstance(etype, tp.TypeConstructor):
             # We selected a class that is parameterized. So before its use,
             # we need to instantiate it.
-            # FIXME in extreme cases it may throw an RecursionError
             class_type, params_map = tu.instantiate_type_constructor(
                 etype, self.types)
         else:
@@ -101,7 +100,7 @@ class ValueSubstitution(Transformation):
         # the program.
         #
         # To preserve corectness, wee need to get the greatest lower bound
-        # of children. TODO: revisit.
+        # of children.
         return node
 
     def visit_new(self, node):
@@ -835,7 +834,6 @@ class IncorrectSubtypingSubstitution(ValueSubstitution):
 
     @change_depth
     def visit_field_access(self, node):
-        # TODO handle receiver of field access.
         return node
         # rec_t = tu.get_type_hint(node.expr, self.program.context,
         #                          self._namespace, self.bt_factory,

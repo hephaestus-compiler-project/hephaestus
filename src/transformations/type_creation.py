@@ -273,7 +273,6 @@ class SubtypeCreation(TypeCreation):
                 else self._type_params_map.get(
                     field.get_type(), field.get_type()).to_type()
             )
-            # FIXME it may crash here in some rare cases
             args.append(self.generator.generate_expr(
                 random_type, only_leaves=True))
         return ast.SuperClassInstantiation(class_type, args)

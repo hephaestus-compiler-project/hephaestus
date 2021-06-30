@@ -243,6 +243,5 @@ args.options = {
     }
 }
 
-# FIXME
 if args.language == "groovy":
     args.options["TypeSubstitution"]["disable_inverted_smart_cast"] = True

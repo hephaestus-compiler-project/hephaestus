@@ -113,7 +113,6 @@ class AbstractType(Type):
         raise TypeError("You cannot call 'is_subtype()' in an AbstractType")
 
     def get_supertypes(self):
-        # TODO: revisit
         return super().get_supertypes()
 
     def has_type_variables(self):
@@ -385,7 +384,6 @@ def substitute_type_args(etype, type_map,
 
 
 def substitute_type(t, type_map):
-    # TODO: revisit argument 'cond'
     return _get_type_substitution(t, type_map, lambda t: False)
 
 
@@ -416,7 +414,6 @@ def perform_type_substitution(etype, type_map,
             type_params.append(t_param)
             continue
 
-        # TODO: revisit
         new_bound = t_param.bound
         t_param = TypeParameter(t_param.name, t_param.variance, new_bound)
         type_params.append(t_param)
@@ -445,7 +442,6 @@ class TypeConstructor(AbstractType):
     def __eq__(self, other: AbstractType):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
-                # TODO Revisit self.supertypes == other.supertypes and
                 str(self.type_parameters) == str(other.type_parameters))
 
     def __hash__(self):
@@ -453,9 +449,6 @@ class TypeConstructor(AbstractType):
                     + str(self.type_parameters))
 
     def is_subtype(self, other: Type):
-        # TODO revisit
-        # from_constructor = isinstance(t, ParameterizedType) and \
-        #    t.t_constructor == self
         return other in self.get_supertypes()
 
     def new(self, type_args: List[Type]):
@@ -494,7 +487,6 @@ class ParameterizedType(SimpleClassifier):
                  type_args: List[Type],
                  can_infer_type_args=False):
         self.t_constructor = deepcopy(t_constructor)
-        # TODO check bounds
         self.type_args = list(type_args)
         assert len(self.t_constructor.type_parameters) == len(type_args), \
             "You should provide {} types for {}".format(
@@ -682,7 +674,6 @@ class Function(Classifier):
             ") -> " + str(self.ret_type)
 
     def is_subtype(self, other: Type):
-        # TODO
         return False
 
 
@@ -698,5 +689,4 @@ class ParameterizedFunction(Function):
             ") -> " + str(self.ret_type)
 
     def is_subtype(self, other: Type):
-        # TODO
         return False

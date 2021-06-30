@@ -103,7 +103,6 @@ class RandomUtils():
         return self.r.random() < prob
 
     def word(self):
-        # TODO: revisit regarding efficiency
         word = self.r.choice(tuple(self.WORDS))
         self.WORDS.remove(word)
         return word

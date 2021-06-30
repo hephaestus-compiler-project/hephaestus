@@ -3,7 +3,6 @@ from src.translators.base import BaseTranslator
 
 
 class KotlinTranslator(BaseTranslator):
-    # TODO: Add a decorator for bottom-up traversal.
 
     filename = "program.kt"
     incorrect_filename = "incorrect.kt"
