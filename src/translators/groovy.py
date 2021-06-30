@@ -44,7 +44,7 @@ class GroovyTranslator(BaseTranslator):
         super().__init__(package, options)
         self._children_res = []
         self.ident = 0
-        self.is_func_block = False
+        self.is_unit = False
         self.context = None
         self._cast_number = False
 
@@ -74,7 +74,7 @@ class GroovyTranslator(BaseTranslator):
         self.context = None
         self._cast_number = False
         self.ident = 0
-        self.is_func_block = False
+        self.is_unit = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
 
@@ -158,12 +158,10 @@ class GroovyTranslator(BaseTranslator):
     @append_to
     def visit_block(self, node):
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = False
         children_len = len(children)
         for i, c in enumerate(children):
             # Cast return statement if it's a number literal
-            if prev and i == children_len - 1:
+            if node.is_func_block and not self.is_unit and i == children_len - 1:
                 prev_cast_number = self._cast_number
                 self._cast_number = False
                 c.accept(self)
@@ -188,7 +186,6 @@ class GroovyTranslator(BaseTranslator):
         # we must append () to call it.
         if self._inside_is and not self._inside_is_function:
             res += "()"
-        self.is_func_block = prev
         return res
 
     @append_to
@@ -377,9 +374,10 @@ class GroovyTranslator(BaseTranslator):
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            if isinstance(parent_decl, ast.FunctionDeclaration):
-                return True
-            return False
+            return isinstance(parent_decl, ast.FunctionDeclaration) or (
+                  parent_name in ['true_block', 'false_block']
+            )
+
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
             self._inside_is_function = True
@@ -390,8 +388,8 @@ class GroovyTranslator(BaseTranslator):
         self.ident += 2
         prev_cast_number = self._cast_number
         children = node.children()
-        prev = self.is_func_block
-        self.is_func_block = node.get_type() != gt.Void
+        prev = self.is_unit
+        self.is_unit = node.get_type() == gt.Void
         is_expression = not isinstance(node.body, ast.Block)
         if is_expression:
             self._cast_number = False
@@ -439,7 +437,7 @@ class GroovyTranslator(BaseTranslator):
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
             old_ident -= 2
         self.ident = old_ident
-        self.is_func_block = prev
+        self.is_unit = prev
         self._cast_number = prev_cast_number
         if self._inside_is:
             self._inside_is_function = prev_inside_is_function
@@ -576,12 +574,17 @@ class GroovyTranslator(BaseTranslator):
     @append_to
     def visit_conditional(self, node):
         prev_inside_is = self._inside_is
+        prev_namespace = self._namespace
         self._inside_is = True
         old_ident = self.ident
         self.ident += 2
         children = node.children()
-        for c in children:
-            c.accept(self)
+        children[0].accept(self)  # cond
+        self._namespace = prev_namespace + ('true_block',)
+        children[1].accept(self)  # true branch
+        self._namespace = prev_namespace + ('false_block',)
+        children[2].accept(self)  # false branch
+        self._namespace = prev_namespace
         children_res = self.pop_children_res(children)
         res = "{ident}(({if_condition}) ?\n{body} : \n {else_body})".format(
             ident=self.get_ident(old_ident=old_ident),
