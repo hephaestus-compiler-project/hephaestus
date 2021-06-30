@@ -609,6 +609,15 @@ def find_lub(type_a, type_b, types, any_type):
     # FIXME use a proper algorithm
     if type_a == type_b:
         return type_a
+
+    if type_a.is_parameterized() and type_b.is_parameterized():
+        # FIXME: this is heuristic.
+        type_a_wild = type_a.has_wildcards()
+        type_b_wild = type_b.has_wildcards()
+        have_wildcards = type_a_wild or type_b_wild
+        if type_a.t_constructor == type_b.t_constructor and have_wildcards:
+            return type_a if type_a_wild else type_b
+
     super_types_a = find_supertypes(type_a, types, include_self=True)
     super_types_b = find_supertypes(type_b, types, include_self=True)
     super_types = list(set(super_types_a) & set(super_types_b))
@@ -667,14 +676,14 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if decl is None:
             return None
         decl, rec_t = decl
-        if isinstance(decl.get_type(), tp.AbstractType):
+        if decl.get_type().has_type_variables():
             assert isinstance(rec_t, tp.ParameterizedType)
             type_param_map = {
                 t_param: rec_t.type_args[i]
                 for i, t_param in enumerate(
                     rec_t.t_constructor.type_parameters)
             }
-            return type_param_map.get(decl.get_type())
+            return tp.substitute_type(decl.get_type(), type_param_map)
         else:
             return decl.get_type()
 
@@ -735,23 +744,28 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             expr1 = expr.true_branch
             expr2 = expr.false_branch
 
-
             if isinstance(expr.cond, ast.Is):
                 # true branch smart cast
+                true_namespace = namespace + ('true_block',)
+                false_namespace = namespace + ('false_block',)
                 if not expr.cond.operator.is_not:
                     smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
-                    e1_type = get_type_hint(expr1, context, namespace, factory,
-                                            types, smart_casts=smart_casts)
+                    e1_type = get_type_hint(expr1, context, true_namespace,
+                                            factory, types,
+                                            smart_casts=smart_casts)
                     smart_casts.pop()
-                    e2_type = get_type_hint(expr2, context, namespace, factory,
-                                            types, smart_casts=smart_casts)
+                    e2_type = get_type_hint(expr2, context, false_namespace,
+                                            factory, types,
+                                            smart_casts=smart_casts)
                 # false branch smart cast
                 else:
-                    e1_type = get_type_hint(expr1, context, namespace, factory,
-                                            types, smart_casts=smart_casts)
+                    e1_type = get_type_hint(expr1, context, true_namespace,
+                                            factory, types,
+                                            smart_casts=smart_casts)
                     smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
-                    e2_type = get_type_hint(expr2, context, namespace, factory,
-                                            types, smart_casts=smart_casts)
+                    e2_type = get_type_hint(expr2, context, false_namespace,
+                                            factory, types,
+                                            smart_casts=smart_casts)
                     smart_casts.pop()
             else:
                 e1_type = get_type_hint(expr1, context, namespace, factory,
@@ -761,6 +775,9 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
 
             return _return_type_hint(find_lub(
                 e1_type, e2_type, types, factory.get_any_type()))
+
+        if isinstance(expr, ast.BottomConstant):
+            return _return_type_hint(expr.t)
 
         if isinstance(expr, ast.FunctionCall):
             if expr.receiver is None:

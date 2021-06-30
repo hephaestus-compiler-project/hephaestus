@@ -186,7 +186,8 @@ class JavaTranslator(BaseTranslator):
         ns_decls = list(self.context.get_namespaces_decls(
             self._namespace, name, decl_type))
         if len(ns_decls) == 1 and ns_decls[0][0][:-1] == ast.GLOBAL_NAMESPACE:
-            return "Main."
+            if name not in self._visit_is_stack:
+                return "Main."
         return ""
 
     def _get_functional_interfaces(self):
@@ -567,9 +568,9 @@ class JavaTranslator(BaseTranslator):
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            if isinstance(parent_decl, ast.FunctionDeclaration):
-                return True
-            return False
+            return isinstance(parent_decl, ast.FunctionDeclaration) or (
+                  parent_name in ['true_block', 'false_block']
+            )
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
@@ -814,21 +815,26 @@ class JavaTranslator(BaseTranslator):
         true_branch = children[1]
         false_branch = children[2]
         # Handle Smart Cast and is suffix
+        prev_namespace = self._namespace
         if isinstance(cond, ast.Is):
             # true branch smart cast
             if not cond.operator.is_not:
+                self._namespace = prev_namespace + ('true_block',)
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
                 true_branch.accept(self)
                 self.smart_casts.pop()
+                self._visit_is_stack.pop()
+                self._namespace = prev_namespace + ('false_block',)
                 false_branch.accept(self)
             # false branch smart cast
             else:
+                self._namespace = prev_namespace + ('true_block',)
+                self._visit_is_stack.pop()
                 true_branch.accept(self)
+                self._namespace = prev_namespace + ('false_block',)
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
                 false_branch.accept(self)
                 self.smart_casts.pop()
-            if isinstance(cond.lexpr, ast.Variable):
-                self._visit_is_stack.pop()
         else:
             true_branch.accept(self)
             false_branch.accept(self)
@@ -843,6 +849,7 @@ class JavaTranslator(BaseTranslator):
         )
         self.ident = old_ident
         self._inside_is = prev_inside_is
+        self._namespace = prev_namespace
         return res
 
     @append_to
@@ -852,11 +859,13 @@ class JavaTranslator(BaseTranslator):
 
         is_variable = False
         if isinstance(node.lexpr, ast.Variable):
-            self._visit_is_stack.append(node.lexpr.name)
             is_variable = True
 
         children = node.children()
-        for c in children:
+        children[0].accept(self)
+        if is_variable:
+            self._visit_is_stack.append(node.lexpr.name)
+        for c in children[1:]:
             c.accept(self)
         children_res = self.pop_children_res(children)
 
@@ -869,7 +878,7 @@ class JavaTranslator(BaseTranslator):
         res = "{ident}{not_1}{expr} instanceof {type_to_check}{new}{not_2}".format(
             ident=self.get_ident(old_ident=old_ident),
             not_1=not_1,
-            expr=children_res[0][:-3] if is_variable else children_res[0],
+            expr=children_res[0],
             type_to_check=node.rexpr.get_name(),
             new=new_var,
             not_2=not_2)
