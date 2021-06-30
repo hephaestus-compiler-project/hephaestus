@@ -36,17 +36,6 @@ def init_variance_choices(type_var_map):
     return variance_choices
 
 
-def _update_var_type(var: ast.Declaration, new_type: tp.Type):
-    if isinstance(var, ast.VariableDeclaration):
-        var.var_type = new_type
-
-    if isinstance(var, ast.FieldDeclaration):
-        var.field_type = new_type
-
-    if isinstance(var, ast.ParameterDeclaration):
-        var.param_type = new_type
-
-
 @dataclass
 class SuperClassInfo:
     super_cls: ast.ClassDeclaration
@@ -1186,13 +1175,6 @@ class Generator():
                     isinstance(v, ast.FunctionDeclaration))
             ]
 
-        def _clear_context(context, decls):
-            for d in decls:
-                if isinstance(d, ast.VariableDeclaration):
-                    self.context.remove_var(self.namespace, d.name)
-                if isinstance(d, ast.FunctionDeclaration):
-                    self.context.remove_func(self.namespace, d.name)
-
         final_vars = [
             v
             for v in self.context.get_vars(self.namespace).values()
@@ -1201,6 +1183,8 @@ class Generator():
         if not final_vars:
             return self.generate_expr(expr_type, only_leaves=True,
                                       subtype=subtype)
+        prev_depth = self.depth
+        self.depth += 3
         var = ut.random.choice(final_vars)
         var_type = var.get_type()
         subtypes = tu.find_subtypes(var_type, self.get_types(),
@@ -1212,18 +1196,27 @@ class Generator():
                                       subtype=subtype)
 
         subtype = ut.random.choice(subtypes)
-        _update_var_type(var, subtype)
         initial_decls = _get_extra_decls()
         prev_namespace = self.namespace
         self.namespace += ('true_block',)
+        # Here, we create a 'virtual' variable declaration inside the
+        # namespace of the block corresponding to the true branch. This
+        # variable has the same name with the variable that appears in
+        # the left-hand side of the 'is' expression, but its type is the
+        # selected subtype.
+        self.context.add_var(self.namespace, var.name,
+                             ast.VariableDeclaration(
+                                 var.name,
+                                 ast.BottomConstant(var.get_type()),
+                                 var_type=subtype))
         true_expr = self.generate_expr(expr_type)
+        # We pop the variable from context. Because it's no longer used.
+        self.context.remove_var(self.namespace, var.name)
         extra_decls_true = [v for v in _get_extra_decls()
                             if v not in initial_decls]
         if extra_decls_true:
             true_expr = ast.Block(extra_decls_true + [true_expr],
                                   is_func_block=False)
-        _update_var_type(var, var_type)
-        _clear_context(self.context, extra_decls_true)
         self.namespace = prev_namespace + ('false_block',)
         false_expr = self.generate_expr(expr_type, only_leaves=only_leaves,
                                         subtype=subtype)
@@ -1232,8 +1225,8 @@ class Generator():
         if extra_decls_false:
             false_expr = ast.Block(extra_decls_false + [false_expr],
                                    is_func_block=False)
-        _clear_context(self.context, extra_decls_false)
         self.namespace = prev_namespace
+        self.depth = prev_depth
         return ast.Conditional(
             ast.Is(ast.Variable(var.name), subtype),
             true_expr,
@@ -1345,12 +1338,10 @@ class Generator():
             and ut.random.bool()
         )
         expr_type = expr_type or self.select_type()
-        #print("INITIAL TYPE", expr_type)
         if find_subtype:
             subtypes = tu.find_subtypes(expr_type, self.get_types(),
                                         include_self=True, concrete_only=True)
             expr_type = ut.random.choice(subtypes)
-        #print("FINAL TYPE", expr_type)
         gens = self.get_generators(expr_type, only_leaves, subtype,
                                    exclude_var)
         expr = ut.random.choice(gens)(expr_type)
