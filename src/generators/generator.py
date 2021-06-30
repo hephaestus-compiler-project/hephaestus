@@ -1066,9 +1066,6 @@ class Generator():
         variables = []
         for var in self.context.get_vars(self.namespace).values():
             if self._inside_java_nested_fun:
-                # TODO
-                #  if var not in self.context.get_vars(
-                        #  self.namespace[:-1]).values():
                 continue
             if not getattr(var, 'is_final', True):
                 variables.append((None, var))
