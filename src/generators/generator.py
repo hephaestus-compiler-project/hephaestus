@@ -1178,7 +1178,7 @@ class Generator():
         final_vars = [
             v
             for v in self.context.get_vars(self.namespace).values()
-            if getattr(v, 'is_final', True)
+            if getattr(v, 'is_final', True) and not v.is_type_inferred
         ]
         if not final_vars:
             return self.generate_expr(expr_type, only_leaves=True,
