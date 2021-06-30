@@ -185,6 +185,10 @@ class VariableDeclaration(Declaration):
         super().update_children(children)
         self.expr = children[0]
 
+    @property
+    def is_type_inferred(self):
+        return not bool(self.var_type)
+
     def __str__(self):
         prefix = "val " if self.is_final else "var "
         if self.var_type is None:
@@ -219,6 +223,10 @@ class FieldDeclaration(Declaration):
 
     def update_children(self, children):
         pass
+
+    @property
+    def is_type_inferred(self):
+        return False
 
     def __str__(self):
         return str(self.name) + ": " + str(self.field_type)
@@ -325,6 +333,10 @@ class ParameterDeclaration(Declaration):
 
     def get_type(self):
         return self.param_type
+
+    @property
+    def is_type_inferred(self):
+        return False
 
     def __str__(self):
         prefix = 'vararg ' if self.vararg else ''
