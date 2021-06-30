@@ -206,8 +206,14 @@ class TypeArgumentErasureSubstitution(Transformation):
         #   fun foo(x: B)
         #   foo(C<Int>())  // cannot change
         # TODO Add randomness
-        fdecl = self.program.context.get_funcs(
-            self._namespace, glob=True)[node.func]
+        try:
+            fdecl = self.program.context.get_funcs(
+                self._namespace, glob=True)[node.func]
+        except KeyError:
+            # FIXME I don't know why this works.
+            # Whats the purpose of glob=True? @schaliasos
+            fdecl = self.program.context.get_funcs(
+                self._namespace, only_current=True)[node.func]
         len_p = len(fdecl.params)
         for pos, arg in enumerate(node.args):
             # Correctly define position of parameter in case of varargs.
@@ -304,22 +310,28 @@ class TypeArgumentErasureSubstitution(Transformation):
         true_branch = children[1]
         false_branch = children[2]
         # Handle Smart Cast and is suffix
+        prev_namespace = self._namespace
         if isinstance(cond, ast.Is):
             # true branch smart cast
             if not cond.operator.is_not:
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
+                self._namespace = prev_namespace + ('true_block',)
                 new_children.append(true_branch.accept(self))
                 self.smart_casts.pop()
+                self._namespace = prev_namespace + ('false_block',)
                 new_children.append(false_branch.accept(self))
             # false branch smart cast
             else:
+                self._namespace = prev_namespace + ('true_block',)
                 new_children.append(true_branch.accept(self))
                 self.smart_casts.append((cond.lexpr, cond.rexpr))
+                self._namespace = prev_namespace + ('false_block',)
                 new_children.append(false_branch.accept(self))
                 self.smart_casts.pop()
         else:
             new_children.append(true_branch.accept(self))
             new_children.append(false_branch.accept(self))
 
+        self._namespace = prev_namespace
         node.update_children(new_children)
         return node
