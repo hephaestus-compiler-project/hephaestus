@@ -122,12 +122,11 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
 
 def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
     type_var_map = OrderedDict()
-    # FIXME add is_array() method on type class
     if etype.name == 'Array':
         types = [t for t in types
                  if not t.is_type_var() and
                  not t.is_parameterized() and
-                 not isinstance(t, tp.TypeConstructor)
+                 not t.is_type_constructor()
                  ]
     for i, t_param in enumerate(etype.t_constructor.type_parameters):
         if t_param.bound in type_var_map:
@@ -197,7 +196,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
 
 
 def to_type(stype, types):
-    if isinstance(stype, tp.TypeConstructor):
+    if stype.is_type_constructor():
         stype, _ = instantiate_type_constructor(stype, types)
     return stype
 
@@ -248,7 +247,7 @@ def find_supertypes(etype, types, include_self=False, bound=None,
 
 def get_irrelevant_parameterized_type(etype, types, type_args_map,
                                       factory: bt.BuiltinFactory):
-    assert isinstance(etype, tp.TypeConstructor)
+    assert etype.is_type_constructor()
     type_args = type_args_map.get(etype.name)
 
     if type_args is None:
@@ -316,7 +315,7 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
     if not available_types:
         return None
     t = utils.random.choice(available_types)
-    if isinstance(t, tp.TypeConstructor):
+    if t.is_type_constructor():
         # Must instantiate the given type constrcutor. Also pass the map of
         # type arguments in order to pass type arguments that are irrelevant
         # with any parameterized type created by this type constructor.
@@ -327,10 +326,9 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
 
 
 def _update_type_constructor(etype, new_type):
-    assert isinstance(new_type, tp.TypeConstructor)
-    if isinstance(etype, tp.ParameterizedType):
+    if etype.is_parameterized():
         return new_type.new(etype.type_args)
-    if isinstance(etype, tp.TypeConstructor):
+    if etype.is_type_constructor():
         return new_type
     return etype
 
@@ -365,7 +363,7 @@ class TypeUpdater():
             return self.update_type(etype, new_type, test_pred)
         key = (
             (etype.name, True)
-            if isinstance(etype, tp.TypeConstructor)
+            if etype.is_type_constructor()
             else (etype.name, False)
         )
         updated_type = self._cache.get(key)
@@ -391,7 +389,7 @@ class TypeUpdater():
         if test_pred(etype, new_type) and not is_wildcard:
             # So if the new type is a type constructor update the type
             # constructor of 'etype' (if it is applicable)
-            if isinstance(new_type, tp.TypeConstructor):
+            if new_type.is_type_constructor():
                 return _update_type_constructor(etype, new_type)
             # Otherwise replace `etype` with `new_type`
             return new_type
@@ -406,7 +404,7 @@ class TypeUpdater():
             return new_t_constructor.new(new_type_args)
         # Case 3: If etype is a type constructor recursively inspect is type
         # parameters for updates.
-        if isinstance(etype, tp.TypeConstructor):
+        if etype.is_type_constructor():
             t_params = []
             for t_param in etype.type_parameters:
                 if t_param.bound is not None:
@@ -544,7 +542,7 @@ def instantiate_type_constructor(
             cls_type = c.get_type()
         else:
             cls_type = c
-        if isinstance(cls_type, tp.TypeConstructor):
+        if cls_type.is_type_constructor():
             # We just selected a parameterized class, so we need to instantiate
             # this too. Remove this class from available types to avoid
             # depthy instantiations.
@@ -570,7 +568,7 @@ def choose_type(types: List[tp.Type], only_regular=True):
         cls_type = c.get_type()
     else:
         cls_type = c
-    if isinstance(cls_type, tp.TypeConstructor):
+    if cls_type.is_type_constructor():
         # We just selected a parameterized class, so we need to instantiate
         # it.
         types = [t for t in types if t != c]

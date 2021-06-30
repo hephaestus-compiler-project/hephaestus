@@ -454,7 +454,7 @@ class SupertypeCreation(TypeCreation):
             # In this, we can safely override fields and methods from the
             # parent class.
             new_class_type = self._new_class.get_type()
-            if isinstance(new_class_type, tp.TypeConstructor):
+            if new_class_type.is_type_constructor():
                 new_class_type = new_class_type.new(
                     [t.to_type_arg() for t in class_decl.type_parameters])
             super_instantiation = ast.SuperClassInstantiation(
