@@ -380,7 +380,7 @@ class KotlinTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
         res = "{}{} {} {}".format(
             " " * old_ident, children_res[0], str(node.operator),
-            self.get_type_name(node.rexpr))
+            node.rexpr.name)
         self.ident = old_ident
         self._children_res.append(res)
 
