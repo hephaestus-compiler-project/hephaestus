@@ -1162,12 +1162,41 @@ class Generator():
             variable.get_type(), only_leaves, subtype, gen_bottom=gen_bottom),
                               receiver=receiver,)
 
+    def _filter_subtypes(self, subtypes, initial_type):
+        new_subtypes = []
+        for t in subtypes:
+            if t.is_type_var():
+                continue
+            if self.language != 'kotlin':
+                # We can't check the instance of a parameterized type due
+                # to type erasure. The only exception is Kotlin, see below.
+                if not t.is_parameterized():
+                    new_subtypes.append(t)
+                continue
+
+            # In Kotlin, you can smart cast a parameterized type like the
+            # following.
+
+            # class A<T>
+            # class B<T> extends A<T>
+            # fun test(x: A<String>) {
+            #   if (x is B) {
+            #      // the type of x is B<String> here.
+            #   }
+            # }
+            if t.is_parameterized():
+                t_con = t.t_constructor
+                if t_con.is_subtype(initial_type):
+                    continue
+            new_subtypes.append(t)
+        return new_subtypes
+
     def gen_is_expr(self, expr_type, only_leaves=False, subtype=True):
-        def _get_extra_decls():
+        def _get_extra_decls(namespace):
             return [
                 v
                 for v in self.context.get_declarations(
-                    self.namespace, True).values()
+                    namespace, only_current=True).values()
                 if (isinstance(v, ast.VariableDeclaration) or
                     isinstance(v, ast.FunctionDeclaration))
             ]
@@ -1175,7 +1204,13 @@ class Generator():
         final_vars = [
             v
             for v in self.context.get_vars(self.namespace).values()
-            if getattr(v, 'is_final', True) and not v.is_type_inferred
+            if (
+                # We can smart cast variable that are final, have explicit
+                # types, and are not overridable.
+                getattr(v, 'is_final', True) and
+                not v.is_type_inferred and
+                not getattr(v, 'can_override', True)
+            )
         ]
         if not final_vars:
             return self.generate_expr(expr_type, only_leaves=True,
@@ -1186,14 +1221,13 @@ class Generator():
         var_type = var.get_type()
         subtypes = tu.find_subtypes(var_type, self.get_types(),
                                     include_self=False, concrete_only=True)
-        subtypes = [t for t in subtypes if not t.is_parameterized()
-                    and not t.is_type_var()]
+        subtypes = self._filter_subtypes(subtypes, var_type)
         if not subtypes:
             return self.generate_expr(expr_type, only_leaves=True,
                                       subtype=subtype)
 
         subtype = ut.random.choice(subtypes)
-        initial_decls = _get_extra_decls()
+        initial_decls = _get_extra_decls(self.namespace)
         prev_namespace = self.namespace
         self.namespace += ('true_block',)
         # Here, we create a 'virtual' variable declaration inside the
@@ -1209,7 +1243,7 @@ class Generator():
         true_expr = self.generate_expr(expr_type)
         # We pop the variable from context. Because it's no longer used.
         self.context.remove_var(self.namespace, var.name)
-        extra_decls_true = [v for v in _get_extra_decls()
+        extra_decls_true = [v for v in _get_extra_decls(self.namespace)
                             if v not in initial_decls]
         if extra_decls_true:
             true_expr = ast.Block(extra_decls_true + [true_expr],
@@ -1217,7 +1251,7 @@ class Generator():
         self.namespace = prev_namespace + ('false_block',)
         false_expr = self.generate_expr(expr_type, only_leaves=only_leaves,
                                         subtype=subtype)
-        extra_decls_false = [v for v in _get_extra_decls()
+        extra_decls_false = [v for v in _get_extra_decls(self.namespace)
                              if v not in initial_decls]
         if extra_decls_false:
             false_expr = ast.Block(extra_decls_false + [false_expr],
