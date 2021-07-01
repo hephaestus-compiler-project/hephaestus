@@ -515,11 +515,14 @@ class ParameterizedType(SimpleClassifier):
             for t_arg in self.type_args
         )
 
-    def to_variance_free(self):
+    def to_variance_free(self, type_var_map=None):
         type_args = []
-        for t_arg in self.type_args:
+        for i, t_arg in enumerate(self.type_args):
             if t_arg.is_wildcard() and t_arg.bound:
-                t = t_arg.get_bound_rec()
+                t_param = self.t_constructor.type_parameters[i]
+                bound = t_arg.get_bound_rec()
+                t = bound if not type_var_map else type_var_map.get(t_param,
+                                                                    bound)
             else:
                 t = t_arg
             type_args.append(t)
