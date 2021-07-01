@@ -33,11 +33,16 @@ def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
         type_var_map = unify_types(bound, template_t, None)
         if not type_var_map:
             return None
-        base_targ, _ = instantiate_type_constructor(
+        new_targ, _ = instantiate_type_constructor(
             base_targ.t_constructor, types, only_regular=True,
             type_var_map=type_var_map, variance_choices=None
         )
-        return base_targ.to_variance_free()
+        type_var_map = {
+            t_param: base_targ.type_args[i]
+            for i, t_param in enumerate(
+                base_targ.t_constructor.type_parameters)
+        }
+        return base_targ.to_variance_free(type_var_map)
 
     # Here, we have a case like the following.
     # bound: A<Number, X>
