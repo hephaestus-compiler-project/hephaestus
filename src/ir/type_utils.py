@@ -488,7 +488,11 @@ def instantiate_type_constructor(
             a_types = [t]
             if t_param.bound and t_param.bound.is_type_var():
                 # We must assign the same type argument to the bound of the
-                # current ype parameter.
+                # current type parameter. Example:
+                # class A<T1, T2: T1>
+                # If assigned the type String to type parameter T1,
+                # we need to assign the same type String to the type parameter
+                # T2, because T2 <: T1.
                 if t.is_wildcard() and t.is_contravariant():
                     # See the comment below, regarding wildcard types.
                     t = t.bound
@@ -826,6 +830,24 @@ def _update_type_var_map(type_var_map, key, value):
 
 
 def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
+    """
+    This function performs unification on two types. The second type is
+    the type we try to match with the first one, by substituting any
+    enclosing type variables.
+
+    If the given types are unifiable, this method returns a dict that
+    contains the assignments that we need to make to the type variables
+    of the second type so that the first and the second type are
+    identical.
+
+    Examples:
+      unify_types(A<String>, A<T>) = {T: String}
+      unify_types(String, T) = {T: String}
+      unify_types(A<String, Y>, A<T1, T2) = {T1: String, T2: Y}
+      unify_types(A<String>, A<Int>) = {}
+      unify_types(A<String, Long>, A<String, T>) = {T: Long}
+      unify_types(A<String, Long>, A<Long, T>) = {}
+    """
     if type(t1) != type(t2):
         return {}
 

@@ -105,11 +105,10 @@ class Generator():
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
-        return usr_types + builtins + (type_params * 5)
+        return usr_types + builtins
 
     def select_type(self, ret_types=True, exclude_arrays=False,
-                    exclude_covariants=False, exclude_contravariants=False,
-                    use_site_variance=True):
+                    exclude_covariants=False, exclude_contravariants=False):
         types = self.get_types(ret_types=ret_types,
                                exclude_arrays=exclude_arrays,
                                exclude_covariants=exclude_covariants,
