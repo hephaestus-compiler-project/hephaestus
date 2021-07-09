@@ -390,9 +390,10 @@ class FunctionDeclaration(Declaration):
                                     " not be None")
 
     def children(self):
+        children = self.params + self.type_parameters
         if self.body is None:
-            return self.params
-        return self.params + [self.body] + self.type_parameters
+            return children
+        return children + [self.body]
 
     def update_children(self, children):
         def get_lst(start, end):
