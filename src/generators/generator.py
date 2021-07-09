@@ -392,7 +392,7 @@ class Generator():
         funcs.append(func)
         self.context.add_func(self.namespace, func.name, func)
 
-    def gen_type_params(self, count=None):
+    def gen_type_params(self, count=None, with_variance=False):
         if not count and ut.random.bool():
             return []
         type_params = []
@@ -402,7 +402,7 @@ class Generator():
             name = ut.random.caps(blacklist=type_param_names)
             type_param_names.append(name)
             variance = None
-            if self.language == 'kotlin' and ut.random.bool():
+            if with_variance and ut.random.bool():
                 variance = ut.random.choice(variances)
             bound = None
             if ut.random.bool():
@@ -584,7 +584,8 @@ class Generator():
         class_type = select_class_type(field_type is not None)
         is_final = ut.random.bool() and class_type == \
             ast.ClassDeclaration.REGULAR
-        type_params = type_params or self.gen_type_params()
+        type_params = type_params or self.gen_type_params(
+            with_variance=self.language == 'kotlin')
         super_cls_info = self._select_superclass(
             class_type == ast.ClassDeclaration.INTERFACE)
         cls = ast.ClassDeclaration(
@@ -766,7 +767,8 @@ class Generator():
             return []
 
         if isinstance(etype, tp.TypeParameter):
-            type_params = self.gen_type_params(count=1)
+            type_params = self.gen_type_params(
+                count=1, with_variance=self.language == 'kotlin')
             type_params[0].bound = etype.get_bound_rec(self.bt_factory)
             type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}, True
@@ -774,7 +776,8 @@ class Generator():
         # the given type is parameterized
         assert isinstance(etype, tp.ParameterizedType)
         type_vars = etype.get_type_variables(self.bt_factory)
-        type_params = self.gen_type_params(len(type_vars))
+        type_params = self.gen_type_params(
+            len(type_vars), with_variance=self.language == 'kotlin')
         type_var_map = {}
         available_type_params = list(type_params)
         can_wildcard = True
