@@ -392,13 +392,20 @@ class FunctionDeclaration(Declaration):
     def children(self):
         if self.body is None:
             return self.params
-        return self.params + [self.body]
+        return self.params + [self.body] + self.type_parameters
 
     def update_children(self, children):
+        def get_lst(start, end):
+            return children[start:end]
+
         super().update_children(children)
         len_params = len(self.params)
+        len_type_params = len(self.type_parameters)
         for i, c in enumerate(children[:len_params]):
             self.params[i] = c
+        type_params = get_lst(len_params, len_params + len_type_params)
+        for i, t_param in enumerate(type_params):
+            self.type_parameters[i] = t_param
         if self.body is None:
             return
         self.body = children[-1]
@@ -473,6 +480,7 @@ class ClassDeclaration(Declaration):
     def update_children(self, children):
         def get_lst(start, end):
             return children[start:end]
+
         super().update_children(children)
         len_fields = len(self.fields)
         len_supercls = len(self.superclasses)
