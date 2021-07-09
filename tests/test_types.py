@@ -379,4 +379,4 @@ def test_wildcard_types():
 def test_get_bound_rec_wildcards():
     type_param = tp.TypeParameter("T")
     wildcard = tp.WildCardType(type_param, tp.Covariant)
-    assert wildcard.get_bound_rec(kt.KotlinBuiltinFactory()) == type_param
+    assert wildcard.get_bound_rec() == type_param
