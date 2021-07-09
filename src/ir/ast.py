@@ -648,54 +648,6 @@ class ClassDeclaration(Declaration):
         return False
 
 
-class ParameterizedFunctionDeclaration(FunctionDeclaration):
-    CLASS_METHOD = 0
-    FUNCTION = 1
-
-    def __init__(self,
-                 name: str,
-                 type_parameters: List[types.TypeParameter],
-                 params: List[ParameterDeclaration],
-                 ret_type: types.Type,
-                 body: Block,
-                 func_type: int,
-                 is_final=True,
-                 override=False):
-        super().__init__(name, params, ret_type, body,
-                         func_type, is_final, override)
-        self.type_parameters = type_parameters
-
-    def get_type(self):
-        return types.ParameterizedFunction(
-            self.name, self.type_parameters,
-            [p.get_type() for p in self.params], self.ret_type)
-
-    def __str__(self):
-        keywords = ""
-        if len(keywords) > 0:
-            keywords = " ".join(map(lambda x: x.name, keywords))
-        if self.ret_type is None:
-            return "{}fun<{}> {}({}) =\n  {}".format(
-                keywords, ",".join(map(str, self.type_parameters)),
-                self.name, ",".join(map(str, self.params)), str(self.body))
-        return "{}fun<{}> {}({}): {} =\n  {}".format(
-            keywords, ",".join(map(str, self.type_parameters)),
-            self.name, ",".join(map(str, self.params)), str(self.ret_type),
-            str(self.body))
-
-    def is_equal(self, other):
-        if isinstance(other, ParameterizedFunctionDeclaration):
-            return (self.name == other.name and
-                    check_list_eq(self.type_parameters, other.type_parameters)
-                    and check_list_eq(self.params, other.params) and
-                    self.ret_type == other.ret_type and
-                    self.body.is_equal(other.body) and
-                    self.func_type == other.func_type and
-                    self.is_final == other.is_final and
-                    self.override == other.override)
-        return False
-
-
 class Constant(Expr):
     def __init__(self, literal: str):
         self.literal = literal
