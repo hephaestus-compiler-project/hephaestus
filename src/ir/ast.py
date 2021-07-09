@@ -374,7 +374,8 @@ class FunctionDeclaration(Declaration):
                  func_type: int,
                  inferred_type: types.Type = None,
                  is_final=True,
-                 override=False):
+                 override=False,
+                 type_parameters=[]):
         self.name = name
         self.params = params
         self.ret_type = ret_type
@@ -382,6 +383,7 @@ class FunctionDeclaration(Declaration):
         self.func_type = func_type
         self.is_final = is_final
         self.override = override
+        self.type_parameters = type_parameters
         self.inferred_type = (
             self.ret_type if inferred_type is None else inferred_type)
         assert self.inferred_type, ("The inferred_type of a function must"
@@ -404,13 +406,22 @@ class FunctionDeclaration(Declaration):
     def get_type(self):
         return self.inferred_type
 
+    def is_parameterized(self):
+        return bool(self.type_parameters)
+
     def __str__(self):
+        type_params_str = (
+            "<" + ", ".join(map(str, self.type_parameters)) + "> "
+            if self.type_parameters
+            else ""
+        )
         if self.ret_type is None:
-            return "fun {}({}) =\n  {}".format(
-                self.name, ",".join(map(str, self.params)), str(self.body))
-        return "fun {}({}): {} =\n  {}".format(
-            self.name, ",".join(map(str, self.params)), str(self.ret_type),
-            str(self.body))
+            return "{}fun {}({}) =\n  {}".format(
+                type_params_str, self.name, ",".join(map(str, self.params)),
+                str(self.body))
+        return "{}fun {}({}): {} =\n  {}".format(
+            type_params_str, self.name, ",".join(map(str, self.params)),
+            str(self.ret_type), str(self.body))
 
     def is_equal(self, other):
         if isinstance(other,  FunctionDeclaration):
@@ -424,6 +435,8 @@ class FunctionDeclaration(Declaration):
                     self.func_type == other.func_type and
                     self.is_final == other.is_final and
                     check_list_eq(self.params, other.params) and
+                    check_list_eq(self.type_parameters,
+                                  other.type_parameters) and
                     self.inferred_type == other.inferred_type)
         return False
 
@@ -1078,10 +1091,12 @@ class FieldAccess(Expr):
 
 class FunctionCall(Expr):
     def __init__(self, func: str, args: List[CallArgument],
-                 receiver: Expr = None):
+                 receiver: Expr = None,
+                 type_args: List[types.Type] = []):
         self.func = func
         self.args = args
         self.receiver = receiver
+        self.type_args = type_args
 
     def children(self):
         if self.receiver is None:
@@ -1097,15 +1112,24 @@ class FunctionCall(Expr):
             self.args = children[1:]
 
     def __str__(self):
+        type_args_str = (
+            "<" + ", ".join(map(str, self.type_args)) + ">"
+            if self.type_args
+            else ""
+        )
         if self.receiver is None:
-            return "{}({})".format(self.func, ", ".join(map(str, self.args)))
-        return "{}.{}({})".format(
-            str(self.receiver), self.func, ", ".join(map(str, self.args)))
+            return "{}{}({})".format(self.func,
+                                     type_args_str,
+                                     ", ".join(map(str, self.args)))
+        return "{}.{}{}({})".format(
+            str(self.receiver), self.func, type_args_str,
+            ", ".join(map(str, self.args)))
 
     def is_equal(self, other):
         if isinstance(other, FunctionCall):
             return (self.func == other.func and
                     check_list_eq(self.args, other.args) and
+                    check_list_eq(self.type_args, other.type_args) and
                     check_default_eq(self.receiver, other.receiver))
         return False
 
