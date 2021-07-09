@@ -253,6 +253,9 @@ class TypeParameter(AbstractType):
         return True
 
     def get_bound_rec(self, factory):
+        """
+        This function recursively gets the bound of the type parameter.
+        """
         if not self.bound:
             return None
         t = self.bound
@@ -260,6 +263,11 @@ class TypeParameter(AbstractType):
             return t.get_bound_rec(factory)
         if not t.has_type_variables():
             return t
+        # If the bound is a parameterized type that contains other type
+        # variables, we have to convert this type into an equivalent type
+        # that is type variable-free.
+        # We do this, because the bound would contain type variables which
+        # are out of scope in the context where we use this bound.
         return t.to_type_variable_free(factory)
 
     def is_subtype(self, other):
@@ -392,19 +400,21 @@ def substitute_type(t, type_map):
 
 def perform_type_substitution(etype, type_map,
                               cond=lambda t: t.has_type_variables()):
-    # This function performs the following substitution.
-    # Imagine that we have the following case.
-    #
-    # class Y<T>
-    # class X<T>: Y<T>()
-    #
-    # When, we instantiate the type constructor X with a specific type
-    # argument (e.g., String), we must also substitute the type parameter
-    # of its supertype (i.e., Y<T>) with the given type argument.
-    # For example, the supertype of X<String> is Y<String> and not Y<T>.
-    #
-    # This also works for nested definitions. For example
-    # class X<T> : Y<Z<T>>()
+    """
+    This function performs the following substitution.
+    Imagine that we have the following case.
+
+    class Y<T>
+    class X<T>: Y<T>()
+
+    When, we instantiate the type constructor X with a specific type
+    argument (e.g., String), we must also substitute the type parameter
+    of its supertype (i.e., Y<T>) with the given type argument.
+    For example, the supertype of X<String> is Y<String> and not Y<T>.
+
+    This also works for nested definitions. For example
+    class X<T> : Y<Z<T>>()
+    """
     supertypes = []
     for t in etype.supertypes:
         if t.is_parameterized():
@@ -486,6 +496,41 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
         return t.to_type_variable_free(factory)
     else:
         return t
+
+
+def _is_type_arg_contained(t: Type, other: Type,
+                           type_param: TypeParameter) -> bool:
+    # We implement this function based on the containment rules described
+    # here:
+    # https://kotlinlang.org/spec/type-system.html#type-containment
+    is_wildcard = isinstance(t, WildCardType)
+    is_wildcard2 = isinstance(other, WildCardType)
+    if not is_wildcard and not is_wildcard2:
+        if type_param.is_invariant():
+            return t == other
+        elif type_param.is_covariant():
+            return t.is_subtype(other)
+        else:
+            return other.is_subtype(t)
+    if is_wildcard2 and not is_wildcard and other.bound:
+        if other.variance.is_covariant():
+            return t.is_subtype(other.bound)
+        elif other.variance.is_contravariant():
+            return other.bound.is_subtype(t)
+    elif is_wildcard and is_wildcard2 and other.bound and t.bound:
+        if t.variance.is_covariant() and other.variance.is_covariant():
+            return t.bound.is_subtype(other.bound)
+        elif t.variance.is_contravariant() and other.variance.is_contravariant():
+            return other.bound.is_subtype(t.bound)
+    elif is_wildcard and not is_wildcard2 and t.bound:
+        if type_param.is_covariant():
+            return t.bound.is_subtype(other)
+        elif type_param.is_contravariant():
+            return other.is_subtype(t.bound)
+    if is_wildcard2 and not other.bound:
+        if not (is_wildcard and not t.bound):
+            return True
+    return False
 
 
 class ParameterizedType(SimpleClassifier):
@@ -605,40 +650,6 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
-    @classmethod
-    def is_contained(cls, t, other, type_param):
-        # We implement this function based on the containment rules described
-        # here:
-        # https://kotlinlang.org/spec/type-system.html#type-containment
-        is_wildcard = isinstance(t, WildCardType)
-        is_wildcard2 = isinstance(other, WildCardType)
-        if not is_wildcard and not is_wildcard2:
-            if type_param.is_invariant():
-                return t == other
-            elif type_param.is_covariant():
-                return t.is_subtype(other)
-            else:
-                return other.is_subtype(t)
-        if is_wildcard2 and not is_wildcard and other.bound:
-            if other.variance.is_covariant():
-                return t.is_subtype(other.bound)
-            elif other.variance.is_contravariant():
-                return other.bound.is_subtype(t)
-        elif is_wildcard and is_wildcard2 and other.bound and t.bound:
-            if t.variance.is_covariant() and other.variance.is_covariant():
-                return t.bound.is_subtype(other.bound)
-            elif t.variance.is_contravariant() and other.variance.is_contravariant():
-                return other.bound.is_subtype(t.bound)
-        elif is_wildcard and not is_wildcard2 and t.bound:
-            if type_param.is_covariant():
-                return t.bound.is_subtype(other)
-            elif type_param.is_contravariant():
-                return other.is_subtype(t.bound)
-        if is_wildcard2 and not other.bound:
-            if not (is_wildcard and not t.bound):
-                return True
-        return False
-
     def is_subtype(self, other: Type) -> bool:
         if super().is_subtype(other):
             return True
@@ -646,7 +657,7 @@ class ParameterizedType(SimpleClassifier):
             if self.t_constructor == other.t_constructor:
                 for tp, sarg, targ in zip(self.t_constructor.type_parameters,
                                           self.type_args, other.type_args):
-                    if not self.is_contained(sarg, targ, tp):
+                    if not _is_type_arg_contained(sarg, targ, tp):
                         return False
                 return True
         return False

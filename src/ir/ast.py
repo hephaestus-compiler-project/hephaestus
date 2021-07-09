@@ -288,6 +288,13 @@ class SuperClassInstantiation(Node):
 
 
 class CallArgument(Node):
+    """
+    This represents an argument of function / constructor call.
+
+    A call argument can also be named (i.e., param_name = expr).
+    In this case the field 'name' is not None.
+    """
+
     def __init__(self, expr: Expr, name: str = None):
         self.expr = expr
         self.name = name

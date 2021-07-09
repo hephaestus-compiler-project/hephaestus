@@ -211,7 +211,18 @@ class TypeArgumentErasureSubstitution(Transformation):
                 self._namespace, glob=True)[node.func]
         except KeyError:
             # FIXME I don't know why this works.
-            # Whats the purpose of glob=True? @schaliasos
+            # The function can be declared in a different namespace than
+            # the one we are currently on. For example, consider the following
+            # fun foo(x: int)
+            # ...
+            # class A {
+            #   fun bar() {
+            #     foo(4)
+            #   }
+            # }
+            #
+            # If we add overloading, then this might stop working.
+
             fdecl = self.program.context.get_funcs(
                 self._namespace, only_current=True)[node.func]
         len_p = len(fdecl.params)
