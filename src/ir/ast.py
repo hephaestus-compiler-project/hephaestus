@@ -587,11 +587,19 @@ class ClassDeclaration(Declaration):
                 new_p.param_type = types.substitute_type(p.get_type(),
                                                          type_var_map)
                 params.append(new_p)
+            type_params = []
+            for t_param in f.type_parameters:
+                new_t_param = copy(t_param)
+                if new_t_param.bound is not None:
+                    new_t_param.bound = types.substitute_type(new_t_param,
+                                                              type_var_map)
+                type_params.append(new_t_param)
             ret_type = types.substitute_type(f.get_type(),
                                              type_var_map)
             new_f.params = params
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
+            new_f.type_parameters = type_params
             functions.add(new_f)
         return functions
 
