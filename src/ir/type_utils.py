@@ -438,7 +438,7 @@ def _get_available_types(type_constructor,
         return types
     available_types = []
     for ptype in types:
-        if type_constructor.name == 'Array':
+        if type_constructor and type_constructor.name == 'Array':
             forbidden_types = (tp.TypeParameter, tp.ParameterizedType,
                                tp.TypeConstructor)
             if isinstance(ptype, forbidden_types):
@@ -470,18 +470,16 @@ def _get_type_arg_variance(t_param, variance_choices):
     return utils.random.choice(variances)
 
 
-def instantiate_type_constructor(
-        type_constructor: tp.TypeConstructor,
+def _compute_type_variable_assignments(
+        type_parameters: List[tp.TypeParameter],
         types: List[tp.Type],
         only_regular=True,
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None):
-    types = _get_available_types(type_constructor,
-                                 types, only_regular, primitives=False)
     t_args = []
     type_var_map = dict(type_var_map or {})
     indexes = {}
-    for i, t_param in enumerate(type_constructor.type_parameters):
+    for i, t_param in enumerate(type_parameters):
         indexes[t_param] = i
         t = type_var_map.get(t_param)
         if t:
@@ -566,7 +564,34 @@ def instantiate_type_constructor(
             t_arg = tp.WildCardType(cls_type, variance)
         t_args.append(t_arg)
         type_var_map[t_param] = t_arg
+    return t_args, type_var_map
+
+
+def instantiate_type_constructor(
+        type_constructor: tp.TypeConstructor,
+        types: List[tp.Type],
+        only_regular=True,
+        type_var_map=None,
+        variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None):
+    types = _get_available_types(type_constructor,
+                                 types, only_regular, primitives=False)
+    t_args, type_var_map = _compute_type_variable_assignments(
+        type_constructor.type_parameters,
+        types, only_regular=only_regular, type_var_map=type_var_map,
+        variance_choices=variance_choices)
     return type_constructor.new(t_args), type_var_map
+
+
+def instantiate_parameterized_function(
+        type_parameters: List[tp.TypeParameter],
+        types: List[tp.Type],
+        only_regular=True,
+        type_var_map=None):
+    types = _get_available_types(None, types, only_regular, primitives=False)
+    _, type_var_map = _compute_type_variable_assignments(
+        type_parameters, types, only_regular=only_regular,
+        type_var_map=type_var_map, variance_choices=None)
+    return type_var_map
 
 
 def choose_type(types: List[tp.Type], only_regular=True):
