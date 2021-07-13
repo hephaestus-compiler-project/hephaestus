@@ -591,8 +591,8 @@ class ClassDeclaration(Declaration):
             for t_param in f.type_parameters:
                 new_t_param = copy(t_param)
                 if new_t_param.bound is not None:
-                    new_t_param.bound = types.substitute_type(new_t_param,
-                                                              type_var_map)
+                    new_t_param.bound = types.substitute_type(
+                        new_t_param.bound, type_var_map)
                 type_params.append(new_t_param)
             ret_type = types.substitute_type(f.get_type(),
                                              type_var_map)
