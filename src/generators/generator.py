@@ -43,6 +43,23 @@ class SuperClassInfo:
     super_inst: ast.SuperClassInstantiation
 
 
+@dataclass
+class AttrAccessInfo(object):
+    """
+    A util data class for storing information regarding a specific attribute
+    access (either function of field).
+    """
+    receiver_t: tp.Type  # This is the type of the receiver.
+    # Type variable assignments in case the receiver is a parameterized type.
+    receiver_inst: dict
+    # The declaration corresponding to the attribute (either field declaration
+    # or a function declaration).
+    attr_decl: ast.Declaration
+    # Type variable assignments if the attribute being accesses is a
+    # parameterized function.
+    attr_inst: dict
+
+
 class Generator():
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
@@ -75,6 +92,11 @@ class Generator():
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
+
+    def _get_type_variable_names(self):
+        # Get the name of type variables that are in place in the current
+        # namespace.
+        return list(self.context.get_types(self.namespace).keys())
 
     def get_types(self, ret_types=True, exclude_arrays=False,
                   exclude_covariants=False,
@@ -339,7 +361,8 @@ class Generator():
 
     def gen_func_decl(self, etype=None, not_void=False,
                       class_is_final=False, func_name=None, params=None,
-                      abstract=False, is_interface=False):
+                      abstract=False, is_interface=False,
+                      type_params=None):
         func_name = func_name or gu.gen_identifier('lower')
         initial_namespace = self.namespace
         self.namespace += (func_name,)
@@ -360,6 +383,24 @@ class Generator():
 
         prev_inside_java_nested_fun = self._inside_java_nested_fun
         self._inside_java_nested_fun = nested_function and self.language == "java"
+        # Type parameters of functions cannot be variant.
+        # Also note that at this point, we do not allow a conflict between
+        # type variable names of class and type variable names of functions.
+        # TODO consider being less conservative.
+        type_params = (
+            (
+                self.gen_type_params(
+                    with_variance=False,
+                    blacklist=self._get_type_variable_names(),
+                    for_function=True)
+                if type_params is None
+                else type_params
+            )
+            if not nested_function
+            # Nested functions cannot be parameterized (
+            # at least in Groovy, Java), because they are modeled as lambdas.
+            else []
+        )
         params = params if params is not None else (
             self._gen_func_params()
             if (
@@ -382,7 +423,9 @@ class Generator():
                        if class_method
                        else ast.FunctionDeclaration.FUNCTION),
             is_final=not can_override,
-            inferred_type=inferred_type)
+            inferred_type=inferred_type,
+            type_parameters=type_params,
+        )
 
     def _add_field_to_class(self, field, fields):
         fields.append(field)
@@ -392,15 +435,21 @@ class Generator():
         funcs.append(func)
         self.context.add_func(self.namespace, func.name, func)
 
-    def gen_type_params(self, count=None, with_variance=False):
+    def gen_type_params(self, count=None, with_variance=False,
+                        blacklist=None, for_function=False):
         if not count and ut.random.bool():
             return []
         type_params = []
-        type_param_names = []
+        type_param_names = blacklist or []
         variances = [tp.Invariant, tp.Covariant, tp.Contravariant]
         for _ in range(ut.random.integer(count or 1, self.max_type_params)):
             name = ut.random.caps(blacklist=type_param_names)
             type_param_names.append(name)
+            if for_function:
+                # OK we do this trick for type parameters corresponding to
+                # functions in order to avoid conflicts with type variables
+                # of classes. TODO: consider being less conservative.
+                name = "F_" + name
             variance = None
             if with_variance and ut.random.bool():
                 variance = ut.random.choice(variances)
@@ -485,20 +534,85 @@ class Generator():
                     fields)
         return fields
 
+    def _gen_type_params_from_existing(self, func, type_var_map):
+        if not func.type_parameters:
+            return [], {}
+        substituted_type_params = {}
+        curr_type_vars = self._get_type_variable_names()
+        func_type_vars = [t.name for t in func.type_parameters]
+        class_type_vars = [t for t in curr_type_vars
+                           if t not in func_type_vars]
+        blacklist = func_type_vars + curr_type_vars + list(type_var_map.keys())
+        new_type_params = []
+        for t_param in func.type_parameters:
+            # Here, we substitute the bound of an overriden parameterized
+            # function based on the type arguments of the superclass.
+            new_type_param = deepcopy(t_param)
+            if t_param.name in curr_type_vars:
+                # The child class contains a type variable that has the
+                # same name with a type variable of the overriden function.
+                # So we change the name of the function's type variable to
+                # avoid the conflict.
+                new_name = ut.random.caps(blacklist=blacklist)
+                func_type_vars.append(new_name)
+                blacklist.append(new_name)
+                new_type_param.name = new_name
+                substituted_type_params[t_param] = new_type_param
+
+            if new_type_param.bound is not None:
+                sub = False
+                sub_type_map = {
+                    k: v for k, v in type_var_map.items()
+                    if k.name not in func_type_vars \
+                    or k.name not in class_type_vars
+                }
+                old = new_type_param.bound
+                bound = tp.substitute_type(new_type_param.bound,
+                                           sub_type_map)
+                sub = old != bound
+
+                if not sub:
+                    bound = tp.substitute_type(bound, substituted_type_params)
+                new_type_param.bound = bound
+            new_type_params.append(new_type_param)
+        return new_type_params, substituted_type_params
+
     def _gen_func_from_existing(self, func, type_var_map, class_is_final,
                                 is_interface):
-        params = []
-        for p in func.params:
-            new_p = deepcopy(p)
-            new_p.param_type = tp.substitute_type(p.get_type(), type_var_map)
-            new_p.default = None
-            params.append(new_p)
-        ret_type = tp.substitute_type(func.get_type(), type_var_map)
+        params = deepcopy(func.params)
+        type_params, substituted_type_params = \
+            self._gen_type_params_from_existing(func, type_var_map)
+        type_param_names = [t.name for t in type_params]
+        ret_type = func.ret_type
+        for p in params:
+            sub = False
+            sub_type_map = {
+                k: v for k, v in type_var_map.items()
+                if k.name not in type_param_names
+            }
+            old = p.get_type()
+            p.param_type = tp.substitute_type(p.get_type(), sub_type_map)
+            sub = old != p.get_type()
+            if not sub:
+                p.param_type = tp.substitute_type(p.get_type(),
+                                                  substituted_type_params)
+            p.default = None
+        sub = False
+        sub_type_map = {
+            k: v for k, v in type_var_map.items()
+            if k.name not in type_param_names
+        }
+        old = ret_type
+        ret_type = tp.substitute_type(ret_type, sub_type_map)
+        sub = old != ret_type
+        if not sub:
+            ret_type = tp.substitute_type(ret_type, substituted_type_params)
         new_func = self.gen_func_decl(func_name=func.name, etype=ret_type,
                                       not_void=False,
                                       class_is_final=class_is_final,
                                       params=params,
-                                      is_interface=is_interface)
+                                      is_interface=is_interface,
+                                      type_params=type_params)
         if func.body is None:
             new_func.is_final = False
         new_func.override = True
@@ -693,7 +807,15 @@ class Generator():
                 )
                 if not cond:
                     continue
-                decls.append((ast.Variable(var.name), type_map_var, attr))
+
+                # FIXME
+                if isinstance(attr, ast.FunctionDeclaration) and attr.is_parameterized():
+                    continue
+                if attr_name == 'functions':
+                    decls.append((ast.Variable(var.name), type_map_var, attr,
+                                  {}))
+                else:
+                    decls.append((ast.Variable(var.name), type_map_var, attr))
         return decls
 
     def _get_function_declarations(self, etype, subtype) -> \
@@ -712,12 +834,18 @@ class Generator():
                 continue
             # FIXME: Consider creating a utility class that contains
             # class_type + instantiation_map
-            functions.append((None, {}, func))
+            type_var_map = {}
+            if func.is_parameterized():
+                type_var_map = tu.instantiate_parameterized_function(
+                    func.type_parameters, self.get_types(),
+                    only_regular=True)
+
+            functions.append((None, {}, func, type_var_map))
         return functions + self._get_matching_objects(etype, subtype,
                                                       'functions')
 
     def _get_matching_class(self, etype, subtype, attr_name) -> \
-            Tuple[ast.ClassDeclaration, ast.Declaration]:
+            AttrAccessInfo:
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
@@ -747,20 +875,53 @@ class Generator():
         if not class_decls:
             return None
         cls, type_var_map, attr = ut.random.choice(class_decls)
+        func_type_var_map = {}
+        is_parameterized_func = isinstance(
+            attr, ast.FunctionDeclaration) and attr.is_parameterized()
         if cls.is_parameterized():
+            cls_type_var_map = type_var_map
+
             variance_choices = (
                 None
-                if type_var_map is None
-                else init_variance_choices(type_var_map)
+                if cls_type_var_map is None
+                else init_variance_choices(cls_type_var_map)
             )
-            cls_type, params_map = tu.instantiate_type_constructor(
-                cls.get_type(), self.get_types(),
-                only_regular=True, type_var_map=type_var_map,
-                variance_choices=variance_choices
-            )
+            if is_parameterized_func:
+                # Here we have found a parameterized function in a
+                # parameterized class. So wee need to both instantiate
+                # the type constructor and the parameterized function.
+                types = tu._get_available_types(cls.get_type(),
+                                                self.get_types(),
+                                                True, False)
+                _, type_var_map = tu._compute_type_variable_assignments(
+                    cls.type_parameters + attr.type_parameters,
+                    types, type_var_map=type_var_map,
+                    variance_choices=variance_choices
+                )
+                params_map, func_type_var_map = tu.split_type_var_map(
+                    type_var_map, cls.type_parameters, attr.type_parameters)
+                targs = [
+                    params_map[t_param]
+                    for t_param in cls.type_parameters
+                ]
+                cls_type = cls.get_type().new(targs)
+            else:
+                # Here, we have a non-parameterized function in a parameterized
+                # class. So we only need to instantiate the type constructor.
+                cls_type, params_map = tu.instantiate_type_constructor(
+                    cls.get_type(), self.get_types(),
+                    only_regular=True, type_var_map=cls_type_var_map,
+                    variance_choices=variance_choices
+                )
         else:
+            if is_parameterized_func:
+                # We are in a parameterized class defined in a class that
+                # is not a type constructor.
+                func_type_var_map = tu.instantiate_parameterized_function(
+                    attr.type_parameters, self.get_types(),
+                    only_regular=True, type_var_map=type_var_map)
             cls_type, params_map = cls.get_type(), {}
-        return cls_type, params_map, attr
+        return AttrAccessInfo(cls_type, params_map, attr, func_type_var_map)
 
     def _create_type_params_from_etype(self, etype):
         if not etype.has_type_variables():
@@ -807,7 +968,7 @@ class Generator():
         return type_params, type_var_map, can_wildcard
 
     def _gen_matching_class(self, etype, attr_name, not_void=False) -> \
-            Tuple[ast.ClassDeclaration, ast.Declaration]:
+            AttrAccessInfo:
         initial_namespace = self.namespace
         class_name = gu.gen_identifier('capitalize')
         type_params = None
@@ -855,11 +1016,18 @@ class Generator():
             if attr_type != etype:
                 continue
 
-            return cls_type, params_map, attr
+            func_type_var_map = {}
+            if isinstance(
+                    attr, ast.FunctionDeclaration) and attr.is_parameterized():
+                func_type_var_map = tu.instantiate_parameterized_function(
+                    attr.type_parameters, self.get_types(), only_regular=True,
+                    type_var_map=params_map)
+
+            return AttrAccessInfo(cls_type, params_map, attr,
+                                  func_type_var_map)
         return None
 
-    def _gen_matching_func(self, etype, not_void=False) -> \
-            Tuple[ast.ClassDeclaration, ast.Declaration]:
+    def _gen_matching_func(self, etype, not_void=False) -> AttrAccessInfo:
         # Randomly choose to generate a function or a class method.
         if ut.random.bool():
             initial_namespace = self.namespace
@@ -875,24 +1043,31 @@ class Generator():
             func = self.gen_func_decl(etype, not_void=not_void)
             self.context.add_func(self.namespace, func.name, func)
             self.namespace = initial_namespace
-            return None, {}, func
+            func_type_var_map = {}
+            if func.is_parameterized():
+                func_type_var_map = tu.instantiate_parameterized_function(
+                    func.type_parameters, self.get_types(),
+                    only_regular=True, type_var_map={})
+            return AttrAccessInfo(None, {}, func, func_type_var_map)
         # Generate a class containing the requested function
         return self._gen_matching_class(etype, 'functions')
 
     def gen_func_call(self, etype, only_leaves=False, subtype=True):
         funcs = self._get_function_declarations(etype, subtype)
-        cls_type = None
         if not funcs:
             type_fun = self._get_matching_class(etype, subtype, 'functions')
             if type_fun is None:
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
                 type_fun = self._gen_matching_func(etype, not_void=True)
-            cls_type, params_map, func = type_fun
-            receiver = None if cls_type is None else self.generate_expr(
-                cls_type, only_leaves)
-            funcs.append((receiver, params_map, func))
-        receiver, params_map, func = ut.random.choice(funcs)
+            receiver = (
+                None if type_fun.receiver_t is None
+                else self.generate_expr(type_fun.receiver_t, only_leaves)
+            )
+            funcs.append((receiver, type_fun.receiver_inst,
+                          type_fun.attr_decl, type_fun.attr_inst))
+        receiver, params_map, func, func_type_map = ut.random.choice(funcs)
+        params_map.update(func_type_map or {})
         args = []
         initial_depth = self.depth
         self.depth += 1
@@ -920,26 +1095,33 @@ class Generator():
                             only_leaves,
                             gen_bottom=gen_bottom)))
         self.depth = initial_depth
-        return ast.FunctionCall(func.name, args, receiver)
+        type_args = (
+            []
+            if not func.is_parameterized()
+            else [
+                func_type_map[t_param]
+                for t_param in func.type_parameters
+            ]
+        )
+        return ast.FunctionCall(func.name, args, receiver,
+                                type_args=type_args)
 
     def gen_field_access(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
         self.depth += 1
         objs = self._get_matching_objects(etype, subtype, 'fields')
-        params_map = {} # Remove
         if not objs:
             type_f = self._get_matching_class(etype, subtype, 'fields')
             if type_f is None:
                 type_f = self._gen_matching_class(
                     etype, 'fields', not_void=True,
                 )
-            type_f, params_map, func = type_f
-            receiver = self.generate_expr(type_f, only_leaves)
-            objs.append((receiver, None, func))
+            receiver = self.generate_expr(type_f.receiver_t, only_leaves)
+            objs.append((receiver, None, type_f.attr_decl))
         objs = [(r, f) for r, _, f in objs]
-        receiver, func = ut.random.choice(objs)
+        receiver, attr = ut.random.choice(objs)
         self.depth = initial_depth
-        return ast.FieldAccess(receiver, func.name)
+        return ast.FieldAccess(receiver, attr.name)
 
     def _get_class(self, etype: tp.Type):
         # Get class declaration based on the given type.
