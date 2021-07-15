@@ -225,12 +225,19 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
+        len_params = len(node.params)
+        len_type_params = len(node.type_parameters)
+        type_parameters_res = ", ".join(
+            children_res[len_params:len_type_params + len_params])
         body_res = children_res[-1] if node.body else ''
         prefix = " " * old_ident
         prefix += "" if node.is_final else "open "
         prefix += "" if not node.override else "override "
         prefix += "" if node.body is not None else "abstract "
-        res = prefix + "fun " + node.name + "(" + ", ".join(param_res) + ")"
+        type_params = (
+            "<" + type_parameters_res + ">" if type_parameters_res else "")
+        res = prefix + "fun " + type_params + node.name + "(" + ", ".join(
+            param_res) + ")"
         if node.ret_type:
             res += ": " + self.get_type_name(node.ret_type)
         if body_res:
@@ -426,18 +433,25 @@ class KotlinTranslator(BaseTranslator):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
+        type_args = (
+            "<" + ",".join([self.get_type_name(t) for t in node.type_args]) + ">"
+            if node.type_args
+            else ""
+        )
         if node.receiver:
             receiver_expr = (
                 '({})'.format(children_res[0])
                 if isinstance(node.receiver, ast.BottomConstant)
                 else children_res[0]
             )
-            res = "{}{}.{}({})".format(
+            res = "{}{}.{}{}({})".format(
                 " " * self.ident, receiver_expr, node.func,
+                type_args,
                 ", ".join(children_res[1:]))
         else:
-            res = "{}{}({})".format(
-                " " * self.ident, node.func, ", ".join(children_res))
+            res = "{}{}{}({})".format(
+                " " * self.ident, node.func, type_args,
+                ", ".join(children_res))
         self._children_res.append(res)
 
     def visit_assign(self, node):
