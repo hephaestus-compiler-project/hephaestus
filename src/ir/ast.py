@@ -1,6 +1,6 @@
 # pylint: disable=dangerous-default-value
 from typing import List
-from copy import copy
+from copy import deepcopy
 
 import src.ir.type_utils as tu
 import src.ir.types as types
@@ -580,22 +580,29 @@ class ClassDeclaration(Declaration):
         for f in funcs:
             if f.name in implemented_funcs:
                 continue
-            new_f = copy(f)
+            new_f = deepcopy(f)
             params = []
             for p in f.params:
-                new_p = copy(p)
+                new_p = deepcopy(p)
                 new_p.param_type = types.substitute_type(p.get_type(),
                                                          type_var_map)
+                if new_p.param_type.is_type_var() and (
+                        new_p.param_type.bound is not None):
+                    new_p.param_type.bound = types.substitute_type(
+                        new_p.param_type.bound, type_var_map)
                 params.append(new_p)
             type_params = []
             for t_param in f.type_parameters:
-                new_t_param = copy(t_param)
+                new_t_param = deepcopy(t_param)
                 if new_t_param.bound is not None:
                     new_t_param.bound = types.substitute_type(
                         new_t_param.bound, type_var_map)
                 type_params.append(new_t_param)
-            ret_type = types.substitute_type(f.get_type(),
+            ret_type = types.substitute_type(deepcopy(f.get_type()),
                                              type_var_map)
+            if ret_type.is_type_var() and ret_type.bound is not None:
+                ret_type.bound = types.substitute_type(ret_type.bound,
+                                                       type_var_map)
             new_f.params = params
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
