@@ -473,7 +473,6 @@ def _get_type_arg_variance(t_param, variance_choices):
 def _compute_type_variable_assignments(
         type_parameters: List[tp.TypeParameter],
         types: List[tp.Type],
-        only_regular=True,
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None):
     t_args = []
@@ -521,7 +520,11 @@ def _compute_type_variable_assignments(
                                     t, type_var_map, cond=lambda t: False)
                                 a_types[i] = tmp_t.to_variance_free()
                     else:
-                        t_bound = type_var_map[t_param.bound]
+                        try:
+                            t_bound = type_var_map[t_param.bound]
+                        except:
+                            pass
+                            #import pdb; pdb.set_trace()
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
                             # Here we have the following case:
                             # We have two type parameters X, Y where Y <: X
@@ -577,8 +580,7 @@ def instantiate_type_constructor(
                                  types, only_regular, primitives=False)
     t_args, type_var_map = _compute_type_variable_assignments(
         type_constructor.type_parameters,
-        types, only_regular=only_regular, type_var_map=type_var_map,
-        variance_choices=variance_choices)
+        types, type_var_map=type_var_map, variance_choices=variance_choices)
     return type_constructor.new(t_args), type_var_map
 
 
@@ -589,8 +591,8 @@ def instantiate_parameterized_function(
         type_var_map=None):
     types = _get_available_types(None, types, only_regular, primitives=False)
     _, type_var_map = _compute_type_variable_assignments(
-        type_parameters, types, only_regular=only_regular,
-        type_var_map=type_var_map, variance_choices=None)
+        type_parameters, types, type_var_map=type_var_map,
+        variance_choices=None)
     return type_var_map
 
 
@@ -942,3 +944,16 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
             else:
                 return {}
     return type_var_map
+
+
+def split_type_var_map(type_var_map, cls_type_vars, func_type_vars):
+    if type_var_map is None:
+        return None, None
+    func_type_var_map = {}
+    cls_type_var_map = {}
+    for type_var, t in type_var_map.items():
+        if type_var in func_type_vars:
+            func_type_var_map[type_var] = t
+        else:
+            cls_type_var_map[type_var] = t
+    return cls_type_var_map, func_type_var_map
