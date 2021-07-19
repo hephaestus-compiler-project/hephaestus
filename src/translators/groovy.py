@@ -65,6 +65,11 @@ class GroovyTranslator(BaseTranslator):
         self._inside_is_function = False
         self.always_cast_numbers = options.get('cast_numbers', False)
 
+        # A set of numbers where numbers is the number of type parameters that
+        # an interface for a function should have.
+        # TODO pass it as option, or produce the list during the AST traverse
+        self._function_interfaces = {0,1,2,3}
+
     def _reset_state(self):
         # Clear the state
         self._main_method = ""
@@ -77,6 +82,7 @@ class GroovyTranslator(BaseTranslator):
         self.is_unit = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
+        self._function_interfaces = {0,1,2,3}
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -128,6 +134,29 @@ class GroovyTranslator(BaseTranslator):
             return "Main."
         return ""
 
+    def _get_functional_interfaces(self):
+        """It produces the required functional interfaces.
+        For each number x in _function_interfaces it creates FunctionX+1.
+        The last type argument is used for the return type.
+        """
+        res = ""
+        template = "interface Function{}<{}> {{\n{}public {} apply({});\n}}\n\n"
+        for number in self._function_interfaces:
+            type_params = ", ".join(
+                ["A" + str(i + 1) if i < number else "R"
+                 for i in range(0, number + 1)]
+            )
+            res += template.format(
+                number,
+                type_params,
+                2 * self.ident_value,
+                "R",
+                ", ".join(["A" + str(i + 1) + " a" + str(i + 1)
+                          for i in range(0, number)]),
+            )
+        res = "\n\n" + res if res != "" else ""
+        return res
+
     def visit_program(self, node):
         self.context = node.context
         children = node.children()
@@ -148,9 +177,10 @@ class GroovyTranslator(BaseTranslator):
             main_method="\n\n" + main_method if main_method else ""
         )
         other_classes = "\n\n".join(self.pop_children_res(children))
-        self.program = "{package}{main}{other_classes}".format(
+        self.program = "{package}{main}{f_interfaces}{other_classes}".format(
             package=package_str,
             main=main_cls,
+            f_interfaces=self._get_functional_interfaces(),
             other_classes="\n\n" + other_classes if other_classes else ''
         )
         self._reset_state()
