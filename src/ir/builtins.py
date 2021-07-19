@@ -73,6 +73,10 @@ class BuiltinFactory(ABC):
     def get_array_type(self):
         pass
 
+    @abstractmethod
+    def get_function_type(self, nr_parameters=0):
+        pass
+
     def get_non_nothing_types(self):
         return [
             self.get_any_type(),
@@ -102,6 +106,9 @@ class BuiltinFactory(ABC):
             self.get_big_decimal_type(),
             self.get_big_integer_type(),
         ]
+
+    def get_function_types(self, max_parameters):
+        return [self.get_function_type(i) for i in range(0, max_parameters+1)]
 
     def get_nothing(self):
         raise NotImplementedError
@@ -201,6 +208,18 @@ class BooleanType(AnyType):
 class ArrayType(TypeConstructor):
     def __init__(self, name="Array"):
         super().__init__(name, [TypeParameter("T")])
+        self.supertypes.append(AnyType())
+
+
+class FunctionType(TypeConstructor):
+    def __init__(self, nr_type_parameters: int):
+        name = "Function" + str(nr_type_parameters)
+        type_parameters = [
+            TypeParameter("A" + str(i))
+            for i in range(1, nr_type_parameters + 1)
+        ] + [TypeParameter("R")]
+        self.nr_type_parameters = nr_type_parameters
+        super().__init__(name, type_parameters)
         self.supertypes.append(AnyType())
 
 
