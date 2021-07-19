@@ -64,6 +64,7 @@ class Generator():
 
     def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
                  max_var_decls=3, max_side_effects=1, max_type_params=3,
+                 max_functional_params=3,
                  language=None,
                  options={},
                  context=None):
@@ -78,6 +79,7 @@ class Generator():
         self.max_type_params = max_type_params
         self.max_var_decls = max_var_decls
         self.max_side_effects = max_side_effects
+        self.max_functional_params = max_functional_params
         self.disable_inference_in_closures = options.get(
             "disable_inference_in_closures", False)
         self.disable_var_type_inference = options.get(
@@ -91,6 +93,10 @@ class Generator():
         # This flag is used for Java lambdas where local variables references
         # must be final.
         self._inside_java_nested_fun = False
+
+        self.function_type = type(self.bt_factory.get_function_type())
+        self.function_types = self.bt_factory.get_function_types(
+            max_functional_params)
 
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
@@ -130,7 +136,7 @@ class Generator():
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
-        return usr_types + builtins
+        return usr_types + builtins + self.function_types
 
     def select_type(self, ret_types=True, exclude_arrays=False,
                     exclude_covariants=False, exclude_contravariants=False):
@@ -805,6 +811,9 @@ class Generator():
             var_type = self._get_var_type_to_search(var.get_type())
             if not var_type:
                 continue
+            if isinstance(getattr(var_type, 't_constructor', None),
+                          self.function_type):
+                continue
             cls, type_map_var = self._get_class(var_type)
             for attr in getattr(cls, attr_name):  # function or field
                 attr_type = tp.substitute_type(
@@ -1316,6 +1325,9 @@ class Generator():
                 continue
             var_type = self._get_var_type_to_search(var.get_type())
             if not var_type:
+                continue
+            if isinstance(getattr(var_type, 't_constructor', None),
+                          self.function_type):
                 continue
             cls, type_var_map = self._get_class(var_type)
             for field in cls.fields:
