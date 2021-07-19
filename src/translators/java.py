@@ -103,7 +103,8 @@ class JavaTranslator(BaseTranslator):
 
         # A set of numbers where numbers is the number of type parameters that
         # an interface for a function should have.
-        self._function_interfaces = {0}
+        # TODO pass it as option, or produce the list during the AST traverse
+        self._function_interfaces = {0,1,2,3}
 
         # We need nodes_stack to set semicolons when needed.
         # For instance, in visit_func_call we use a semicolon only if parent
@@ -131,7 +132,7 @@ class JavaTranslator(BaseTranslator):
         self.is_nested_func_block = False
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
-        self._function_interfaces = {0}
+        self._function_interfaces = {0,1,2,3}
         self._nodes_stack = [None]
         self._visit_is_stack = [None]
         self._x_counter = 0
@@ -198,13 +199,17 @@ class JavaTranslator(BaseTranslator):
         res = ""
         template = "interface Function{}<{}> {{\n{}public {} apply({});\n}}\n\n"
         for number in self._function_interfaces:
+            type_params = ", ".join(
+                ["A" + str(i + 1) if i < number else "R"
+                 for i in range(0, number + 1)]
+            )
             res += template.format(
                 number,
-                ", ".join(["A" + str(i) for i in range(1, number + 2)]),
+                type_params,
                 2 * self.ident_value,
-                "A" + str(number + 1),
-                ", ".join(["A" + str(i) + " a" + str(i)
-                          for i in range(1, number + 1)]),
+                "R",
+                ", ".join(["A" + str(i + 1) + " a" + str(i + 1)
+                          for i in range(0, number)]),
             )
         res = "\n\n" + res if res != "" else ""
         return res
