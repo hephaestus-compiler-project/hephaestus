@@ -455,7 +455,7 @@ class Generator():
                 variance = ut.random.choice(variances)
             bound = None
             if ut.random.bool():
-                exclude_covariants = variance == tp.Contravariant
+                exclude_covariants = variance == tp.Contravariant or for_function
                 exclude_contravariants = True
                 bound = self.select_type(
                     exclude_arrays=True,
