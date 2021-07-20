@@ -414,6 +414,9 @@ class FunctionDeclaration(Declaration):
     def get_type(self):
         return self.inferred_type
 
+    def is_class_method(self):
+        return self.func_type == self.CLASS_METHOD
+
     def is_parameterized(self):
         return bool(self.type_parameters)
 
@@ -447,6 +450,18 @@ class FunctionDeclaration(Declaration):
                                   other.type_parameters) and
                     self.inferred_type == other.inferred_type)
         return False
+
+
+def _instantiate_type_param_rec(t_param: types.TypeParameter,
+                                type_var_map: dict):
+    new_t_param = deepcopy(t_param)
+    if not new_t_param.is_type_var():
+        return new_t_param
+    if new_t_param.bound is not None:
+        new_bound = types.substitute_type(new_t_param.bound, type_var_map)
+        new_t_param.bound = _instantiate_type_param_rec(new_bound,
+                                                        type_var_map)
+    return new_t_param
 
 
 class ClassDeclaration(Declaration):
@@ -591,13 +606,10 @@ class ClassDeclaration(Declaration):
                     new_p.param_type.bound = types.substitute_type(
                         new_p.param_type.bound, type_var_map)
                 params.append(new_p)
-            type_params = []
-            for t_param in f.type_parameters:
-                new_t_param = deepcopy(t_param)
-                if new_t_param.bound is not None:
-                    new_t_param.bound = types.substitute_type(
-                        new_t_param.bound, type_var_map)
-                type_params.append(new_t_param)
+            type_params = [
+                _instantiate_type_param_rec(t, type_var_map)
+                for t in f.type_parameters
+            ]
             ret_type = types.substitute_type(deepcopy(f.get_type()),
                                              type_var_map)
             if ret_type.is_type_var() and ret_type.bound is not None:
