@@ -522,9 +522,18 @@ def _compute_type_variable_assignments(
                     else:
                         try:
                             t_bound = type_var_map[t_param.bound]
-                        except:
-                            pass
-                            #import pdb; pdb.set_trace()
+                        except KeyError:
+                            # We should never reach here, but just in case.
+                            t_bound = None
+                            for k, v in type_var_map.items():
+                                if k.name == t_param.bound.name:
+                                    t_bound = v
+                            if not t_bound:
+                                raise Exception(
+                                    'Cannot find assignment for the bound of '
+                                    'type parameter' + t_param
+                                )
+
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
                             # Here we have the following case:
                             # We have two type parameters X, Y where Y <: X
