@@ -531,7 +531,7 @@ def _compute_type_variable_assignments(
                             if not t_bound:
                                 raise Exception(
                                     'Cannot find assignment for the bound of '
-                                    'type parameter' + t_param
+                                    'type parameter ' + t_param
                                 )
 
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
