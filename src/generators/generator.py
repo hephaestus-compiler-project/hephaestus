@@ -371,7 +371,7 @@ class Generator():
         # Check if this function we want to generate is a class method, by
         # checking the name of the outer namespace. If we are in class then
         # the outer namespace begins with capital letter.
-        class_method = self.namespace[-1][0].isupper()
+        class_method = self.namespace[-2][0].isupper()
         can_override = abstract or is_interface or (class_method and not
                                     class_is_final and ut.random.bool())
         # Check if this function we want to generate is a nested functions.
@@ -387,28 +387,34 @@ class Generator():
         # Also note that at this point, we do not allow a conflict between
         # type variable names of class and type variable names of functions.
         # TODO consider being less conservative.
-        type_params = (
-            (
-                self.gen_type_params(
+        if not nested_function:
+            if type_params is not None:
+                for t_p in type_params:
+                    # We add the types to the context.
+                    self.context.add_type(self.namespace, t_p.name, t_p)
+            else:
+                type_params = self.gen_type_params(
                     with_variance=False,
                     blacklist=self._get_type_variable_names(),
-                    for_function=True)
-                if type_params is None
-                else type_params
-            )
-            if not nested_function
+                    for_function=True
+                )
+        else:
             # Nested functions cannot be parameterized (
             # at least in Groovy, Java), because they are modeled as lambdas.
-            else []
-        )
-        params = params if params is not None else (
-            self._gen_func_params()
-            if (
-                ut.random.bool(prob=0.25) or
-                self.language == 'java' or
-                self.language == 'groovy' and is_interface
+            type_params = []
+        if params is not None:
+            for p in params:
+                self.context.add_var(self.namespace, p.name, p)
+        else:
+            params = (
+                self._gen_func_params()
+                if (
+                    ut.random.bool(prob=0.25) or
+                    self.language == 'java' or
+                    self.language == 'groovy' and is_interface
+                )
+                else self._gen_func_params_with_default()
             )
-            else self._gen_func_params_with_default())
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         if is_interface or (abstract and ut.random.bool()):
             body, inferred_type = None, None
@@ -479,11 +485,11 @@ class Generator():
             return None
         class_decl = ut.random.choice(class_decls)
         if class_decl.is_parameterized():
+            types = self.get_types(exclude_covariants=True,
+                                   exclude_contravariants=True,
+                                   exclude_arrays=self.language == 'kotlin')
             cls_type, type_var_map = tu.instantiate_type_constructor(
-                class_decl.get_type(),
-                self.get_types(exclude_covariants=True,
-                               exclude_contravariants=True),
-                only_regular=True,
+                class_decl.get_type(), types, only_regular=True,
             )
         else:
             cls_type, type_var_map = class_decl.get_type(), {}
@@ -832,6 +838,15 @@ class Generator():
             # The receiver object for this kind of functions is None.
             if not cond:
                 continue
+
+            if func.is_parameterized() and func.is_class_method():
+                # TODO: Consider being less conservative.
+                # The problem is when the class method is parameterized,
+                # the receiver is parameterized, and the type parameters
+                # of functions have bounds corresponding to the type parameters
+                # of class.
+                continue
+
             # FIXME: Consider creating a utility class that contains
             # class_type + instantiation_map
             type_var_map = {}
