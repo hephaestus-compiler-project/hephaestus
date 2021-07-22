@@ -733,6 +733,9 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
         if isinstance(expr, ast.ArrayExpr):
             return _return_type_hint(expr.array_type)
 
+        if isinstance(expr, ast.Lambda):
+            return _return_type_hint(expr.signature)
+
         if isinstance(expr, ast.Block):
             return _return_type_hint(get_type_hint(
                 expr.body[-1], context, namespace, factory, types,
