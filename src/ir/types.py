@@ -549,6 +549,9 @@ class ParameterizedType(SimpleClassifier):
     def is_parameterized(self):
         return True
 
+    def is_function_type(self):
+        return self.t_constructor.name.startswith('Function')
+
     def has_type_variables(self):
         return any(t_arg.has_type_variables() for t_arg in self.type_args)
 
