@@ -220,7 +220,8 @@ class JavaTranslator(BaseTranslator):
 
     def _parent_is_function(self):
         # The second node is the parent node
-        return isinstance(self._nodes_stack[-2], ast.FunctionDeclaration)
+        return isinstance(self._nodes_stack[-2], (ast.Lambda,
+                          ast.FunctionDeclaration))
 
     def visit_program(self, node):
         self.types = node.get_types()
@@ -274,6 +275,7 @@ class JavaTranslator(BaseTranslator):
 
         return_stmt = "\n" + self.get_ident()
         sugar = ""
+        sugar_semi = ""
         # We are in a block that will be added in a lambda and called in the
         # same statement. Hence we must return something to the lambda.
         if not self._parent_is_function():
@@ -310,12 +312,27 @@ class JavaTranslator(BaseTranslator):
                                    (ast.VariableDeclaration,
                                     ast.FunctionCall,
                                     ast.Assignment))):
-                var_prefix = (
-                    'var '
-                    if not children[-1].is_bottom()
-                    else 'Object '
-                )
-                sugar = "{p}x_{x} = ".format(p=var_prefix, x=self._x_counter)
+                is_bottom = children[-1].is_bottom()
+                type_hint = get_type_hint(children[-1],
+                                          self.context,
+                                          self._namespace,
+                                          jt.JavaBuiltinFactory(),
+                                          self.types,
+                                          smart_casts=self.smart_casts)
+                is_lambda = getattr(
+                    type_hint, 'is_function_type', lambda: False)()
+
+                if is_bottom:
+                    var_prefix = 'Object'
+                elif is_lambda:
+                    var_prefix = self.get_type_name(type_hint)
+                    if isinstance(children[-1], ast.Lambda):
+                        sugar_semi = ";"
+                else:
+                    var_prefix = 'var'
+                sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
+                return_stmt += ';' if is_lambda and not return_stmt.strip() \
+                    else ''
                 self._x_counter += 1
 
         # A block could be the body of a function or the body of an if statement
@@ -328,7 +345,7 @@ class JavaTranslator(BaseTranslator):
             children_res[0] = ut.add_string_at(
                 children_res[0],
                 sugar,
-                ut.leading_spaces(children_res[0]))
+                ut.leading_spaces(children_res[0])) + sugar_semi
             res = "{{\n{ident}{stmt}{ret}\n{old_ident}}}".format(
                 ident=self.get_ident(),
                 stmt=children_res[0].strip(),
@@ -339,7 +356,7 @@ class JavaTranslator(BaseTranslator):
             children_res[-1] = ut.add_string_at(
                 children_res[-1],
                 sugar,
-                ut.leading_spaces(children_res[-1]))
+                ut.leading_spaces(children_res[-1])) + sugar_semi
             res = "{{\n{stmts}{ret}\n{old_ident}}}".format(
                 stmts="\n".join(children_res),
                 ret=return_stmt,
@@ -430,9 +447,17 @@ class JavaTranslator(BaseTranslator):
                         translator = JavaTranslator()
                         translator.context = self.context
                         translator._cast_number = True
+                        translator._namespace = self._namespace
                         for expr in supercls.args:
                             translator.visit(expr)
-                        res = ", ".join(translator._children_res)
+                        res = translator._children_res
+                        for expr, r in zip(supercls.args, res):
+                            if isinstance(expr, ast.Lambda):
+                                r = "({cast}) {lmd}".format(
+                                    cast=self.get_type_name(expr.signature),
+                                    lmd=r
+                                )
+                        res = ", ".join(res)
                         res = re.sub(r'\s+',' ',res)
                     super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
                         res + ");"
@@ -443,7 +468,7 @@ class JavaTranslator(BaseTranslator):
                 params=constructor_params,
                 super_call=super_call,
                 fields=constructor_fields,
-                new_line="\n" if fields else "",
+                new_line="\n",
                 close_ident=self.get_ident() if fields else ""
             )
 
@@ -528,9 +553,14 @@ class JavaTranslator(BaseTranslator):
         #
         # var foo = 'B'
         # if (foo == new Object()) {...}
+        #
+        # Finally, Function Types cannot be inferred.
         if (node.var_type is not None or
                 self._namespace == ast.GLOBAL_NAMESPACE or
-                node.inferred_type == jt.Object):
+                node.inferred_type == jt.Object or
+                isinstance(getattr(node.inferred_type, 't_constructor', None),
+                           jt.FunctionType)
+                ):
             var_type = self.get_type_name(node.inferred_type)
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
@@ -573,9 +603,12 @@ class JavaTranslator(BaseTranslator):
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            return isinstance(parent_decl, ast.FunctionDeclaration) or (
-                  parent_name in ['true_block', 'false_block']
-            )
+            if parent_decl is None:
+                parent_decl = self.context.get_lambda(parent_namespace,
+                                                      parent_name)
+            is_func = isinstance(parent_decl, (ast.Lambda,
+                                               ast.FunctionDeclaration))
+            return is_func or (parent_name in ['true_block', 'false_block'])
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
@@ -655,6 +688,62 @@ class JavaTranslator(BaseTranslator):
         self.ident = old_ident
         self.is_func_non_void_block = is_func_non_void_block
         self.is_nested_func_block = is_nested_func_block
+        self._cast_number = prev_cast_number
+        if self._inside_is:
+            self._inside_is_function = prev_inside_is_function
+        return res
+
+    @append_to
+    @change_namespace
+    def visit_lambda(self, node):
+        if self._inside_is:
+            prev_inside_is_function = self._inside_is_function
+            self._inside_is_function = True
+        old_ident = self.ident
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident += 2
+            self.ident += 2
+        self.ident += 2
+        prev_cast_number = self._cast_number
+        children = node.children()
+
+        is_func_non_void_block = self.is_func_non_void_block
+        self.is_func_non_void_block = node.get_type() != jt.Void
+
+        is_expression = not isinstance(node.body, ast.Block)
+        if is_expression:
+            self._cast_number = True
+
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        param_res = [children_res[i] for i, _ in enumerate(node.params)]
+
+        body_res = children_res[-1] if node.body else ''
+        body = ""
+        if body_res:
+            if is_expression:
+                if node.get_type() != jt.Void:
+                    body_res = ut.add_string_at(
+                        body_res, "return ", ut.leading_spaces(body_res))
+                body = "{{{body};}}".format(
+                    body=body_res,
+                    #ident=self.get_ident(old_ident=old_ident)
+                )
+            else:
+                body = body_res
+
+        params = list(map(lambda x: x.split()[-1], param_res))
+        res = "({params}) -> {body}".format(
+            #ident=self.get_ident(old_ident=old_ident),
+            params=", ".join(params),
+            body=body
+        )
+
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident -= 2
+        self.ident = old_ident
+        self.is_func_non_void_block = is_func_non_void_block
         self._cast_number = prev_cast_number
         if self._inside_is:
             self._inside_is_function = prev_inside_is_function
