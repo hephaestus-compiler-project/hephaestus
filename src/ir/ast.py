@@ -428,6 +428,58 @@ class FunctionDeclaration(Declaration):
         return False
 
 
+# @theosotr Should we change it to Expr? I think get_type will be useful
+class Lambda(Declaration):
+    # body can be Block or Expr
+    def __init__(self,
+                 shadow_name: str,  # we use it in namespace
+                 params: List[ParameterDeclaration],
+                 ret_type: types.Type,
+                 body: Node,
+                 signature: types.ParameterizedType):
+        self.name = shadow_name
+        self.params = params
+        self.ret_type = ret_type
+        self.body = body
+        self.signature = signature
+
+    def children(self):
+        if self.body is None:
+            return self.params
+        return self.params + [self.body]
+
+    def update_children(self, children):
+        super().update_children(children)
+        len_params = len(self.params)
+        for i, c in enumerate(children[:len_params]):
+            self.params[i] = c
+        if self.body is None:
+            return
+        self.body = children[-1]
+
+    def get_type(self):
+        return self.ret_type
+
+    def __str__(self):
+        if self.ret_type is None:
+            return "lambda ({}) =\n  {}".format(
+                ",".join(map(str, self.params)), str(self.body))
+        return "lambda ({}): {} =\n  {}".format(
+            ",".join(map(str, self.params)), str(self.ret_type),
+            str(self.body))
+
+    def is_equal(self, other):
+        if isinstance(other,  Lambda):
+            return (self.ret_type == other.ret_type and
+                    (
+                        self.body == other.body
+                        if self.body is None
+                        else self.body.is_equal(other.body)
+                    ) and
+                    check_list_eq(self.params, other.params))
+        return False
+
+
 class ClassDeclaration(Declaration):
     REGULAR = 0
     INTERFACE = 1
