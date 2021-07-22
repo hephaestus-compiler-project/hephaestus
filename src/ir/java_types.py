@@ -348,7 +348,7 @@ class ArrayType(tp.TypeConstructor, ObjectType):
         self.supertypes.append(ObjectType())
 
 
-class FunctionType(tp.TypeConstructor, ObjectType):
+class FunctionType(tp.TypeConstructor):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
@@ -357,7 +357,6 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         ] + [tp.TypeParameter("R")]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
-        self.supertypes.append(ObjectType())
 
 
 ### WARNING: use them only for testing ###
