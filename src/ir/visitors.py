@@ -17,6 +17,7 @@ class ASTVisitor():
             ast.VariableDeclaration: self.visit_var_decl,
             ast.ParameterDeclaration: self.visit_param_decl,
             ast.FunctionDeclaration: self.visit_func_decl,
+            ast.Lambda: self.visit_lambda,
             ast.BottomConstant: self.visit_bottom_constant,
             ast.IntegerConstant: self.visit_integer_constant,
             ast.RealConstant: self.visit_real_constant,
@@ -74,6 +75,9 @@ class ASTVisitor():
 
     def visit_func_decl(self, node):
         raise NotImplementedError('visit_func_decl() must be implemented')
+
+    def visit_lambda(self, node):
+        raise NotImplementedError('visit_lambda() must be implemented')
 
     def visit_bottom_constant(self, node):
         raise NotImplementedError("visit_bottom_constant() must be implemented")
@@ -173,6 +177,9 @@ class DefaultVisitor(ASTVisitor):
         return self._visit_node(node)
 
     def visit_func_decl(self, node):
+        return self._visit_node(node)
+
+    def visit_lambda(self, node):
         return self._visit_node(node)
 
     def visit_bottom_constant(self, node):
