@@ -352,9 +352,9 @@ class FunctionType(tp.TypeConstructor):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
         type_parameters = [
-            tp.TypeParameter("A" + str(i))
+            tp.TypeParameter("A" + str(i), tp.Contravariant)
             for i in range(1, nr_type_parameters + 1)
-        ] + [tp.TypeParameter("R")]
+        ] + [tp.TypeParameter("R", tp.Covariant)]
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
 
