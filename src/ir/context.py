@@ -15,6 +15,7 @@ class Context():
             self._context[namespace] = {
                 'types': {},
                 'funcs': {},
+                'lambdas': {},
                 'vars': {},
                 'classes': {},
                 'decls': OrderedDict()  # Here we keep the declaration order
@@ -34,6 +35,9 @@ class Context():
         self._add_entity(namespace, 'funcs', func_name, func)
         self._add_entity(namespace, 'decls', func_name, func)
 
+    def add_lambda(self, namespace, shadow_name, lmd):
+        self._add_entity(namespace, 'lambdas', shadow_name, lmd)
+
     def add_var(self, namespace, var_name, var):
         self._add_entity(namespace, 'vars', var_name, var)
         self._add_entity(namespace, 'decls', var_name, var)
@@ -52,6 +56,9 @@ class Context():
     def remove_func(self, namespace, func_name):
         self._remove_entity(namespace, 'funcs', func_name)
         self._remove_entity(namespace, 'decls', func_name)
+
+    def remove_lambda(self, namespace, shadow_name):
+        self._remove_entity(namespace, 'lambdas', shadow_name)
 
     def remove_class(self, namespace, class_name):
         self._remove_entity(namespace, 'classes', class_name)
@@ -115,11 +122,18 @@ class Context():
         return self._context.get(namespace, {}).get('decls', {}).get(
             name, None)
 
+    def get_lambda(self, namespace, name):
+        return self._context.get(namespace, {}).get('lambdas', {}).get(
+            name, None)
+
     def get_types(self, namespace, only_current=False, glob=False):
         return self._get_declarations(namespace, 'types', only_current, glob)
 
     def get_funcs(self, namespace, only_current=False, glob=False):
         return self._get_declarations(namespace, 'funcs', only_current, glob)
+
+    def get_lambdas(self, namespace, only_current=False, glob=False):
+        return self._get_declarations(namespace, 'lambdas', only_current, glob)
 
     def get_vars(self, namespace, only_current=False, glob=False):
         return self._get_declarations(namespace, 'vars', only_current, glob)
