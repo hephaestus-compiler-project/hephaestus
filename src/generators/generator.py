@@ -92,7 +92,7 @@ class Generator():
 
         # This flag is used for Java lambdas where local variables references
         # must be final.
-        self._inside_java_nested_fun = False
+        self._inside_java_lambda = False
 
         self.function_type = type(self.bt_factory.get_function_type())
         self.function_types = self.bt_factory.get_function_types(
@@ -432,7 +432,7 @@ class Generator():
             body, inferred_type = None, None
         else:
             body, inferred_type = self._gen_func_body(ret_type)
-        self._inside_java_nested_fun = prev_inside_java_nested_fun
+        self._inside_java_lambda = prev_inside_java_lamdba
         self.depth = initial_depth
         self.namespace = initial_namespace
         return ast.FunctionDeclaration(
@@ -802,7 +802,7 @@ class Generator():
             List[Tuple[ast.Expr, ast.Declaration]]:
         decls = []
         variables = self.context.get_vars(self.namespace).values()
-        if self._inside_java_nested_fun:
+        if self._inside_java_lambda:
             variables = list(filter(
                 lambda v: (getattr(v, 'is_final', False) or (
                     v not in self.context.get_vars(self.namespace[:-1]).values())),
@@ -1229,6 +1229,36 @@ class Generator():
         return ut.random.choice(
             [s for s in subclasses if s.name == etype.name] or subclasses)
 
+    def gen_lambda(self, etype=None, not_void=False,
+                   shadow_name=None, params=None):
+
+        shadow_name = shadow_name or gu.gen_identifier('lower')
+        initial_namespace = self.namespace
+        self.namespace += (shadow_name,)
+        initial_depth = self.depth
+        self.depth += 1
+
+        prev_inside_java_lamdba = self._inside_java_lambda
+        self._inside_java_lambda = self.language == "java"
+
+        params = params if params is not None else self._gen_func_params()
+        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
+        body, _ = self._gen_func_body(ret_type)
+        param_types = [p.param_type for p in params]
+        signature = tp.ParameterizedType(
+            self.bt_factory.get_function_type(len(params)),
+            param_types + [ret_type])
+
+        res = ast.Lambda(shadow_name, params, ret_type, body, signature)
+
+        self.depth = initial_depth
+        self.namespace = initial_namespace
+        self._inside_java_lambda = prev_inside_java_lamdba
+
+        self.context.add_lambda(self.namespace, shadow_name, res)
+
+        return res
+
     # pylint: disable=unused-argument
     def gen_new(self, etype, only_leaves=False, subtype=True):
         if isinstance(etype, tp.ParameterizedType):
@@ -1242,6 +1272,13 @@ class Generator():
         con = news.get(etype)
         if con is not None:
             return con
+
+        if isinstance(getattr(etype, 't_constructor', None),
+                      self.function_type):
+            params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
+            ret_type = etype.type_args[-1]
+            return self.gen_lambda(etype=ret_type, params=params)
+
         class_decl = self._get_subclass(etype, subtype)
         # No class was found corresponding to the given type. Probably,
         # the given type is a type parameter. So, if this type parameter has
@@ -1297,7 +1334,7 @@ class Generator():
         variables = self.context.get_vars(self.namespace).values()
         # Case where we want only final variables
         # Or variables declared in the nested function
-        if self._inside_java_nested_fun:
+        if self._inside_java_lambda:
             variables = list(filter(
                 lambda v: (getattr(v, 'is_final', False) or v not in
                     self.context.get_vars(self.namespace[:-1]).values()),
@@ -1318,7 +1355,7 @@ class Generator():
     def _get_assignable_vars(self):
         variables = []
         for var in self.context.get_vars(self.namespace).values():
-            if self._inside_java_nested_fun:
+            if self._inside_java_lambda:
                 continue
             if not getattr(var, 'is_final', True):
                 variables.append((None, var))
