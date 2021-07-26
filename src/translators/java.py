@@ -1026,6 +1026,29 @@ class JavaTranslator(BaseTranslator):
         )
 
     @append_to
+    def visit_func_ref(self, node):
+        old_ident = self.ident
+
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+
+        self.ident = old_ident
+
+        children_res = self.pop_children_res(children)
+        # TODO handle lambdas
+        receiver = children_res[0] if children_res else "Main"
+        receiver += "::"
+        res = "{ident}{receiver}{name}{semicolon}".format(
+            ident=self.get_ident(),
+            receiver=receiver,
+            name=node.func,
+            semicolon=";" if self._parent_is_block() else ""
+        )
+        return res
+
+    @append_to
     def visit_func_call(self, node):
         def is_nested_func():
             # fdecl[0][-1] is the parent.
