@@ -420,6 +420,10 @@ class FunctionDeclaration(Declaration):
     def is_parameterized(self):
         return bool(self.type_parameters)
 
+    def get_signature(self, function_type):
+        type_args = [p.param_type for p in self.params] + [self.ret_type]
+        return types.ParameterizedType(function_type, type_args)
+
     def __str__(self):
         type_params_str = (
             "<" + ", ".join(map(str, self.type_parameters)) + "> "
@@ -1170,6 +1174,31 @@ class FunctionCall(Expr):
             return (self.func == other.func and
                     check_list_eq(self.args, other.args) and
                     check_list_eq(self.type_args, other.type_args) and
+                    check_default_eq(self.receiver, other.receiver))
+        return False
+
+
+class FunctionReference(Expr):
+    def __init__(self, func: str, receiver: Expr):
+        self.func = func
+        self.receiver = receiver
+
+    def children(self):
+        if not self.receiver:
+            return []
+        return [self.receiver]
+
+    def update_children(self, children):
+        super().update_children(children)
+        if self.receiver:
+            self.receiver = children[0]
+
+    def __str__(self):
+        return "{}::{}".format(str(self.receiver), self.func)
+
+    def is_equal(self, other):
+        if isinstance(other, FunctionReference):
+            return (self.func == other.func and
                     check_default_eq(self.receiver, other.receiver))
         return False
 
