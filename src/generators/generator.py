@@ -67,9 +67,11 @@ class Generator():
                  max_functional_params=3,
                  language=None,
                  options={},
+                 logger=None,
                  context=None):
         assert language is not None, "You must specify the language"
         self.language = language
+        self.logger = logger
         self.context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.max_depth = max_depth
@@ -371,10 +373,14 @@ class Generator():
     def gen_func_decl(self, etype=None, not_void=False,
                       class_is_final=False, func_name=None, params=None,
                       abstract=False, is_interface=False,
-                      type_params=None):
+                      type_params=None,
+                      namespace=None):
         func_name = func_name or gu.gen_identifier('lower')
         initial_namespace = self.namespace
-        self.namespace += (func_name,)
+        if namespace:
+            self.namespace = namespace + (func_name,)
+        else:
+            self.namespace += (func_name,)
         initial_depth = self.depth
         self.depth += 1
         # Check if this function we want to generate is a class method, by
@@ -905,8 +911,7 @@ class Generator():
         return functions + self._get_matching_objects(etype, subtype,
                                                       'functions')
 
-    def _get_matching_class(self, etype, subtype, attr_name) -> \
-            AttrAccessInfo:
+    def _get_matching_class_decls(self, etype, subtype, attr_name):
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
@@ -933,6 +938,12 @@ class Generator():
                 # Now here we keep the class and the function that match
                 # the given type.
                 class_decls.append((c, type_var_map, attr))
+        return class_decls
+
+
+    def _get_matching_class(self, etype, subtype, attr_name) -> \
+            AttrAccessInfo:
+        class_decls = self._get_matching_class_decls(etype, subtype, attr_name)
         if not class_decls:
             return None
         cls, type_var_map, attr = ut.random.choice(class_decls)
@@ -983,6 +994,28 @@ class Generator():
                     only_regular=True, type_var_map=type_var_map)
             cls_type, params_map = cls.get_type(), {}
         return AttrAccessInfo(cls_type, params_map, attr, func_type_var_map)
+
+    def _get_matching_classes(self, etype, subtype, attr_name):
+        res = []
+        class_decls = self._get_matching_class_decls(etype, subtype, attr_name)
+        if not class_decls:
+            return []
+        for cls, type_var_map, attr in class_decls:
+            if cls.is_parameterized():
+                variance_choices = (
+                    None
+                    if type_var_map is None
+                    else init_variance_choices(type_var_map)
+                )
+                cls_type, params_map = tu.instantiate_type_constructor(
+                    cls.get_type(), self.get_types(),
+                    only_regular=True, type_var_map=type_var_map,
+                    variance_choices=variance_choices
+                )
+            else:
+                cls_type, params_map = cls.get_type(), {}
+            res.append((cls_type, params_map, attr))
+        return res
 
     def _create_type_params_from_etype(self, etype):
         if not etype.has_type_variables():
@@ -1259,6 +1292,37 @@ class Generator():
 
         return res
 
+    def get_func_refs(self, etype):
+        # Tuples of receiver and function
+        # if receiver is None, then its a function not a method
+        funcs = []
+        # Find all global functions
+        for func in self.context.get_funcs(self.namespace, glob=True).values():
+            signature = func.get_signature(
+                self.bt_factory.get_function_type(len(func.params))
+            )
+            # TODO Handle parameterized functions, and functions of
+            # parameterized classes
+            # TODO Handle primitives?
+            if signature == etype:
+                if func.func_type == func.FUNCTION:
+                    funcs.append(ast.FunctionReference(func.name, None))
+                else:
+                    receiver = self.generate_expr(etype, subtype=False)
+                    funcs.append(ast.FunctionReference(func.name, receiver))
+        # TODO Look for lambdas that are either available in current scope,
+        # or accessible through a receiver
+        return funcs
+
+    def gen_func_ref(self, etype):
+        params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
+        ret_type = etype.type_args[-1]
+        func_decl = self.gen_func_decl(
+            etype=ret_type, params=params, namespace=('global',)
+        )
+        self.context.add_func(('global',), func_decl.name, func_decl)
+        return ast.FunctionReference(func_decl.name, None)
+
     # pylint: disable=unused-argument
     def gen_new(self, etype, only_leaves=False, subtype=True):
         if isinstance(etype, tp.ParameterizedType):
@@ -1273,8 +1337,12 @@ class Generator():
         if con is not None:
             return con
 
-        if isinstance(getattr(etype, 't_constructor', None),
-                      self.function_type):
+        if getattr(etype, 'is_function_type', lambda: False)():
+            if ut.random.bool():
+                func_refs = self.get_func_refs(etype)
+                if not func_refs:
+                    func_refs.append(self.gen_func_ref(etype))
+                return ut.random.choice(func_refs)
             params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
