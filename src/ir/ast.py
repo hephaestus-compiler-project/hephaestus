@@ -1134,10 +1134,11 @@ class FieldAccess(Expr):
 
 class FunctionCall(Expr):
     def __init__(self, func: str, args: List[CallArgument],
-                 receiver: Expr = None):
+                 receiver: Expr = None, is_ref_call: bool = False):
         self.func = func
         self.args = args
         self.receiver = receiver
+        self.is_ref_call = is_ref_call
 
     def children(self):
         if self.receiver is None:
@@ -1162,7 +1163,8 @@ class FunctionCall(Expr):
         if isinstance(other, FunctionCall):
             return (self.func == other.func and
                     check_list_eq(self.args, other.args) and
-                    check_default_eq(self.receiver, other.receiver))
+                    check_default_eq(self.receiver, other.receiver) and
+                    self.is_ref_call == other.is_ref_call)
         return False
 
 

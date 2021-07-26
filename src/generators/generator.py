@@ -918,7 +918,7 @@ class Generator():
         # Generate a class containing the requested function
         return self._gen_matching_class(etype, 'functions')
 
-    def gen_func_call(self, etype, only_leaves=False, subtype=True):
+    def _gen_func_call(self, etype, only_leaves=False, subtype=True):
         funcs = self._get_function_declarations(etype, subtype)
         cls_type = None
         if not funcs:
@@ -960,6 +960,51 @@ class Generator():
                             gen_bottom=gen_bottom)))
         self.depth = initial_depth
         return ast.FunctionCall(func.name, args, receiver)
+
+    def _gen_func_call_ref(self, etype, only_leaves=False, subtype=False):
+        # Tuple of signature and name
+        refs = []
+        variables = self.context.get_vars(self.namespace).values()
+        if self._inside_java_lambda:
+            variables = list(filter(
+                lambda v: (getattr(v, 'is_final', False) or (
+                    v not in self.context.get_vars(self.namespace[:-1]).values())),
+                variables))
+        for var in variables:
+            # TODO we should also get func refs with receiver.
+            var_type = var.get_type()
+            if not getattr(var_type, 'is_function_type', lambda: False)():
+                continue
+            ret_type = var_type.type_args[-1]
+            # TODO check subtypes
+            # NOTE not very frequent (~4%), we could generate a function or
+            # an appropriate lambda and use it directly.
+            if ret_type == etype:
+                refs.append((var_type, var.name))
+        if not refs:
+            return None
+        signature, name = ut.random.choice(refs)
+
+        # Generate arguments
+        args = []
+        initial_depth = self.depth
+        self.depth += 1
+        for param_type in signature.type_args[:-1]:
+            gen_bottom = param_type.is_wildcard() or (
+                param_type.is_parameterized() and param_type.has_wildcards())
+            arg = self.generate_expr(param_type, only_leaves,
+                                     gen_bottom=gen_bottom)
+            args.append(ast.CallArgument(arg))
+        self.depth = initial_depth
+
+        return ast.FunctionCall(name, args, receiver=None, is_ref_call=True)
+
+    def gen_func_call(self, etype, only_leaves=False, subtype=True):
+        if ut.random.bool():
+            ref_call = self._gen_func_call_ref(etype, only_leaves, subtype)
+            if ref_call:
+                return ref_call
+        return self._gen_func_call(etype, only_leaves, subtype)
 
     def gen_field_access(self, etype, only_leaves=False, subtype=True):
         initial_depth = self.depth
