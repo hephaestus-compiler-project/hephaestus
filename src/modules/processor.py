@@ -94,9 +94,16 @@ class ProgramProcessor():
     def generate_program(self):
         if self.args.debug:
             print("\nGenerating program: " + str(self.proc_id))
+        if self.args.log:
+            logger = Logger(self.args.name, self.args.test_directory,
+                            self.proc_id, "Generator",
+                            self.proc_id)
+        else:
+            logger = None
         generator = Generator(
             max_depth=self.args.max_depth,
             language=self.args.language,
+            logger=logger,
             options=self.args.options["Generator"])
         program = generator.generate()
         return program, True
