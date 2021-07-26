@@ -1068,6 +1068,7 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
+        # FIXME here it could be a variable instead of a func decl
         fdecl = get_decl(self.context, self._namespace, node.func)
 
         children_res = self.pop_children_res(children)
@@ -1101,11 +1102,11 @@ class JavaTranslator(BaseTranslator):
             )
         else:
             receiver_expr = ''
-        res = "{ident}{receiver}{name}{nested}({args}){semicolon}".format(
+        res = "{ident}{receiver}{name}{apply}({args}){semicolon}".format(
             ident=self.get_ident(),
             receiver=receiver_expr,
             name=func,
-            nested=".apply" if is_nested_func() else "",
+            apply=".apply" if is_nested_func() or node.is_ref_call else "",
             args=", ".join(args),
             semicolon=";" if self._parent_is_block() else ""
         )
