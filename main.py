@@ -264,6 +264,9 @@ def gen_program(pid, dirname, packages):
     try:
         # FIXME this may cause MaximumRecursionError
         program, oracle = proc.get_program()
+        if cli_args.examine:
+            print("pp program.context._context (to print the context)")
+            __import__('ipdb').set_trace()
         if cli_args.keep_all:
             # Save the initial program.
             save_program(

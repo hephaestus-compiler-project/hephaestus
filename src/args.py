@@ -58,6 +58,11 @@ parser.add_argument(
     help="Give a program to use instead of a randomly generated (pickled)"
 )
 parser.add_argument(
+    "-e", "--examine",
+    action="store_true",
+    help="Open ipdb for a program (can be used only with --replay option)"
+)
+parser.add_argument(
     "-k", "--keep-all",
     action="store_true",
     help="Save all programs"
@@ -199,6 +204,8 @@ if args.rerun and not args.keep_all:
 if args.rerun and args.batch:
     sys.exit("You cannot use -r option with the option --batch")
 
+if args.examine and not args.replay:
+    sys.exit("You cannot use --examine option without the --replay option")
 
 # PRE-PROCESSING
 
