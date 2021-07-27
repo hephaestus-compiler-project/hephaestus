@@ -319,8 +319,6 @@ class JavaTranslator(BaseTranslator):
                                           jt.JavaBuiltinFactory(),
                                           self.types,
                                           smart_casts=self.smart_casts)
-                if isinstance(children[-1], ast.FunctionReference):
-                    print(children[-1])
                 is_lambda = (getattr(
                     type_hint, 'is_function_type', lambda: False)())
 
