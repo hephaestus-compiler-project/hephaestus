@@ -1363,7 +1363,8 @@ class Generator():
         # NOTE to handle the case where a type argument is a type parameter,
         # we can either create a parameterized function or create a method
         # to the current class.
-        # In the former, we can use this or we can create a new object.
+        # In the former, we can use `this` or we can create a new object as
+        # a receiver.
         if any(isinstance(targ, tp.TypeParameter) for targ in etype.type_args):
             return None
         params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
