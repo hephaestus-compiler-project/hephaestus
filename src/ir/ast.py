@@ -6,7 +6,7 @@ import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
 from src.ir import BUILTIN_FACTORIES
-from src.ir.builtins import BuiltinFactory
+from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
 
@@ -404,7 +404,7 @@ class FunctionDeclaration(Declaration):
     def get_type(self):
         return self.inferred_type
 
-    def get_signature(self, function_type):
+    def get_signature(self, function_type: FunctionType):
         type_args = [p.param_type for p in self.params] + [self.ret_type]
         return types.ParameterizedType(function_type, type_args)
 
