@@ -843,6 +843,17 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             return _return_type_hint(
                 None if vardecl is None else vardecl[1].get_type())
 
+        if isinstance(expr, ast.FunctionReference):
+            if expr.receiver is None:
+                funcdecl = ctx.get_decl(context, namespace, expr.func)
+                if funcdecl is None:
+                    return _return_type_hint(None)
+                functype = factory.get_function_type(len(funcdecl[1].params))
+                return _return_type_hint(funcdecl[1].get_signature(functype))
+            # NOTE: not tested
+            names.append(expr.func)
+            expr = expr.receiver
+
         if isinstance(expr, ast.Conditional):
             expr1 = expr.true_branch
             expr2 = expr.false_branch
