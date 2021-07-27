@@ -1123,6 +1123,12 @@ class Generator():
         return funcs
 
     def gen_func_ref(self, etype):
+        # NOTE to handle the case where a type argument is a type parameter,
+        # we can either create a parameterized function or create a method
+        # to the current class.
+        # In the former, we can use this or we can create a new object.
+        if any(isinstance(targ, tp.TypeParameter) for targ in etype.type_args):
+            return None
         params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
         ret_type = etype.type_args[-1]
         func_decl = self.gen_func_decl(
@@ -1149,8 +1155,9 @@ class Generator():
             if ut.random.bool():
                 func_refs = self.get_func_refs(etype)
                 if not func_refs:
-                    func_refs.append(self.gen_func_ref(etype))
-                return ut.random.choice(func_refs)
+                    func_ref = self.gen_func_ref(etype)
+                    if func_ref:
+                        return func_ref
             params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
