@@ -241,6 +241,46 @@ class KotlinTranslator(BaseTranslator):
         self._cast_integers = prev_c
         self._children_res.append(res)
 
+    def visit_lambda(self, node):
+        old_ident = self.ident
+        is_expression = not isinstance(node.body, ast.Block)
+        self.ident = 0 if is_expression else self.ident + 2
+        children = node.children()
+
+        prev = self.is_unit
+        self.is_unit = node.get_type() == kt.Unit
+        prev_c = self._cast_integers
+        if is_expression:
+            self._cast_integers = True
+
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        self.ident = old_ident
+
+        param_res = [children_res[i] for i, _ in enumerate(node.params)]
+        body_res = children_res[-1] if node.body else ''
+
+        if is_expression:
+            # use the lambda syntax: { params -> stmt }
+            res = "{{{params} -> {body}}}".format(
+                params=", ".join(param_res),
+                body=body_res
+            )
+        else:
+            # Use the fun syntax : fun (params): ret_type { ... }
+            res = "{ident}fun ({params}){ret_type} {body}".format(
+                ident=" " * self.ident,
+                params=", ".join(param_res),
+                ret_type=": " + self.get_type_name(node.ret_type) \
+                    if node.ret_type else "",
+                body=body_res
+            )
+
+        self.is_unit = prev
+        self._cast_integers = prev_c
+        self._children_res.append(res)
+
     def visit_bottom_constant(self, node):
         bottom = "TODO(){}".format(
             " as " + self.get_type_name(node.t) if node.t else ""
@@ -416,6 +456,27 @@ class KotlinTranslator(BaseTranslator):
             else children_res[0]
         )
         res = "{}{}.{}".format(" " * self.ident, receiver_expr, node.field)
+        self._children_res.append(res)
+
+    def visit_func_ref(self, node):
+        old_ident = self.ident
+
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+
+        self.ident = old_ident
+
+        children_res = self.pop_children_res(children)
+        # TODO handle lambdas
+        receiver = children_res[0] if children_res else ""
+        receiver += "::"
+        res = "{ident}{receiver}{name}".format(
+            ident=" " * self.ident,
+            receiver=receiver,
+            name=node.func
+        )
         self._children_res.append(res)
 
     def visit_func_call(self, node):
