@@ -87,7 +87,8 @@ class Generator():
     def get_types(self, ret_types=True, exclude_arrays=False,
                   exclude_covariants=False,
                   exclude_contravariants=False,
-                  exclude_type_vars=False):
+                  exclude_type_vars=False,
+                  exclude_function_types=False):
         usr_types = [
             c.get_type()
             for c in self.context.get_classes(self.namespace).values()
@@ -113,14 +114,18 @@ class Generator():
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
+        if exclude_function_types:
+            return usr_types + builtins
         return usr_types + builtins + self.function_types
 
     def select_type(self, ret_types=True, exclude_arrays=False,
-                    exclude_covariants=False, exclude_contravariants=False):
+                    exclude_covariants=False, exclude_contravariants=False,
+                    exclude_function_types=False):
         types = self.get_types(ret_types=ret_types,
                                exclude_arrays=exclude_arrays,
                                exclude_covariants=exclude_covariants,
-                               exclude_contravariants=exclude_contravariants)
+                               exclude_contravariants=exclude_contravariants,
+                               exclude_function_types=exclude_function_types)
         t = ut.random.choice(types)
         if t.is_type_constructor():
             exclude_type_vars = t.name == self.bt_factory.get_array_type().name
@@ -128,7 +133,8 @@ class Generator():
                 t, self.get_types(exclude_arrays=True,
                                   exclude_covariants=True,
                                   exclude_contravariants=True,
-                                  exclude_type_vars=exclude_type_vars),
+                                  exclude_type_vars=exclude_type_vars,
+                                  exclude_function_types=exclude_function_types),
                 variance_choices={}
             )
         return t
@@ -137,7 +143,8 @@ class Generator():
     def gen_equality_expr(self, expr_type=None, only_leaves=False):
         initial_depth = self.depth
         self.depth += 1
-        etype = self.select_type()
+        exclude_function_types = self.language == 'java'
+        etype = self.select_type(exclude_function_types=exclude_function_types)
         op = ut.random.choice(ast.EqualityExpr.VALID_OPERATORS[self.language])
         e1 = self.generate_expr(etype, only_leaves, subtype=False)
         e2 = self.generate_expr(etype, only_leaves, subtype=False)
