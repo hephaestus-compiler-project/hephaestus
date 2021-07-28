@@ -1344,26 +1344,33 @@ class Generator():
         return res
 
     def get_func_refs(self, etype):
-        # Tuples of receiver and function
-        # if receiver is None, then its a function not a method
-        funcs = []
+        refs = []
         # Find all global functions
         for func in self.context.get_funcs(self.namespace, glob=True).values():
             signature = func.get_signature(
                 self.bt_factory.get_function_type(len(func.params))
             )
-            # TODO Handle parameterized functions, and functions of
-            # parameterized classes
-            # TODO Handle primitives?
+            # TODO handle functions of parameterized classes
             if signature == etype:
                 if func.func_type == func.FUNCTION:
-                    funcs.append(ast.FunctionReference(func.name, None))
+                    refs.append(ast.FunctionReference(func.name, None))
                 else:
                     receiver = self.generate_expr(etype, subtype=False)
-                    funcs.append(ast.FunctionReference(func.name, receiver))
-        # TODO Look for lambdas that are either available in current scope,
-        # or accessible through a receiver
-        return funcs
+                    refs.append(ast.FunctionReference(func.name, receiver))
+
+        variables = list(self.context.get_vars(self.namespace).values())
+        if self._inside_java_lambda:
+            variables = list(filter(
+                lambda v: (getattr(v, 'is_final', False) or (
+                    v not in self.context.get_vars(self.namespace[:-1]).values())),
+                variables))
+        variables += list(self.context.get_vars(
+            ('global',), only_current=True).values())
+        for var in variables:
+            if var.get_type() == etype:
+                refs.append(ast.FunctionReference(var.name, None))
+            # TODO check for receivers
+        return refs
 
     def gen_func_ref(self, etype):
         # NOTE to handle the case where a type argument is a type parameter,
@@ -1402,6 +1409,7 @@ class Generator():
                     func_ref = self.gen_func_ref(etype)
                     if func_ref:
                         return func_ref
+                return ut.random.choice(func_refs)
             params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
