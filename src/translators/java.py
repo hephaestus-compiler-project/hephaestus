@@ -1110,8 +1110,10 @@ class JavaTranslator(BaseTranslator):
             )
         else:
             receiver_expr = ''
-        res = "{ident}{receiver}{name}{apply}({args}){semicolon}".format(
+        res = "{ident}{main}{receiver}{name}{apply}({args}){semicolon}".format(
             ident=self.get_ident(),
+            main=self._get_main_prefix('vars', node.func) if node.is_ref_call \
+                else "",
             receiver=receiver_expr,
             name=func,
             apply=".apply" if is_nested_func() or node.is_ref_call else "",
