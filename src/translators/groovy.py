@@ -474,6 +474,42 @@ class GroovyTranslator(BaseTranslator):
         return res
 
     @append_to
+    @change_namespace
+    def visit_lambda(self, node):
+        old_ident = self.ident
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident += 2
+            self.ident += 2
+        self.ident += 2
+        prev_cast_number = self._cast_number
+        children = node.children()
+        prev = self.is_unit
+        self.is_unit = node.get_type() == gt.Void
+        is_expression = not isinstance(node.body, ast.Block)
+        if is_expression:
+            self._cast_number = False
+        for c in children:
+            c.accept(self)
+        children_res = self.pop_children_res(children)
+        param_res = [children_res[i] for i, _ in enumerate(node.params)]
+        body_res = children_res[-1] if node.body else ''
+
+        ret_type = node.get_type()
+        ret_type = (ret_type if not ret_type.is_primitive()
+                    else ret_type.box_type())
+        res = "{{ {params} -> {body}}}".format(
+            params=", ".join(param_res),
+            body=body_res
+        )
+
+        if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
+            old_ident -= 2
+        self.ident = old_ident
+        self.is_unit = prev
+        self._cast_number = prev_cast_number
+        return res
+
+    @append_to
     def visit_bottom_constant(self, node):
         return self.get_ident() + "{}null".format(
             "( " + self.get_type_name(node.t) + ") " if node.t else ""
@@ -685,6 +721,28 @@ class GroovyTranslator(BaseTranslator):
             expr=receiver,
             field=node.field
         )
+
+    @append_to
+    def visit_func_ref(self, node):
+        old_ident = self.ident
+
+        self.ident = 0
+        children = node.children()
+        for c in children:
+            c.accept(self)
+
+        self.ident = old_ident
+
+        children_res = self.pop_children_res(children)
+        # TODO handle lambdas
+        receiver = children_res[0] if children_res else "Main"
+        receiver += "::" # We can also use .&
+        res = "{ident}{receiver}{name}".format(
+            ident=self.get_ident(),
+            receiver=receiver,
+            name=node.func,
+        )
+        return res
 
     @append_to
     def visit_func_call(self, node):
