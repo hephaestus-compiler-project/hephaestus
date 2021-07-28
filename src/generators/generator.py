@@ -1222,10 +1222,9 @@ class Generator():
             if not getattr(var_type, 'is_function_type', lambda: False)():
                 continue
             ret_type = var_type.type_args[-1]
-            # TODO check subtypes
             # NOTE not very frequent (~4%), we could generate a function or
             # an appropriate lambda and use it directly.
-            if ret_type == etype:
+            if (subtype and ret_type.is_subtype(etype)) or ret_type == etype:
                 refs.append((var_type, var.name))
         if not refs:
             return None
