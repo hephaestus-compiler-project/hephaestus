@@ -1405,11 +1405,12 @@ class Generator():
         if getattr(etype, 'is_function_type', lambda: False)():
             if ut.random.bool():
                 func_refs = self.get_func_refs(etype)
-                if not func_refs:
+                if len(func_refs) == 0:
                     func_ref = self.gen_func_ref(etype)
                     if func_ref:
                         return func_ref
-                return ut.random.choice(func_refs)
+                else:
+                    return ut.random.choice(func_refs)
             params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
