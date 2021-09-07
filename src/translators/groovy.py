@@ -396,7 +396,11 @@ class GroovyTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
+        len_params = len(node.params)
+        len_type_params = len(node.type_parameters)
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
+        type_parameters_res = ", ".join(
+            children_res[len_params:len_type_params + len_params])
         body_res = children_res[-1] if node.body else ''
         body = ""
         if body_res:
@@ -424,11 +428,15 @@ class GroovyTranslator(BaseTranslator):
                 body=body_res
             )
         else:
-            res = ("{ident}{final}{abstract}{ret_type} "
+            res = ("{ident}{final}{abstract}{type_params}{ret_type} "
                    "{name}({params}) {body}").format(
                 ident=self.get_ident(old_ident=old_ident),
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
+                type_params=(
+                    "<" + type_parameters_res + ">"
+                    if type_parameters_res else ""
+                ),
                 ret_type=self.get_type_name(node.inferred_type),
                 name=node.name,
                 params=", ".join(param_res),

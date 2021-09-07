@@ -636,7 +636,7 @@ class JavaTranslator(BaseTranslator):
                 final="final " if node.is_final else "",
                 abstract="abstract " if body == "" else "",
                 type_params=(
-                    "<" + type_parameters_res + ">"
+                    "<" + type_parameters_res + "> "
                     if type_parameters_res else ""
                 ),
                 ret_type=self.get_type_name(node.inferred_type),
