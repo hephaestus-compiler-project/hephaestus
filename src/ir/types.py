@@ -184,7 +184,7 @@ class SimpleClassifier(Classifier):
     def __str__(self):
         return "{}{}".format(
             self.name,
-            '' if not self.supertypes else ": (" +
+            '' if not self.supertypes else " <: (" +
             ', '.join(map(str, self.supertypes)) + ")"
         )
 
@@ -289,7 +289,7 @@ class TypeParameter(AbstractType):
             self.variance_to_string() +
             ' ' if self.variance != Invariant else '',
             self.name,
-            ': ' + self.bound.get_name() if self.bound is not None else ''
+            ' <: ' + self.bound.get_name() if self.bound is not None else ''
         )
 
 
@@ -449,7 +449,7 @@ class TypeConstructor(AbstractType):
         return "{}<{}> {} {}".format(
             self.name,
             ', '.join(map(str, self.type_parameters)),
-            ':' if self.supertypes else '',
+            ' <:' if self.supertypes else '',
             ', '.join(map(str, self.supertypes)))
 
     def __eq__(self, other: AbstractType):
