@@ -470,6 +470,15 @@ def _get_type_arg_variance(t_param, variance_choices):
     return utils.random.choice(variances)
 
 
+def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
+    if not (t_param.is_type_var() and t_param.bound is not None):
+        return
+    bound = t_param.bound
+    t_args[indexes[t_param.bound]] = t
+    type_var_map[t_param.bound] = t
+    _update_type_var_bound_rec(bound, t, t_args, indexes, type_var_map)
+
+
 def _compute_type_variable_assignments(
         type_parameters: List[tp.TypeParameter],
         types: List[tp.Type],
@@ -501,8 +510,8 @@ def _compute_type_variable_assignments(
                     t = t.bound
                     if variance_choices is not None:
                         variance_choices[t_param] = (False, False)
-                t_args[indexes[t_param.bound]] = t
-                type_var_map[t_param.bound] = t
+                _update_type_var_bound_rec(t_param, t, t_args, indexes,
+                                           type_var_map)
         else:
             a_types = []
             for k, v in type_var_map.items():
