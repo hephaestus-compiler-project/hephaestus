@@ -367,7 +367,8 @@ class Generator():
         # Check if this function we want to generate is a class method, by
         # checking the name of the outer namespace. If we are in class then
         # the outer namespace begins with capital letter.
-        class_method = self.namespace[-1][0].isupper()
+        class_method = (False if len(self.namespace) < 2 else
+                        self.namespace[-2][0].isupper())
         can_override = abstract or is_interface or (class_method and not
                                     class_is_final and ut.random.bool())
         # Check if this function we want to generate is a nested functions.
