@@ -373,6 +373,10 @@ def _get_type_substitution(etype, type_map,
         return WildCardType(new_bound, variance=etype.variance)
     t = type_map.get(etype)
     if t is None or cond(t):
+        # Perform type substitution on the bound of the current type variable.
+        if etype.is_type_var() and etype.bound is not None:
+            new_bound = _get_type_substitution(etype.bound, type_map, cond)
+            return TypeParameter(etype.name, etype.variance, new_bound)
         # The type parameter does not correspond to an abstract type
         # so, there is nothing to substitute.
         return etype

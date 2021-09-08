@@ -309,6 +309,19 @@ def test_type_substitution():
     assert ptype.type_args[1] == type_param4
 
 
+def test_type_substitution_type_var_bound():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    type_map = {type_param1: kt.String}
+
+    ptype = tp.substitute_type(type_param2, type_map)
+    assert ptype.name == type_param2.name
+    assert ptype.variance == type_param2.variance
+    assert ptype.bound == kt.String
+
+    ptype = tp.substitute_type(type_param2, {})
+    assert ptype == type_param2
+
 def test_type_substitution_wildcards():
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
