@@ -474,8 +474,10 @@ def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
     if not (t_param.is_type_var() and t_param.bound is not None):
         return
     bound = t_param.bound
-    t_args[indexes[t_param.bound]] = t
-    type_var_map[t_param.bound] = t
+    if not bound.is_type_var():
+        return
+    t_args[indexes[bound]] = t
+    type_var_map[bound] = t
     _update_type_var_bound_rec(bound, t, t_args, indexes, type_var_map)
 
 
