@@ -1368,7 +1368,7 @@ class Generator():
             ('global',), only_current=True).values())
         for var in variables:
             if var.get_type() == etype:
-                refs.append(ast.FunctionReference(var.name, None))
+                refs.append(ast.Variable(var.name))
             # TODO check for receivers
         return refs
 
