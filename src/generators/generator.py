@@ -397,7 +397,8 @@ class Generator():
                     with_variance=False,
                     blacklist=self._get_type_variable_names(),
                     for_function=True
-                )
+                ) if ut.random.bool(prob=0.3) else []
+
         else:
             # Nested functions cannot be parameterized (
             # at least in Groovy, Java), because they are modeled as lambdas.
@@ -1202,7 +1203,15 @@ class Generator():
         # a bound, generate a value of this bound. Otherwise, generate a bottom
         # value.
         if class_decl is None:
-            return ast.BottomConstant(etype)
+            t = etype
+            # If the etype corresponds to a type variable not belonging to
+            # to the current namespace, then create a bottom constant
+            # whose type is unknown. This means that the corresponding
+            # translator won't perform cast on this constant.
+            if etype.is_type_var() and (
+                    etype.name not in self._get_type_variable_names()):
+                t = None
+            return ast.BottomConstant(t)
 
         if etype.is_type_constructor():
             etype, _ = tu.instantiate_type_constructor(
