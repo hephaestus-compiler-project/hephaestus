@@ -1839,7 +1839,7 @@ class Generator():
                                               expr=expr)
             # if one_up is True add the variable to the previous level.
             namespace = self.namespace[:-1] if one_up else self.namespace
-            self.context.add_var(self.namespace, var_decl.name, var_decl)
+            self.context.add_var(namespace, var_decl.name, var_decl)
             expr = ast.Variable(var_decl.name)
         return expr
 
