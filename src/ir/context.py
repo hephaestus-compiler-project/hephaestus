@@ -7,6 +7,8 @@ class Context():
 
     def __init__(self):
         self._context = {}
+        # A lookup from declarations to namespaces
+        self._namespaces = {}
 
     def _add_entity(self, namespace, entity, name, value):
         if namespace in self._context:
@@ -21,11 +23,15 @@ class Context():
                 'decls': OrderedDict()  # Here we keep the declaration order
             }
             self._context[namespace][entity][name] = value
+        self._namespaces[value] = namespace
 
     def _remove_entity(self, namespace, entity, name):
         if namespace not in self._context:
             return
         if name in self._context[namespace][entity]:
+            decl = self._context[namespace][entity][name]
+            if decl in self._namespaces:
+                del self._namespaces[decl]
             del self._context[namespace][entity][name]
 
     def add_type(self, namespace, type_name, t):
@@ -157,6 +163,15 @@ class Context():
 
     def get_decl_type(self, namespace, name):
         return type(self.get_decl(namespace, name))
+
+    def get_namespace(self, decl):
+        return self._namespaces.get(decl, None)
+
+    def get_parent(self, namespace):
+        if len(namespace) < 2:
+            return None
+        parent_namespace = namespace[:-1]
+        return self.get_decl(parent_namespace[:-1], parent_namespace[-1])
 
 
 def get_decl(context, namespace, decl_name: str, limit=None):
