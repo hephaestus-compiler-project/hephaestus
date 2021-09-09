@@ -78,11 +78,11 @@ class KotlinTranslator(BaseTranslator):
         ret_keyword = "return " if node.is_func_block and not is_unit else ""
         if children_res:
             res += " " * self.ident + ret_keyword + \
-                   children_res[-1][self.ident:] + "\n" + \
-                   " " * (self.ident - 2) + "}"
+                   children_res[-1] + "\n" + \
+                   " " * self.ident + "}"
         else:
             res += " " * self.ident + ret_keyword + "\n" + \
-                   " " * (self.ident - 2) + "}"
+                   " " * self.ident + "}"
         self.is_unit = is_unit
         self._children_res.append(res)
 
