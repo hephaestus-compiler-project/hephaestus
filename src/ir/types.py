@@ -714,3 +714,14 @@ class ParameterizedFunction(Function):
 
     def is_subtype(self, other: Type):
         return False
+
+
+class NothingType(Classifier):
+    def __init__(self):
+        super().__init__("Nothing")
+
+    def is_subtype(self, other: Type):
+        return True
+
+
+Nothing = NothingType()
