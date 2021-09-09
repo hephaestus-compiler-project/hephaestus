@@ -2,6 +2,14 @@ from src.ir import ast, kotlin_types as kt, types as tp
 from src.translators.base import BaseTranslator
 
 
+def append_to(visit):
+    def inner(self, node):
+        self._nodes_stack.append(node)
+        res = visit(self, node)
+        self._nodes_stack.pop()
+    return inner
+
+
 class KotlinTranslator(BaseTranslator):
 
     filename = "program.kt"
@@ -14,6 +22,19 @@ class KotlinTranslator(BaseTranslator):
         self.ident = 0
         self.is_unit = False
         self._cast_integers = False
+
+        # We need nodes_stack to assign lambdas to vars when needed.
+        # Specifically, in visit_lambda we use `var y = ` as a prefix only if
+        # parent node is a block and its parent is a function declaration that
+        # return Unit.
+        self._nodes_stack = [None]
+
+    def _reset_state(self):
+        self._children_res = []
+        self.ident = 0
+        self.is_unit = False
+        self._cast_integers = False
+        self._nodes_stack = [None]
 
     @staticmethod
     def get_filename():
@@ -65,6 +86,7 @@ class KotlinTranslator(BaseTranslator):
         self.program = package_str + '\n\n'.join(
             self.pop_children_res(children))
 
+    @append_to
     def visit_block(self, node):
         children = node.children()
         is_unit = self.is_unit
@@ -86,6 +108,7 @@ class KotlinTranslator(BaseTranslator):
         self.is_unit = is_unit
         self._children_res.append(res)
 
+    @append_to
     def visit_super_instantiation(self, node):
         self.ident = 0
         children = node.children()
@@ -99,6 +122,7 @@ class KotlinTranslator(BaseTranslator):
             self.get_type_name(node.class_type) + "(" + ", ".join(
                 children_res) + ")")
 
+    @append_to
     def visit_class_decl(self, node):
         old_ident = self.ident
         self.ident += 2
@@ -138,6 +162,7 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         self._children_res.append(res)
 
+    @append_to
     def visit_type_param(self, node):
         self._children_res.append("{}{}{}{}".format(
             node.variance_to_string(),
@@ -150,6 +175,7 @@ class KotlinTranslator(BaseTranslator):
             )
         ))
 
+    @append_to
     def visit_var_decl(self, node):
         old_ident = self.ident
         prefix = " " * self.ident
@@ -170,6 +196,7 @@ class KotlinTranslator(BaseTranslator):
         self._cast_integers = prev
         self._children_res.append(res)
 
+    @append_to
     def visit_call_argument(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -183,6 +210,7 @@ class KotlinTranslator(BaseTranslator):
             res = node.name + " = " + res
         self._children_res.append(res)
 
+    @append_to
     def visit_field_decl(self, node):
         prefix = 'open ' if node.can_override else ''
         prefix += '' if not node.override else 'override '
@@ -190,6 +218,7 @@ class KotlinTranslator(BaseTranslator):
         res = prefix + node.name + ": " + self.get_type_name(node.field_type)
         self._children_res.append(res)
 
+    @append_to
     def visit_param_decl(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -211,6 +240,7 @@ class KotlinTranslator(BaseTranslator):
             res += " = " + children_res[0]
         self._children_res.append(res)
 
+    @append_to
     def visit_func_decl(self, node):
         old_ident = self.ident
         self.ident += 2
@@ -241,7 +271,16 @@ class KotlinTranslator(BaseTranslator):
         self._cast_integers = prev_c
         self._children_res.append(res)
 
+    @append_to
     def visit_lambda(self, node):
+        def inside_block_unit_function():
+            if (isinstance(self._nodes_stack[-2], ast.Block) and
+                    isinstance(self._nodes_stack[-3], (ast.Lambda,
+                               ast.FunctionDeclaration)) and
+                    self._nodes_stack[-3].ret_type == kt.Unit):
+                return True
+            return False
+
         old_ident = self.ident
         is_expression = not isinstance(node.body, ast.Block)
         self.ident = 0 if is_expression else self.ident + 2
@@ -263,7 +302,8 @@ class KotlinTranslator(BaseTranslator):
 
         if is_expression:
             # use the lambda syntax: { params -> stmt }
-            res = "{{{params} -> {body}}}".format(
+            res = "{var}{{{params} -> {body}}}".format(
+                var="" if not inside_block_unit_function() else "var y = ",
                 params=", ".join(param_res),
                 body=body_res
             )
@@ -281,6 +321,7 @@ class KotlinTranslator(BaseTranslator):
         self._cast_integers = prev_c
         self._children_res.append(res)
 
+    @append_to
     def visit_bottom_constant(self, node):
         bottom = "{}TODO(){}".format(
             "(" if node.t else "",
@@ -288,6 +329,7 @@ class KotlinTranslator(BaseTranslator):
         )
         self._children_res.append((self.ident * " ") + bottom)
 
+    @append_to
     def visit_integer_constant(self, node):
         if not self._cast_integers:
             self._children_res.append(" " * self.ident + str(node.literal))
@@ -306,6 +348,7 @@ class KotlinTranslator(BaseTranslator):
         )
         self._children_res.append(" " * self.ident + literal + suffix)
 
+    @append_to
     def visit_real_constant(self, node):
         real_types = {
             kt.Float: "f"
@@ -314,17 +357,21 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(
             " " * self.ident + str(node.literal) + suffix)
 
+    @append_to
     def visit_char_constant(self, node):
         self._children_res.append("{}'{}'".format(
             " " * self.ident, node.literal))
 
+    @append_to
     def visit_string_constant(self, node):
         self._children_res.append('{}"{}"'.format(
             " " * self.ident, node.literal))
 
+    @append_to
     def visit_boolean_constant(self, node):
         self._children_res.append(" " * self.ident + str(node.literal))
 
+    @append_to
     def visit_array_expr(self, node):
         is_specialized = isinstance(
             node.array_type.t_constructor, kt.SpecializedArrayType)
@@ -360,9 +407,11 @@ class KotlinTranslator(BaseTranslator):
             t_arg,
             ", ".join(children_res)))
 
+    @append_to
     def visit_variable(self, node):
         self._children_res.append(" " * self.ident + node.name)
 
+    @append_to
     def visit_binary_op(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -399,6 +448,7 @@ class KotlinTranslator(BaseTranslator):
     def visit_arith_expr(self, node):
         self.visit_binary_op(node)
 
+    @append_to
     def visit_conditional(self, node):
         old_ident = self.ident
         self.ident += 2
@@ -412,6 +462,7 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         self._children_res.append(res)
 
+    @append_to
     def visit_is(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -425,6 +476,7 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         self._children_res.append(res)
 
+    @append_to
     def visit_new(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -443,6 +495,7 @@ class KotlinTranslator(BaseTranslator):
                 " " * self.ident + self.get_type_name(node.class_type),
                 ", ".join(children_res)))
 
+    @append_to
     def visit_field_access(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -459,6 +512,7 @@ class KotlinTranslator(BaseTranslator):
         res = "{}{}.{}".format(" " * self.ident, receiver_expr, node.field)
         self._children_res.append(res)
 
+    @append_to
     def visit_func_ref(self, node):
         old_ident = self.ident
 
@@ -480,6 +534,7 @@ class KotlinTranslator(BaseTranslator):
         )
         self._children_res.append(res)
 
+    @append_to
     def visit_func_call(self, node):
         old_ident = self.ident
         self.ident = 0
@@ -502,6 +557,7 @@ class KotlinTranslator(BaseTranslator):
                 " " * self.ident, node.func, ", ".join(children_res))
         self._children_res.append(res)
 
+    @append_to
     def visit_assign(self, node):
         old_ident = self.ident
         prev = self._cast_integers
