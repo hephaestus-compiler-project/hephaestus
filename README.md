@@ -69,3 +69,15 @@ To run `check-types` for 10 iterations and 20 transformations,
 ```
 python main.py -i 10 -t 20 -w 4 -l
 ```
+
+Command line linters
+--------------------
+
+* kotlin
+
+```
+wget -P /usr/local/bin/ "https://github.com/pinterest/ktlint/releases/download/0.39.0/ktlint" && chmod a+x /usr/local/bin/ktlint
+
+ktlint --format program.kt
+```
+
