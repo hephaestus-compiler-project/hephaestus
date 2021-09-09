@@ -485,7 +485,8 @@ def _compute_type_variable_assignments(
         type_parameters: List[tp.TypeParameter],
         types: List[tp.Type],
         type_var_map=None,
-        variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None):
+        variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None,
+        for_type_constructor=True):
     t_args = []
     type_var_map = dict(type_var_map or {})
     indexes = {}
@@ -512,6 +513,9 @@ def _compute_type_variable_assignments(
                     t = t.bound
                     if variance_choices is not None:
                         variance_choices[t_param] = (False, False)
+
+                if is_covariant and not for_type_constructor:
+                    t = tp.Nothing
                 _update_type_var_bound_rec(t_param, t, t_args, indexes,
                                            type_var_map)
         else:
@@ -564,6 +568,15 @@ def _compute_type_variable_assignments(
                             t_bound = t_bound.bound
                             if variance_choices is not None:
                                 variance_choices[t_param] = (False, False)
+                        elif is_covariant and not for_type_constructor:
+
+                            # Here we handle cases like the following
+                            # class A<T> {
+                            #  fun <X: T> bar(): X
+                            # }
+                            # A<out String>().bar<String> // wrong
+                            # A<out String>().bar<Nothing> // right
+                            t_bound = tp.Nothing
                         a_types = [t_bound]
                 else:
                     a_types = types
@@ -600,7 +613,9 @@ def instantiate_type_constructor(
                                  types, only_regular, primitives=False)
     t_args, type_var_map = _compute_type_variable_assignments(
         type_constructor.type_parameters,
-        types, type_var_map=type_var_map, variance_choices=variance_choices)
+        types, type_var_map=type_var_map, variance_choices=variance_choices,
+        for_type_constructor=True
+    )
     return type_constructor.new(t_args), type_var_map
 
 
@@ -612,7 +627,7 @@ def instantiate_parameterized_function(
     types = _get_available_types(None, types, only_regular, primitives=False)
     _, type_var_map = _compute_type_variable_assignments(
         type_parameters, types, type_var_map=type_var_map,
-        variance_choices=None)
+        variance_choices=None, for_type_constructor=False)
     return type_var_map
 
 
