@@ -599,12 +599,13 @@ class ClassDeclaration(Declaration):
             params = []
             for p in f.params:
                 new_p = deepcopy(p)
-                new_p.param_type = types.substitute_type(p.get_type(),
+                new_p.param_type = types.substitute_type(new_p.get_type(),
                                                          type_var_map)
                 if new_p.param_type.is_type_var() and (
                         new_p.param_type.bound is not None):
-                    new_p.param_type.bound = types.substitute_type(
-                        new_p.param_type.bound, type_var_map)
+                    new_p.param_type.bound = _instantiate_type_param_rec(
+                        new_p.param_type.bound, type_var_map
+                    )
                 params.append(new_p)
             type_params = [
                 _instantiate_type_param_rec(t, type_var_map)
@@ -613,8 +614,8 @@ class ClassDeclaration(Declaration):
             ret_type = types.substitute_type(deepcopy(f.get_type()),
                                              type_var_map)
             if ret_type.is_type_var() and ret_type.bound is not None:
-                ret_type.bound = types.substitute_type(ret_type.bound,
-                                                       type_var_map)
+                ret_type.bound = _instantiate_type_param_rec(ret_type.bound,
+                                                             type_var_map)
             new_f.params = params
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
