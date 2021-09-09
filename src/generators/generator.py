@@ -1357,7 +1357,25 @@ class Generator():
                 if func.func_type == func.FUNCTION:
                     refs.append(ast.FunctionReference(func.name, None))
                 else:
-                    receiver = self.generate_expr(etype, subtype=False)
+                    namespace = self.context.get_namespace(func) + (func.name,)
+                    parent = self.context.get_parent(namespace)
+                    parent_type = parent.get_type()
+                    # if parent is a type constructor then produce initialize a
+                    # ParameterizedType
+                    if isinstance(parent_type, tp.TypeConstructor):
+                        parent_type, _ = tu.instantiate_type_constructor(
+                            parent_type, self.get_types())
+
+                    # If we are in a top-level class declaration, then we need
+                    # to create variables in the global namespace
+                    one_up = False
+                    if (len(self.namespace) == 2 and
+                            self.namespace[1][0].isupper):
+                        one_up = True
+
+                    receiver = self.generate_expr(parent_type,
+                                                  subtype=False,
+                                                  one_up=one_up)
                     refs.append(ast.FunctionReference(func.name, receiver))
 
         variables = list(self.context.get_vars(self.namespace).values())
@@ -1791,7 +1809,7 @@ class Generator():
         return other_candidates + candidates
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
-                      exclude_var=False, gen_bottom=False):
+                      exclude_var=False, gen_bottom=False, one_up=False):
         if gen_bottom:
             return ast.BottomConstant(None)
         find_subtype = (
@@ -1819,6 +1837,8 @@ class Generator():
             self._vars_in_context[self.namespace] += 1
             var_decl = self.gen_variable_decl(expr_type, only_leaves,
                                               expr=expr)
+            # if one_up is True add the variable to the previous level.
+            namespace = self.namespace[:-1] if one_up else self.namespace
             self.context.add_var(self.namespace, var_decl.name, var_decl)
             expr = ast.Variable(var_decl.name)
         return expr
