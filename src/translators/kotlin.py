@@ -289,8 +289,9 @@ class KotlinTranslator(BaseTranslator):
         self._children_res.append(res)
 
     def visit_bottom_constant(self, node):
-        bottom = "TODO(){}".format(
-            " as " + self.get_type_name(node.t) if node.t else ""
+        bottom = "{}TODO(){}".format(
+            "(" if node.t else "",
+            " as " + self.get_type_name(node.t) + ")" if node.t else ""
         )
         self._children_res.append((self.ident * " ") + bottom)
 
