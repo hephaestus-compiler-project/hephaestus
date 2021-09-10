@@ -1109,12 +1109,24 @@ class Generator():
 
     def get_func_refs(self, etype):
         refs = []
+
+        # We cannot handle parameterized types with type params as type args.
+        # To support them, we must be in the same type constructor
+        if any(isinstance(targ, tp.TypeParameter)
+               for targ in etype.type_args):
+            return refs
+
+        # When in top-level class declaration, we cannot generate a variable
+        # because generate_expr won't generate it correctly.
+        only_leaves = len(self.namespace) == 2 and self.namespace[1][0].isupper
+
         # Find all global functions
         for func in self.context.get_funcs(self.namespace, glob=True).values():
             signature = func.get_signature(
                 self.bt_factory.get_function_type(len(func.params))
             )
-            # TODO handle functions of parameterized classes
+
+
             if signature == etype:
                 if func.func_type == func.FUNCTION:
                     refs.append(ast.FunctionReference(func.name, None))
@@ -1122,23 +1134,70 @@ class Generator():
                     namespace = self.context.get_namespace(func) + (func.name,)
                     parent = self.context.get_parent(namespace)
                     parent_type = parent.get_type()
-                    # if parent is a type constructor then produce initialize a
+                    # if parent is a type constructor then initialize a
                     # ParameterizedType
                     if isinstance(parent_type, tp.TypeConstructor):
                         parent_type, _ = tu.instantiate_type_constructor(
                             parent_type, self.get_types())
 
-                    # If we are in a top-level class declaration, then we need
-                    # to create variables in the global namespace
-                    one_up = False
-                    if (len(self.namespace) == 2 and
-                            self.namespace[1][0].isupper):
-                        one_up = True
 
                     receiver = self.generate_expr(parent_type,
                                                   subtype=False,
-                                                  one_up=one_up)
+                                                  only_leaves=only_leaves)
                     refs.append(ast.FunctionReference(func.name, receiver))
+            # Handle functions of parameterized classes
+            # TODO handle parameterized functions
+            else:
+                is_param_type_param = any(isinstance(param, tp.TypeParameter)
+                    for param in func.params)
+                is_ret_type_param = isinstance(func.ret_type, tp.TypeParameter)
+
+                if not is_param_type_param and not is_ret_type_param:
+                    continue
+
+                def check_type(is_type_param , itype, etype):
+                    if not is_type_param and itype == etype:
+                        return True
+                    if is_type_param:
+                        if itype.bound and not etype.is_subtype(itype.bound):
+                            return False
+                        return True
+                    return False
+
+                etype_ret = etype.type_args[-1]
+                etype_params = etype.type_args[:-1]
+                type_var_map = {}
+
+                # Check if return type can conform to etype's return type.
+                if not check_type(is_ret_type_param, func.ret_type, etype_ret):
+                    continue
+                if is_ret_type_param:
+                    type_var_map[func.ret_type] = etype_ret
+                # Check if parameters can conform to etype's parameters.
+                if len(func.params) != len(etype_params):
+                    continue
+                flag = False
+                for fparam, eparam in zip(func.params, etype_params):
+                    is_type_param = isinstance(fparam, tp.TypeParameter)
+                    if not check_type(is_type_param, fparam, eparam):
+                        flag = True
+                        break
+                    if is_type_param:
+                        type_var_map[fparam] = eparam
+                if flag:
+                    continue
+                # Create a parameterized type with the correct type arguments
+                namespace = self.context.get_namespace(func) + (func.name,)
+                parent = self.context.get_parent(namespace)
+                parent_type = parent.get_type()
+                assert isinstance(parent_type, tp.TypeConstructor)
+
+                receiver_type, _ = tu.instantiate_type_constructor(
+                    parent_type, self.get_types(), type_var_map=type_var_map)
+                receiver = self.generate_expr(receiver_type,
+                                              subtype=False,
+                                              only_leaves=only_leaves)
+                refs.append(ast.FunctionReference(func.name, receiver))
 
         variables = list(self.context.get_vars(self.namespace).values())
         if self._inside_java_lambda:
@@ -1563,7 +1622,7 @@ class Generator():
         return other_candidates + candidates
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
-                      exclude_var=False, gen_bottom=False, one_up=False):
+                      exclude_var=False, gen_bottom=False):
         if gen_bottom:
             return ast.BottomConstant(None)
         find_subtype = (
@@ -1591,9 +1650,7 @@ class Generator():
             self._vars_in_context[self.namespace] += 1
             var_decl = self.gen_variable_decl(expr_type, only_leaves,
                                               expr=expr)
-            # if one_up is True add the variable to the previous level.
-            namespace = self.namespace[:-1] if one_up else self.namespace
-            self.context.add_var(namespace, var_decl.name, var_decl)
+            self.context.add_var(self.namespace, var_decl.name, var_decl)
             expr = ast.Variable(var_decl.name)
         return expr
 
