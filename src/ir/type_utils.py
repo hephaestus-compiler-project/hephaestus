@@ -1037,3 +1037,38 @@ def split_type_var_map(type_var_map, cls_type_vars, func_type_vars):
         else:
             cls_type_var_map[type_var] = t
     return cls_type_var_map, func_type_var_map
+
+def is_sam(context, etype=None, cls_decl=None):
+    def check_decl(cls_decl):
+        funcs = cls_decl.get_abstract_functions(
+            context.get_classes(('global',), glob=True).values())
+        if (cls_decl.class_type == cls_decl.REGULAR or
+                cls_decl.fields or
+                len(funcs) > 1 or
+                (funcs and any(p.default for p in next(iter(funcs)).params)) or
+                not all(is_sam(context, etype=s) for s in cls_decl.supertypes)):
+            return False
+        return True
+
+    if etype:
+        if isinstance(etype, (tp.SimpleClassifier, tp.ParameterizedType)):
+            cls_decl = context.get_classes(('global',), glob=True)[etype.name]
+            return check_decl(cls_decl)
+    elif cls_decl:
+        return check_decl(cls_decl)
+    return False
+
+
+def find_sam_fun_signature(context, etype, get_function_type):
+    if not is_sam(context, etype=etype):
+        return None
+    cls_decl = context.get_classes(('global',), glob=True)[etype.name]
+    if cls_decl.functions:
+        nr_func_params = len(cls_decl.functions[0].params)
+        return cls_decl.functions[0].get_signature(get_function_type(
+            nr_func_params))
+    if cls_decl.supertypes:
+        return find_sam_fun_signature(context, cls_decl.supertypes[0],
+                                      get_function_type)
+    return None
+>>>>>>> fc5c2b1 (Add sam coercion (wip))
