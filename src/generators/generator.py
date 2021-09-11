@@ -641,7 +641,8 @@ class Generator():
         var_type = etype if etype else self.select_type()
         initial_depth = self.depth
         self.depth += 1
-        expr = expr or self.generate_expr(var_type, only_leaves)
+        expr = expr or self.generate_expr(var_type, only_leaves,
+                                          sam_coercion=True)
         self.depth = initial_depth
         is_final = ut.random.bool()
         # We never omit type in non-final variables or in variables that
@@ -1000,7 +1001,7 @@ class Generator():
             gen_bottom = param_type.is_wildcard() or (
                 param_type.is_parameterized() and param_type.has_wildcards())
             arg = self.generate_expr(param_type, only_leaves,
-                                     gen_bottom=gen_bottom)
+                                     gen_bottom=gen_bottom, sam_coercion=False)
             args.append(ast.CallArgument(arg))
         self.depth = initial_depth
 
@@ -1143,7 +1144,8 @@ class Generator():
 
                     receiver = self.generate_expr(parent_type,
                                                   subtype=False,
-                                                  only_leaves=only_leaves)
+                                                  only_leaves=only_leaves,
+                                                  sam_coercion=False)
                     refs.append(ast.FunctionReference(func.name, receiver))
             # Handle functions of parameterized classes
             # TODO handle parameterized functions
@@ -1196,7 +1198,8 @@ class Generator():
                     parent_type, self.get_types(), type_var_map=type_var_map)
                 receiver = self.generate_expr(receiver_type,
                                               subtype=False,
-                                              only_leaves=only_leaves)
+                                              only_leaves=only_leaves,
+                                              sam_coercion=False)
                 refs.append(ast.FunctionReference(func.name, receiver))
 
         variables = list(self.context.get_vars(self.namespace).values())
@@ -1230,20 +1233,9 @@ class Generator():
         return ast.FunctionReference(func_decl.name, None)
 
     # pylint: disable=unused-argument
-    def gen_new(self, etype, only_leaves=False, subtype=True):
-        if isinstance(etype, tp.ParameterizedType):
-            etype = etype.to_variance_free()
-        news = {
-            self.bt_factory.get_any_type(): ast.New(
-                self.bt_factory.get_any_type(), args=[]),
-            self.bt_factory.get_void_type(): ast.New(
-                self.bt_factory.get_void_type(), args=[])
-        }
-        con = news.get(etype)
-        if con is not None:
-            return con
-
-        if getattr(etype, 'is_function_type', lambda: False)():
+    def gen_new(self, etype, only_leaves=False, subtype=True,
+                sam_coercion=False):
+        def gen_func_ref_lambda(etype):
             if ut.random.bool():
                 func_refs = self.get_func_refs(etype)
                 if len(func_refs) == 0:
@@ -1256,7 +1248,34 @@ class Generator():
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
 
+        if getattr(etype, 'is_function_type', lambda: False)():
+            return gen_func_ref_lambda(etype)
+
+        if sam_coercion and tu.is_sam(self.context, etype):
+            sam_sig_etype = tu.find_sam_fun_signature(
+                    self.context,
+                    etype,
+                    self.bt_factory.get_function_type
+            )
+            if sam_sig_etype:
+                print("OK")
+                print(etype)
+                print(sam_sig_etype)
+                return gen_func_ref_lambda(sam_sig_etype)
+
         class_decl = self._get_subclass(etype, subtype)
+        if isinstance(etype, tp.ParameterizedType):
+            etype = etype.to_variance_free()
+        news = {
+            self.bt_factory.get_any_type(): ast.New(
+                self.bt_factory.get_any_type(), args=[]),
+            self.bt_factory.get_void_type(): ast.New(
+                self.bt_factory.get_void_type(), args=[])
+        }
+        con = news.get(etype)
+        if con is not None:
+            return con
+
         # No class was found corresponding to the given type. Probably,
         # the given type is a type parameter. So, if this type parameter has
         # a bound, generate a value of this bound. Otherwise, generate a bottom
@@ -1289,7 +1308,8 @@ class Generator():
             # FIXME We set subtype=False to prevent infinite object
             # initialization.
             args.append(self.generate_expr(expr_type, only_leaves,
-                                           subtype=False))
+                                           subtype=False,
+                                           sam_coercion=True))
         self._new_from_class = prev
         self.depth = initial_depth
         new_type = class_decl.get_type()
@@ -1548,7 +1568,7 @@ class Generator():
         return main_func
 
     def get_generators(self, expr_type, only_leaves, subtype,
-                       exclude_var):
+                       exclude_var, sam_coercion=False):
         def gen_variable(etype):
             return self.gen_variable(etype, only_leaves, subtype)
 
@@ -1557,7 +1577,8 @@ class Generator():
                                       subtype=subtype)
 
         leaf_canidates = [
-            lambda x: self.gen_new(x, only_leaves, subtype),
+            lambda x: self.gen_new(x, only_leaves, subtype,
+                                   sam_coercion=sam_coercion),
         ]
         constant_candidates = {
             self.bt_factory.get_number_type().name: gu.gen_integer_constant,
@@ -1622,7 +1643,7 @@ class Generator():
         return other_candidates + candidates
 
     def generate_expr(self, expr_type=None, only_leaves=False, subtype=True,
-                      exclude_var=False, gen_bottom=False):
+                      exclude_var=False, gen_bottom=False, sam_coercion=False):
         if gen_bottom:
             return ast.BottomConstant(None)
         find_subtype = (
@@ -1636,7 +1657,7 @@ class Generator():
                                         include_self=True, concrete_only=True)
             expr_type = ut.random.choice(subtypes)
         gens = self.get_generators(expr_type, only_leaves, subtype,
-                                   exclude_var)
+                                   exclude_var, sam_coercion=sam_coercion)
         expr = ut.random.choice(gens)(expr_type)
         # Make a probablistic choice, and assign the generated expr
         # into a variable, and return that variable reference.
