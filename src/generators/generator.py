@@ -29,7 +29,7 @@ def init_variance_choices(type_var_map):
     for type_var in type_var_map.keys():
         variance_choices[type_var] = (False, False)
         # If disable variance on specific type parameters, then we have to
-        # do the same on its bound (if it is another type variable).
+        # do the same on its bound (assuming it is another type variable).
         while type_var.bound and type_var.bound.is_type_var():
             type_var = type_var.bound
             variance_choices[type_var] = (False, False)
