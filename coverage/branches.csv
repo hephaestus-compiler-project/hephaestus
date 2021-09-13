@@ -1,0 +1,52 @@
+branch id,file,method,expected stage,description
+S1,Check.java,"checkTransparentVar(DiagnosticPosition pos, VarSymbol v, Scope s)",soundness,Check that variable does not hide variable with same name
+S2,Check.java,"checkTransparentClass(DiagnosticPosition pos, ClassSymbol c, Scope s)",soundness,Check that a class or interface does not hide a class or interface with same name
+S3,Check.java,"checkUniqueClassName(DiagnosticPosition pos, Name name, Scope s)",soundness,Check that class does not have the same name as one of its enclosing classes
+S4,Check.java,"checkUniqueClassName(DiagnosticPosition pos, Name name, Scope s)",soundness,Check that class does not have the same name as a class defined in its enclosing scope
+B1,Check.java,"checkType(final DiagnosticPosition pos, final Type found, final Type req, final CheckContext checkContext)",generator;inference,Check that a given type is assignable to a given proto-type -- compatible
+S5,Check.java,"checkType(final DiagnosticPosition pos, final Type found, final Type req, final CheckContext checkContext)",soundness;inference,Check that a given type is assignable to a given proto-type -- loss of precision
+S6,Check.java,"checkType(final DiagnosticPosition pos, final Type found, final Type req, final CheckContext checkContext)",soundness;inference,Check that a given type is assignable to a given proto-type -- inconvertible types
+B2,Check.java,"checkCastable(DiagnosticPosition pos, Type found, Type req, CheckContext checkContext)",generator;inference,Check that a given type can be cast to a given target type -- castable
+S7,Check.java,"checkCastable(DiagnosticPosition pos, Type found, Type req, CheckContext checkContext)",soundness,Check that a given type can be cast to a given target type -- inconvertible types
+B3,Check.java,"checkExtends(Type a, Type bound)",generator,Check that a type is within some bounds -- unbound
+B4,Check.java,"checkExtends(Type a, Type bound)",generator,Check that a type is within some bounds -- wildcard
+B5,Check.java,"checkExtends(Type a, Type bound)",generator,Check that a type is within some bounds -- extends
+B6,Check.java,"checkExtends(Type a, Type bound)",generator,Check that a type is within some bounds -- super
+S8,Check.java,"checkNonVoid(DiagnosticPosition pos, Type t)",soundness,Check that type is different from 'void' -- void
+B7,Check.java,"checkNonVoid(DiagnosticPosition pos, Type t)",generator,Check that type is different from 'void' -- non-void
+S9,Check.java,"checkClassOrArrayType(DiagnosticPosition pos, Type t)",soundness,Check if it is a class or an array -- false
+B8,Check.java,"checkClassOrArrayType(DiagnosticPosition pos, Type t)",generator,Check that type is a class or an array -- true
+S10,Check.java,"checkClassType(DiagnosticPosition pos, Type t)",soundness,Check that type is a class or interface type -- false
+B9,Check.java,"checkClassType(DiagnosticPosition pos, Type t)",generator,Check that type is a class or interface type -- true
+S11,Check.java,"checkConstructorRefType(DiagnosticPosition pos, Type t)",soundness,Check that type is a valid qualifier for a constructor reference expression -- abstract can't be instantiated
+B10,Check.java,"checkConstructorRefType(DiagnosticPosition pos, Type t)",generator,Check that type is a valid qualifier for a constructor reference expression
+S12,Check.java,"checkConstructorRefType(DiagnosticPosition pos, Type t)",soundness,Check that type is a valid qualifier for a constructor reference expression -- generic array creation
+S13,Check.java,"",soundness,
+B11,Check.java,"",generator,
+S14,Check.java,"",soundness,
+B12,Check.java,"",generator,
+S15,Check.java,"",soundness,
+S16,Check.java,"",soundness,
+S17,Check.java,"",soundness,
+S18,Check.java,"",soundness,
+I1,Check.java,"",inference,
+I2,Check.java,"checkDiamondDenotable(ClassType t)",inference;soundness,Check that the type inferred using the diamond operator does not contain non-denotable types such as captured types or intersection types -- denotable
+B13,Check.java,"",generator,
+S19,Check.java,"",soundness,
+S20,Check.java,"",soundness,
+B14,Check.java,"",generator,
+B15,Check.java,"",generator,
+S21,Check.java,"",soundness,
+S22,Check.java,"",soundness,
+S23,Check.java,"",soundness,
+S24,Check.java,"",soundness,
+S25,Check.java,"",soundness,
+S26,Check.java,"",soundness,
+S27,Check.java,"",soundness,
+S28,Check.java,"",soundness,
+S29,Check.java,"",soundness,
+S30,Check.java,"",soundness,
+S31,Check.java,"",soundness,
+S32,Check.java,"",soundness,
+S33,Check.java,"",soundness,
+B16,Check.java,"",generator,
