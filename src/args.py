@@ -164,6 +164,11 @@ parser.add_argument(
           " a specific Groovy bug)")
 )
 parser.add_argument(
+    "--disable-use-site-variance",
+    action="store_true",
+    help="Disable use-site variance"
+)
+parser.add_argument(
     "--disable-contravariance-use-site",
     action="store_true",
     help="Disable contravariance in use-site variance"

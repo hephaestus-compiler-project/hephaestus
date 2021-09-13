@@ -460,6 +460,8 @@ def _get_type_arg_variance(t_param, variance_choices):
         return tp.Invariant
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
+    if args.disable_use_site_variance:
+        can_variant, can_contravariant = False, False
     covariance = [tp.Covariant] if can_variant else []
     contravariance = (
         [tp.Contravariant]
