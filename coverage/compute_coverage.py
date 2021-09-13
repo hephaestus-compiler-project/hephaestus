@@ -48,6 +48,8 @@ def main():
         csvreader = csv.reader(f)
         next(csvreader)
         for row in csvreader:
+            if row[0][0] == "#":
+                continue
             declarations[row[0]] = {
                     "file": row[1],
                     "method": row[2],
