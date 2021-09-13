@@ -163,6 +163,11 @@ parser.add_argument(
           " (this option is used to avoid re-occrrence of"
           " a specific Groovy bug)")
 )
+parser.add_argument(
+    "--disable-contravariance-use-site",
+    action="store_true",
+    help="Disable contravariance in use-site variance"
+)
 
 
 args = parser.parse_args()

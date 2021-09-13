@@ -455,12 +455,17 @@ def _get_available_types(type_constructor,
 
 
 def _get_type_arg_variance(t_param, variance_choices):
+    from src.args import args
     if variance_choices is None:
         return tp.Invariant
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
     covariance = [tp.Covariant] if can_variant else []
-    contravariance = [tp.Contravariant] if can_contravariant else []
+    contravariance = (
+        [tp.Contravariant]
+        if can_contravariant and not args.disable_contravariance_use_site
+        else []
+    )
     if t_param.is_invariant():
         variances = [tp.Invariant] + covariance + contravariance
     elif t_param.is_covariant():
