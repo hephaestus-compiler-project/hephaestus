@@ -641,6 +641,10 @@ class Generator():
         var_type = etype if etype else self.select_type()
         initial_depth = self.depth
         self.depth += 1
+        # NOTE maybe we should disable sam coercion for Kotlin
+        # the following code does not compile
+        # fun interface FI { fun foo(p: Int): Long }
+        # var v: FI = {x: Int -> x.toLong()}
         expr = expr or self.generate_expr(var_type, only_leaves,
                                           sam_coercion=True)
         self.depth = initial_depth
@@ -1258,9 +1262,6 @@ class Generator():
                     self.bt_factory.get_function_type
             )
             if sam_sig_etype:
-                print("OK")
-                print(etype)
-                print(sam_sig_etype)
                 return gen_func_ref_lambda(sam_sig_etype)
 
         class_decl = self._get_subclass(etype, subtype)
