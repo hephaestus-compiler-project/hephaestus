@@ -1,4 +1,4 @@
-from src.ir import ast, kotlin_types as kt, types as tp
+from src.ir import ast, kotlin_types as kt, types as tp, type_utils as tu
 from src.translators.base import BaseTranslator
 
 
@@ -22,6 +22,7 @@ class KotlinTranslator(BaseTranslator):
         self.ident = 0
         self.is_unit = False
         self._cast_integers = False
+        self.context = None
 
         # We need nodes_stack to assign lambdas to vars when needed.
         # Specifically, in visit_lambda we use `var y = ` as a prefix only if
@@ -35,6 +36,7 @@ class KotlinTranslator(BaseTranslator):
         self.is_unit = False
         self._cast_integers = False
         self._nodes_stack = [None]
+        self.context = None
 
     @staticmethod
     def get_filename():
@@ -76,6 +78,7 @@ class KotlinTranslator(BaseTranslator):
         return res
 
     def visit_program(self, node):
+        self.context = node.context
         children = node.children()
         for c in children:
             c.accept(self)
@@ -142,6 +145,7 @@ class KotlinTranslator(BaseTranslator):
         type_parameters_res = ", ".join(
             children_res[len_fields + len_supercls + len_functions:])
         prefix = " " * old_ident
+        prefix += "fun " if tu.is_sam(self.context, cls_decl=node) else ""
         prefix += (
             "open "
             if (not node.is_final
