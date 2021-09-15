@@ -50,3 +50,65 @@ S31,Check.java,"",soundness,
 S32,Check.java,"",soundness,
 S33,Check.java,"",soundness,
 B16,Check.java,"",generator,
+B17,Types.java,"",generator,Get a wildcard's upper bound
+B18,Types.java,"",generator,Get a wildcard's upper bound -- super bound
+B19,Types.java,"",generator,Get a capture variable's upper bound
+B20,Types.java,"",generator,Get a wildcard's lower bound
+B21,Types.java,"",generator,Get a capture variable's lower bound
+B22,Types.java,"visitClassType",generator,In TypeProjection visitor -- not compound types
+B23,Types.java,"visitArrayType",generator,In TypeProjection visitor
+B24,Types.java,"visitTypeVar",generator,In TypeProjection visitor -- upwards
+B25,Types.java,"visitTypeVar",generator,In TypeProjection visitor -- downwards
+B26,Types.java,"visitType",generator,In type argument projection -- extends
+B27,Types.java,"visitType",generator,In type argument projection -- super
+B28,Types.java,"visitType",generator,In type argument projection -- unbound
+B29,Types.java,"visitClassType",generator,Return the least specific subtype of t that starts with symbol sym -- t.tsym == sym
+B30,Types.java,"visitClassType",generator,Return the least specific subtype of t that starts with symbol sym -- null base
+B31,Types.java,"visitClassType",generator,Return the least specific subtype of t that starts with symbol sym -- not subtype
+B32,Types.java,"visitClassType",generator,Return the least specific subtype of t that starts with symbol sym -- raw / erasure
+B33,Types.java,"visitClassType",generator,Return the least specific subtype of t that starts with symbol sym -- unbound type arguments
+B34,Types.java,"isConvertible",generator,primitives
+I3,Types.java,"isConvertible",inference,inference variable
+B35,Types.java,"isConvertible",generator,boxing / unboxing
+B36,Types.java,"isFunctionalInterface",generator,true
+B37,Types.java,"isFunctionalInterface",generator,true
+#B38,Types.java,"removeWildcards",generator,unbound
+#B39,Types.java,"removeWildcards",generator,extends
+#B40,Types.java,"removeWildcards",generator,super
+B41,Types.java,"isSubtypeUncheckedInternal",generator,primitive arrays
+B42,Types.java,"isSubtypeUncheckedInternal",generator,arrays
+B43,Types.java,"isSubtypeUncheckedInternal",generator,capture
+B44,Types.java,"isSubtypeUncheckedInternal",generator,type variable
+B45,Types.java,"visitType",generator,isSubtype -- BYTE
+B46,Types.java,"visitType",generator,isSubtype -- CHAR
+B47,Types.java,"visitType",generator,isSubtype -- NUMBER
+B48,Types.java,"visitType",generator,isSubtype -- VOID
+B49,Types.java,"visitType",generator,isSubtype -- type variable
+#B50,Types.java,"rewriteSupers",generator,is Parameterized
+B51,Types.java,"visitArrayType",generator,
+I4,Types.java,"isSubtype",inference,inference variable
+B52,Types.java,"isSuperType",generator,default
+B53,Types.java,"visitType",generator,isSameTypeVisitor -- Primitive
+B54,Types.java,"visitType",generator,isSameTypeVisitor -- type var
+I5,Types.java,"visitUndetVar",inference,isSameTypeVisitor
+I6,Types.java,"containedBy",inference,inference variable
+B55,Types.java,"containedBy",generator,default
+B56,Types.java,"visitWildcardType",generator,containsType visitor
+B57,Types.java,"isCastable",generator,primitive
+B58,Types.java,"visitType",generator,isCastable -- Number
+B59,Types.java,"isAssignable",generator,general
+B60,Types.java,"interfaces",generator,general
+#B61,Types.java,"getBounds",generator,none
+#B62,Types.java,"getBounds",generator,supertype
+#B63,Types.java,"getBounds",generator,no super class
+#B64,Types.java,"lub",generator,class
+#B65,Types.java,"lub",generator,array
+#B66,Types.java,"lub",generator,type variable
+#B67,Types.java,"glb",generator,primitive
+#B68,Types.java,"glb",generator,sub type no capture a
+#B69,Types.java,"glb",generator,sub type no capture b
+#B70,Types.java,"glb",generator,rest
+#B71,Types.java,"resultSubtype",generator,
+#B72,Types.java,"covariantReturnType",generator,
+#B73,Types.java,"boxedTypeOrType",generator,
+#B74,Types.java,"capture",generator,

@@ -77,9 +77,9 @@ def main():
 
     if args.generator:
         print()
-        print("Generator: {}".format(
-            dgenerator - generator
-        ))
+        res = list(dgenerator - generator)
+        res.sort(key=lambda x: int(x[1:]))
+        print("Generator: {}".format(res))
 
     if args.inference:
         print()
