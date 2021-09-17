@@ -938,7 +938,7 @@ def is_sam(context, etype=None, cls_decl=None):
         class_decls = context.get_classes(('global',), glob=True).values()
         callable_funcs = cls_decl.get_callable_functions(class_decls)
         abstract_funcs = cls_decl.get_abstract_functions(class_decls)
-        if (cls_decl.class_type == cls_decl.REGULAR or
+        if (cls_decl.class_type != cls_decl.INTERFACE or
                 cls_decl.fields or
                 len(callable_funcs) > 0 or
                 len(abstract_funcs) != 1 or
