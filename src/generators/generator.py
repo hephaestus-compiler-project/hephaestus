@@ -1213,11 +1213,12 @@ class Generator():
                 variables))
         variables += list(self.context.get_vars(
             ('global',), only_current=True).values())
-        for var in variables:
-            var_type = var.get_type()
+        for var_decl in variables:
+            var_type = var_decl.get_type()
+            var = ast.Variable(var_decl.name)
             class_decls = self.context.get_classes(('global',), glob=True)
             if var_type == etype:
-                refs.append(ast.Variable(var.name))
+                refs.append(var)
             # Check for receivers. For example, in the following case we should
             # add the function reference a::foo if we are looking for function
             # references with signature: Function0<Integer>.
