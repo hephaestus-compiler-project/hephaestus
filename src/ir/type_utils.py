@@ -935,10 +935,12 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
 
 def is_sam(context, etype=None, cls_decl=None):
     def check_decl(cls_decl):
-        funcs = cls_decl.get_abstract_functions(
-            context.get_classes(('global',), glob=True).values())
+        class_decls = context.get_classes(('global',), glob=True).values()
+        callable_funcs = cls_decl.get_callable_functions(class_decls)
+        funcs = cls_decl.get_abstract_functions(class_decls)
         if (cls_decl.class_type == cls_decl.REGULAR or
                 cls_decl.fields or
+                len(callable_funcs) > 0 or
                 len(funcs) > 1 or
                 (funcs and any(p.default for p in next(iter(funcs)).params)) or
                 not all(is_sam(context, etype=s) for s in cls_decl.supertypes)):
@@ -966,3 +968,24 @@ def find_sam_fun_signature(context, etype, get_function_type):
         return find_sam_fun_signature(context, cls_decl.supertypes[0],
                                       get_function_type)
     return None
+
+
+def get_superclass_decl(super_cls, class_decls):
+    class_decl = None
+    for c in class_decls:
+        if isinstance(super_cls.class_type, tp.ParameterizedType):
+            if super_cls.class_type.t_constructor == c.get_type():
+                class_decl = c
+        else:
+            if super_cls.class_type == c.get_type():
+                class_decl = c
+    return class_decl
+
+
+def get_superclass_type_var_map(super_cls, class_decl):
+    if class_decl.is_parameterized():
+        return {
+            t_param: super_cls.class_type.type_args[i]
+            for i, t_param in enumerate(class_decl.type_parameters)
+        }
+    return {}

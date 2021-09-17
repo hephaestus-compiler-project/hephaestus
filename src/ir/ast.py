@@ -579,7 +579,45 @@ class ClassDeclaration(Declaration):
             if f.can_override
         ]
 
-    def get_abstract_functions(self, class_decls):
+    def get_callable_functions(self, class_decls) -> List[FunctionDeclaration]:
+        """All functions that can be called in instantiations of this class
+        """
+        # Get functions that are implemented in the current class
+        functions = {f for f in self.functions if f.body}
+
+        if not self.superclasses:
+            return functions
+
+        # Retrieve functions from the inheritance chain.
+        super_cls = self.superclasses[0]
+        class_decl = tu.get_superclass_decl(super_cls, class_decls)
+
+        if not class_decl:
+            return functions
+
+        type_var_map = tu.get_superclass_type_var_map(super_cls, class_decl)
+
+        parent_funcs = class_decl.get_callable_functions(class_decls)
+
+        # substitute type variables in parent's functions
+        for f in parent_funcs:
+            new_f = copy(f)
+            params = []
+            for p in f.params:
+                new_p = copy(p)
+                new_p.param_type = types.substitute_type(p.get_type(),
+                                                         type_var_map)
+                params.append(new_p)
+            ret_type = types.substitute_type(f.get_type(),
+                                             type_var_map)
+            new_f.params = params
+            new_f.inferred_type = ret_type
+            new_f.ret_type = ret_type
+            functions.add(new_f)
+
+        return functions
+
+    def get_abstract_functions(self, class_decls) -> List[FunctionDeclaration]:
         # Get the abstract functions that are declared in the current class.
         functions = {
             f
@@ -591,23 +629,13 @@ class ClassDeclaration(Declaration):
 
         # Retrieve any abstract function from the inheritance chain.
         super_cls = self.superclasses[0]
-        class_decl = None
-        for c in class_decls:
-            if isinstance(super_cls.class_type, types.ParameterizedType):
-                if super_cls.class_type.t_constructor == c.get_type():
-                    class_decl = c
-            else:
-                if super_cls.class_type == c.get_type():
-                    class_decl = c
+        class_decl = tu.get_superclass_decl(super_cls, class_decls)
+
         if not class_decl:
             return functions
-        if class_decl.is_parameterized():
-            type_var_map = {
-                t_param: super_cls.class_type.type_args[i]
-                for i, t_param in enumerate(class_decl.type_parameters)
-            }
-        else:
-            type_var_map = {}
+
+        type_var_map = tu.get_superclass_type_var_map(super_cls, class_decl)
+
         funcs = class_decl.get_abstract_functions(class_decls)
         implemented_funcs = {f.name for f in self.functions
                              if f.body is not None}
