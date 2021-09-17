@@ -1217,7 +1217,6 @@ class Generator():
         for var in variables:
             if var.get_type() == etype:
                 refs.append(ast.Variable(var.name))
-            # TODO check for receivers
         return refs
 
     def gen_func_ref(self, etype):
