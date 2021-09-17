@@ -21,6 +21,7 @@ class KotlinTranslator(BaseTranslator):
         self._children_res = []
         self.ident = 0
         self.is_unit = False
+        self.is_lambda = False
         self._cast_integers = False
         self.context = None
 
@@ -34,6 +35,7 @@ class KotlinTranslator(BaseTranslator):
         self._children_res = []
         self.ident = 0
         self.is_unit = False
+        self.is_lambda = False
         self._cast_integers = False
         self._nodes_stack = [None]
         self.context = None
@@ -93,22 +95,27 @@ class KotlinTranslator(BaseTranslator):
     def visit_block(self, node):
         children = node.children()
         is_unit = self.is_unit
+        is_lambda = self.is_lambda
         self.is_unit = False
+        self.is_lambda = False
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{\n" + "\n".join(children_res[:-1])
+        res = "{" if not is_lambda else ""
+        res += "\n" + "\n".join(children_res[:-1])
         if children_res[:-1]:
             res += "\n"
-        ret_keyword = "return " if node.is_func_block and not is_unit else ""
+        ret_keyword = "return " if node.is_func_block and not is_unit and not is_lambda else ""
         if children_res:
             res += " " * self.ident + ret_keyword + \
                    children_res[-1] + "\n" + \
-                   " " * self.ident + "}"
+                   " " * self.ident
         else:
             res += " " * self.ident + ret_keyword + "\n" + \
-                   " " * self.ident + "}"
+                   " " * self.ident
+        res += "}" if not is_lambda else ""
         self.is_unit = is_unit
+        self.is_lambda = is_lambda
         self._children_res.append(res)
 
     @append_to
@@ -264,7 +271,7 @@ class KotlinTranslator(BaseTranslator):
         old_ident = self.ident
         self.ident += 2
         children = node.children()
-        prev = self.is_unit
+        prev_is_unit = self.is_unit
         self.is_unit = node.get_type() == kt.Unit
         prev_c = self._cast_integers
         is_expression = not isinstance(node.body, ast.Block)
@@ -293,7 +300,7 @@ class KotlinTranslator(BaseTranslator):
             sign = "=" if is_expression and node.get_type() != kt.Unit else ""
             res += " " + sign + "\n" + body_res
         self.ident = old_ident
-        self.is_unit = prev
+        self.is_unit = prev_is_unit
         self._cast_integers = prev_c
         self._children_res.append(res)
 
@@ -312,8 +319,18 @@ class KotlinTranslator(BaseTranslator):
         self.ident = 0 if is_expression else self.ident + 2
         children = node.children()
 
-        prev = self.is_unit
+        prev_is_unit = self.is_unit
+        prev_is_lambda = self.is_lambda
         self.is_unit = node.get_type() == kt.Unit
+        use_lambda = (isinstance(self._nodes_stack[-2], ast.VariableDeclaration)
+                      and tu.is_sam(self.context,
+                                    etype=self._nodes_stack[-2].inferred_type))
+        self.is_lambda = use_lambda
+
+        sam_name = ""
+        if use_lambda:
+            sam_name = self.get_type_name(self._nodes_stack[-2].inferred_type)
+
         prev_c = self._cast_integers
         if is_expression:
             self._cast_integers = True
@@ -326,10 +343,11 @@ class KotlinTranslator(BaseTranslator):
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1] if node.body else ''
 
-        if is_expression:
+        if is_expression or use_lambda:
             # use the lambda syntax: { params -> stmt }
-            res = "{var}{{{params} -> {body}}}".format(
+            res = "{var}{sam_name}{{{params} -> {body}}}".format(
                 var="" if not inside_block_unit_function() else "var y = ",
+                sam_name=sam_name if use_lambda else "",
                 params=", ".join(param_res),
                 body=body_res
             )
@@ -343,7 +361,8 @@ class KotlinTranslator(BaseTranslator):
                 body=body_res
             )
 
-        self.is_unit = prev
+        self.is_unit = prev_is_unit
+        self.is_lambda = prev_is_lambda
         self._cast_integers = prev_c
         self._children_res.append(res)
 

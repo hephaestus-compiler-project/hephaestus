@@ -1368,7 +1368,6 @@ class Generator():
                 self.bt_factory.get_function_type(len(func.params))
             )
 
-
             if signature == etype:
                 if func.func_type == func.FUNCTION:
                     refs.append(ast.FunctionReference(func.name, None))
@@ -1433,7 +1432,8 @@ class Generator():
                 namespace = self.context.get_namespace(func) + (func.name,)
                 parent = self.context.get_parent(namespace)
                 parent_type = parent.get_type()
-                assert isinstance(parent_type, tp.TypeConstructor)
+                if not isinstance(parent_type, tp.TypeConstructor):
+                    continue
 
                 receiver_type, _ = tu.instantiate_type_constructor(
                     parent_type, self.get_types(), type_var_map=type_var_map)
