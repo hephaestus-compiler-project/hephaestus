@@ -144,15 +144,30 @@ class KotlinTranslator(BaseTranslator):
         len_functions = len(function_res)
         type_parameters_res = ", ".join(
             children_res[len_fields + len_supercls + len_functions:])
-        prefix = " " * old_ident
-        prefix += "fun " if tu.is_sam(self.context, cls_decl=node) else ""
-        prefix += (
-            "open "
-            if (not node.is_final
-                and node.class_type != ast.ClassDeclaration.INTERFACE)
-            else ""
+
+        is_sam = tu.is_sam(self.context, cls_decl=node)
+        class_prefix = "interface" if is_sam else node.get_class_prefix()
+        body = ""
+        if function_res:
+            body = " {{\n{function_res}\n{old_ident}}}".format(
+                function_res="\n\n".join(function_res),
+                old_ident=" " * old_ident
+            )
+
+        res = "{ident}{f}{o}{p} {n}".format(
+            ident=" " * old_ident,
+            f="fun " if is_sam else "",
+            o="open " if (not node.is_final and
+                          node.class_type != ast.ClassDeclaration.INTERFACE and
+                          not is_sam) else "",
+            p=class_prefix,
+            n=node.name,
+            tps="<" + type_parameters_res + ">" if type_parameters_res else "",
+            fields="(" + ", ".join(field_res) + ")" if field_res else "",
+            s=": " + ", ".join(superclasses_res) if superclasses_res else "",
+            body=body
         )
-        res = "{}{} {}".format(prefix, node.get_class_prefix(), node.name)
+
         if type_parameters_res:
             res = "{}<{}>".format(res, type_parameters_res)
         if field_res:
