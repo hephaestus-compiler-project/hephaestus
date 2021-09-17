@@ -1042,19 +1042,23 @@ def is_sam(context, etype=None, cls_decl=None):
     def check_decl(cls_decl):
         class_decls = context.get_classes(('global',), glob=True).values()
         callable_funcs = cls_decl.get_callable_functions(class_decls)
-        funcs = cls_decl.get_abstract_functions(class_decls)
+        abstract_funcs = cls_decl.get_abstract_functions(class_decls)
         if (cls_decl.class_type == cls_decl.REGULAR or
                 cls_decl.fields or
                 len(callable_funcs) > 0 or
-                len(funcs) > 1 or
-                (funcs and any(p.default for p in next(iter(funcs)).params)) or
+                len(abstract_funcs) != 1 or
+                (abstract_funcs and
+                 any(p.default for p in next(iter(abstract_funcs)).params)) or
                 not all(is_sam(context, etype=s) for s in cls_decl.supertypes)):
             return False
         return True
 
     if etype:
         if isinstance(etype, (tp.SimpleClassifier, tp.ParameterizedType)):
-            cls_decl = context.get_classes(('global',), glob=True)[etype.name]
+            class_decls = context.get_classes(('global',), glob=True)
+            cls_decl = class_decls.get(etype.name, None)
+            if not cls_decl:
+                return False
             return check_decl(cls_decl)
     elif cls_decl:
         return check_decl(cls_decl)
