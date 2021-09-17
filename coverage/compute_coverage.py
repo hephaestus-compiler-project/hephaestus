@@ -9,7 +9,7 @@ INFERENCE = "inference"
 
 
 def get_branches(branches, declarations, stage):
-    return {b for b in branches if declarations[b]['primary'] == stage}
+    return {b for b in branches if b in declarations and declarations[b]['primary'] == stage}
 
 
 def get_dbranches(declarations, stage):
@@ -58,7 +58,7 @@ def main():
             }
 
     with open(args.data, 'r') as f:
-        branches = {line.rstrip() for line in f.readlines()}
+        branches = {line.rstrip() for line in f.readlines() if line.strip() in declarations}
 
     generator = get_branches(branches, declarations, GENERATOR)
     soundness = get_branches(branches, declarations, SOUNDNESS)
