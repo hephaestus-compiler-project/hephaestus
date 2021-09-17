@@ -984,7 +984,6 @@ class Generator():
                     v not in self.context.get_vars(self.namespace[:-1]).values())),
                 variables))
         for var in variables:
-            # TODO we should also get func refs with receiver.
             var_type = var.get_type()
             if not getattr(var_type, 'is_function_type', lambda: False)():
                 continue
@@ -1215,16 +1214,41 @@ class Generator():
         variables += list(self.context.get_vars(
             ('global',), only_current=True).values())
         for var in variables:
-            if var.get_type() == etype:
+            var_type = var.get_type()
+            class_decls = self.context.get_classes(('global',), glob=True)
+            if var_type == etype:
                 refs.append(ast.Variable(var.name))
+            # Check for receivers. For example, in the following case we should
+            # add the function reference a::foo if we are looking for function
+            # references with signature: Function0<Integer>.
+            #
+            #  class A {
+            #  	Integer foo() {return 1;}
+            #  }
+            #
+            #  public static void main(String[] args) {
+            #  	A a = new A();
+            #  }
+            elif isinstance(var_type, (tp.SimpleClassifier,
+                                       tp.ParameterizedType)):
+                class_decl = class_decls.get(var_type.name, None)
+                if not class_decl:
+                    continue
+                funcs = class_decl.get_callable_functions(class_decls.values())
+                for func in funcs:
+                    signature = func.get_signature(
+                        self.bt_factory.get_function_type(len(func.params))
+                    )
+                    if signature == etype:
+                        refs.append(ast.FunctionReference(func.name, var))
         return refs
 
     def gen_func_ref(self, etype):
         # NOTE to handle the case where a type argument is a type parameter,
         # we can either create a parameterized function or create a method
         # to the current class.
-        # In the former, we can use `this` or we can create a new object as
-        # a receiver.
+        # In the second case, we can use `this` or we can create
+        # a new object as a receiver.
         if any(isinstance(targ, tp.TypeParameter) for targ in etype.type_args):
             return None
         params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
