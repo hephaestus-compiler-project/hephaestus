@@ -172,47 +172,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-# CHECK ARGUMENTS
-
-if args.seconds and args.iterations:
-    sys.exit("Error: you should only set --seconds or --iterations")
-
-if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
-    sys.exit("Error: --name {} already exists".format(args.name))
-
-if args.transformation_schedule and args.transformations:
-    sys.exit("Options --transformation-schedule and --transfromations"
-             " are mutually exclusive. You can't use both.")
-
-if not args.transformation_schedule and args.transformations is None:
-    sys.exit("You have to provide one of --transformation-schedule or"
-             " --transformations.")
-
-if args.transformation_schedule and (
-        not os.path.isfile(args.transformation_schedule)):
-    sys.exit("You have to provide a valid file in --transformation-schedule")
-
-
-if args.rerun and args.workers:
-    sys.exit('You cannot use -r option in parallel mode')
-
-
-if args.rerun and not args.keep_all:
-    sys.exit("The -r option only works with the option -k")
-
-if args.rerun and args.batch:
-    sys.exit("You cannot use -r option with the option --batch")
-
-if args.examine and not args.replay:
-    sys.exit("You cannot use --examine option without the --replay option")
-
-# PRE-PROCESSING
-
-if not os.path.isdir(args.bugs):
-    mkdir(args.bugs)
-
 args.test_directory = os.path.join(args.bugs, args.name)
-
 args.stop_cond = "timeout" if args.seconds else "iterations"
 args.temp_directory = os.path.join(cwd, "temp")
 args.options = {
@@ -248,6 +208,7 @@ args.options = {
     }
 }
 
+
 if args.language == "groovy":
     args.options["TypeSubstitution"]["disable_inverted_smart_cast"] = True
 
@@ -255,3 +216,44 @@ if args.language == "groovy":
 
 cfg.dis.use_site_variance = args.disable_use_site_variance
 cfg.dis.use_site_contravariance = args.disable_contravariance_use_site
+
+
+def validate_args(args):
+    # CHECK ARGUMENTS
+
+    if args.seconds and args.iterations:
+        sys.exit("Error: you should only set --seconds or --iterations")
+
+    if os.path.isdir(args.bugs) and args.name in os.listdir(args.bugs):
+        sys.exit("Error: --name {} already exists".format(args.name))
+
+    if args.transformation_schedule and args.transformations:
+        sys.exit("Options --transformation-schedule and --transfromations"
+                 " are mutually exclusive. You can't use both.")
+
+    if not args.transformation_schedule and args.transformations is None:
+        sys.exit("You have to provide one of --transformation-schedule or"
+                 " --transformations.")
+
+    if args.transformation_schedule and (
+            not os.path.isfile(args.transformation_schedule)):
+        sys.exit("You have to provide a valid file in --transformation-schedule")
+
+    if args.rerun and args.workers:
+        sys.exit('You cannot use -r option in parallel mode')
+
+    if args.rerun and not args.keep_all:
+        sys.exit("The -r option only works with the option -k")
+
+    if args.rerun and args.batch:
+        sys.exit("You cannot use -r option with the option --batch")
+
+    if args.examine and not args.replay:
+        sys.exit("You cannot use --examine option without the --replay option")
+
+
+def pre_process_args(args):
+    # PRE-PROCESSING
+
+    if not os.path.isdir(args.bugs):
+        mkdir(args.bugs)

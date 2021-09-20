@@ -11,7 +11,7 @@ import time
 import traceback
 from collections import namedtuple, OrderedDict
 
-from src.args import args as cli_args
+from src.args import args as cli_args, validate_args, pre_process_args
 from src import utils
 from src.compilers.kotlin import KotlinCompiler
 from src.compilers.groovy import GroovyCompiler
@@ -262,7 +262,6 @@ def gen_program(pid, dirname, packages):
                                                 cli_args.options['Translator'])
     proc = ProgramProcessor(pid, cli_args)
     try:
-        # FIXME this may cause MaximumRecursionError
         program, oracle = proc.get_program()
         if cli_args.examine:
             print("pp program.context._context (to print the context)")
@@ -400,15 +399,20 @@ def check_oracle(dirname, oracles):
                 # it's in the list of the error messages.
                 proc_res.stats['error'] = '\n'.join(failed[program])
                 output[pid] = proc_res.stats
+                stop = False
                 if cli_args.debug:
                     msg = 'Mismatch found in program {}. Expected to compile'
                     print(msg.format(pid))
+                    stop = True
                 if cli_args.rerun:
                     _report_failed(pid, cli_args.transformations, compiler,
                                    oracle)
                 shutil.copytree(
                     os.path.join(cli_args.test_directory, 'tmp', str(pid)),
                     os.path.join(cli_args.test_directory, str(pid)))
+                if stop:
+                    print(proc_res.stats['error'])
+                    sys.exit(1)
             if not oracle and program not in failed:
                 # Here, we have a case where we expected that the compiler
                 # would not be able to compile the program. However,
@@ -539,6 +543,9 @@ def run_parallel():
 
 
 def main():
+    validate_args(cli_args)
+    pre_process_args(cli_args)
+
     if cli_args.debug or cli_args.workers is None:
         run()
     else:
