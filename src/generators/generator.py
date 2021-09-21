@@ -1286,10 +1286,6 @@ class Generator():
                                       subtype=False,
                                       only_leaves=only_leaves,
                                       sam_coercion=False)
-        print("Parameterized")
-        print(etype)
-        print(receiver_type)
-        print(receiver)
         return ast.FunctionReference(func.name, receiver)
 
 
