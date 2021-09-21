@@ -1110,13 +1110,19 @@ def get_superclass_type_var_map(super_cls, class_decl):
     return {}
 
 
-def get_type_var_map_from_ptype(ptype):
+def get_type_var_map_from_ptype(ptype, type_var_map=None):
     """Get the type variable map from a parameterized type.
     """
-    type_var_map = {}
+    type_var_map = {} if type_var_map is None else type_var_map
     if not isinstance(ptype, tp.ParameterizedType):
         return type_var_map
     for tparam, targ in zip(ptype.t_constructor.type_parameters,
                             ptype.type_args):
-        type_var_map[tparam] = targ
+        # We don't want to override type parameters that already in the lookup
+        if tparam not in type_var_map:
+            type_var_map[tparam] = targ
+    # Now we have to look in the superclass hierarchy
+    if ptype.t_constructor.supertypes:
+        for stype in ptype.t_constructor.supertypes:
+            get_type_var_map_from_ptype(stype, type_var_map)
     return type_var_map
