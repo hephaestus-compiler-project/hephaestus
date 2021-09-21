@@ -7,7 +7,7 @@ from collections import OrderedDict
 import src.utils as ut
 from src.ir import ast, java_types as jt, types as tp
 from src.ir.context import get_decl
-from src.ir.type_utils import get_type_hint
+from src.ir.type_utils import get_type_hint, get_func_decl
 from src.transformations.base import change_namespace
 from src.translators.base import BaseTranslator
 
@@ -153,25 +153,27 @@ class JavaTranslator(BaseTranslator):
 
     def type_arg2str(self, t_arg):
         if not t_arg.is_wildcard():
-            return self.get_type_name(t_arg, True)
+            return self.get_type_name(t_arg, True, True)
         if t_arg.is_invariant():
             return "?"
         elif t_arg.is_covariant():
-            return "? extends " + self.get_type_name(t_arg.bound, True)
+            return "? extends " + self.get_type_name(t_arg.bound, True, True)
         else:
-            return "? super " + self.get_type_name(t_arg.bound, True)
+            return "? super " + self.get_type_name(t_arg.bound, True, True)
 
-    def get_type_name(self, t, get_boxed_void=False):
+    def get_type_name(self, t, get_boxed_void=False, box=False):
         if t.is_wildcard():
             t = t.get_bound_rec()
-            return self.get_type_name(t, get_boxed_void)
+            return self.get_type_name(t, get_boxed_void, box)
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
             if get_boxed_void and isinstance(t, jt.VoidType):
                 return "Void"
+            if box:
+                return PRIMITIVES_TO_BOXED.get(t.get_name(), t.get_name())
             return t.get_name()
         if isinstance(t_constructor, jt.ArrayType):
-            return "{}[]".format(self.get_type_name(t.type_args[0]))
+            return "{}[]".format(self.get_type_name(t.type_args[0], False, True))
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
                                                   for ta in t.type_args]))
 
@@ -256,6 +258,25 @@ class JavaTranslator(BaseTranslator):
         )
         self._reset_state()
 
+    def _get_function_reference_signature(self, func_ref):
+        func_name = func_ref.func
+        receiver = func_ref.receiver
+        receiver_type = None
+        if receiver:
+            receiver_type = get_type_hint(
+                receiver, self.context,
+                self._namespace, jt.JavaBuiltinFactory(),
+                self.types, smart_casts=self.smart_casts
+            )
+        func_decl = get_func_decl(self.context, func_name, receiver_type)
+        if func_decl:
+            function_type = jt.JavaBuiltinFactory().get_function_type(
+                len(func_decl.params)
+            )
+            signature = func_decl.get_signature(function_type)
+            return self.get_type_name(signature, True, True)
+        return None
+
     @append_to
     def visit_block(self, node):
         children = node.children()
@@ -295,6 +316,7 @@ class JavaTranslator(BaseTranslator):
                                 ast.FunctionCall,
                                 ast.Assignment)):
                     sugar = "var x_{x} = ".format(x=self._x_counter)
+                    self._x_counter += 1
                 return_stmt += "return null;"
             else:
                 assert not isinstance(children[-1], ast.VariableDeclaration), \
@@ -332,6 +354,9 @@ class JavaTranslator(BaseTranslator):
                     var_prefix = self.get_type_name(type_hint)
                     if isinstance(children[-1], ast.Lambda):
                         sugar_semi = ";"
+                elif isinstance(children[-1], ast.FunctionReference):
+                    sig = self._get_function_reference_signature(children[-1])
+                    var_prefix = sig if sig else 'var'
                 else:
                     var_prefix = 'var'
                 sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
