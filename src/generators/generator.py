@@ -1118,6 +1118,18 @@ class Generator():
         return res
 
     def get_func_refs(self, etype):
+        """Get a list with all function references that can assigned to etype.
+
+        Currently, we cannot handle parameterized types that include type
+        parameters as type arguments.
+        To compute this list we perform the following steps:
+
+        1. We detect all declared functions and we create, if possible,
+            function references to those that can be assigned to etype.
+        2. We search for variables have been assigned values of etype.
+        3. We find variables declared in the current scope that can be used
+            as receivers of a function reference that can be assigned to etype.
+        """
         refs = []
 
         # We cannot handle parameterized types with type params as type args.
@@ -1130,94 +1142,7 @@ class Generator():
         # because generate_expr won't generate it correctly.
         only_leaves = len(self.namespace) == 2 and self.namespace[1][0].isupper
 
-        # Find all global functions
-        for func in self.context.get_funcs(self.namespace, glob=True).values():
-
-            namespace = self.context.get_namespace(func) + (func.name,)
-            # Check if nested function
-            if not namespace[-2] == "global" and not namespace[-2][0].isupper:
-                continue
-
-            signature = func.get_signature(
-                self.bt_factory.get_function_type(len(func.params))
-            )
-
-            if signature == etype:
-                if func.func_type == func.FUNCTION:
-                    refs.append(ast.FunctionReference(func.name, None))
-                else:
-                    parent = self.context.get_parent(namespace)
-                    parent_type = parent.get_type()
-                    # if parent is a type constructor then initialize a
-                    # ParameterizedType
-                    if isinstance(parent_type, tp.TypeConstructor):
-                        parent_type, _ = tu.instantiate_type_constructor(
-                            parent_type, self.get_types(),
-                            enable_pecs=self.enable_pecs
-                        )
-
-
-                    receiver = self.generate_expr(parent_type,
-                                                  subtype=False,
-                                                  only_leaves=only_leaves,
-                                                  sam_coercion=False)
-                    refs.append(ast.FunctionReference(func.name, receiver))
-            # Handle functions of parameterized classes
-            # TODO handle parameterized functions
-            else:
-                is_param_type_param = any(isinstance(param, tp.TypeParameter)
-                    for param in func.params)
-                is_ret_type_param = isinstance(func.ret_type, tp.TypeParameter)
-
-                if not is_param_type_param and not is_ret_type_param:
-                    continue
-
-                def check_type(is_type_param , itype, etype):
-                    if not is_type_param and itype == etype:
-                        return True
-                    if is_type_param:
-                        if itype.bound and not etype.is_subtype(itype.bound):
-                            return False
-                        return True
-                    return False
-
-                etype_ret = etype.type_args[-1]
-                etype_params = etype.type_args[:-1]
-                type_var_map = {}
-
-                # Check if return type can conform to etype's return type.
-                if not check_type(is_ret_type_param, func.ret_type, etype_ret):
-                    continue
-                if is_ret_type_param:
-                    type_var_map[func.ret_type] = etype_ret
-                # Check if parameters can conform to etype's parameters.
-                if len(func.params) != len(etype_params):
-                    continue
-                flag = False
-                for fparam, eparam in zip(func.params, etype_params):
-                    is_type_param = isinstance(fparam, tp.TypeParameter)
-                    if not check_type(is_type_param, fparam, eparam):
-                        flag = True
-                        break
-                    if is_type_param:
-                        type_var_map[fparam] = eparam
-                if flag:
-                    continue
-                # Create a parameterized type with the correct type arguments
-                parent = self.context.get_parent(namespace)
-                parent_type = parent.get_type()
-                if not isinstance(parent_type, tp.TypeConstructor):
-                    continue
-
-                receiver_type, _ = tu.instantiate_type_constructor(
-                    parent_type, self.get_types(), type_var_map=type_var_map,
-                    enable_pecs=self.enable_pecs
-                )
-                receiver = self.generate_expr(receiver_type,
-                                              subtype=False,
-                                              only_leaves=only_leaves,
-                                              sam_coercion=False)
-                refs.append(ast.FunctionReference(func.name, receiver))
+        refs.extend(self._get_func_refs_from_functions(etype, only_leaves))
 
         # Find existing function references
         variables = list(self.context.get_vars(self.namespace).values())
@@ -1258,6 +1183,117 @@ class Generator():
                     if signature == etype:
                         refs.append(ast.FunctionReference(func.name, var))
         return refs
+
+    # get_func_refs helpers
+
+    def _get_func_refs_from_functions(self, etype, only_leaves):
+        """Get function references to etype from function declarations.
+
+        We filter out nested functions.
+        For non-top-level functions we generate a receiver.
+        """
+        refs = []
+        # Search in all global functions
+        for func in self.context.get_funcs(self.namespace, glob=True).values():
+
+            namespace = self.context.get_namespace(func) + (func.name,)
+            # Check if nested function
+            if not namespace[-2] == "global" and not namespace[-2][0].isupper:
+                continue
+
+            signature = func.get_signature(
+                self.bt_factory.get_function_type(len(func.params))
+            )
+
+            if signature == etype:
+                if func.func_type == func.FUNCTION:
+                    refs.append(ast.FunctionReference(func.name, None))
+                else:
+                    parent = self.context.get_parent(namespace)
+                    parent_type = parent.get_type()
+                    # if parent is a type constructor then initialize a
+                    # ParameterizedType
+                    if isinstance(parent_type, tp.TypeConstructor):
+                        parent_type, _ = tu.instantiate_type_constructor(
+                            parent_type, self.get_types(),
+                            enable_pecs=self.enable_pecs
+                        )
+
+                    receiver = self.generate_expr(parent_type,
+                                                  subtype=False,
+                                                  only_leaves=only_leaves,
+                                                  sam_coercion=False)
+                    refs.append(ast.FunctionReference(func.name, receiver))
+            # Handle functions of parameterized classes
+            else:
+                func_ref = self._get_func_ref_from_func_in_param_cls(
+                    only_leaves, etype, func, namespace
+                )
+                if func_ref:
+                    refs.append(func_ref)
+            # TODO handle parameterized functions
+        return refs
+
+    def _get_func_ref_from_func_in_param_cls(self, only_leaves, etype,
+                                            func, namespace):
+        """Get function reference from function in Parameterized Class
+        """
+        is_param_type_param = any(isinstance(param, tp.TypeParameter)
+            for param in func.params)
+        is_ret_type_param = isinstance(func.ret_type, tp.TypeParameter)
+
+        if not is_param_type_param and not is_ret_type_param:
+            return None
+
+        def check_type(is_type_param , itype, etype):
+            if not is_type_param and itype == etype:
+                return True
+            if is_type_param:
+                if itype.bound and not etype.is_subtype(itype.bound):
+                    return False
+                return True
+            return False
+
+        etype_ret = etype.type_args[-1]
+        etype_params = etype.type_args[:-1]
+        type_var_map = {}
+
+        # Check if return type can conform to etype's return type.
+        if not check_type(is_ret_type_param, func.ret_type, etype_ret):
+            return None
+        if is_ret_type_param:
+            type_var_map[func.ret_type] = etype_ret
+        # Check if parameters can conform to etype's parameters.
+        if len(func.params) != len(etype_params):
+            return None
+        for fparam, eparam in zip(func.params, etype_params):
+            is_type_param = isinstance(fparam, tp.TypeParameter)
+            if not check_type(is_type_param, fparam, eparam):
+                return None
+            if is_type_param:
+                type_var_map[fparam] = eparam
+        # Create a parameterized type with the correct type arguments
+        parent = self.context.get_parent(namespace)
+        parent_type = parent.get_type()
+        if not isinstance(parent_type, tp.TypeConstructor):
+            return None
+
+        receiver_type, _ = tu.instantiate_type_constructor(
+            parent_type, self.get_types(), type_var_map=type_var_map,
+            enable_pecs=self.enable_pecs
+        )
+        receiver = self.generate_expr(receiver_type,
+                                      subtype=False,
+                                      only_leaves=only_leaves,
+                                      sam_coercion=False)
+        print("Parameterized")
+        print(etype)
+        print(receiver_type)
+        print(receiver)
+        return ast.FunctionReference(func.name, receiver)
+
+
+    # end get_func_refs helpers
 
     def gen_func_ref(self, etype):
         def check_targ(targ):
