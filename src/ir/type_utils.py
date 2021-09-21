@@ -514,11 +514,42 @@ def _compute_type_variable_assignments(
         types: List[tp.Type],
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None,
-        for_type_constructor=True):
+        for_type_constructor=True,
+        enable_pecs=True):
     # Note that this function is used for instantiating type parameters of
     # both type constructors and parameterized functions. If the parameter
     # `for_type_constructor` is True, then this function is used for
     # instantiating type constructors.
+    """Given a type constructor create a parameterized type.
+
+    Args:
+        type_constructor: The type_constructor to use
+        types: List of available types
+        only_regular: **deprecated** -- always true
+        type_var_map: lookup from type variable to type. You should pass
+            a type_var_map if you want to instantiate a Parameterized Type
+            with specific type arguments.
+        variance_choices: a boolean map that specifies if in place of a
+            type parameter we can use use-site variance. The first value
+            is for covariance and the second for contravariance.
+        enable_pecs: Instantiate Function types with the Producer Extends
+            Consumer Super attribute.
+
+    Returns:
+        A ParameterizedType
+    """
+    if enable_pecs and type_constructor.name.startswith('Function'):
+        # Parameters can only be contravariant and return can only be covariant
+        # Set parameters
+        variance_choices = {
+                tparam: (False, True)
+                for tparam in type_constructor.type_parameters[:-1]
+        }
+        # Set return
+        variance_choices[type_constructor.type_parameters[-1]] = (True, False)
+
+    types = _get_available_types(type_constructor,
+                                 types, only_regular, primitives=False)
     t_args = []
     type_var_map = dict(type_var_map or {})
     indexes = {}
