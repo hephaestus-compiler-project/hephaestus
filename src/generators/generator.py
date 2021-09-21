@@ -1353,7 +1353,7 @@ class Generator():
         refs = []
 
         # We cannot handle parameterized types with type params as type args.
-        # To support them, we must be in the same type constructor
+        # To support them, they must be in the same type constructor (using this)
         if any(isinstance(targ, tp.TypeParameter)
                for targ in etype.type_args):
             return refs
@@ -1364,6 +1364,12 @@ class Generator():
 
         # Find all global functions
         for func in self.context.get_funcs(self.namespace, glob=True).values():
+
+            namespace = self.context.get_namespace(func) + (func.name,)
+            # Check if nested function
+            if not namespace[-2].isupper:
+                continue
+
             signature = func.get_signature(
                 self.bt_factory.get_function_type(len(func.params))
             )
@@ -1372,7 +1378,6 @@ class Generator():
                 if func.func_type == func.FUNCTION:
                     refs.append(ast.FunctionReference(func.name, None))
                 else:
-                    namespace = self.context.get_namespace(func) + (func.name,)
                     parent = self.context.get_parent(namespace)
                     parent_type = parent.get_type()
                     # if parent is a type constructor then initialize a
@@ -1429,7 +1434,6 @@ class Generator():
                 if flag:
                     continue
                 # Create a parameterized type with the correct type arguments
-                namespace = self.context.get_namespace(func) + (func.name,)
                 parent = self.context.get_parent(namespace)
                 parent_type = parent.get_type()
                 if not isinstance(parent_type, tp.TypeConstructor):
@@ -1443,6 +1447,7 @@ class Generator():
                                               sam_coercion=False)
                 refs.append(ast.FunctionReference(func.name, receiver))
 
+        # Find existing function references
         variables = list(self.context.get_vars(self.namespace).values())
         if self._inside_java_lambda:
             variables = list(filter(
