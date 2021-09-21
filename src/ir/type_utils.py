@@ -960,14 +960,24 @@ def is_sam(context, etype=None, cls_decl=None):
     return False
 
 
-def find_sam_fun_signature(context, etype, get_function_type):
+def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
     if not is_sam(context, etype=etype):
         return None
     cls_decl = context.get_classes(('global',), glob=True)[etype.name]
     if cls_decl.functions:
         nr_func_params = len(cls_decl.functions[0].params)
-        return cls_decl.functions[0].get_signature(get_function_type(
-            nr_func_params))
+        sig = cls_decl.functions[0].get_signature(get_function_type(
+            nr_func_params)
+        )
+        if isinstance(cls_decl.get_type, tp.TypeConstructor):
+            targs = []
+            for targ in sig.type_args:
+                if isinstance(targ, tp.TypeParameter):
+                    assert targ in type_var_map
+                    targs.append(type_var_map[targ])
+                else:
+                    targs.append(targ)
+        return sig
     if cls_decl.supertypes:
         return find_sam_fun_signature(context, cls_decl.supertypes[0],
                                       get_function_type)
@@ -993,3 +1003,15 @@ def get_superclass_type_var_map(super_cls, class_decl):
             for i, t_param in enumerate(class_decl.type_parameters)
         }
     return {}
+
+
+def get_type_var_map_from_ptype(ptype):
+    """Get the type variable map from a parameterized type.
+    """
+    type_var_map = {}
+    if not isinstance(ptype, tp.ParameterizedType):
+        return type_var_map
+    for tparam, targ in zip(ptype.t_constructor.type_parameters,
+                            ptype.type_args):
+        type_var_map[tparam] = targ
+    return type_var_map
