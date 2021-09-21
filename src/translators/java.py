@@ -223,6 +223,10 @@ class JavaTranslator(BaseTranslator):
         return isinstance(self._nodes_stack[-2], (ast.Lambda,
                           ast.FunctionDeclaration))
 
+    def _parent_is_func_ref(self):
+        # The second node is the parent node
+        return isinstance(self._nodes_stack[-2], ast.FunctionReference)
+
     def visit_program(self, node):
         self.types = node.get_types()
         self.context = node.context
@@ -392,8 +396,10 @@ class JavaTranslator(BaseTranslator):
 
     @append_to
     def visit_bottom_constant(self, node):
-        return self.get_ident() + "{}null{}".format(
-            "(" + self.get_type_name(node.t) + ") " if node.t else "",
+        return self.get_ident() + "{}{}null{}{}".format(
+            '(' if self._parent_is_func_ref() else '',
+            '(' + self.get_type_name(node.t) + ') ' if node.t else '',
+            ')' if self._parent_is_func_ref() else '',
             ';' if self._parent_is_block() else ''
         )
 
