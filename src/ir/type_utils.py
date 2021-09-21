@@ -1050,3 +1050,42 @@ def get_type_var_map_from_ptype(ptype, type_var_map=None):
         for stype in ptype.t_constructor.supertypes:
             get_type_var_map_from_ptype(stype, type_var_map)
     return type_var_map
+
+
+def get_func_decl(context, name: str, receiver: tp.Type=None):
+    """Get the correct function declaration.
+
+    We should take into consideration any given receiver due to override and
+    inheritance.
+
+    Args:
+        context: The context of the program
+        name: The name of the function
+        receiver_type: The type of the receiver (you can compute it using
+            get_type_hint)
+
+    Returns:
+        ast.FunctionDeclaration
+    """
+    # If there isn't a receiver we look into global functions
+    if receiver is None:
+        return context.get_funcs(('global',)).get(name, None)
+
+    funcs = context.get_namespaces_decls(('global',), name, 'funcs', glob=True)
+
+    if len(funcs) == 0:
+        return None
+
+    if len(funcs) == 1:
+        func = list(funcs)[0]
+        return func[1]
+
+    # Receiver type not in context
+    if not hasattr(receiver, 'name'):
+        return None
+
+    for func in funcs:
+        if func[0][-2] == receiver.name:
+            return func[1]
+
+    return None
