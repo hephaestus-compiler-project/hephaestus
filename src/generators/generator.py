@@ -1367,7 +1367,7 @@ class Generator():
 
             namespace = self.context.get_namespace(func) + (func.name,)
             # Check if nested function
-            if not namespace[-2].isupper:
+            if not namespace[-2] == "global" and not namespace[-2][0].isupper:
                 continue
 
             signature = func.get_signature(
