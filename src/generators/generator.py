@@ -1517,11 +1517,14 @@ class Generator():
         if getattr(etype, 'is_function_type', lambda: False)():
             return gen_func_ref_lambda(etype)
 
+        # Apply SAM coercion
         if sam_coercion and tu.is_sam(self.context, etype):
+            type_var_map = tu.get_type_var_map_from_ptype(etype)
             sam_sig_etype = tu.find_sam_fun_signature(
                     self.context,
                     etype,
-                    self.bt_factory.get_function_type
+                    self.bt_factory.get_function_type,
+                    type_var_map=type_var_map
             )
             if sam_sig_etype:
                 return gen_func_ref_lambda(sam_sig_etype)
