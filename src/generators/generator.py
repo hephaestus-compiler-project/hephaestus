@@ -1488,12 +1488,21 @@ class Generator():
         return refs
 
     def gen_func_ref(self, etype):
+        def check_targ(targ):
+            """Return false if it is TypeParameter or WildCardType on TypeParameter
+            """
+            if isinstance(targ, tp.TypeParameter):
+                return False
+            if (isinstance(targ, tp.WildCardType) and
+                    isinstance(targ.bound, tp.TypeParameter)):
+                return False
+            return True
         # NOTE to handle the case where a type argument is a type parameter,
         # we can either create a parameterized function or create a method
         # to the current class.
         # In the second case, we can use `this` or we can create
         # a new object as a receiver.
-        if any(isinstance(targ, tp.TypeParameter) for targ in etype.type_args):
+        if any(not check_targ(targ) for targ in etype.type_args):
             return None
         params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
         ret_type = etype.type_args[-1]
