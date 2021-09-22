@@ -85,6 +85,14 @@ class Generator():
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
 
+        # In some case we need to use two namespaces. One for having access
+        # to variables from scope, and one for adding new declarations.
+        # In most cases one namespace is enough, but in cases like
+        # `generate_expr` in `_gen_func_params_with_default` we need both
+        # namespaces. To use one namespace we must model scope better.
+        # Almost always declaration_namespace is set to None to be ignored
+        self.declaration_namespace = None
+
     def get_types(self, ret_types=True, exclude_arrays=False,
                   exclude_covariants=False,
                   exclude_contravariants=False,
@@ -140,6 +148,15 @@ class Generator():
                 variance_choices={}
             )
         return t
+
+    def add_to_ctx_wrapper(self, add_func, namespace, name, node):
+        """Add a node to context.
+
+        If declaration_namespace is set use that instead of namespace.
+        """
+        if self.declaration_namespace:
+            namespace = self.declaration_namespace
+        add_func(namespace, name, node)
 
     # pylint: disable=unused-argument
     def gen_equality_expr(self, expr_type=None, only_leaves=False):
@@ -293,12 +310,16 @@ class Generator():
             if not has_default:
                 has_default = ut.random.bool()
             if has_default:
-                prev = self.namespace
+                prev_decl_namespace = self.declaration_namespace
+                self.declaration_namespace = self.namespace
+                prev_namespace = self.namespace
                 self.namespace = self.namespace[:-1]
                 expr = self.generate_expr(param.get_type(), only_leaves=True)
-                self.namespace = prev
+                self.namespace = prev_namespace
+                self.declaration_namespace = prev_decl_namespace
                 param.default = expr
                 params.append(param)
+            self.context.add_var(self.namespace, param.name, param)
         return params
 
     def _gen_func_params(self):
@@ -1113,7 +1134,9 @@ class Generator():
         self.namespace = initial_namespace
         self._inside_java_lambda = prev_inside_java_lamdba
 
-        self.context.add_lambda(self.namespace, shadow_name, res)
+        self.add_to_ctx_wrapper(
+            self.context.add_lambda, self.namespace, shadow_name, res
+        )
 
         return res
 
@@ -1604,10 +1627,10 @@ class Generator():
         # the left-hand side of the 'is' expression, but its type is the
         # selected subtype.
         self.context.add_var(self.namespace, var.name,
-                             ast.VariableDeclaration(
-                                 var.name,
-                                 ast.BottomConstant(var.get_type()),
-                                 var_type=subtype))
+            ast.VariableDeclaration(
+                var.name,
+                ast.BottomConstant(var.get_type()),
+                var_type=subtype))
         true_expr = self.generate_expr(expr_type)
         # We pop the variable from context. Because it's no longer used.
         self.context.remove_var(self.namespace, var.name)
