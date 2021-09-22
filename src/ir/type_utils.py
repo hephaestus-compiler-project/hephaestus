@@ -998,14 +998,14 @@ def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
         sig = cls_decl.functions[0].get_signature(get_function_type(
             nr_func_params)
         )
-        if isinstance(cls_decl.get_type, tp.TypeConstructor):
+        if isinstance(sig, tp.ParameterizedType):
             targs = []
             for targ in sig.type_args:
-                if isinstance(targ, tp.TypeParameter):
-                    assert targ in type_var_map
-                    targs.append(type_var_map[targ])
+                if isinstance(targ, (tp.TypeParameter, tp.WildCardType)):
+                    targs.append(type_var_map.get(targ, targ))
                 else:
                     targs.append(targ)
+            sig.type_args = targs
         return sig
     if cls_decl.supertypes:
         return find_sam_fun_signature(context, cls_decl.supertypes[0],
