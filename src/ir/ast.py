@@ -464,6 +464,10 @@ class Lambda(Declaration):
     def get_type(self):
         return self.ret_type
 
+    def get_signature(self, function_type: FunctionType):
+        type_args = [p.param_type for p in self.params] + [self.ret_type]
+        return types.ParameterizedType(function_type, type_args)
+
     def __str__(self):
         if self.ret_type is None:
             return "lambda ({}) =\n  {}".format(
