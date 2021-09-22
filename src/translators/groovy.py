@@ -65,6 +65,9 @@ class GroovyTranslator(BaseTranslator):
         self._inside_is_function = False
         self.always_cast_numbers = options.get('cast_numbers', False)
 
+        # FIXME remove this option when they fix the bugs
+        self.always_cast_ftypes = True
+
         # A set of numbers where numbers is the number of type parameters that
         # an interface for a function should have.
         # TODO pass it as option, or produce the list during the AST traverse
@@ -401,12 +404,21 @@ class GroovyTranslator(BaseTranslator):
     @change_namespace
     def visit_func_decl(self, node):
         def is_closure():
+            """Return true if we need to declare the function as closure.
+
+            We have to do that if the function is nested or if it is inside a
+            lambda.
+            """
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            return isinstance(parent_decl, ast.FunctionDeclaration) or (
-                  parent_name in ['true_block', 'false_block']
-            )
+            if parent_decl is None:
+                parent_decl = self.context.get_lambda(
+                    parent_namespace, parent_name
+                )
+            return (parent_name in ['true_block', 'false_block'] or
+                    isinstance(parent_decl, (ast.FunctionDeclaration,
+                                             ast.Lambda)))
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
@@ -473,6 +485,12 @@ class GroovyTranslator(BaseTranslator):
             self._inside_is_function = prev_inside_is_function
         return res
 
+    def _get_signature(self, node):
+        function_type = gt.GroovyBuiltinFactory().get_function_type(
+            len(node.params)
+        )
+        return node.get_signature(function_type)
+
     @append_to
     @change_namespace
     def visit_lambda(self, node):
@@ -497,9 +515,15 @@ class GroovyTranslator(BaseTranslator):
         ret_type = node.get_type()
         ret_type = (ret_type if not ret_type.is_primitive()
                     else ret_type.box_type())
-        res = "{{ {params} -> {body}}}".format(
+
+        cast = ""
+        if self.always_cast_ftypes:
+            cast = " as " + self.get_type_name(self._get_signature(node))
+
+        res = "{{ {params} -> {body}}} {cast}".format(
             params=", ".join(param_res),
-            body=body_res
+            body=body_res,
+            cast=cast
         )
 
         if (self._namespace[-2],) == ast.GLOBAL_NAMESPACE:
