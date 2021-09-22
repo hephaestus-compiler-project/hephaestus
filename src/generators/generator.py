@@ -343,7 +343,7 @@ class Generator():
                 self.namespace = prev_namespace
                 self.declaration_namespace = prev_decl_namespace
                 param.default = expr
-                params.append(param)
+            params.append(param)
             self.context.add_var(self.namespace, param.name, param)
         return params
 
