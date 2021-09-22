@@ -2,7 +2,7 @@
 # pylint: disable=too-many-statements
 from collections import OrderedDict
 
-from src.ir import ast, groovy_types as gt, types as tp
+from src.ir import ast, groovy_types as gt, types as tp, type_utils as tu
 from src.transformations.base import change_namespace
 from src.translators.base import BaseTranslator
 
@@ -42,6 +42,7 @@ class GroovyTranslator(BaseTranslator):
     def __init__(self, package=None,
                  options={}):
         super().__init__(package, options)
+        self.types = []
         self._children_res = []
         self.ident = 0
         self.is_unit = False
@@ -75,6 +76,7 @@ class GroovyTranslator(BaseTranslator):
 
     def _reset_state(self):
         # Clear the state
+        self.types = []
         self._main_method = ""
         self._main_children = []
         self._inside_is = False
@@ -161,6 +163,7 @@ class GroovyTranslator(BaseTranslator):
         return res
 
     def visit_program(self, node):
+        self.types = node.get_types()
         self.context = node.context
         children = node.children()
         for c in children:
@@ -746,6 +749,25 @@ class GroovyTranslator(BaseTranslator):
             field=node.field
         )
 
+    def _get_function_reference_signature(self, func_ref):
+        func_name = func_ref.func
+        receiver = func_ref.receiver
+        receiver_type = None
+        if receiver:
+            receiver_type = tu.get_type_hint(
+                receiver, self.context,
+                self._namespace, gt.GroovyBuiltinFactory(),
+                self.types
+            )
+        func_decl = tu.get_func_decl(self.context, func_name, receiver_type)
+        if func_decl:
+            function_type = gt.GroovyBuiltinFactory().get_function_type(
+                len(func_decl.params)
+            )
+            signature = func_decl.get_signature(function_type)
+            return self.get_type_name(signature)
+        return None
+
     @append_to
     def visit_func_ref(self, node):
         old_ident = self.ident
@@ -758,13 +780,20 @@ class GroovyTranslator(BaseTranslator):
         self.ident = old_ident
 
         children_res = self.pop_children_res(children)
-        # TODO handle lambdas
+
+        cast = ""
+        if self.always_cast_ftypes:
+            signature = self._get_function_reference_signature(node)
+            if signature:
+                cast = " as " + signature
+
         receiver = children_res[0] if children_res else "Main"
         receiver += "::" # We can also use .&
-        res = "{ident}{receiver}{name}".format(
+        res = "{ident}{receiver}{name}{cast}".format(
             ident=self.get_ident(),
             receiver=receiver,
             name=node.func,
+            cast=cast
         )
         return res
 
