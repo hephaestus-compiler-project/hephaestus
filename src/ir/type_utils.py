@@ -476,7 +476,9 @@ def instantiate_type_constructor(
         only_regular=True,
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None,
-        enable_pecs=True):
+        enable_pecs=True,
+        disable_variance_functions=False,
+        disable_variance=False):
     """Given a type constructor create a parameterized type.
 
     Args:
@@ -491,7 +493,8 @@ def instantiate_type_constructor(
             is for covariance and the second for contravariance.
         enable_pecs: Instantiate Function types with the Producer Extends
             Consumer Super attribute.
-
+        disable_variance_functions: Disable variance for Function Types
+        disable_variance: Disable variance, it overrides all previous options.
     Returns:
         A ParameterizedType
     """
@@ -504,6 +507,13 @@ def instantiate_type_constructor(
         }
         # Set return
         variance_choices[type_constructor.type_parameters[-1]] = (True, False)
+
+    if disable_variance or (disable_variance_functions and
+            type_constructor.name.startswith('Function')):
+        variance_choices = {
+                tparam: (False, False)
+                for tparam in type_constructor.type_parameters
+        }
 
     types = _get_available_types(type_constructor,
                                  types, only_regular, primitives=False)
