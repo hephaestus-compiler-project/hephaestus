@@ -1573,8 +1573,10 @@ class Generator():
 
     def gen_func_ref(self, etype):
         def check_targ(targ):
-            """Return false if it is TypeParameter or WildCardType on TypeParameter
+            """Return false if targ is TypeParameter or WildCardType.
             """
+            if isinstance(targ, tp.ParameterizedType):
+                return all(check_targ(t) for t in targ.type_args)
             if isinstance(targ, tp.TypeParameter):
                 return False
             if (isinstance(targ, tp.WildCardType) and
