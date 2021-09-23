@@ -72,6 +72,7 @@ class Generator():
         self._new_from_class = None
         self.namespace = ('global',)
         self.enable_pecs = False if language == 'kotlin' else True
+        self.disable_variance_functions = True if language == 'kotlin' else False
 
         # This flag is used for Java lambdas where local variables references
         # must be final.
@@ -145,6 +146,7 @@ class Generator():
                                   exclude_type_vars=exclude_type_vars,
                                   exclude_function_types=exclude_function_types),
                 enable_pecs=self.enable_pecs,
+                disable_variance_functions=self.disable_variance_functions,
                 variance_choices={}
             )
         return t
@@ -478,6 +480,7 @@ class Generator():
                 self.get_types(exclude_covariants=True,
                                exclude_contravariants=True),
                 enable_pecs=self.enable_pecs,
+                disable_variance_functions=self.disable_variance_functions,
                 only_regular=True,
             )
         else:
@@ -813,6 +816,7 @@ class Generator():
                 cls.get_type(), self.get_types(),
                 only_regular=True, type_var_map=type_var_map,
                 enable_pecs=self.enable_pecs,
+                disable_variance_functions=self.disable_variance_functions,
                 variance_choices=variance_choices
             )
         else:
@@ -835,6 +839,7 @@ class Generator():
                     cls.get_type(), self.get_types(),
                     only_regular=True, type_var_map=type_var_map,
                     enable_pecs=self.enable_pecs,
+                    disable_variance_functions=self.disable_variance_functions,
                     variance_choices=variance_choices
                 )
             else:
@@ -925,6 +930,7 @@ class Generator():
                 self.get_types(),
                 type_var_map=type_map,
                 enable_pecs=self.enable_pecs,
+                disable_variance_functions=self.disable_variance_functions,
                 variance_choices=variance_choices
             )
         else:
@@ -1241,6 +1247,7 @@ class Generator():
                     if isinstance(parent_type, tp.TypeConstructor):
                         parent_type, _ = tu.instantiate_type_constructor(
                             parent_type, self.get_types(),
+                            disable_variance_functions=self.disable_variance_functions,
                             enable_pecs=self.enable_pecs
                         )
 
@@ -1305,6 +1312,7 @@ class Generator():
 
         receiver_type, _ = tu.instantiate_type_constructor(
             parent_type, self.get_types(), type_var_map=type_var_map,
+            disable_variance_functions=self.disable_variance_functions,
             enable_pecs=self.enable_pecs
         )
         receiver = self.generate_expr(receiver_type,
@@ -1394,11 +1402,14 @@ class Generator():
 
         if etype.is_type_constructor():
             etype, _ = tu.instantiate_type_constructor(
-                etype, self.get_types(), enable_pecs=self.enable_pecs)
+                etype, self.get_types(),
+                disable_variance_functions=self.disable_variance_functions,
+                enable_pecs=self.enable_pecs)
         if class_decl.is_parameterized() and (
               class_decl.get_type().name != etype.name):
             etype, _ = tu.instantiate_type_constructor(
                 class_decl.get_type(), self.get_types(),
+                disable_variance_functions=self.disable_variance_functions,
                 enable_pecs=self.enable_pecs)
         # If the matching class is a parameterized one, we need to create
         # a map mapping the class's type parameters with the corresponding
@@ -1497,6 +1508,7 @@ class Generator():
                 t, type_var_map = tu.instantiate_type_constructor(
                     t, self.get_types(exclude_arrays=True),
                     variance_choices=variance_choices,
+                    disable_variance_functions=self.disable_variance_functions,
                     enable_pecs=self.enable_pecs)
                 # Ok here we create a new field whose type corresponds
                 # to the type argument with which the class 'c' is
