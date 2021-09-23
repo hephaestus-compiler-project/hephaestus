@@ -1112,7 +1112,9 @@ def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
         if isinstance(targ, (tp.TypeParameter, tp.WildCardType)):
             return type_var_map.get(targ, targ)
         if isinstance(targ, tp.ParameterizedType):
-            return replace_targ(targ, type_var_map)
+            targ.type_args = [replace_targ(t, type_var_map)
+                              for t in targ.type_args]
+            return targ
         return targ
 
     if not is_sam(context, etype=etype):
