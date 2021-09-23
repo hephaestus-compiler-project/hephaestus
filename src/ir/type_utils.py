@@ -990,6 +990,13 @@ def is_sam(context, etype=None, cls_decl=None):
 
 
 def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
+    def replace_targ(targ, type_var_map):
+        if isinstance(targ, (tp.TypeParameter, tp.WildCardType)):
+            return type_var_map.get(targ, targ)
+        if isinstance(targ, tp.ParameterizedType):
+            return replace_targ(targ, type_var_map)
+        return targ
+
     if not is_sam(context, etype=etype):
         return None
     cls_decl = context.get_classes(('global',), glob=True)[etype.name]
@@ -999,13 +1006,8 @@ def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
             nr_func_params)
         )
         if isinstance(sig, tp.ParameterizedType):
-            targs = []
-            for targ in sig.type_args:
-                if isinstance(targ, (tp.TypeParameter, tp.WildCardType)):
-                    targs.append(type_var_map.get(targ, targ))
-                else:
-                    targs.append(targ)
-            sig.type_args = targs
+            sig.type_args = [replace_targ(targ, type_var_map)
+                             for targ in sig.type_args]
         return sig
     if cls_decl.supertypes:
         return find_sam_fun_signature(context, cls_decl.supertypes[0],
