@@ -885,17 +885,6 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             return _return_type_hint(
                 None if vardecl is None else vardecl[1].get_type())
 
-        if isinstance(expr, ast.FunctionReference):
-            if expr.receiver is None:
-                funcdecl = ctx.get_decl(context, namespace, expr.func)
-                if funcdecl is None:
-                    return _return_type_hint(None)
-                functype = factory.get_function_type(len(funcdecl[1].params))
-                return _return_type_hint(funcdecl[1].get_signature(functype))
-            # NOTE: not tested
-            names.append(expr.func)
-            expr = expr.receiver
-
         if isinstance(expr, ast.Conditional):
             expr1 = expr.true_branch
             expr2 = expr.false_branch
@@ -943,12 +932,46 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             names.append(expr.func)
             expr = expr.receiver
 
+        elif isinstance(expr, ast.FunctionReference):
+            return _return_type_hint(
+                get_function_reference_type(
+                    expr, context, namespace, factory, types, smart_casts
+                )
+            )
+
         elif isinstance(expr, ast.FieldAccess):
             names.append(expr.field)
             expr = expr.expr
 
         else:
             return factory.get_void_type()
+
+
+def get_function_reference_type(func_ref, context, namespace,
+                                factory, types, smart_casts=[]):
+    """Return the signature of a function reference
+    """
+    func_name = func_ref.func
+    receiver = func_ref.receiver
+    receiver_type = None
+    if receiver:
+        receiver_type = get_type_hint(
+            receiver, context,
+            namespace, factory,
+            types, smart_casts=smart_casts
+        )
+    func_decl = get_func_decl(context, func_name, receiver_type)
+    if func_decl:
+        function_type = factory.get_function_type(
+            len(func_decl.params)
+        )
+        signature = func_decl.get_signature(function_type)
+        if receiver_type:
+            type_var_map = get_type_var_map_from_ptype(receiver_type)
+            if type_var_map:
+                signature = tp.substitute_type(signature, type_var_map)
+        return signature
+    return None
 
 
 def node_in_expr(node, expr):
