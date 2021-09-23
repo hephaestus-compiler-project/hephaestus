@@ -1165,9 +1165,10 @@ class Generator():
         # because generate_expr won't generate it correctly.
         only_leaves = len(self.namespace) == 2 and self.namespace[1][0].isupper
 
+        # Step 1: Find all functions that can be used as function references
         refs.extend(self._get_func_refs_from_functions(etype, only_leaves))
 
-        # Find existing function references
+        # Step 2: Find existing function references
         variables = list(self.context.get_vars(self.namespace).values())
         if self._inside_java_lambda:
             variables = list(filter(
@@ -1176,6 +1177,7 @@ class Generator():
                 variables))
         variables += list(self.context.get_vars(
             ('global',), only_current=True).values())
+        # Step 3: Find objects in scoped that can be used as receivers
         for var_decl in variables:
             var_type = var_decl.get_type()
             var = ast.Variable(var_decl.name)
@@ -1221,7 +1223,7 @@ class Generator():
 
             namespace = self.context.get_namespace(func) + (func.name,)
             # Check if nested function
-            if not namespace[-2] == "global" and not namespace[-2][0].isupper:
+            if not namespace[-2] == "global" and not namespace[-2][0].isupper():
                 continue
 
             signature = func.get_signature(
