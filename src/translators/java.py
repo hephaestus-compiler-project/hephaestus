@@ -1107,8 +1107,9 @@ class JavaTranslator(BaseTranslator):
 
         # From where we are in the AST we search backwards for declarations
         # with the same name.
-        # FIXME here it could be a variable instead of a func decl
         fdecl = get_decl(self.context, self._namespace, node.func)
+        if fdecl and not isinstance(fdecl[1], ast.FunctionDeclaration):
+            fdecl = None
 
         children_res = self.pop_children_res(children)
         func = self._get_main_prefix('funcs', node.func) + node.func
