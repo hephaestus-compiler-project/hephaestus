@@ -515,12 +515,15 @@ def _compute_type_variable_assignments(
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None,
         for_type_constructor=True,
-        enable_pecs=True):
-    # Note that this function is used for instantiating type parameters of
-    # both type constructors and parameterized functions. If the parameter
-    # `for_type_constructor` is True, then this function is used for
-    # instantiating type constructors.
+        enable_pecs=True,
+        disable_variance_functions=False,
+        disable_variance=False):
     """Given a type constructor create a parameterized type.
+
+    Note that this function is used for instantiating type parameters of
+    both type constructors and parameterized functions. If the parameter
+    `for_type_constructor` is True, then this function is used for
+    instantiating type constructors.
 
     Args:
         type_constructor: The type_constructor to use
@@ -534,7 +537,8 @@ def _compute_type_variable_assignments(
             is for covariance and the second for contravariance.
         enable_pecs: Instantiate Function types with the Producer Extends
             Consumer Super attribute.
-
+        disable_variance_functions: Disable variance for Function Types
+        disable_variance: Disable variance, it overrides all previous options.
     Returns:
         A ParameterizedType
     """
@@ -547,6 +551,13 @@ def _compute_type_variable_assignments(
         }
         # Set return
         variance_choices[type_constructor.type_parameters[-1]] = (True, False)
+
+    if disable_variance or (disable_variance_functions and
+            type_constructor.name.startswith('Function')):
+        variance_choices = {
+                tparam: (False, False)
+                for tparam in type_constructor.type_parameters
+        }
 
     types = _get_available_types(type_constructor,
                                  types, only_regular, primitives=False)
