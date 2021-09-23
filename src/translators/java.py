@@ -578,7 +578,7 @@ class JavaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        var_type = "var"
+        # NOTE Consider the following when using var inference
         # Global variables declared as fields in Main, thus we must specify
         # their type.
         #
@@ -589,13 +589,8 @@ class JavaTranslator(BaseTranslator):
         # if (foo == new Object()) {...}
         #
         # Finally, Function Types cannot be inferred.
-        if (node.var_type is not None or
-                self._namespace == ast.GLOBAL_NAMESPACE or
-                node.inferred_type == jt.Object or
-                isinstance(getattr(node.inferred_type, 't_constructor', None),
-                           jt.FunctionType)
-                ):
-            var_type = self.get_type_name(node.inferred_type)
+
+        var_type = self.get_type_name(node.inferred_type)
         main_prefix = self._get_main_prefix('vars', node.name) \
             if self._namespace != ast.GLOBAL_NAMESPACE else ""
         expr = children_res[0].lstrip()
