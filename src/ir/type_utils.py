@@ -1091,6 +1091,7 @@ def split_type_var_map(type_var_map, cls_type_vars, func_type_vars):
             cls_type_var_map[type_var] = t
     return cls_type_var_map, func_type_var_map
 
+
 def is_sam(context, etype=None, cls_decl=None):
     def check_decl(cls_decl):
         class_decls = context.get_classes(('global',), glob=True).values()
@@ -1227,3 +1228,36 @@ def get_func_decl(context, name: str, receiver: tp.Type=None):
             return func[1]
 
     return None
+
+
+def build_type_variable_dependencies(t1: tp.Type, t2: tp.Type):
+    if t1.name == t2.name:
+        return {}
+
+    if not t1.is_parameterized() and not t2.is_parameterized():
+        return {}
+
+    type_deps = {}
+    if t1.is_parameterized():
+        type_deps = {
+            t1: [t_param for t_param in t1.t_constructor.type_parameters]
+        }
+    supertypes = t1.supertypes
+    while supertypes:
+        st = supertypes[0]
+        if st.is_parameterized():
+            type_deps.update({
+                st: [t_param
+                     for t_param in st.t_constructor.type_parameters]
+            })
+            type_var_map = {
+                t_param: st.type_args[i]
+                for i, t_param in enumerate(st.t_constructor.type_parameters)
+                if st.type_args[i].is_type_var()
+            }
+            type_deps.update(type_var_map)
+        if st.name == t2.name:
+            supertypes = []
+        else:
+            supertypes = st.supertypes
+    return type_deps
