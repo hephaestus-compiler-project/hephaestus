@@ -5,9 +5,8 @@ from collections import OrderedDict
 
 
 import src.utils as ut
-from src.ir import ast, java_types as jt, types as tp
+from src.ir import ast, java_types as jt, types as tp, type_utils as tu
 from src.ir.context import get_decl
-from src.ir.type_utils import get_type_hint, get_func_decl
 from src.transformations.base import change_namespace
 from src.translators.base import BaseTranslator
 
@@ -263,17 +262,21 @@ class JavaTranslator(BaseTranslator):
         receiver = func_ref.receiver
         receiver_type = None
         if receiver:
-            receiver_type = get_type_hint(
+            receiver_type = tu.get_type_hint(
                 receiver, self.context,
                 self._namespace, jt.JavaBuiltinFactory(),
                 self.types, smart_casts=self.smart_casts
             )
-        func_decl = get_func_decl(self.context, func_name, receiver_type)
+        func_decl = tu.get_func_decl(self.context, func_name, receiver_type)
         if func_decl:
             function_type = jt.JavaBuiltinFactory().get_function_type(
                 len(func_decl.params)
             )
             signature = func_decl.get_signature(function_type)
+            if receiver_type:
+                type_var_map = tu.get_type_var_map_from_ptype(receiver_type)
+                if type_var_map:
+                    signature = tp.substitute_type(signature, type_var_map)
             return self.get_type_name(signature, True, True)
         return None
 
@@ -306,11 +309,11 @@ class JavaTranslator(BaseTranslator):
         if not self._parent_is_function():
             if not children:
                 return_stmt += "return null;"
-            elif isinstance(get_type_hint(children[-1],
-                                          self.context,
-                                          self._namespace,
-                                          jt.JavaBuiltinFactory(),
-                                          self.types), jt.VoidType):
+            elif isinstance(tu.get_type_hint(children[-1],
+                                             self.context,
+                                             self._namespace,
+                                             jt.JavaBuiltinFactory(),
+                                             self.types), jt.VoidType):
                 if not isinstance(children[-1],
                                (ast.VariableDeclaration,
                                 ast.FunctionCall,
@@ -339,12 +342,12 @@ class JavaTranslator(BaseTranslator):
                                     ast.FunctionCall,
                                     ast.Assignment))):
                 is_bottom = children[-1].is_bottom()
-                type_hint = get_type_hint(children[-1],
-                                          self.context,
-                                          self._namespace,
-                                          jt.JavaBuiltinFactory(),
-                                          self.types,
-                                          smart_casts=self.smart_casts)
+                type_hint = tu.get_type_hint(children[-1],
+                                             self.context,
+                                             self._namespace,
+                                             jt.JavaBuiltinFactory(),
+                                             self.types,
+                                             smart_casts=self.smart_casts)
                 is_lambda = (getattr(
                     type_hint, 'is_function_type', lambda: False)())
 
@@ -394,12 +397,12 @@ class JavaTranslator(BaseTranslator):
         if not self._parent_is_function():
             etype = jt.Void
             if len(children) > 0:
-                etype = get_type_hint(children[-1],
-                                      self.context,
-                                      self._namespace,
-                                      jt.JavaBuiltinFactory(),
-                                      self.types,
-                                      smart_casts=self.smart_casts)
+                etype = tu.get_type_hint(children[-1],
+                                         self.context,
+                                         self._namespace,
+                                         jt.JavaBuiltinFactory(),
+                                         self.types,
+                                         smart_casts=self.smart_casts)
             etype_str = self.get_type_name(etype, get_boxed_void=True)
             etype_str = PRIMITIVES_TO_BOXED.get(etype_str, etype_str)
             res = "((Function0<{etype}>) (() -> {res})).apply()".format(
