@@ -257,29 +257,6 @@ class JavaTranslator(BaseTranslator):
         )
         self._reset_state()
 
-    def _get_function_reference_signature(self, func_ref):
-        func_name = func_ref.func
-        receiver = func_ref.receiver
-        receiver_type = None
-        if receiver:
-            receiver_type = tu.get_type_hint(
-                receiver, self.context,
-                self._namespace, jt.JavaBuiltinFactory(),
-                self.types, smart_casts=self.smart_casts
-            )
-        func_decl = tu.get_func_decl(self.context, func_name, receiver_type)
-        if func_decl:
-            function_type = jt.JavaBuiltinFactory().get_function_type(
-                len(func_decl.params)
-            )
-            signature = func_decl.get_signature(function_type)
-            if receiver_type:
-                type_var_map = tu.get_type_var_map_from_ptype(receiver_type)
-                if type_var_map:
-                    signature = tp.substitute_type(signature, type_var_map)
-            return self.get_type_name(signature, True, True)
-        return None
-
     @append_to
     def visit_block(self, node):
         children = node.children()
@@ -358,7 +335,12 @@ class JavaTranslator(BaseTranslator):
                     if isinstance(children[-1], ast.Lambda):
                         sugar_semi = ";"
                 elif isinstance(children[-1], ast.FunctionReference):
-                    sig = self._get_function_reference_signature(children[-1])
+                    sig = tu.get_function_reference_type(
+                        children[-1], self.context, self._namespace,
+                        jt.JavaBuiltinFactory(), self.types,
+                        smart_casts=self.smart_casts
+                    )
+                    sig = self.get_type_name(sig, True, True)
                     var_prefix = sig if sig else 'var'
                 else:
                     var_prefix = 'var'
