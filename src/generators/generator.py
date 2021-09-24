@@ -1740,6 +1740,9 @@ class Generator():
         ]
 
         if expr_type == self.bt_factory.get_void_type():
+            # The assignment operator in Java evaluates to the assigned value.
+            if self.language == 'java':
+                return [gen_fun_call]
             return [gen_fun_call,
                     lambda x: self.gen_assignment(x, only_leaves)]
 
