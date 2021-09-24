@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import NamedTuple, Union, Tuple, Dict, List
 
-from src.ir import ast, types as tp
+from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
@@ -136,6 +136,35 @@ class TypeDependencyAnalysis(DefaultVisitor):
         f = "/".join(self._namespace) + "/" + top_stack
         return f
 
+    def _find_target_type_variable(self, source_type_var, type_var_deps,
+                                   target_type_constructor, node_id):
+        if not type_var_deps:
+            return None
+        targets = type_var_deps.get(source_type_var, [])
+        type_var = None
+        while targets:
+            assert len(targets) == 1
+            t = targets[0]
+            type_con_name, type_var = t.split('.')
+            if type_con_name == target_type_constructor:
+                type_var = t
+                break
+
+            targets = type_var_deps.get(t, [])
+        if not type_var:
+            return None
+
+        nodes = set(self.type_graph.keys())
+        nodes.update({v for value in self.type_graph.values() for v in value})
+
+        for n in nodes:
+            if not isinstance(n, TypeVarNode):
+                continue
+            if n.node_id == node_id and n.t.name == type_var.split(".")[1]:
+                return n
+
+        return None
+
     def _convert_type_to_node(self, t, infer_t, node_id):
         if not t.is_parameterized():
             return TypeNode(t)
@@ -143,19 +172,24 @@ class TypeDependencyAnalysis(DefaultVisitor):
         if not isinstance(infer_t, TypeConstructorInstantiationCallNode):
             return TypeNode(t)
 
-        if t.name == infer_t.t.name:
-            main_node = TypeConstructorInstantiationDeclNode(node_id, t)
-            for i, t_param in enumerate(t.t_constructor.type_parameters):
-                source = TypeVarNode(node_id, t_param, True)
+        main_node = TypeConstructorInstantiationDeclNode(node_id, t)
+        type_deps = tu.build_type_variable_dependencies(infer_t.t, t)
+        for i, t_param in enumerate(t.t_constructor.type_parameters):
+            source = TypeVarNode(node_id, t_param, True)
+            if t.name == infer_t.t.name:
                 target_var = TypeVarNode(node_id, t_param, False)
-                if target_var in self.type_graph:
-                    construct_edge(self.type_graph, source, target_var,
-                                   Edge.INFERRED)
-                target = TypeNode(t.type_args[i])
-                construct_edge(self.type_graph, source, target, Edge.DECLARED)
-                construct_edge(self.type_graph, main_node, source,
-                               Edge.DECLARED)
-            return main_node
+            else:
+                target_var = self._find_target_type_variable(
+                    t.name + "." + t_param.name, type_deps, infer_t.t.name,
+                    node_id)
+            if target_var in self.type_graph:
+                construct_edge(self.type_graph, source, target_var,
+                               Edge.INFERRED)
+            target = TypeNode(t.type_args[i])
+            construct_edge(self.type_graph, source, target, Edge.DECLARED)
+            construct_edge(self.type_graph, main_node, source,
+                           Edge.DECLARED)
+        return main_node
 
     def visit_integer_constant(self, node):
         node_id = self._construct_node_id()

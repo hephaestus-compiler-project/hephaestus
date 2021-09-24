@@ -115,3 +115,33 @@ def test_program3():
         ]
 
     }
+
+
+def test_program4():
+    # class A<T>
+    # class B<T, T2> : A<T2>()
+    # class C<T> : B<String, T>()
+    # val x: A<String> = new C<String>()
+
+    program = tap.program4
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        '!TypeVariable[global/x/T]': [
+            '-> TypeVariable[global/x/T] (inferred)',
+            '-> Type[String] (declared)'
+        ],
+        'Declaration[global/x]': [
+            '-> TypeConInstCall[global/x/C] (inferred)',
+            '-> TypeConInstDecl[global/x/A] (declared)'
+        ],
+        'TypeConInstCall[global/x/C]': [
+            '-> TypeVariable[global/x/T] (declared)'
+        ],
+        'TypeConInstDecl[global/x/A]': [
+            '-> !TypeVariable[global/x/T] (declared)'
+        ],
+        'TypeVariable[global/x/T]': ['-> Type[String] (declared)']
+    }

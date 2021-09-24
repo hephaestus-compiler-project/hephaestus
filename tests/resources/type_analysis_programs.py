@@ -42,3 +42,24 @@ context.add_var(ast.GLOBAL_NAMESPACE, var_y.name, var_y2)
 context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 program3 = ast.Program(context, "kotlin")
+
+
+# program4
+type_param1 = tp.TypeParameter("T")
+cls1 = ast.ClassDeclaration("A", [], 0, type_parameters=[type_param1])
+type_param2 = tp.TypeParameter("T2")
+t1 = cls1.get_type().new([type_param2])
+cls2 = ast.ClassDeclaration("B", [ast.SuperClassInstantiation(t1, [])],
+                            0, type_parameters=[type_param1, type_param2])
+t2 = cls2.get_type().new([kt.String, type_param1])
+cls3 = ast.ClassDeclaration("C", [ast.SuperClassInstantiation(t2, [])],
+                            0, type_parameters=[type_param1])
+t1_str = cls1.get_type().new([kt.String])
+t2_str = cls3.get_type().new([kt.String])
+var = ast.VariableDeclaration("x", ast.New(t2_str, []), var_type=t1_str)
+context = ctx.Context()
+context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
+program4 = ast.Program(context, "kotlin")
