@@ -1179,3 +1179,39 @@ def test_unify_types_function_type():
         type_param1: type_param1,
         type_param2: type_param2
     }
+
+
+def test_build_type_variable_dependencies():
+    assert tutils.build_type_variable_dependencies(kt.String, kt.String) == {}
+    assert tutils.build_type_variable_dependencies(kt.String, kt.Integer) == {}
+
+    type_param1 = tp.TypeParameter("T1")
+    foo_con = tp.TypeConstructor("Foo", [type_param1])
+    foo = foo_con.new([kt.String])
+    assert tutils.build_type_variable_dependencies(foo, foo) == {}
+
+    type_param2 = tp.TypeParameter("T2")
+    bar = tp.TypeConstructor("Bar", [type_param2]).new([kt.String])
+    assert tutils.build_type_variable_dependencies(foo, bar) == {
+        foo.name: ["Foo.T1"],
+        bar.name: ["Bar.T2"]
+    }
+    assert tutils.build_type_variable_dependencies(bar, foo) == {
+        foo.name: ["Foo.T1"],
+        bar.name: ["Bar.T2"]
+    }
+
+    type_param3 = tp.TypeParameter("T3")
+    bar_con = tp.TypeConstructor("Bar", [type_param2, type_param3],
+                                 [foo_con.new([type_param3])])
+    foo_any = foo_con.new([kt.Any])
+    bar = bar_con.new([kt.Integer, kt.Any])
+    assert tutils.build_type_variable_dependencies(foo_any, bar) == {
+        foo_any.name: ["Foo.T1"],
+        bar.name: ["Bar.T2", "Bar.T3"]
+    }
+    assert tutils.build_type_variable_dependencies(bar, foo_any) == {
+        foo_any.name: ["Foo.T1"],
+        bar.name: ["Bar.T2", "Bar.T3"],
+        "Foo.T1": ["Bar.T3"]
+    }

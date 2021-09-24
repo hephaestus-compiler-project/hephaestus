@@ -1231,33 +1231,78 @@ def get_func_decl(context, name: str, receiver: tp.Type=None):
 
 
 def build_type_variable_dependencies(t1: tp.Type, t2: tp.Type):
+    """
+    This function build a graph that shows the type variable dependencies
+    between two types. These types need to have parent-child relationships
+    so that they have dependent type variables. Otherwise, the types don't
+    have any type variable dependency.
+
+    For example:
+        class A<T>
+        class B<T>: A<T>()
+
+    In this example, the type variable of Foo depends on the type variable of
+    Bar, as we pass Bar.T as type argument during the type constructor
+    instantiation at B<T>: A<T>().
+
+    So in this example:
+        * `build_type_variable_dependencies(B<T>, A<T>)` == {
+              "Foo": ["Foo.T"],
+              "Bar": ["Bar.T"],
+              "Foo.T": ["Bar.T"]
+           }
+
+    Note that the order we pass the arguments of this function is important.
+    So, `build_type_variable_dependencies(A<T>, B<T>)` == {}, as A<T>
+    is not a subtype of B<T>.
+    """
+    def _get_supertypes(t):
+        if t.is_parameterized():
+            return t.t_constructor.supertypes
+        return t.supertypes
+
+    def _to_type_var_id(type_con, type_var):
+        return type_con.name + "." + type_var.name
+
+    # The given types are the same (or they come from the same type
+    # constructor), so there is no a type variable dependency.
     if t1.name == t2.name:
         return {}
 
+    # The given types are not parameterized, so there is no any type variable
+    # dependency between them.
     if not t1.is_parameterized() and not t2.is_parameterized():
         return {}
 
     type_deps = {}
     if t1.is_parameterized():
         type_deps = {
-            t1: [t_param for t_param in t1.t_constructor.type_parameters]
+            t1.name: [_to_type_var_id(t1, t_param)
+                      for t_param in t1.t_constructor.type_parameters]
         }
-    supertypes = t1.supertypes
+
+    if t2.is_parameterized():
+        type_deps[t2.name] = [_to_type_var_id(t2, t_param)
+                              for t_param in t2.t_constructor.type_parameters]
+    supertypes = _get_supertypes(t1)
+    parent = t1
     while supertypes:
         st = supertypes[0]
         if st.is_parameterized():
             type_deps.update({
-                st: [t_param
-                     for t_param in st.t_constructor.type_parameters]
+                st.name: [_to_type_var_id(st, t_param)
+                          for t_param in st.t_constructor.type_parameters]
             })
             type_var_map = {
-                t_param: st.type_args[i]
-                for i, t_param in enumerate(st.t_constructor.type_parameters)
+                _to_type_var_id(st, t_param): [
+                    _to_type_var_id(parent, st.type_args[i])
+                ] for i, t_param in enumerate(st.t_constructor.type_parameters)
                 if st.type_args[i].is_type_var()
             }
             type_deps.update(type_var_map)
         if st.name == t2.name:
             supertypes = []
         else:
-            supertypes = st.supertypes
+            parent = st
+            supertypes = _get_supertypes(st)
     return type_deps
