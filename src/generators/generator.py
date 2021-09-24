@@ -1610,7 +1610,10 @@ class Generator():
                         return func_ref
                 else:
                     return ut.random.choice(func_refs)
+            prev_inside_java_lamdba = self._inside_java_lambda
+            self._inside_java_lambda = self.language == "java"
             params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
+            self._inside_java_lambda = prev_inside_java_lamdba
             ret_type = etype.type_args[-1]
             return self.gen_lambda(etype=ret_type, params=params)
 
@@ -1996,8 +1999,8 @@ class Generator():
 
         if expr_type == self.bt_factory.get_void_type():
             # The assignment operator in Java evaluates to the assigned value.
-            if self.language == 'java':
-                return [gen_fun_call]
+            #if self.language == 'java':
+            #    return [gen_fun_call]
             return [gen_fun_call,
                     lambda x: self.gen_assignment(x, only_leaves)]
 
