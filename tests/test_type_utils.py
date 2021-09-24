@@ -1215,3 +1215,28 @@ def test_build_type_variable_dependencies():
         bar.name: ["Bar.T2", "Bar.T3"],
         "Foo.T1": ["Bar.T3"]
     }
+
+    bar = bar_con.new([type_param1, kt.Any])
+    baz_con = tp.TypeConstructor("Baz", [type_param1], [bar])
+    baz = baz_con.new([kt.Any])
+    assert tutils.build_type_variable_dependencies(foo_any, baz) == {
+        foo_any.name: ["Foo.T1"],
+        baz.name: ["Baz.T1"],
+    }
+    assert tutils.build_type_variable_dependencies(baz, foo_any) == {
+        foo.name: ["Foo.T1"],
+        bar.name: ["Bar.T2", "Bar.T3"],
+        baz.name: ["Baz.T1"],
+        "Bar.T2": ["Baz.T1"],
+        "Foo.T1": ["Bar.T3"]
+    }
+
+    bar = bar_con.new([kt.Any, kt.Any])
+    baz_con = tp.TypeConstructor("Baz", [type_param1], [bar])
+    baz = baz_con.new([kt.Any])
+    assert tutils.build_type_variable_dependencies(baz, foo_any) == {
+        foo.name: ["Foo.T1"],
+        bar.name: ["Bar.T2", "Bar.T3"],
+        baz.name: ["Baz.T1"],
+        "Foo.T1": ["Bar.T3"]
+    }
