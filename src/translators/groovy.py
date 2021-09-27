@@ -67,7 +67,7 @@ class GroovyTranslator(BaseTranslator):
         self.always_cast_numbers = options.get('cast_numbers', False)
 
         # FIXME remove this option when they fix the bugs
-        self.always_cast_ftypes = True
+        self.always_cast_ftypes = False
 
         # A set of numbers where numbers is the number of type parameters that
         # an interface for a function should have.
@@ -412,16 +412,23 @@ class GroovyTranslator(BaseTranslator):
             We have to do that if the function is nested or if it is inside a
             lambda.
             """
+            helper_nodes = ['true_block', 'false_block']
             parent_namespace = self._namespace[:-2]
             parent_name = self._namespace[-2]
+            if parent_name in helper_nodes:
+                return True
+            if any(x for x in helper_nodes if x in parent_namespace):
+                tmp_namespace = tuple(n for n in self._namespace
+                                      if n not in helper_nodes)
+                parent_namespace = tmp_namespace[:-2]
+                parent_name = tmp_namespace[-2]
             parent_decl = self.context.get_decl(parent_namespace, parent_name)
             if parent_decl is None:
                 parent_decl = self.context.get_lambda(
                     parent_namespace, parent_name
                 )
-            return (parent_name in ['true_block', 'false_block'] or
-                    isinstance(parent_decl, (ast.FunctionDeclaration,
-                                             ast.Lambda)))
+            return isinstance(parent_decl, (ast.FunctionDeclaration,
+                                            ast.Lambda))
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
