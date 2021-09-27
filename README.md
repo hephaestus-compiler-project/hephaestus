@@ -81,3 +81,10 @@ wget -P /usr/local/bin/ "https://github.com/pinterest/ktlint/releases/download/0
 ktlint --format program.kt
 ```
 
+* GRoovy
+
+```
+npm install -g npm-groovy-lint
+
+npm-groovy-lint --format Main.groovy
+```
