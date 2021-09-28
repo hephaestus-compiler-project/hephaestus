@@ -14,9 +14,13 @@ def append_to(visit):
     2. The node is a top level function or variable declaration => append the
         result to _main_children (nodes to declared static in Main class)
     3. All other nodes just append them to _children_res
+
+    We also use this function to set _nodes_stack
     """
     def inner(self, node):
+        self._nodes_stack.append(node)
         res = visit(self, node)
+        self._nodes_stack.pop()
         if (self._namespace == ast.GLOBAL_NAMESPACE and
                 isinstance(node, ast.FunctionDeclaration) and
                 node.name == "main"):
@@ -74,6 +78,8 @@ class GroovyTranslator(BaseTranslator):
         # TODO pass it as option, or produce the list during the AST traverse
         self._function_interfaces = {0,1,2,3}
 
+        self._nodes_stack = [None]
+
     def _reset_state(self):
         # Clear the state
         self.types = []
@@ -88,6 +94,7 @@ class GroovyTranslator(BaseTranslator):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._children_res = []
         self._function_interfaces = {0,1,2,3}
+        self._nodes_stack = [None]
 
     def get_ident(self, extra=0, old_ident=None):
         if old_ident:
@@ -409,26 +416,15 @@ class GroovyTranslator(BaseTranslator):
         def is_closure():
             """Return true if we need to declare the function as closure.
 
-            We have to do that if the function is nested or if it is inside a
-            lambda.
+            We can declare functions as normal functions only inside classes
+            or in the global scope.
             """
-            helper_nodes = ['true_block', 'false_block']
-            parent_namespace = self._namespace[:-2]
-            parent_name = self._namespace[-2]
-            if parent_name in helper_nodes:
-                return True
-            if any(x for x in helper_nodes if x in parent_namespace):
-                tmp_namespace = tuple(n for n in self._namespace
-                                      if n not in helper_nodes)
-                parent_namespace = tmp_namespace[:-2]
-                parent_name = tmp_namespace[-2]
-            parent_decl = self.context.get_decl(parent_namespace, parent_name)
-            if parent_decl is None:
-                parent_decl = self.context.get_lambda(
-                    parent_namespace, parent_name
-                )
-            return isinstance(parent_decl, (ast.FunctionDeclaration,
-                                            ast.Lambda))
+            parent_node = self._nodes_stack[-2]
+            if parent_node is None:
+                return False
+            if isinstance(parent_node, ast.ClassDeclaration):
+                return False
+            return True
 
         if self._inside_is:
             prev_inside_is_function = self._inside_is_function
