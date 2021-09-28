@@ -26,8 +26,8 @@ def test_program1():
     a.visit(program)
     res = to_str_dict(a.result())
     assert res == {
-        '!TypeVariable[global/x/T]': [
-            "-> TypeVariable[global/x/T] (inferred)",
+        '!TypeVariable[global/x/Foo/T]': [
+            "-> TypeVariable[global/x/Foo/T] (inferred)",
             "-> Type[String] (declared)"
         ],
         "Declaration[global/x]": [
@@ -35,12 +35,12 @@ def test_program1():
             "-> TypeConInstDecl[global/x/Foo] (declared)"
         ],
         'TypeConInstCall[global/x/Foo]': [
-            '-> TypeVariable[global/x/T] (declared)'
+            '-> TypeVariable[global/x/Foo/T] (declared)'
         ],
         'TypeConInstDecl[global/x/Foo]': [
-            '-> !TypeVariable[global/x/T] (declared)'
+            '-> !TypeVariable[global/x/Foo/T] (declared)'
         ],
-        'TypeVariable[global/x/T]': ['-> Type[String] (declared)']
+        'TypeVariable[global/x/Foo/T]': ['-> Type[String] (declared)']
     }
 
 
@@ -53,8 +53,8 @@ def test_program2():
     res = to_str_dict(a.result())
 
     assert res == {
-        '!TypeVariable[global/y/T]': [
-            '-> TypeVariable[global/y/T] (inferred)',
+        '!TypeVariable[global/y/Foo/T]': [
+            '-> TypeVariable[global/y/Foo/T] (inferred)',
             '-> Type[String] (declared)'
         ],
         'Declaration[global/Foo/f]': ['-> Type[T] (declared)'],
@@ -67,12 +67,12 @@ def test_program2():
             '-> TypeConInstDecl[global/y/Foo] (declared)'
         ],
         'TypeConInstCall[global/y/Foo]': [
-            '-> TypeVariable[global/y/T] (declared)'
+            '-> TypeVariable[global/y/Foo/T] (declared)'
         ],
         'TypeConInstDecl[global/y/Foo]': [
-            '-> !TypeVariable[global/y/T] (declared)'
+            '-> !TypeVariable[global/y/Foo/T] (declared)'
         ],
-        'TypeVariable[global/y/T]': [
+        'TypeVariable[global/y/Foo/T]': [
             '-> Type[String] (declared)',
             '-> Declaration[global/x] (inferred)'
         ]
@@ -89,8 +89,8 @@ def test_program3():
     res = to_str_dict(a.result())
 
     assert res == {
-        '!TypeVariable[global/Bar/f/T]': [
-            '-> TypeVariable[global/Bar/f/T] (inferred)',
+        '!TypeVariable[global/Bar/f/Foo/T]': [
+            '-> TypeVariable[global/Bar/f/Foo/T] (inferred)',
             '-> Type[String] (declared)'
         ],
         'Declaration[global/Bar/f]': ['-> Type[Foo] (declared)'],
@@ -104,12 +104,12 @@ def test_program3():
             '-> Type[Bar] (declared)'
         ],
         'TypeConInstCall[global/Bar/f/Foo]': [
-            '-> TypeVariable[global/Bar/f/T] (declared)'
+            '-> TypeVariable[global/Bar/f/Foo/T] (declared)'
         ],
         'TypeConInstDecl[global/Bar/f/Foo]': [
-            '-> !TypeVariable[global/Bar/f/T] (declared)'
+            '-> !TypeVariable[global/Bar/f/Foo/T] (declared)'
         ],
-        'TypeVariable[global/Bar/f/T]': [
+        'TypeVariable[global/Bar/f/Foo/T]': [
             '-> Type[String] (declared)',
             '-> Declaration[global/x] (inferred)'
         ]
@@ -129,8 +129,8 @@ def test_program4():
     res = to_str_dict(a.result())
 
     assert res == {
-        '!TypeVariable[global/x/T]': [
-            '-> TypeVariable[global/x/T] (inferred)',
+        '!TypeVariable[global/x/A/T]': [
+            '-> TypeVariable[global/x/C/T] (inferred)',
             '-> Type[String] (declared)'
         ],
         'Declaration[global/x]': [
@@ -138,10 +138,10 @@ def test_program4():
             '-> TypeConInstDecl[global/x/A] (declared)'
         ],
         'TypeConInstCall[global/x/C]': [
-            '-> TypeVariable[global/x/T] (declared)'
+            '-> TypeVariable[global/x/C/T] (declared)'
         ],
         'TypeConInstDecl[global/x/A]': [
-            '-> !TypeVariable[global/x/T] (declared)'
+            '-> !TypeVariable[global/x/A/T] (declared)'
         ],
-        'TypeVariable[global/x/T]': ['-> Type[String] (declared)']
+        'TypeVariable[global/x/C/T]': ['-> Type[String] (declared)']
     }

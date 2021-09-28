@@ -160,7 +160,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for n in nodes:
             if not isinstance(n, TypeVarNode):
                 continue
-            if n.node_id == node_id and n.t.name == type_var.split(".")[1]:
+            type_var_id = n.node_id.rsplit("/", 1)[1] + "." + n.t.name
+            if type_var == type_var_id:
                 return n
 
         return None
@@ -175,9 +176,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
         main_node = TypeConstructorInstantiationDeclNode(node_id, t)
         type_deps = tu.build_type_variable_dependencies(infer_t.t, t)
         for i, t_param in enumerate(t.t_constructor.type_parameters):
-            source = TypeVarNode(node_id, t_param, True)
+            type_var_id = node_id + "/" + t.name
+            source = TypeVarNode(type_var_id, t_param, True)
             if t.name == infer_t.t.name:
-                target_var = TypeVarNode(node_id, t_param, False)
+                target_var = TypeVarNode(type_var_id, t_param, False)
             else:
                 target_var = self._find_target_type_variable(
                     t.name + "." + t_param.name, type_deps, infer_t.t.name,
@@ -301,7 +303,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         t = node.class_type
         type_var_nodes = {}
         for i, t_param in enumerate(t.t_constructor.type_parameters):
-            source = TypeVarNode(node_id, t_param, False)
+            type_var_id = node_id + "/" + t.name
+            source = TypeVarNode(type_var_id, t_param, False)
             type_var_nodes[t_param] = source
             target = TypeNode(t.type_args[i])
             construct_edge(self.type_graph, main_node, source, Edge.DECLARED)
