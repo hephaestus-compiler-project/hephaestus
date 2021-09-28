@@ -178,19 +178,26 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for i, t_param in enumerate(t.t_constructor.type_parameters):
             type_var_id = node_id + "/" + t.name
             source = TypeVarNode(type_var_id, t_param, True)
+            target = TypeNode(t.type_args[i])
+            construct_edge(self.type_graph, source, target, Edge.DECLARED)
+            construct_edge(self.type_graph, main_node, source,
+                           Edge.DECLARED)
             if t.name == infer_t.t.name:
                 target_var = TypeVarNode(type_var_id, t_param, False)
             else:
                 target_var = self._find_target_type_variable(
                     t.name + "." + t_param.name, type_deps, infer_t.t.name,
                     node_id)
+            use_site_type_var, decl_site_type_var = target_var, source
             if target_var in self.type_graph:
-                construct_edge(self.type_graph, source, target_var,
-                               Edge.INFERRED)
-            target = TypeNode(t.type_args[i])
-            construct_edge(self.type_graph, source, target, Edge.DECLARED)
-            construct_edge(self.type_graph, main_node, source,
-                           Edge.DECLARED)
+                # At this point we connect a type variable found in the
+                # use site with a type variable found in the decl site.
+                # Example.
+                # A<T> x = new A<T>()
+                #   ^            |
+                #   |____________|
+                construct_edge(self.type_graph, use_site_type_var,
+                               decl_site_type_var, Edge.INFERRED)
         return main_node
 
     def visit_integer_constant(self, node):
