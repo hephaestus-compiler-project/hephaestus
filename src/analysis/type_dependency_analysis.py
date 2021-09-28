@@ -124,6 +124,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self.program = program
         self._context = self.program.context
         self._namespace = ast.GLOBAL_NAMESPACE
+        self._types = self.program.get_types()
         self._stack: list = []
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
@@ -278,6 +279,28 @@ class TypeDependencyAnalysis(DefaultVisitor):
     @change_namespace
     def visit_func_decl(self, node):
         return super().visit_func_decl(node)
+
+    def visit_field_access(self, node):
+        name = hash(node)
+        node_id = self._construct_node_id()
+        self._stack.append(name)
+        super().visit_field_access(node)
+        self._stack.pop()
+        self._inferred_nodes[node_id].append(
+            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
+                                      self._bt_factory, self._types))
+        )
+
+    def visit_func_call(self, node):
+        name = hash(node)
+        node_id = self._construct_node_id()
+        self._stack.append(name)
+        super().visit_func_call(node)
+        self._stack.pop()
+        self._inferred_nodes[node_id].append(
+            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
+                                      self._bt_factory, self._types))
+        )
 
     def visit_new(self, node):
         # First, we use the context to retrieve the declaration of the class
