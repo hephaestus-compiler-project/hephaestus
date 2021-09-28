@@ -11,6 +11,8 @@ class GroovyCompiler(BaseCompiler):
 
     CRASH_REGEX = re.compile(r'(.*[eE]xception)(.*)')
 
+    STACKOVERFLOW_REGEX = re.compile(r'(.*java.lang.StackOverflowError)(.*)')
+
     def __init__(self, input_name):
         input_name = os.path.join(input_name, '*', '*.groovy')
         super().__init__(input_name)
@@ -36,4 +38,10 @@ class GroovyCompiler(BaseCompiler):
         if crash_match and not matches:
             self.crash_msg = output
             return None
+
+        stack_overflow = re.search(self.STACKOVERFLOW_REGEX, output)
+        if stack_overflow and not matches:
+            self.crash_msg = output
+            return None
+
         return failed
