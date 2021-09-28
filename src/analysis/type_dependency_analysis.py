@@ -32,11 +32,11 @@ class TypeNode(NamedTuple):
 
 
 class DeclarationNode(NamedTuple):
-    namespace: Tuple[str, ...]
+    node_id: str
     decl: ast.Declaration
 
     def __str__(self):
-        node_id = "/".join(self.namespace) + "/" + self.decl.name
+        node_id = self.node_id + "/" + self.decl.name
         return "Declaration[{}]".format(node_id)
 
     def __repr__(self):
@@ -233,16 +233,16 @@ class TypeDependencyAnalysis(DefaultVisitor):
         namespace, decl = decl
         node_id = self._construct_node_id()
         self._inferred_nodes[node_id].append(
-            DeclarationNode(namespace, decl)
+            DeclarationNode("/".join(namespace), decl)
         )
 
-    def visit_var_decl(self, node):
+    def _handle_declaration(self, parent_node_id, node, expr, type_attr):
         self._stack.append(node.name)
         node_id = self._construct_node_id()
         self._exp_type = node.var_type
-        super().visit_var_decl(node)
+        self.visit(expr)
         self._stack.pop()
-        source = DeclarationNode(self._namespace, node)
+        source = DeclarationNode(parent_node_id, node)
 
         inferred_nodes = self._inferred_nodes.pop(node_id)
         added_declared = False
@@ -256,18 +256,23 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 added_declared = True
             construct_edge(self.type_graph, source, n, edge_label)
 
-        if not added_declared and node.var_type is not None:
+        node_type = getattr(node, type_attr, None)
+        if not added_declared and node_type is not None:
             construct_edge(self.type_graph, source,
-                           TypeNode(node.var_type), Edge.DECLARED)
+                           TypeNode(node_type), Edge.DECLARED)
+
+    def visit_var_decl(self, node):
+        self._handle_declaration("/".join(self._namespace),
+                                 node, node.expr, 'var_type')
 
     def visit_field_decl(self, node):
-        source = DeclarationNode(self._namespace, node)
+        source = DeclarationNode("/".join(self._namespace), node)
         target = TypeNode(node.get_type())
         construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return super().visit_field_decl(node)
 
     def visit_param_decl(self, node):
-        source = DeclarationNode(self._namespace, node)
+        source = DeclarationNode("/".join(self._namespace), node)
         target = TypeNode(node.get_type())
         construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return super().visit_param_decl(node)
@@ -301,6 +306,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
             TypeNode(tu.get_type_hint(node, self._context, self._namespace,
                                       self._bt_factory, self._types))
         )
+        fun_decl = get_decl(self._context, self._namespace,
+                            node.func)
+        assert fun_decl is not None
+        namespace, fun_decl = fun_decl
+        for i, param in enumerate(fun_decl.params):
+            fun_namespace = namespace + (fun_decl.name,)
+            param_id = "/".join(fun_namespace)
+            self._handle_declaration(param_id, param, node.args[i],
+                                     "param_type")
 
     def visit_new(self, node):
         # First, we use the context to retrieve the declaration of the class
