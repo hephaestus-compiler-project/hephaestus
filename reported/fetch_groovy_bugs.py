@@ -105,7 +105,7 @@ def get_data(lookup):
                     bug['test'] = code_fragments[0]
             if len(code_fragments) >= 2:
                 if not len(lookup.get(bug['bugid'], {}).get('errormsg', [])) >= 1:
-                    bug['errormsg'] = code_fragments[-1]
+                    bug['errormsg'] = code_fragments[1]
             if len(code_fragments) != 2:
                 print("{}: code fragments {}".format(
                     bug['bugid'], len(code_fragments)
