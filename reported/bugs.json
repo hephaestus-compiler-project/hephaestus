@@ -781,7 +781,7 @@
         ],
         "errormsg": [
             "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
-            "test.groovy: 5: [Static type checking] - Incompatible generic argument types. Cannot assign A<java.lang.Object, java.lang.Number> to: A<? extends T, java.lang.Number>",
+            "test.groovy: 5: [Static type checking] - Incompatible generic argument types.",
             " @ line 5, column 14.",
             "       this.x = x;",
             "                ^1 error"
