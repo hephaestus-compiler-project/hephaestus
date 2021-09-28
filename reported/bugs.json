@@ -7,7 +7,7 @@
         "bugid": "GROOVY-10269",
         "title": "STC: Stackoverflow Error when passing function reference to closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10269",
             "fix": ""
         },
         "oracle": "",
@@ -33,11 +33,23 @@
             "}"
         ],
         "errormsg": [
-            "Test.groovy: 12: The argument is a method reference, but the parameter type is not a functional interface",
-            " @ line 12, column 9.",
-            "       qux(Test::foo) // Crashes",
-            "           ^",
-            "1 error"
+            ">>> a serious error occurred: null",
+            ">>> stacktrace:",
+            "java.lang.StackOverflowError",
+            "  at java.base/java.util.stream.MatchOps$1MatchSink.accept(MatchOps.java:90)",
+            "  at java.base/java.util.LinkedList$LLSpliterator.tryAdvance(LinkedList.java:1253)",
+            "  at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:127)",
+            "  at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:502)",
+            "  at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:488)",
+            "  at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:474)",
+            "  at java.base/java.util.stream.MatchOps$MatchOp.evaluateSequential(MatchOps.java:230)",
+            "  at java.base/java.util.stream.MatchOps$MatchOp.evaluateSequential(MatchOps.java:196)",
+            "  at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)",
+            "  at java.base/java.util.stream.ReferencePipeline.noneMatch(ReferencePipeline.java:538)",
+            "  at org.codehaus.groovy.transform.stc.StaticTypeCheckingVisitor.inferMethodReferenceType(StaticTypeCheckingVisitor.java:3653)",
+            "  at org.codehaus.groovy.transform.stc.StaticTypeCheckingVisitor.visitMethodCallArguments(StaticTypeCheckingVisitor.java:2814)",
+            "    ...",
+            "  at org.codehaus.groovy.transform.stc.StaticTypeCheckingVisitor.visitMethodCallArguments(StaticTypeCheckingVisitor.java:2814)"
         ],
         "comment": ""
     },
@@ -49,7 +61,7 @@
         "bugid": "GROOVY-10268",
         "title": "Unable to assign variable in parameterized class with bounded polymorphism ",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10268",
             "fix": ""
         },
         "oracle": "",
@@ -88,7 +100,7 @@
         "bugid": "GROOVY-10267",
         "title": "STC reports wrong message when encoutering wildcard types",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10267",
             "fix": ""
         },
         "oracle": "",
@@ -127,7 +139,7 @@
         "bugid": "GROOVY-10266",
         "title": "The diamond operator does not work when passing a value whose type is a type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10266",
             "fix": ""
         },
         "oracle": "",
@@ -172,7 +184,7 @@
         "bugid": "GROOVY-10265",
         "title": "STC is unable to resolve variable in closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10265",
             "fix": ""
         },
         "oracle": "",
@@ -216,7 +228,7 @@
         "bugid": "GROOVY-10264",
         "title": "Issue with the diamond operator and conditional",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10264",
             "fix": ""
         },
         "oracle": "",
@@ -260,7 +272,7 @@
         "bugid": "GROOVY-10254",
         "title": "STC: cannot return closure from method without casting",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10254",
             "fix": ""
         },
         "oracle": "",
@@ -307,7 +319,7 @@
         "bugid": "GROOVY-10251",
         "title": "STC infers a type that does not respect the bound of type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10251",
             "fix": ""
         },
         "oracle": "",
@@ -374,7 +386,7 @@
         "bugid": "GROOVY-10230",
         "title": "Unexpected generics parameter arity mismatch in the \"instruction selection\" phase",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10230",
             "fix": ""
         },
         "oracle": "",
@@ -460,7 +472,7 @@
         "bugid": "GROOVY-10228",
         "title": "STC fails to substitute type variable in the presence of the diamond operator and a function call",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10228",
             "fix": ""
         },
         "oracle": "",
@@ -506,7 +518,7 @@
         "bugid": "GROOVY-10227",
         "title": "STC computes an imprecise LUB when involving two parameterized types implementing the same interface",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10227",
             "fix": ""
         },
         "oracle": "",
@@ -549,7 +561,7 @@
         "bugid": "GROOVY-10226",
         "title": "LUB is computed incorrectly when involving bounded type variables",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10226",
             "fix": ""
         },
         "oracle": "",
@@ -586,7 +598,7 @@
         "bugid": "GROOVY-10225",
         "title": "Unexpected NullPointerException during the \"instruction selection\" phase",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10225",
             "fix": ""
         },
         "oracle": "",
@@ -667,7 +679,7 @@
         "bugid": "GROOVY-10222",
         "title": "Unable to infer the type parameter of a parameterized function",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10222",
             "fix": ""
         },
         "oracle": "",
@@ -708,7 +720,7 @@
         "bugid": "GROOVY-10221",
         "title": "Unexpected compile-time error when combining closures and bounded type parameters",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10221",
             "fix": ""
         },
         "oracle": "",
@@ -746,7 +758,7 @@
         "bugid": "GROOVY-10220",
         "title": "Unexpected type mismatch when having conflicting type parameter names",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10220",
             "fix": ""
         },
         "oracle": "",
@@ -784,7 +796,7 @@
         "bugid": "GROOVY-10158",
         "title": "Unexpected type mismatch when combining conditional and bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10158",
             "fix": ""
         },
         "oracle": "",
@@ -823,7 +835,7 @@
         "bugid": "GROOVY-10153",
         "title": "STC: cannot combine use-variance with bounded polymorphism",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10153",
             "fix": ""
         },
         "oracle": "",
@@ -866,7 +878,7 @@
         "bugid": "GROOVY-10130",
         "title": "Flow typing does not work when && is combinded with instanceof",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10130",
             "fix": ""
         },
         "oracle": "",
@@ -906,7 +918,7 @@
         "bugid": "GROOVY-10129",
         "title": "Misleading report when using as a type argument a type parameter that extends an array type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10129",
             "fix": ""
         },
         "oracle": "",
@@ -925,11 +937,11 @@
             "class C<G extends B[]> extends A<G> {} // It works if G extends B"
         ],
         "errormsg": [
-            "error: unexpected type",
-            "class C<G extends B[]> extends A<G> {}",
-            "                   ^",
-            "  required: class",
-            "  found:    B[]",
+            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
+            "Main.groovy: 8: unable to resolve class G",
+            " @ line 8, column 34.",
+            "   class C<G extends B[]> extends A<G> {}",
+            "                                    ^",
             "1 error"
         ],
         "comment": ""
@@ -942,7 +954,7 @@
         "bugid": "GROOVY-10128",
         "title": "Cannot assign closure with long as return type to java.util.function.Function<X, Number>",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10128",
             "fix": ""
         },
         "oracle": "",
@@ -984,7 +996,7 @@
         "bugid": "GROOVY-10127",
         "title": "STC misses type check in Generic class with a bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10127",
             "fix": ""
         },
         "oracle": "",
@@ -1036,7 +1048,7 @@
         "bugid": "GROOVY-10125",
         "title": "FP Cycle detected in type parameter that extends another type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10125",
             "fix": ""
         },
         "oracle": "",
@@ -1070,7 +1082,7 @@
         "bugid": "GROOVY-10116",
         "title": "STC: error when passing a type parameter in type constructor",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10116",
             "fix": ""
         },
         "oracle": "",
@@ -1112,7 +1124,7 @@
         "bugid": "GROOVY-10115",
         "title": "STC: compiler error when using type parameter with extends",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10115",
             "fix": ""
         },
         "oracle": "",
@@ -1151,7 +1163,7 @@
         "bugid": "GROOVY-10114",
         "title": "Wrong type argument inference when using the result of ternary operator directly.",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10114",
             "fix": ""
         },
         "oracle": "",
@@ -1189,10 +1201,11 @@
         ],
         "errormsg": [
             "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
-            "Test.groovy: 5: [Static type checking] - Cannot find matching method java.lang.Object#foo(). Please check if the declared type is correct and if the method exists.",
-            " @ line 5, column 5.",
-            "       x.bar.foo()",
-            "       ^"
+            "Test.groovy: 7: [Static type checking] - Cannot find matching method java.lang.Object#foo(). Please check if the declared type is correct and if the method exists.",
+            " @ line 7, column 5.",
+            "       ((false) ? new B<>(new A()) : new B<>(new A())).bar.foo()",
+            "       ^",
+            "1 error"
         ],
         "comment": ""
     },
@@ -1204,7 +1217,7 @@
         "bugid": "GROOVY-10113",
         "title": "StackOverflowError in STC",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10113",
             "fix": ""
         },
         "oracle": "",
@@ -1248,7 +1261,7 @@
         "bugid": "GROOVY-10111",
         "title": "compiler crash during canonicalization",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10111",
             "fix": ""
         },
         "oracle": "",
@@ -1378,7 +1391,7 @@
         "bugid": "GROOVY-10107",
         "title": "Cannot assign null to a variable with a bounded generic type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10107",
             "fix": ""
         },
         "oracle": "",
@@ -1414,7 +1427,7 @@
         "bugid": "GROOVY-10100",
         "title": "groovyc infers the wrong type when using a method reference of a function with varargs",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10100",
             "fix": ""
         },
         "oracle": "",
@@ -1463,7 +1476,7 @@
         "bugid": "GROOVY-10098",
         "title": "Unexpected behaviour when the return type of a closure is a type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10098",
             "fix": ""
         },
         "oracle": "",
@@ -1503,7 +1516,7 @@
         "bugid": "GROOVY-10096",
         "title": "STC: accepts incorrect program with flow typing",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10096",
             "fix": ""
         },
         "oracle": "",
@@ -1556,7 +1569,7 @@
         "bugid": "GROOVY-10095",
         "title": "Wrong LUB when involving a numeric constant and null",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10095",
             "fix": ""
         },
         "oracle": "",
@@ -1596,7 +1609,7 @@
         "bugid": "GROOVY-10094",
         "title": "STC misses type checks on default arguments",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10094",
             "fix": ""
         },
         "oracle": "",
@@ -1637,7 +1650,7 @@
         "bugid": "GROOVY-10092",
         "title": "Compiler crash when trying to cast a boolean to float variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10092",
             "fix": ""
         },
         "oracle": "",
@@ -1703,7 +1716,7 @@
         "bugid": "GROOVY-10091",
         "title": "Incompatible generic argument types on closure's return type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10091",
             "fix": ""
         },
         "oracle": "",
@@ -1743,7 +1756,7 @@
         "bugid": "GROOVY-10087",
         "title": "STC does not perform boxing on chars when encountering assignment and function call",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10087",
             "fix": ""
         },
         "oracle": "",
@@ -1782,7 +1795,7 @@
         "bugid": "GROOVY-10086",
         "title": "STC misses type error when calling a vararg method",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10086",
             "fix": ""
         },
         "oracle": "",
@@ -1818,11 +1831,13 @@
             "}"
         ],
         "errormsg": [
-            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
-            "test.groovy: 23: [Static type checking] - Cannot call A#foo(int, X<Foo>[]) with arguments [int, X<java.lang.Integer>]",
-            " @ line 23, column 7.",
-            "         a.foo(1, new X<>(1));",
-            "         ^1 error"
+            "Exception in thread \"main\" org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast object '1' with class 'java.lang.Integer' to class 'Foo'",
+            "        at org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation.continueCastOnSAM(DefaultTypeTransformation.java:415)",
+            "        at org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation.continueCastOnNumber(DefaultTypeTransformation.java:329)",
+            "        at org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation.castToType(DefaultTypeTransformation.java:243)",
+            "        at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:318)",
+            "        at A.foo(test.groovy:16)",
+            "        at Main.main(test.groovy:23)"
         ],
         "comment": ""
     },
@@ -1834,7 +1849,7 @@
         "bugid": "GROOVY-10082",
         "title": "Incompatible generic argument types when combining subtyping and closures",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10082",
             "fix": ""
         },
         "oracle": "",
@@ -1876,7 +1891,7 @@
         "bugid": "GROOVY-10081",
         "title": "Conversion from int to byte does not work in case of ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10081",
             "fix": ""
         },
         "oracle": "",
@@ -1929,7 +1944,7 @@
         "bugid": "GROOVY-10080",
         "title": "Closure with type argument inference does not work as expected",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10080",
             "fix": ""
         },
         "oracle": "",
@@ -1983,7 +1998,7 @@
         "bugid": "GROOVY-10079",
         "title": "groovyc does not perform unboxing on Character type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10079",
             "fix": ""
         },
         "oracle": "",
@@ -2003,11 +2018,11 @@
             "}"
         ],
         "errormsg": [
-            "public class Main {",
-            "  public static short foo() {",
-            "    return (Short) 1;",
-            "  }",
-            "}"
+            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
+            "test.groovy: 4: [Static type checking] - Cannot return value of type java.lang.Character on method returning type char",
+            " @ line 4, column 12.",
+            "       return (Character) 'd';",
+            "              ^1 error"
         ],
         "comment": ""
     },
@@ -2019,7 +2034,7 @@
         "bugid": "GROOVY-10033",
         "title": "Compiler crash when encountering function reference on nested class",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10033",
             "fix": ""
         },
         "oracle": "",
@@ -2099,7 +2114,7 @@
         "bugid": "GROOVY-10011",
         "title": "Combining flow typing and type argument inference does not work as expected",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10011",
             "fix": ""
         },
         "oracle": "",
@@ -2145,7 +2160,7 @@
         "bugid": "GROOVY-9996",
         "title": "Cannot infer correct type argument when using subtyping",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9996",
             "fix": ""
         },
         "oracle": "",
@@ -2194,7 +2209,7 @@
         "bugid": "GROOVY-9995",
         "title": "Wrong inference inside closure when having a bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9995",
             "fix": ""
         },
         "oracle": "",
@@ -2244,7 +2259,7 @@
         "bugid": "GROOVY-9994",
         "title": "Type checking of array initializer expressions",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9994",
             "fix": ""
         },
         "oracle": "",
@@ -2282,7 +2297,7 @@
         "bugid": "GROOVY-9986",
         "title": "CLONE - STC does not report type mismatches for coerced list expression",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9986",
             "fix": ""
         },
         "oracle": "",
@@ -2320,7 +2335,7 @@
         "bugid": "GROOVY-9985",
         "title": "STC does not report type mismatches in array initializers",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9985",
             "fix": ""
         },
         "oracle": "",
@@ -2358,7 +2373,7 @@
         "bugid": "GROOVY-9984",
         "title": "Wrong type inference when passing null",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9984",
             "fix": ""
         },
         "oracle": "",
@@ -2408,7 +2423,7 @@
         "bugid": "GROOVY-9983",
         "title": "Type argument inference does not work in ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9983",
             "fix": ""
         },
         "oracle": "",
@@ -2457,7 +2472,7 @@
         "bugid": "GROOVY-9979",
         "title": "Inconsistency in handling of numeric types",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9979",
             "fix": ""
         },
         "oracle": "",
@@ -2482,9 +2497,10 @@
             "}"
         ],
         "errormsg": [
-            "test.groovy: 4: [Static type checking] - Cannot find matching method Main#baz(java.lang.Float). Please check if the declared type is correct and if the method exists.",
-            " @ line 4, column 5.",
-            "       baz((Float) 13.3); // does not report error."
+            "test.groovy: 4: [Static type checking] - Possible loss of precision from java.lang.Float to java.lang.Byte",
+            " @ line 4, column 20.",
+            "       final Byte f = (Float) 32.3 // possible loss of precision",
+            "                      ^1 error"
         ],
         "comment": ""
     },
@@ -2496,7 +2512,7 @@
         "bugid": "GROOVY-9972",
         "title": "LUB does not work correctly in case of ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9972",
             "fix": ""
         },
         "oracle": "",
@@ -2551,7 +2567,7 @@
         "bugid": "GROOVY-9970",
         "title": "Type argument inference does not work in closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9970",
             "fix": ""
         },
         "oracle": "",
@@ -2599,7 +2615,7 @@
         "bugid": "GROOVY-9967",
         "title": "STC: Access to field/property is forbidden after instanceof.",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9967",
             "fix": ""
         },
         "oracle": "",
@@ -2639,30 +2655,11 @@
             "}"
         ],
         "errormsg": [
-            "class Test {",
-            "  static void main(String[] args) {",
-            "    println(C.func4(new B()))",
-            "  }",
-            "}",
-            "@groovy.transform.CompileStatic",
-            "class C {",
-            "  static String func1(Object x) {",
-            "    (x instanceof String) ? x : \"foo\" ",
-            "  }",
-            "  static String func2(B x) {",
-            "    x.f ",
-            "  }",
-            "  static String func3(B x) {",
-            "    (x instanceof B) ? x.f : \"foo\"",
-            "  }",
-            "  static String func4(A x) {",
-            "    (x instanceof B) ? x.f : \"foo\" ",
-            "  }",
-            "}",
-            "class A {}",
-            "class B extends A {",
-            "  String f = \"foo\"",
-            "}"
+            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
+            "Test.groovy: 28: Access to A#f is forbidden @ line 28, column 24.",
+            "       (x instanceof B) ? x.f : \"foo\" ",
+            "                          ^",
+            "1 error"
         ],
         "comment": ""
     },
@@ -2674,7 +2671,7 @@
         "bugid": "GROOVY-9963",
         "title": "Generic type of field is not istantiated",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9963",
             "fix": ""
         },
         "oracle": "",
@@ -2717,7 +2714,7 @@
         "bugid": "GROOVY-9960",
         "title": "STC fails to report missing constructor",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9960",
             "fix": ""
         },
         "oracle": "",
@@ -2744,12 +2741,9 @@
             "}"
         ],
         "errormsg": [
-            "Main.java:8: error: constructor A in class A cannot be applied to given types;",
-            "class B extends A {}",
-            "^",
-            "  required: String",
-            "  found: no arguments",
-            "  reason: actual and formal argument lists differ in length"
+            "Exception in thread \"main\" java.lang.NoSuchMethodError: A: method 'void <init>()' not found",
+            "        at B.<init>(test.groovy)",
+            "        at Main.main(test.groovy:13)"
         ],
         "comment": ""
     },
@@ -2761,7 +2755,7 @@
         "bugid": "GROOVY-9956",
         "title": "Cannot infer correct type argument when passing a subtype of the declared type argument",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9956",
             "fix": ""
         },
         "oracle": "",
@@ -2791,21 +2785,12 @@
             "}"
         ],
         "errormsg": [
-            "class Foo<T> {",
-            "    T f;",
-            "    Foo (T f) {",
-            "      this.f = f;",
-            "    }",
-            "}",
-            "interface Bar{}",
-            "class Baz implements Bar {}",
-            "@groovy.transform.TypeChecked",
-            "class Main  {",
-            "  public static void main(String[] args) {",
-            "    Foo<Bar> x1 = new Foo<Bar>(new Baz()) // Compiles",
-            "    Foo<Bar> x2 = new Foo<>(new Baz()) // Does not compile",
-            "  }",
-            "}"
+            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
+            "Main.groovy: 16: [Static type checking] - Incompatible generic argument types. Cannot assign Foo <Baz> to: Foo <Bar>",
+            " @ line 16, column 19.",
+            "       Foo<Bar> x2 = new Foo<>(new Baz<Integer>())",
+            "                     ^",
+            "1 error"
         ],
         "comment": ""
     },
@@ -2817,7 +2802,7 @@
         "bugid": "GROOVY-9953",
         "title": "Type from flow typing is not propagated in variable assignments",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9953",
             "fix": ""
         },
         "oracle": "",
@@ -2861,7 +2846,7 @@
         "bugid": "GROOVY-9952",
         "title": "STC does not correctly type check variable whose type is a type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9952",
             "fix": ""
         },
         "oracle": "",
@@ -2910,7 +2895,7 @@
         "bugid": "GROOVY-9948",
         "title": "Cannot infer the right type in the presence of diamond operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9948",
             "fix": ""
         },
         "oracle": "",
@@ -2956,7 +2941,7 @@
         "bugid": "GROOVY-9947",
         "title": "Cannot pass numeric constant to a method with a generic type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9947",
             "fix": ""
         },
         "oracle": "",
@@ -3000,7 +2985,7 @@
         "bugid": "GROOVY-9945",
         "title": "STC: Cannot find matching method when using Generics",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9945",
             "fix": ""
         },
         "oracle": "",
@@ -3044,7 +3029,7 @@
         "bugid": "GROOVY-9937",
         "title": "internal compiler error during instruction selection",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9937",
             "fix": ""
         },
         "oracle": "",
@@ -3113,7 +3098,7 @@
         "bugid": "GROOVY-9935",
         "title": "int reference seems to not use its wrapper class",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9935",
             "fix": ""
         },
         "oracle": "",
@@ -3152,7 +3137,7 @@
         "bugid": "GROOVY-9934",
         "title": "Bounded type parameter is not captured by closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9934",
             "fix": ""
         },
         "oracle": "",
@@ -3190,7 +3175,7 @@
         "bugid": "GROOVY-9931",
         "title": "!instanceof inference does not work",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9931",
             "fix": ""
         },
         "oracle": "",
@@ -3260,7 +3245,11 @@
             "}"
         ],
         "errormsg": [
-            "x instanceof Integer"
+            "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
+            "program.groovy: 10: [Static type checking] - Cannot return value of type java.lang.Object on method returning type java.lang.Integer",
+            " @ line 10, column 14.",
+            "         return bar();",
+            "                ^1 error"
         ],
         "comment": ""
     }
