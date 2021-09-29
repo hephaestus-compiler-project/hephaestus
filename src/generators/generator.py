@@ -393,6 +393,8 @@ class Generator():
                     # We add the types to the context.
                     self.context.add_type(self.namespace, t_p.name, t_p)
             else:
+                # Type parameters of parameterized functions can be neither
+                # covariant nor contravariant.
                 type_params = self.gen_type_params(
                     with_variance=False,
                     blacklist=self._get_type_variable_names(),
