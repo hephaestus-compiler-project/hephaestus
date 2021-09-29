@@ -1,4 +1,5 @@
 """Fetch kotlin bugs.
+oracle, mutator, resolution, status, symptom must be completed manually
 """
 import argparse
 import requests
