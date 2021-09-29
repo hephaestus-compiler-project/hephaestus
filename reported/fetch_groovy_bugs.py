@@ -1,4 +1,5 @@
 """Fetch groovy bugs.
+oracle, mutator, symptom must be completed manually
 """
 import argparse
 import requests
