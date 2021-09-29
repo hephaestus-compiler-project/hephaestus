@@ -22,6 +22,7 @@ SCHEMA = {
         "fix": ""
     },
     "oracle": "",
+    "mutator": "",
     "severity": "",
     "reporter": "",
     "status": "",
