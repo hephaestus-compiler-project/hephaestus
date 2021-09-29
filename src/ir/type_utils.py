@@ -478,6 +478,20 @@ def _get_type_arg_variance(t_param, variance_choices):
 
 
 def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
+    """
+    This method recursively updates the type assignment associated with the
+    bound of a type variable.
+
+    For example, if we have a type constructor as follows
+
+    A<T1, T2: T1, T3: T2> and the type assignments
+    T1 -> String
+    T2 -> String
+
+    If we want to update the bound of T3 so that this bound is instantiated
+    with `Int` instead of `String`, we call this function to also update
+    the type assignment related to the bound of bounds.
+    """
     if not (t_param.is_type_var() and t_param.bound is not None):
         return
     bound = t_param.bound
@@ -494,6 +508,10 @@ def _compute_type_variable_assignments(
         type_var_map=None,
         variance_choices: Dict[tp.TypeParameter, Tuple[bool, bool]] = None,
         for_type_constructor=True):
+    # Note that this function is used for instantiating type parameters of
+    # both type constructors and parameterized functions. If the parameter
+    # `for_type_constructor` is True, then this function is used for
+    # instantiating type constructors.
     t_args = []
     type_var_map = dict(type_var_map or {})
     indexes = {}
@@ -550,11 +568,10 @@ def _compute_type_variable_assignments(
                             for k, v in type_var_map.items():
                                 if k.name == t_param.bound.name:
                                     t_bound = v
-                            if not t_bound:
-                                raise Exception(
-                                    'Cannot find assignment for the bound of '
-                                    'type parameter ' + t_param
-                                )
+                            assert t_bound is not None, (
+                                "Cannot find assignment for the bound of "
+                                "type parameter " + t_param
+                            )
 
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
                             # Here we have the following case:
