@@ -6,6 +6,7 @@ import os
 import json
 import re
 from datetime import datetime
+from copy import deepcopy
 
 
 COMPILER = "kotlinc"
@@ -22,6 +23,7 @@ SCHEMA = {
         "fix": ""
     },
     "oracle": "",
+    "mutator": "",
     "severity": "",
     "reporter": "",
     "status": "",
@@ -80,16 +82,17 @@ def get_data(lookup):
         passed = resolution - created if resolution else None
         reporter = item['reporter']['login']
 
-        if item['idReadable'] in lookup:
-            bug = lookup[item['idReadable']]
+        bid = item['idReadable']
+        if bid in lookup:
+            bug = lookup[bid]
         else:
-            bug = SCHEMA.copy()
+            bug = deepcopy(SCHEMA)
         bug['date'] = str(created)
         bug['resolutiondate'] = str(resolution)
         bug['resolvedin'] = str(passed)
-        bug['bugid'] = item['idReadable']
+        bug['bugid'] = bid
         bug['title'] = item['summary']
-        bug['links']['issuetracker'] = youtrack_url + item['idReadable']
+        bug['links']['issuetracker'] = youtrack_url + bid
         bug['reporter'] = reporter
 
         description = item['description']
