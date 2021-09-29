@@ -7,16 +7,17 @@
         "bugid": "KT-48958",
         "title": "Inconsistency in overload resolution when calling a scope function",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48958",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -53,16 +54,17 @@
         "bugid": "KT-45118",
         "title": "ClassCastException caused by parent and child class in if-else",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-45118",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "In Progress",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -250,16 +252,17 @@
         "bugid": "KT-48838",
         "title": "TYPE_MISMATCH error when combining SAM-coercion and parameterized function",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48838",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -291,16 +294,17 @@
         "bugid": "KT-48858",
         "title": "TYPE_MISMATCH error when applying `fun interface` in the initialization of a type constructor",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48858",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -338,16 +342,17 @@
         "bugid": "KT-48840",
         "title": "Cannot assign function reference to a variable with Functional Interface type without cast",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48840",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -391,16 +396,17 @@
         "bugid": "KT-48765",
         "title": "NI: Inferred type does not respect the bound of type variable",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48765",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "compiled",
+        "mutator": "soundness",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Runtime Behavior",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -437,16 +443,17 @@
         "bugid": "KT-48764",
         "title": "NI: Compile-time error when combining anonymous function and lambda in a conditional",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48764",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -483,16 +490,17 @@
         "bugid": "KT-48671",
         "title": "JVM / IR: \"AssertionError: Primitive array expected: CLASS IR_EXTERNAL_DECLARATION_STUB CLASS\"",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48671",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-09-11 15:20:49.044000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "3 days, 6:00:35.045000",
         "test": [
@@ -609,16 +617,17 @@
         "bugid": "KT-48766",
         "title": "JVM IR: \"AnalyzerException: Argument 1: expected I, but found R\" when assigning an array of numbers to an Any variable",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48766",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Obsolete",
         "resolutiondate": "2021-09-15 09:33:48.421000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "1:08:47.112000",
         "test": [
@@ -721,16 +730,17 @@
         "bugid": "KT-43846",
         "title": "No smart cast when returning function closures with captured smart-cast variable",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-43846",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -746,7 +756,7 @@
             "program.kt:4:16: error: type mismatch: inferred type is Any but String was expected",
             "        return thunk()"
         ],
-        "comment": ""
+        "comment": "could be inference (smart cast)"
     },
     {
         "date": "2020-12-24 16:17:53.655000",
@@ -756,16 +766,17 @@
         "bugid": "KT-44082",
         "title": "Can not infer type of overridden function",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44082",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -807,16 +818,17 @@
         "bugid": "KT-44742",
         "title": "Wrong java.io.Serializable inferred",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44742",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -843,16 +855,17 @@
         "bugid": "KT-47530",
         "title": "NI: Unexpected TYPE_MISMATCH when combining nested conditional and contravariant type argument",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47530",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -880,16 +893,17 @@
         "bugid": "KT-44595",
         "title": "Cannot infer type of overridden function with generic",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44595",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "inference",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "As Designed",
         "resolutiondate": "2021-09-08 14:41:21.774000",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "223 days, 0:31:21.390000",
         "test": [
@@ -918,16 +932,17 @@
         "bugid": "KT-47508",
         "title": "TYPE_MISMATCH when combining use-site variance with bounded polymorphism",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47508",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -956,16 +971,17 @@
         "bugid": "KT-47458",
         "title": "Superfluous TYPE_MISMATCH when instantiating type constructor with bounded type parameters",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47458",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -992,16 +1008,17 @@
         "bugid": "KT-47231",
         "title": "NI: Wrong type is inferred on combining conditional and contravariant type argument",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47231",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -1031,16 +1048,17 @@
         "bugid": "KT-46662",
         "title": "False positive \"NOTHING_TO_OVERRIDE\" when combining varargs with type parameters",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46662",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -1067,16 +1085,17 @@
         "bugid": "KT-44551",
         "title": "Imprecise type is inferred in an if expression",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44551",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "As Designed",
         "resolutiondate": "2021-09-08 14:10:30.232000",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "224 days, 21:58:17.308000",
         "test": [
@@ -1104,16 +1123,17 @@
         "bugid": "KT-43806",
         "title": "\"Unexpected tokens\" when `if` statement contains double parenthesis in variable assignment",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-43806",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -1162,16 +1182,17 @@
         "bugid": "KT-46864",
         "title": "JVM IR: \"IndexOutOfBoundsException: Cannot pop operand off an empty stack\" on compiling unused identity equality of Double literals",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46864",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-05-31 18:29:14.949000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "10 days, 5:58:40.290000",
         "test": [
@@ -1256,16 +1277,17 @@
         "bugid": "KT-47184",
         "title": "NI: Can not infer type of an if expression when passed in a function call and used a type parameter variable",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47184",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "inference",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -1294,16 +1316,17 @@
         "bugid": "KT-47117",
         "title": "NI: Reporting misleading error message when initializing a type constructor with unresolved reference",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47117",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "inference",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
+        "status": "Submitted",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
@@ -1331,16 +1354,17 @@
         "bugid": "KT-47073",
         "title": "JVM IR: \"AnalyzerException: Argument 1: expected I, but found R\" on compiling a method with a generic default argument whose bound is a primitive",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47073",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-06-04 17:57:56.024000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "3 days, 8:29:27.266000",
         "test": [
@@ -1431,16 +1455,17 @@
         "bugid": "KT-46684",
         "title": "ClassCastException when calling a function with a nullable generic vararg parameter",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46684",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Duplicate",
         "resolutiondate": "2021-05-14 10:25:44.981000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "0:36:25.690000",
         "test": [
@@ -1473,16 +1498,17 @@
         "bugid": "KT-45339",
         "title": "IllegalStateException through `PositioningStrategies$SECONDARY_CONSTRUCTOR_DELEGATION_CALL$1.mark` caused by inner enum",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-45339",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-03-24 12:28:05.680000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "16 days, 22:35:09.945000",
         "test": [
@@ -1538,16 +1564,17 @@
         "bugid": "KT-44651",
         "title": "JVM / IR: \"IllegalStateException: Illegal type substitutor\" with if-else inside class constructor argument inside another if-else",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44651",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "crash",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-02-11 09:41:04.700000",
-        "symptom": "",
+        "symptom": "crash",
         "bugtype": "",
         "resolvedin": "9 days, 21:14:54.524000",
         "test": [
@@ -1657,13 +1684,14 @@
             "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44627",
             "fix": ""
         },
-        "oracle": "",
+        "oracle": "error",
+        "mutator": "generator",
         "severity": "",
         "reporter": "stefanoshaliassos",
-        "status": "",
-        "resolution": "",
+        "status": "Closed",
+        "resolution": "Fixed",
         "resolutiondate": "2021-02-15 16:35:34.067000",
-        "symptom": "",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "16 days, 8:34:41.751000",
         "test": [
@@ -1688,10 +1716,11 @@
         "bugid": "GROOVY-10272",
         "title": "Wrong inference when using ternary operator with lambdas",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10270",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -1735,10 +1764,11 @@
         "bugid": "GROOVY-10271",
         "title": "Wrong inference when using ternary operator with closure and variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10270",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -1776,10 +1806,11 @@
         "bugid": "GROOVY-10270",
         "title": "Cannot initialize parameterized class with lambda without cast",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10270",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -1831,10 +1862,11 @@
         "bugid": "GROOVY-10269",
         "title": "STC: Stackoverflow Error when passing function reference to closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10269",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -1885,10 +1917,11 @@
         "bugid": "GROOVY-10268",
         "title": "Unable to assign variable in parameterized class with bounded polymorphism ",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10268",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -1924,10 +1957,11 @@
         "bugid": "GROOVY-10267",
         "title": "STC reports wrong message when encoutering wildcard types",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10267",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -1963,10 +1997,11 @@
         "bugid": "GROOVY-10266",
         "title": "The diamond operator does not work when passing a value whose type is a type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10266",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2008,10 +2043,11 @@
         "bugid": "GROOVY-10265",
         "title": "STC is unable to resolve variable in closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10265",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2052,10 +2088,11 @@
         "bugid": "GROOVY-10264",
         "title": "Issue with the diamond operator and conditional",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10264",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -2096,10 +2133,11 @@
         "bugid": "GROOVY-10254",
         "title": "STC: cannot return closure from method without casting",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10254",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -2143,10 +2181,11 @@
         "bugid": "GROOVY-10251",
         "title": "STC infers a type that does not respect the bound of type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10251",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2210,10 +2249,11 @@
         "bugid": "GROOVY-10230",
         "title": "Unexpected generics parameter arity mismatch in the \"instruction selection\" phase",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10230",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2296,10 +2336,11 @@
         "bugid": "GROOVY-10228",
         "title": "STC fails to substitute type variable in the presence of the diamond operator and a function call",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10228",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2342,10 +2383,11 @@
         "bugid": "GROOVY-10227",
         "title": "STC computes an imprecise LUB when involving two parameterized types implementing the same interface",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10227",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2385,10 +2427,11 @@
         "bugid": "GROOVY-10226",
         "title": "LUB is computed incorrectly when involving bounded type variables",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10226",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2422,10 +2465,11 @@
         "bugid": "GROOVY-10225",
         "title": "Unexpected NullPointerException during the \"instruction selection\" phase",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10225",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -2503,10 +2547,11 @@
         "bugid": "GROOVY-10222",
         "title": "Unable to infer the type parameter of a parameterized function",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10222",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "In Progress",
@@ -2544,10 +2589,11 @@
         "bugid": "GROOVY-10221",
         "title": "Unexpected compile-time error when combining closures and bounded type parameters",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10221",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2582,10 +2628,11 @@
         "bugid": "GROOVY-10220",
         "title": "Unexpected type mismatch when having conflicting type parameter names",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10220",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -2605,7 +2652,7 @@
         ],
         "errormsg": [
             "org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:",
-            "test.groovy: 5: [Static type checking] - Incompatible generic argument types.",
+            "test.groovy: 5: [Static type checking] - Incompatible generic argument types. Cannot assign A<java.lang.Object, java.lang.Number> to: A<? extends T, java.lang.Number>",
             " @ line 5, column 14.",
             "       this.x = x;",
             "                ^1 error"
@@ -2620,10 +2667,11 @@
         "bugid": "GROOVY-10158",
         "title": "Unexpected type mismatch when combining conditional and bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10158",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -2659,10 +2707,11 @@
         "bugid": "GROOVY-10153",
         "title": "STC: cannot combine use-variance with bounded polymorphism",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10153",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2702,10 +2751,11 @@
         "bugid": "GROOVY-10130",
         "title": "Flow typing does not work when && is combinded with instanceof",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10130",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2742,10 +2792,11 @@
         "bugid": "GROOVY-10129",
         "title": "Misleading report when using as a type argument a type parameter that extends an array type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10129",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2778,10 +2829,11 @@
         "bugid": "GROOVY-10128",
         "title": "Cannot assign closure with long as return type to java.util.function.Function<X, Number>",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10128",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2820,10 +2872,11 @@
         "bugid": "GROOVY-10127",
         "title": "STC misses type check in Generic class with a bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10127",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "In Progress",
@@ -2872,10 +2925,11 @@
         "bugid": "GROOVY-10125",
         "title": "FP Cycle detected in type parameter that extends another type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10125",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -2906,10 +2960,11 @@
         "bugid": "GROOVY-10116",
         "title": "STC: error when passing a type parameter in type constructor",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10116",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2948,10 +3003,11 @@
         "bugid": "GROOVY-10115",
         "title": "STC: compiler error when using type parameter with extends",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10115",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -2987,10 +3043,11 @@
         "bugid": "GROOVY-10114",
         "title": "Wrong type argument inference when using the result of ternary operator directly.",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10114",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -3041,10 +3098,11 @@
         "bugid": "GROOVY-10113",
         "title": "StackOverflowError in STC",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10113",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -3085,10 +3143,11 @@
         "bugid": "GROOVY-10111",
         "title": "compiler crash during canonicalization",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10111",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3215,10 +3274,11 @@
         "bugid": "GROOVY-10107",
         "title": "Cannot assign null to a variable with a bounded generic type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10107",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3251,10 +3311,11 @@
         "bugid": "GROOVY-10100",
         "title": "groovyc infers the wrong type when using a method reference of a function with varargs",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10100",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -3300,10 +3361,11 @@
         "bugid": "GROOVY-10098",
         "title": "Unexpected behaviour when the return type of a closure is a type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10098",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3340,10 +3402,11 @@
         "bugid": "GROOVY-10096",
         "title": "STC: accepts incorrect program with flow typing",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10096",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -3393,10 +3456,11 @@
         "bugid": "GROOVY-10095",
         "title": "Wrong LUB when involving a numeric constant and null",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10095",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -3433,10 +3497,11 @@
         "bugid": "GROOVY-10094",
         "title": "STC misses type checks on default arguments",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10094",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3474,10 +3539,11 @@
         "bugid": "GROOVY-10092",
         "title": "Compiler crash when trying to cast a boolean to float variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10092",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -3540,10 +3606,11 @@
         "bugid": "GROOVY-10091",
         "title": "Incompatible generic argument types on closure's return type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10091",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3580,10 +3647,11 @@
         "bugid": "GROOVY-10087",
         "title": "STC does not perform boxing on chars when encountering assignment and function call",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10087",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3619,10 +3687,11 @@
         "bugid": "GROOVY-10086",
         "title": "STC misses type error when calling a vararg method",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10086",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3673,10 +3742,11 @@
         "bugid": "GROOVY-10082",
         "title": "Incompatible generic argument types when combining subtyping and closures",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10082",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3715,10 +3785,11 @@
         "bugid": "GROOVY-10081",
         "title": "Conversion from int to byte does not work in case of ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10081",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -3768,10 +3839,11 @@
         "bugid": "GROOVY-10080",
         "title": "Closure with type argument inference does not work as expected",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10080",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -3822,10 +3894,11 @@
         "bugid": "GROOVY-10079",
         "title": "groovyc does not perform unboxing on Character type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10079",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3858,10 +3931,11 @@
         "bugid": "GROOVY-10033",
         "title": "Compiler crash when encountering function reference on nested class",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10033",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -3938,10 +4012,11 @@
         "bugid": "GROOVY-10011",
         "title": "Combining flow typing and type argument inference does not work as expected",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10011",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -3984,10 +4059,11 @@
         "bugid": "GROOVY-9996",
         "title": "Cannot infer correct type argument when using subtyping",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9996",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4033,10 +4109,11 @@
         "bugid": "GROOVY-9995",
         "title": "Wrong inference inside closure when having a bounded type parameter",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9995",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4083,10 +4160,11 @@
         "bugid": "GROOVY-9994",
         "title": "Type checking of array initializer expressions",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9994",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Resolved",
@@ -4121,10 +4199,11 @@
         "bugid": "GROOVY-9986",
         "title": "CLONE - STC does not report type mismatches for coerced list expression",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9986",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -4159,10 +4238,11 @@
         "bugid": "GROOVY-9985",
         "title": "STC does not report type mismatches in array initializers",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9985",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -4197,10 +4277,11 @@
         "bugid": "GROOVY-9984",
         "title": "Wrong type inference when passing null",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9984",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4247,10 +4328,11 @@
         "bugid": "GROOVY-9983",
         "title": "Type argument inference does not work in ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9983",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Resolved",
@@ -4296,10 +4378,11 @@
         "bugid": "GROOVY-9979",
         "title": "Inconsistency in handling of numeric types",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9979",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -4336,10 +4419,11 @@
         "bugid": "GROOVY-9972",
         "title": "LUB does not work correctly in case of ternary operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9972",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -4391,10 +4475,11 @@
         "bugid": "GROOVY-9970",
         "title": "Type argument inference does not work in closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9970",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4439,10 +4524,11 @@
         "bugid": "GROOVY-9967",
         "title": "STC: Access to field/property is forbidden after instanceof.",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9967",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4495,10 +4581,11 @@
         "bugid": "GROOVY-9963",
         "title": "Generic type of field is not istantiated",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9963",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -4538,10 +4625,11 @@
         "bugid": "GROOVY-9960",
         "title": "STC fails to report missing constructor",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9960",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -4579,10 +4667,11 @@
         "bugid": "GROOVY-9956",
         "title": "Cannot infer correct type argument when passing a subtype of the declared type argument",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9956",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4626,10 +4715,11 @@
         "bugid": "GROOVY-9953",
         "title": "Type from flow typing is not propagated in variable assignments",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9953",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4670,10 +4760,11 @@
         "bugid": "GROOVY-9952",
         "title": "STC does not correctly type check variable whose type is a type variable",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9952",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "In Progress",
@@ -4719,10 +4810,11 @@
         "bugid": "GROOVY-9948",
         "title": "Cannot infer the right type in the presence of diamond operator",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9948",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -4765,10 +4857,11 @@
         "bugid": "GROOVY-9947",
         "title": "Cannot pass numeric constant to a method with a generic type",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9947",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -4809,10 +4902,11 @@
         "bugid": "GROOVY-9945",
         "title": "STC: Cannot find matching method when using Generics",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9945",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4853,10 +4947,11 @@
         "bugid": "GROOVY-9937",
         "title": "internal compiler error during instruction selection",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9937",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Open",
@@ -4922,10 +5017,11 @@
         "bugid": "GROOVY-9935",
         "title": "int reference seems to not use its wrapper class",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9935",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Closed",
@@ -4961,10 +5057,11 @@
         "bugid": "GROOVY-9934",
         "title": "Bounded type parameter is not captured by closure",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9934",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
@@ -4999,10 +5096,11 @@
         "bugid": "GROOVY-9931",
         "title": "!instanceof inference does not work",
         "links": {
-            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9931",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9907",
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "schaliasos",
         "status": "Open",
@@ -5045,6 +5143,7 @@
             "fix": ""
         },
         "oracle": "",
+        "mutator": "",
         "severity": "",
         "reporter": "theosot",
         "status": "Closed",
