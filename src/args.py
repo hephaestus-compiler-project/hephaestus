@@ -173,6 +173,11 @@ parser.add_argument(
     action="store_true",
     help="Disable contravariance in use-site variance"
 )
+parser.add_argument(
+    "--disable-var-type-inference",
+    action="store_true",
+    help="Disable variable type inference"
+)
 
 
 args = parser.parse_args()
@@ -221,7 +226,8 @@ args.stop_cond = "timeout" if args.seconds else "iterations"
 args.temp_directory = os.path.join(cwd, "temp")
 args.options = {
     "Generator": {
-        "disable_inference_in_closures": args.disable_inference_in_closures
+        "disable_inference_in_closures": args.disable_inference_in_closures,
+        "disable_var_type_inference": args.disable_var_type_inference,
     },
     'Translator': {
         'cast_numbers': args.cast_numbers,
