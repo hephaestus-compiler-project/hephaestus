@@ -817,12 +817,42 @@ class Generator():
                 if not cond:
                     continue
 
-                # FIXME
-                if isinstance(attr, ast.FunctionDeclaration) and attr.is_parameterized():
-                    continue
                 if attr_name == 'functions':
+                    if attr.is_parameterized():
+                        # Here we do the following. The retrieved attribute
+                        # is a parameterized function. So, we need to
+                        # instantiate it with some type arguments. However,
+                        # note that if the matching object belongs to a
+                        # parameterized class, we need to consider the
+                        # following case:
+                        #
+                        # A<T> {
+                        #   fun <X: T> foo(): X
+                        # }
+                        # val a = new A<String>()
+                        # a.foo() -> here the type argument of the function
+                        # `foo` should be a subtype of String, as the type of
+                        # the receiver is A<String> and as a result the bound
+                        # type variable X is String.
+                        type_var_bounds = {}
+                        for t_param in attr.type_parameters:
+                            bound = t_param.bound
+                            if bound is None:
+                                continue
+                            if bound.has_type_variables():
+                                bound = tp.substitute_type(
+                                    bound, type_map_var)
+                                if not bound.has_type_variables():
+                                    type_var_bounds[t_param] = bound
+                        type_var_bounds.update(type_map_var)
+                        fun_type_var_map = tu.instantiate_parameterized_function(
+                            attr.type_parameters, self.get_types(),
+                            type_var_map=type_var_bounds, only_regular=True)
+                    else:
+                        fun_type_var_map = {}
+
                     decls.append((ast.Variable(var.name), type_map_var, attr,
-                                  {}))
+                                  fun_type_var_map))
                 else:
                     decls.append((ast.Variable(var.name), type_map_var, attr))
         return decls
