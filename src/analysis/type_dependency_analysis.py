@@ -1,6 +1,7 @@
 from collections import defaultdict
-from typing import NamedTuple, Union, Tuple, Dict, List
+from typing import NamedTuple, Union, Dict, List
 
+from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -128,14 +129,18 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack: list = []
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
+        self._stream = utils.IntStream()
 
     def result(self):
         return self.type_graph
 
-    def _construct_node_id(self):
+    def _get_node_id(self, namespace=None):
+        if namespace is None:
+            pass
+
+    def _get_node_id(self):
         top_stack = self._stack[-1]
-        f = "/".join(self._namespace) + "/" + top_stack
-        return f
+        return top_stack
 
     def _find_target_type_variable(self, source_type_var, type_var_deps,
                                    target_type_constructor, node_id):
@@ -202,25 +207,25 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return main_node
 
     def visit_integer_constant(self, node):
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.integer_type))
 
     def visit_real_constant(self, node):
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.real_type))
 
     def visit_string_constant(self, node):
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_string_type()))
 
     def visit_boolean_constant(self, node):
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_char_constant(self, node):
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_char_type()))
 
@@ -231,15 +236,17 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # If we cannot find declaration in context, then abort.
             return
         namespace, decl = decl
-        node_id = self._construct_node_id()
+        node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             DeclarationNode("/".join(namespace), decl)
         )
 
     def _handle_declaration(self, parent_node_id, node, expr, type_attr):
-        self._stack.append(node.name)
-        node_id = self._construct_node_id()
-        self._exp_type = node.var_type
+        node_id = parent_node_id + "/" + node.name
+        self._stack.append(node_id)
+        node_type = getattr(node, type_attr, None)
+        prev = self._exp_type
+        self._exp_type = node_type
         self.visit(expr)
         self._stack.pop()
         source = DeclarationNode(parent_node_id, node)
@@ -256,10 +263,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 added_declared = True
             construct_edge(self.type_graph, source, n, edge_label)
 
-        node_type = getattr(node, type_attr, None)
         if not added_declared and node_type is not None:
             construct_edge(self.type_graph, source,
                            TypeNode(node_type), Edge.DECLARED)
+        self._exp_type = prev
 
     def visit_var_decl(self, node):
         self._handle_declaration("/".join(self._namespace),
@@ -286,23 +293,23 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return super().visit_func_decl(node)
 
     def visit_field_access(self, node):
-        name = hash(node)
-        node_id = self._construct_node_id()
-        self._stack.append(name)
+        parent_node_id = self._get_node_id()
+        node_id = parent_node_id + "/" + node.f
+        self._stack.append(node_id)
         super().visit_field_access(node)
         self._stack.pop()
-        self._inferred_nodes[node_id].append(
+        self._inferred_nodes[parent_node_id].append(
             TypeNode(tu.get_type_hint(node, self._context, self._namespace,
                                       self._bt_factory, self._types))
         )
 
     def visit_func_call(self, node):
-        name = hash(node)
-        node_id = self._construct_node_id()
-        self._stack.append(name)
+        parent_node_id = self._get_node_id()
+        node_id = parent_node_id + "/" + node.fun
+        self._stack.append(node_id)
         super().visit_func_call(node)
         self._stack.pop()
-        self._inferred_nodes[node_id].append(
+        self._inferred_nodes[parent_node_id].append(
             TypeNode(tu.get_type_hint(node, self._context, self._namespace,
                                       self._bt_factory, self._types))
         )
@@ -311,8 +318,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         assert fun_decl is not None
         namespace, fun_decl = fun_decl
         for i, param in enumerate(fun_decl.params):
-            fun_namespace = namespace + (fun_decl.name,)
-            param_id = "/".join(fun_namespace)
+            param_id = node_id + "/" + param.name
             self._handle_declaration(param_id, param, node.args[i],
                                      "param_type")
 
@@ -324,30 +330,26 @@ class TypeDependencyAnalysis(DefaultVisitor):
         assert class_decl is not None
         namespace, class_decl = class_decl
 
-        node_id = self._construct_node_id()
+        parent_node_id = self._get_node_id()
+        node_id = parent_node_id + "/" + class_decl.name
         for i, c in enumerate(node.children()):
-            field_type = class_decl.fields[i].get_type()
-            prev = self._exp_type
-            self._exp_type = field_type
-            self._stack.append(
-                class_decl.name + "/" + class_decl.fields[i].name)
-            self.visit(c)
-            self._exp_type = prev
-            self._stack.pop()
+            self._handle_declaration(node_id, class_decl.fields[i], c,
+                                     'field_type')
 
         if not node.class_type.is_parameterized():
             # We initialize a simple class, so there's nothing special to
             # do here.
-            self._inferred_nodes[node_id].append(TypeNode(node.class_type))
+            self._inferred_nodes[parent_node_id].append(
+                TypeNode(node.class_type))
             return
 
         main_node = TypeConstructorInstantiationCallNode(
-            node_id, node.class_type, node)
-        self._inferred_nodes[node_id].append(main_node)  # TODO revisit
+            parent_node_id, node.class_type, node)
+        self._inferred_nodes[parent_node_id].append(main_node)  # TODO revisit
         t = node.class_type
         type_var_nodes = {}
         for i, t_param in enumerate(t.t_constructor.type_parameters):
-            type_var_id = node_id + "/" + t.name
+            type_var_id = parent_node_id + "/" + t.name
             source = TypeVarNode(type_var_id, t_param, False)
             type_var_nodes[t_param] = source
             target = TypeNode(t.type_args[i])
@@ -358,15 +360,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 continue
             source = type_var_nodes[t_param]
 
-            field_node_id = "/".join(
-                ("/".join(self._namespace),
-                 class_decl.name,
-                 class_decl.fields[i].name)
-            )
-            inferred_nodes = self._inferred_nodes.pop(field_node_id)
+            inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
             for n in inferred_nodes:
-                construct_edge(self.type_graph, source, n, Edge.INFERRED)
+                if n.label == Edge.DECLARED:
+                    continue
+                construct_edge(self.type_graph, source, n.target,
+                               Edge.INFERRED)
         if self._exp_type:
             target = self._convert_type_to_node(self._exp_type, main_node,
-                                                node_id)
-            self._inferred_nodes[node_id].append(target)
+                                                parent_node_id)
+            self._inferred_nodes[parent_node_id].append(target)
