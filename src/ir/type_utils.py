@@ -497,8 +497,15 @@ def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
     bound = t_param.bound
     if not bound.is_type_var():
         return
-    t_args[indexes[bound]] = t
-    type_var_map[bound] = t
+    try:
+        t_args[indexes[bound]] = t
+        type_var_map[bound] = t
+    except KeyError:
+        # This KeyError happens only if a given type parameter has bound
+        # corresponding to a type variable of a type constructor. In this
+        # case the type variable of the type constructor should be already
+        # instantiated with a type that cannot be changed.
+        assert bound in type_var_map
     _update_type_var_bound_rec(bound, t, t_args, indexes, type_var_map)
 
 
