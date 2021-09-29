@@ -80,6 +80,9 @@ class Generator():
         self.max_side_effects = max_side_effects
         self.disable_inference_in_closures = options.get(
             "disable_inference_in_closures", False)
+        self.disable_var_type_inference = options.get(
+            "disable_var_type_inference", False
+        )
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
@@ -751,6 +754,7 @@ class Generator():
         # We never omit type in non-final variables or in variables that
         # correspond to a bottom constant.
         omit_type = (
+            not self.disable_var_type_inference and
             ut.random.bool() and
             is_final and
             var_type != self.bt_factory.get_number_type()
