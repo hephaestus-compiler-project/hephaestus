@@ -10,6 +10,18 @@ def get_args():
     return parser.parse_args()
 
 
+def print_stats(lang, stats):
+    print(80*"=")
+    total = sum(v for v in stats['oracle'].values())
+    print(lang + ' (total:' + str(total) + ')')
+    print(80*"-")
+    for category, value in stats.items():
+        value = {k if k else "None": v for k, v in value.items()}
+        res = [k + " (" + str(v) + ")" for k,v in value.items()]
+        print("{}: {}".format(category, ", ".join(res)), )
+    print(80*"=")
+
+
 def main():
     args = get_args()
     with open(args.input, 'r') as f:
@@ -25,16 +37,13 @@ def main():
         for key in ('oracle', 'mutator', 'status', 'resolution', 'symptom'):
             stats[bug['compiler']][key][bug[key]] += 1
             stats['total'][key][bug[key]] += 1
+    total = None
     for lang, values in stats.items():
-        print(80*"=")
-        total = sum(v for v in values['oracle'].values())
-        print(lang + ' (total:' + str(total) + ')')
-        print(80*"-")
-        for category, value in values.items():
-            value = {k if k else "None": v for k, v in value.items()}
-            res = [k + " (" + str(v) + ")" for k,v in value.items()]
-            print("{}: {}".format(category, ", ".join(res)), )
-        print(80*"=")
+        if lang == "total":
+            total = values
+        else:
+            print_stats(lang, values)
+    print_stats("total", total)
 
 
 if __name__ == "__main__":
