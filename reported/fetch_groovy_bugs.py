@@ -6,6 +6,7 @@ import requests
 import os
 import json
 import re
+from copy import deepcopy
 from datetime import datetime
 
 
@@ -85,16 +86,17 @@ def get_data(lookup):
                 resolution = None
             passed = resolution - created if resolution else None
             reporter = item['fields']['reporter']['name']
-            if item['key'] in lookup:
-                bug = lookup[item['key']]
+            bugid = item['key']
+            if bugid in lookup:
+                bug = lookup[bugid]
             else:
-                bug = SCHEMA.copy()
+                bug = deepcopy(SCHEMA)
             bug['date'] = str(created)
             bug['resolutiondate'] = str(resolution)
             bug['resolvedin'] = str(passed)
-            bug['bugid'] = item['key']
+            bug['bugid'] = bugid
             bug['title'] = item['fields']['summary']
-            bug['links']['issuetracker'] = groovy_jira_url + item['key']
+            bug['links']['issuetracker'] = groovy_jira_url + bugid
             bug['reporter'] = reporter
             if item['fields']['resolution']:
                 bug['resolution'] = str(item['fields']['resolution']['name'])
