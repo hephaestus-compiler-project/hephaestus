@@ -13,7 +13,7 @@ simple_run_groovy() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     # sdk install groovy
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language groovy --cast-numbers
 }
@@ -22,7 +22,7 @@ simple_run_java() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     # sdk install groovy
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language java \
         --disable-contravariance-use-site --disable-var-type-inference
@@ -32,7 +32,7 @@ simple_run() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     sdk install kotlin
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language kotlin
 }
@@ -40,10 +40,10 @@ simple_run() {
 run_groovy_from_source() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     cd $GROOVY_INSTALLATION
-    git pull
+    git pull origin master
     ./gradlew clean dist --continue
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language groovy \
         --cast-numbers --disable-contravariance-use-site
@@ -51,11 +51,11 @@ run_groovy_from_source() {
 
 run_from_source() {
     cd $KOTLIN_INSTALLATION
-    git pull
+    git pull origin master
     ./gradlew clean
     ./gradlew -Dhttp.socketTimeout=60000 -Dhttp.connectionTimeout=60000 dist
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 main.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language kotlin
 }
@@ -63,17 +63,17 @@ run_from_source() {
 run_groovy_from_source() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     cd $GROOVY_INSTALLATION
-    git pull
+    git pull origin master
     ./gradlew clean dist --continue
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language groovy --cast-numbers
 }
 
 run_multiple_versions() {
     cd $CHECK_TYPE_SYSTEMS
-    git pull
+    git pull origin stable
     source "$HOME/.sdkman/bin/sdkman-init.sh"
     for i in {1..22}; do
         length=$(echo "$VERSIONS" | wc -w)
