@@ -91,8 +91,8 @@ class Generator():
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
         self.namespace = ('global',)
-        self.enable_pecs = False if language == 'kotlin' else True
-        self.disable_variance_functions = True if language == 'kotlin' else False
+        self.enable_pecs = not language == 'kotlin'
+        self.disable_variance_functions = language == 'kotlin'
 
         # This flag is used for Java lambdas where local variables references
         # must be final.
@@ -430,8 +430,8 @@ class Generator():
                            self.namespace[-2] != 'global' and
                            self.namespace[-2][0].islower())
 
-        prev_inside_java_nested_fun = self._inside_java_nested_fun
-        self._inside_java_nested_fun = nested_function and self.language == "java"
+        prev_inside_java_lamdba = self._inside_java_lambda
+        self._inside_java_lambda = nested_function and self.language == "java"
         # Type parameters of functions cannot be variant.
         # Also note that at this point, we do not allow a conflict between
         # type variable names of class and type variable names of functions.
