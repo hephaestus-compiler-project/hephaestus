@@ -641,10 +641,10 @@ class ClassDeclaration(Declaration):
 
         # substitute type variables in parent's functions
         for f in parent_funcs:
-            new_f = copy(f)
+            new_f = deepcopy(f)
             params = []
             for p in f.params:
-                new_p = copy(p)
+                new_p = deepcopy(p)
                 new_p.param_type = types.substitute_type(p.get_type(),
                                                          type_var_map)
                 params.append(new_p)
