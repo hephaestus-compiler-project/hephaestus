@@ -45,6 +45,7 @@ class GenLimits:
 @dataclass
 class Probabilities:
     function_expr: float # functions that their body are expressions
+    bounded_type_parameters: float
 
 
 class GenConfig:
@@ -67,7 +68,8 @@ class GenConfig:
             max_depth=7
         )
         self.prob=Probabilities(
-                function_expr=1.0
+                function_expr=1.0,
+                bounded_type_parameters=0.0
         )
         for key, value in kwargs.items():
             process_arg(self, key, value)

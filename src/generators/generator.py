@@ -2143,7 +2143,7 @@ class Generator():
             if with_variance and ut.random.bool():
                 variance = ut.random.choice(variances)
             bound = None
-            if ut.random.bool():
+            if ut.random.bool(self.cfg.prob.bounded_type_parameters):
                 exclude_covariants = variance == tp.Contravariant or for_function
                 exclude_contravariants = True
                 bound = self.select_type(
