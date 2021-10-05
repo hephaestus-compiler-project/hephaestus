@@ -118,7 +118,7 @@ def get_data(lookup):
             results.append(bug)
         start_at += max_results
     # Add bugs in lookup but not in current set (e.g. from another tracker)
-    ids = (bug['bugid'] for bug in results)
+    ids = {bug['bugid'] for bug in results}
     for bug_id, bug in lookup.items():
         if bug_id not in ids:
             results.append(bug)

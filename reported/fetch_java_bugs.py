@@ -113,29 +113,11 @@ def get_data(lookup):
                 bug['test'] = code_fragments[0]
         results.append(bug)
     # Add bugs in lookup but not in current set (e.g. from another tracker)
-    ids = (bug['bugid'] for bug in results)
+    ids = {bug['bugid'] for bug in results}
     for bug_id, bug in lookup.items():
         if bug_id not in ids:
             results.append(bug)
     return results
-
-#        stats = {
-#            "created": str(created),
-#            "resolution": str(resolution),
-#            "passed": str(passed),
-#            "comments": None,
-#            "reporter": reporter,
-#            "assignee": assignee,
-#            "reporter_is_assigned": reporter == assignee
-#        }
-#        statistics[item['key']] = stats
-#        temp_data.append(openjdk_url + item['key'])
-#        description = item['fields']['description']
-#        description = description if description is not None else ""
-#        with open(os.path.join(descriptions, item['key']), 'w') as out:
-#            out.write(description)
-#    data.extend(temp_data)
-#    start_at += max_results
 
 
 def get_args():
