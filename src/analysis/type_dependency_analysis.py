@@ -310,6 +310,24 @@ class TypeDependencyAnalysis(DefaultVisitor):
             DeclarationNode("/".join(namespace), decl)
         )
 
+    def visit_assign(self, node):
+        attribute_names = {
+            ast.FieldDeclaration: "field_type",
+            ast.ParameterDeclaration: "param_type",
+            ast.VariableDeclaration: "var_type"
+        }
+        if node.receiver is None:
+            decl = get_decl(self._context,
+                            self._namespace, node.name)
+            assert decl is not None
+            namespace, decl = decl
+            node_id = "/".join(namespace)
+            self._handle_declaration(node_id, decl, node.expr,
+                                     attribute_names[type(decl)])
+        else:
+            # TODO
+            pass
+
     def visit_conditional(self, node):
         prev = self._stack
         self._stack = []
@@ -330,7 +348,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack.pop()
         source = DeclarationNode(parent_node_id, node)
 
-        inferred_nodes = self._inferred_nodes.pop(node_id)
+        inferred_nodes = self._inferred_nodes.pop(node_id, [])
         added_declared = False
         for n in inferred_nodes:
             edge_label = (
@@ -342,7 +360,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 added_declared = True
             construct_edge(self.type_graph, source, n, edge_label)
 
-        if not added_declared and node_type is not None:
+        if not added_declared and node_type is not None and inferred_nodes:
             if getattr(node, 'inferred_type', False) is not False:
                 # Add this edge only if the type declaration is omittable,
                 # i.e., for variables
@@ -384,6 +402,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # If the body of function returns void, we cannot omit the
             # return type of the function. So, we simply visit its body.
             self.visit(node.body)
+            return
 
         node_id = "/".join(self._namespace)
 

@@ -120,3 +120,19 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
 context.add_var(ast.GLOBAL_NAMESPACE, var2.name, var2)
 program7 = ast.Program(context, "kotlin")
+
+
+# program 8
+var1 = ast.VariableDeclaration("x", ast.BottomConstant(t1), var_type=t1,
+                               is_final=False)
+assign = ast.Assignment("x", new)
+body = ast.Block([var1, assign])
+func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
+                               ast.FunctionDeclaration.FUNCTION)
+
+FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
+context = ctx.Context()
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_var(FUNC_NAMESPACE, var1.name, var1)
+program8 = ast.Program(context, "kotlin")
