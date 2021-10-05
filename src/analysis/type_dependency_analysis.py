@@ -1,7 +1,6 @@
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
-from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -129,14 +128,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack: list = []
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
-        self._stream = utils.IntStream()
 
     def result(self):
         return self.type_graph
-
-    def _get_node_id(self, namespace=None):
-        if namespace is None:
-            pass
 
     def _get_node_id(self):
         top_stack = self._stack[-1]
@@ -173,6 +167,18 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return None
 
     def _convert_type_to_node(self, t, infer_t, node_id):
+        """
+        This function converts a type to a node. There are three possible
+        scenarios:
+
+        1) The given type is not parameterized. In this case, we simply
+           construct a TypeNode containing the given type.
+        2) The given type is parameterized but the inferred node is not
+           a type constructor instantiation. In this case, again, we simply
+           construct a TypeNode containing the given type.
+        3) Othewrise, we construct a TypeConstructorInstantiationDeclNode
+           and connect it with the type parameters of the type constructor.
+        """
         if not t.is_parameterized():
             return TypeNode(t)
 
@@ -185,12 +191,33 @@ class TypeDependencyAnalysis(DefaultVisitor):
             type_var_id = node_id + "/" + t.name
             source = TypeVarNode(type_var_id, t_param, True)
             target = TypeNode(t.type_args[i])
+            # we connect type variables with the types with which they
+            # are instantiated.
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
+            # We connect type constructor with the type parameters.
             construct_edge(self.type_graph, main_node, source,
                            Edge.DECLARED)
+
+            # Here, the TypeConstructorInstantiationCallNode and
+            # the TypeConstructorInstantiationDeclNode correspond to the same
+            # type constructor. In this case, we connect the included type
+            # variables. In other words, in this case we handle the following
+            # scenario:
+            # -TypeInstDeclNode-   -TypeInstCallNode-
+            # Foo<String> x =       new Foo<String>()
             if t.name == infer_t.t.name:
                 target_var = TypeVarNode(type_var_id, t_param, False)
             else:
+                # Otherwise, we are trying to find a target type variable
+                # to connect the type variable of TypeInstDeclNode with.
+                # This handles subtyping. For example
+                # class A<T>
+                # class B<T> : A<T>()
+                #
+                # A<String> x = new Bar<String>()
+                #
+                # In the above example, we connect the type variable of A
+                # with the type variable of A.
                 target_var = self._find_target_type_variable(
                     t.name + "." + t_param.name, type_deps, infer_t.t.name,
                     node_id)
@@ -264,8 +291,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, n, edge_label)
 
         if not added_declared and node_type is not None:
-            construct_edge(self.type_graph, source,
-                           TypeNode(node_type), Edge.DECLARED)
+            if getattr(node, 'inferred_type', False) is not False:
+                # Add this edge only if the type declaration is omittable,
+                # i.e., for variables
+                construct_edge(self.type_graph, source,
+                               TypeNode(node_type), Edge.DECLARED)
         self._exp_type = prev
 
     def visit_var_decl(self, node):
@@ -322,6 +352,47 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._handle_declaration(param_id, param, node.args[i],
                                      "param_type")
 
+    def _infer_type_variables_by_call_arguments(self, node_id, class_decl,
+                                                type_var_nodes):
+        # Add this point, we furher examine the fields of the constructor to
+        # see if any of its type variables can be inferred by the arguments
+        # passed in the constructor invocation, i.e., A<String>(x)
+        for i, f in enumerate(class_decl.fields):
+            if not f.get_type().is_type_var():
+                continue
+            source = type_var_nodes[f.get_type()]
+
+            inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
+            for n in inferred_nodes:
+                if n.label == Edge.DECLARED:
+                    continue
+                # This edge connects the corresponding type variable with
+                # the type inferred for the respective argument of
+                # constructor.
+                construct_edge(self.type_graph, source, n.target,
+                               Edge.INFERRED)
+
+    def _handle_type_constructor_instantiation(self, node,
+                                               parent_node_id):
+        # If we initialize a type constructor, then create a node for
+        # representing the type constructor instantiatiation (at use-site).
+        main_node = TypeConstructorInstantiationCallNode(
+            parent_node_id, node.class_type, node)
+        self._inferred_nodes[parent_node_id].append(main_node)
+        t = node.class_type
+        type_var_nodes = {}
+        for i, t_param in enumerate(t.t_constructor.type_parameters):
+            type_var_id = parent_node_id + "/" + t.name
+            source = TypeVarNode(type_var_id, t_param, False)
+            type_var_nodes[t_param] = source
+            target = TypeNode(t.type_args[i])
+            # This edge connects type constructor with its type variables.
+            construct_edge(self.type_graph, main_node, source, Edge.DECLARED)
+            # This edge connects every type variable with the type arguments
+            # with which it is explicitly instantiated.
+            construct_edge(self.type_graph, source, target, Edge.DECLARED)
+        return main_node, type_var_nodes
+
     def visit_new(self, node):
         # First, we use the context to retrieve the declaration of the class
         # we initialize in this node
@@ -332,6 +403,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
         parent_node_id = self._get_node_id()
         node_id = parent_node_id + "/" + class_decl.name
+        # First we visit the children of this node (i.e., its arguments),
+        # and handle them as declarations.
         for i, c in enumerate(node.children()):
             self._handle_declaration(node_id, class_decl.fields[i], c,
                                      'field_type')
@@ -343,29 +416,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 TypeNode(node.class_type))
             return
 
-        main_node = TypeConstructorInstantiationCallNode(
-            parent_node_id, node.class_type, node)
-        self._inferred_nodes[parent_node_id].append(main_node)  # TODO revisit
-        t = node.class_type
-        type_var_nodes = {}
-        for i, t_param in enumerate(t.t_constructor.type_parameters):
-            type_var_id = parent_node_id + "/" + t.name
-            source = TypeVarNode(type_var_id, t_param, False)
-            type_var_nodes[t_param] = source
-            target = TypeNode(t.type_args[i])
-            construct_edge(self.type_graph, main_node, source, Edge.DECLARED)
-            construct_edge(self.type_graph, source, target, Edge.DECLARED)
-        for i, f in enumerate(class_decl.fields):
-            if not f.get_type().is_type_var():
-                continue
-            source = type_var_nodes[t_param]
-
-            inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
-            for n in inferred_nodes:
-                if n.label == Edge.DECLARED:
-                    continue
-                construct_edge(self.type_graph, source, n.target,
-                               Edge.INFERRED)
+        main_node, type_var_nodes = (
+            self._handle_type_constructor_instantiation(node, parent_node_id)
+        )
+        self._infer_type_variables_by_call_arguments(node_id, class_decl,
+                                                     type_var_nodes)
         if self._exp_type:
             target = self._convert_type_to_node(self._exp_type, main_node,
                                                 parent_node_id)

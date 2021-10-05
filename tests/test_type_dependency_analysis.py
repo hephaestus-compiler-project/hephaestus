@@ -55,6 +55,30 @@ def test_program2():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/y/Foo/T]': ['-> Type[String] (declared)'],
+        'Declaration[global/Foo/f]': ['-> Type[T] (declared)'],
+        'Declaration[global/x]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'Declaration[global/y/Foo/f]': [
+            '-> Declaration[global/x] (inferred)',
+        ],
+        'Declaration[global/y]': [
+            '-> TypeConInstCall[global/y/Foo] (inferred)',
+            '-> TypeConInstDecl[global/y/Foo] (declared)'
+        ],
+        'TypeConInstCall[global/y/Foo]': [
+            '-> TypeVariable[global/y/Foo/T] (declared)',
+        ],
+        'TypeConInstDecl[global/y/Foo]': [
+            '-> !TypeVariable[global/y/Foo/T] (declared)',
+        ],
+        'TypeVariable[global/y/Foo/T]': [
+            '-> Type[String] (declared)',
+            '-> Declaration[global/x] (inferred)',
+            '-> !TypeVariable[global/y/Foo/T] (inferred)'
+        ]
     }
 
 
@@ -68,6 +92,35 @@ def test_program3():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/y/Bar/f/Foo/T]': ['-> Type[String] (declared)'],
+        'Declaration[global/Bar/f]': ['-> Type[Foo] (declared)'],
+        'Declaration[global/Foo/f]': ['-> Type[T] (declared)'],
+        'Declaration[global/x]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)'
+        ],
+        'Declaration[global/y/Bar/f/Foo/f]': [
+            '-> Declaration[global/x] (inferred)',
+        ],
+        'Declaration[global/y/Bar/f]': [
+            '-> TypeConInstCall[global/y/Bar/f/Foo] (inferred)',
+            '-> TypeConInstDecl[global/y/Bar/f/Foo] (declared)'
+        ],
+        'Declaration[global/y]': [
+            '-> Type[Bar] (inferred)',
+            '-> Type[Bar] (declared)'
+        ],
+        'TypeConInstCall[global/y/Bar/f/Foo]': [
+            '-> TypeVariable[global/y/Bar/f/Foo/T] (declared)'
+        ],
+        'TypeConInstDecl[global/y/Bar/f/Foo]': [
+            '-> !TypeVariable[global/y/Bar/f/Foo/T] (declared)',
+        ],
+        'TypeVariable[global/y/Bar/f/Foo/T]': [
+            '-> Type[String] (declared)',
+            '-> Declaration[global/x] (inferred)',
+            '-> !TypeVariable[global/y/Bar/f/Foo/T] (inferred)'
+        ]
 
     }
 
