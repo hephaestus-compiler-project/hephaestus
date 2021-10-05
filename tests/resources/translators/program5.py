@@ -43,8 +43,8 @@ def produce_program(lang, types):
         "bb",
         Conditional(Is(Variable("b"), a_cls.get_type()),
                     Conditional(Is(Variable("b"), b_cls.get_type()),
-                                Variable("b"), Variable("ba")),
-                    Variable("ba")),
+                                Variable("b"), Variable("ba"), b_cls.get_type()),
+                    Variable("ba"), b_cls.get_type()),
         is_final=False,
         var_type=b_cls.get_type()
     )

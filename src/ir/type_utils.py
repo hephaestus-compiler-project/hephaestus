@@ -900,40 +900,7 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
                 None if vardecl is None else vardecl[1].get_type())
 
         if isinstance(expr, ast.Conditional):
-            expr1 = expr.true_branch
-            expr2 = expr.false_branch
-
-            if isinstance(expr.cond, ast.Is):
-                # true branch smart cast
-                true_namespace = namespace + ('true_block',)
-                false_namespace = namespace + ('false_block',)
-                if not expr.cond.operator.is_not:
-                    smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
-                    e1_type = get_type_hint(expr1, context, true_namespace,
-                                            factory, types,
-                                            smart_casts=smart_casts)
-                    smart_casts.pop()
-                    e2_type = get_type_hint(expr2, context, false_namespace,
-                                            factory, types,
-                                            smart_casts=smart_casts)
-                # false branch smart cast
-                else:
-                    e1_type = get_type_hint(expr1, context, true_namespace,
-                                            factory, types,
-                                            smart_casts=smart_casts)
-                    smart_casts.append((expr.cond.lexpr, expr.cond.rexpr))
-                    e2_type = get_type_hint(expr2, context, false_namespace,
-                                            factory, types,
-                                            smart_casts=smart_casts)
-                    smart_casts.pop()
-            else:
-                e1_type = get_type_hint(expr1, context, namespace, factory,
-                                        types, smart_casts=smart_casts)
-                e2_type = get_type_hint(expr2, context, namespace, factory,
-                                        types, smart_casts=smart_casts)
-
-            return _return_type_hint(find_lub(
-                e1_type, e2_type, types, factory.get_any_type()))
+            return _return_type_hint(expr.get_type())
 
         if isinstance(expr, ast.BottomConstant):
             return _return_type_hint(expr.t)

@@ -159,7 +159,8 @@ def test_program5_if():
     bar_fun.body.body[-1].args[0] = ast.Conditional(
         ast.BooleanConstant("true"),
         ast.FunctionCall("foo", [ast.Variable("z")]),
-        ast.StringConstant("bar")
+        ast.StringConstant("bar"),
+        builtins.String,
     )
     ua = UseAnalysis(program)
     ua.visit(program.context.get_decl(ast.GLOBAL_NAMESPACE, "A"))
@@ -195,7 +196,8 @@ def test_program5_if2():
     bar_fun.body.body[-1].args[0].args[0] = ast.Conditional(
         ast.BooleanConstant("true"),
         ast.Variable("z"),
-        ast.Variable("z")
+        ast.Variable("z"),
+        builtins.Any
     )
     ua = UseAnalysis(program)
     ua.visit(program.context.get_decl(ast.GLOBAL_NAMESPACE, "A"))

@@ -22,7 +22,8 @@ foo_z = ast.VariableDeclaration("z", ast.Variable("x"), var_type=kt.String)
 if_cond1 = ast.Conditional(
     ast.BooleanConstant("true"),
     ast.Block([foo_z, ast.Variable("z")]),
-    ast.StringConstant("str")
+    ast.StringConstant("str"),
+    kt.String
 )
 foo_y = ast.VariableDeclaration("y", if_cond1, var_type=kt.String)
 fun_body = ast.Block([foo_y])
@@ -40,7 +41,8 @@ bar_z = ast.VariableDeclaration("z", ast.Variable("x"), var_type=kt.String)
 if_cond2 = ast.Conditional(
     ast.BooleanConstant("true"),
     ast.Block([bar_z, ast.StringConstant("bar")]),
-    ast.StringConstant("foo")
+    ast.StringConstant("foo"),
+    kt.String
 )
 bar_y = ast.VariableDeclaration("y", if_cond2, var_type=kt.String)
 fun_body = ast.Block([bar_y])

@@ -897,10 +897,12 @@ class Variable(Expr):
 
 
 class Conditional(Expr):
-    def __init__(self, cond: Expr, true_branch: Block, false_branch: Block):
+    def __init__(self, cond: Expr, true_branch: Block, false_branch: Block,
+                 t: types.Type):
         self.cond = cond
         self.true_branch = true_branch
         self.false_branch = false_branch
+        self.t = t
 
     def children(self):
         return [self.cond, self.true_branch, self.false_branch]
@@ -914,6 +916,9 @@ class Conditional(Expr):
     def is_bottom(self):
         return self.true_branch.is_bottom() and self.false_branch.is_bottom()
 
+    def get_type(self):
+        return self.t
+
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
             str(self.cond), str(self.true_branch), str(self.false_branch))
@@ -922,7 +927,8 @@ class Conditional(Expr):
         if isinstance(other, Conditional):
             return (self.cond.is_equal(other.cond) and
                     self.true_branch.is_equal(other.true_branch) and
-                    self.false_branch.is_equal(other.false_branch))
+                    self.false_branch.is_equal(other.false_branch) and
+                    self.t == other.t)
         return False
 
 

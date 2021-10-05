@@ -89,7 +89,7 @@ spam_func = FunctionDeclaration(
     body=Block([
         Conditional(BooleanConstant("true"),
                     Block([Variable(xA_field.name)]),
-                    Block([StringConstant("foo")]))
+                    Block([StringConstant("foo")]), StringType())
     ])
 )
 

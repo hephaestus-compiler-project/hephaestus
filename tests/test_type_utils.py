@@ -704,9 +704,9 @@ def test_type_hint_conditional():
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
     expr1 = ast.Variable("x")
     expr2 = ast.StringConstant("foo")
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, expr2)
-    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, expr1)
-    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr2)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, expr2, kt.String)
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, expr1, kt.String)
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr2, kt.String)
 
     assert tutils.get_type_hint(cond3, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, []) == kt.String
@@ -738,13 +738,11 @@ def test_type_hint_func_call_receiver():
                                    var_type=cls.get_type())
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
     expr1 = ast.Variable("x")
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
-    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
-    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr, cls.get_type())
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr, cls.get_type())
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1, cls.get_type())
 
     expr = ast.FunctionCall("func", [], cond3)
-    assert tutils.get_type_hint(
-            expr, context, tuple(), KT_FACTORY, []) is None
     assert (tutils.get_type_hint(
         expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.Integer)
 
@@ -761,12 +759,11 @@ def test_type_hint_field_access():
                                    var_type=cls.get_type())
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
     expr1 = ast.Variable("x")
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
-    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
-    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr, cls.get_type())
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr, cls.get_type())
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1, cls.get_type())
 
     expr = ast.FieldAccess(cond3, "f")
-    assert tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is None
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, []) == kt.Integer
 
@@ -791,12 +788,11 @@ def test_type_hint_func_call_inheritance():
                                    var_type=cls3.get_type())
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
     expr1 = ast.Variable("x")
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
-    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
-    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr, cls3.get_type())
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr, cls3.get_type())
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1, cls3.get_type())
 
     expr = ast.FunctionCall("func", [], cond3)
-    assert tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, []) is None
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, []) == kt.Integer
 
@@ -819,16 +815,14 @@ def test_type_hint_field_access_inheritance():
                                    var_type=cls3.get_type())
     context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
     expr1 = ast.Variable("x")
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr)
-    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr)
-    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr1, new_expr, cls3.get_type())
+    cond2 = ast.Conditional(ast.BooleanConstant("true"), cond1, new_expr, cls3.get_type())
+    cond3 = ast.Conditional(ast.BooleanConstant("true"), cond2, expr1, cls3.get_type())
 
     expr = ast.FieldAccess(cond3, "f")
 
     program = ast.Program(context, language="kotlin")
     types = program.get_types()
-    assert (tutils.get_type_hint(expr, context, tuple(), KT_FACTORY, types) is
-            None)
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, types) == kt.Integer
 
@@ -856,8 +850,8 @@ def test_type_hint_smart_cast():
     context.add_var(ast.GLOBAL_NAMESPACE, decl3.name, decl3)
     expr3 = ast.Variable("z")
 
-    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr2, expr3)
-    cond2 = ast.Conditional(ast.Is(expr2, cls.get_type()), expr2, expr3)
+    cond1 = ast.Conditional(ast.BooleanConstant("true"), expr2, expr3, cls.get_type())
+    cond2 = ast.Conditional(ast.Is(expr2, cls.get_type()), expr2, expr3, cls.get_type())
 
     smart_casts = [(expr, cls.get_type())]
     program = ast.Program(context, language="kotlin")
@@ -871,7 +865,7 @@ def test_type_hint_smart_cast():
     assert tutils.get_type_hint(expr3, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, types) == cls.get_type()
     assert tutils.get_type_hint(cond1, context, ast.GLOBAL_NAMESPACE,
-                                KT_FACTORY, types) == kt.Any
+                                KT_FACTORY, types) == cls.get_type()
     assert tutils.get_type_hint(cond2, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, types) == cls.get_type()
 

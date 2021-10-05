@@ -1095,10 +1095,28 @@ class Generator():
         self.depth += 3
         cond = self.generate_expr(self.bt_factory.get_boolean_type(),
                                   only_leaves)
-        true_expr = self.generate_expr(etype, only_leaves, subtype)
-        false_expr = self.generate_expr(etype, only_leaves, subtype)
+
+        if subtype:
+            subtypes = tu.find_subtypes(etype, self.get_types(),
+                                        include_self=True, concrete_only=True)
+            true_type = ut.random.choice(subtypes)
+            false_type = ut.random.choice(subtypes)
+        else:
+            true_type, false_type = etype, etype
+        true_expr = self.generate_expr(true_type, only_leaves, subtype=False)
+        false_expr = self.generate_expr(false_type, only_leaves, subtype=False)
         self.depth = initial_depth
-        return ast.Conditional(cond, true_expr, false_expr)
+
+        # Note that this an approximation of the type of the whole conditional.
+        # To properly estimate the type of conditional, we need to implememnt
+        # the LUB algorithm.
+        if true_type.is_subtype(false_type):
+            cond_type = false_type
+        elif false_type.is_subtype(true_type):
+            cond_type = true_type
+        else:
+            cond_type = etype
+        return ast.Conditional(cond, true_expr, false_expr, cond_type)
 
     def gen_is_expr(self,
                     expr_type: tp.Type,
@@ -1187,7 +1205,8 @@ class Generator():
         return ast.Conditional(
             ast.Is(ast.Variable(var.name), subtype),
             true_expr,
-            false_expr
+            false_expr,
+            expr_type
         )
 
     # Where
