@@ -336,21 +336,18 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_func_call(self, node):
         parent_node_id = self._get_node_id()
         node_id = parent_node_id + "/" + node.fun
-        self._stack.append(node_id)
-        super().visit_func_call(node)
-        self._stack.pop()
-        self._inferred_nodes[parent_node_id].append(
-            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
-                                      self._bt_factory, self._types))
-        )
         fun_decl = get_decl(self._context, self._namespace,
                             node.func)
         assert fun_decl is not None
         namespace, fun_decl = fun_decl
-        for i, param in enumerate(fun_decl.params):
-            param_id = node_id + "/" + param.name
-            self._handle_declaration(param_id, param, node.args[i],
-                                     "param_type")
+
+        for i, c in enumerate(node.children()):
+            self._handle_declaration(node_id, node.args[i], c,
+                                     'param_type')
+        self._inferred_nodes[parent_node_id].append(
+            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
+                                      self._bt_factory, self._types))
+        )
 
     def _infer_type_variables_by_call_arguments(self, node_id, class_decl,
                                                 type_var_nodes):
