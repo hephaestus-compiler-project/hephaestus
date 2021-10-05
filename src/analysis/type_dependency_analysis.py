@@ -334,6 +334,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
         if node.get_type() == self._bt_factory.get_void_type() or isinstance(
                 node.body, ast.Block):
+            # If the body of the function is not an exception or the function
+            # returns void, we cannot omit the return type of the function.
+            # So, we simply visit its body.
             self.visit(node.body)
 
         parent_node_id = self._get_node_id()
