@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
+from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -131,15 +132,16 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack: list = []
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
+        self._stream = iter(range(0, 10000))
 
     def result(self):
         return self.type_graph
 
     def _get_node_id(self):
-        try:
-            top_stack = self._stack[-1]
-        except:
-            import pdb; pdb.set_trace()
+        if not self._stack:
+            return str(next(self._stream))
+
+        top_stack = self._stack[-1]
         return top_stack
 
     def _find_target_type_variable(self, source_type_var, type_var_deps,
@@ -262,6 +264,40 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_char_type()))
 
+    def visit_logical_expr(self, node):
+        prev = self._stack
+        self._stack = []
+        super().visit_logical_expr(node)
+        self._stack = prev
+
+        node_id = self._get_node_id()
+        self._inferred_nodes[node_id].append(
+            TypeNode(self._bt_factory.get_boolean_type()))
+
+    def visit_equality_expr(self, node):
+        prev = self._stack
+        self._stack = []
+        super().visit_equality_expr(node)
+        self._stack = prev
+
+        node_id = self._get_node_id()
+        self._inferred_nodes[node_id].append(
+            TypeNode(self._bt_factory.get_boolean_type()))
+
+    def visit_comparison_expr(self, node):
+        prev = self._stack
+        self._stack = []
+        super().visit_comparison_expr(node)
+        self._stack = prev
+
+        node_id = self._get_node_id()
+        self._inferred_nodes[node_id].append(
+            TypeNode(self._bt_factory.get_boolean_type()))
+
+    def visit_array_expr(self, node):
+        node_id = self._get_node_id()
+        self._inferred_nodes[node_id].append(TypeNode(node.array_type))
+
     def visit_variable(self, node):
         decl = get_decl(self.program.context,
                         self._namespace, node.name)
@@ -273,6 +309,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(
             DeclarationNode("/".join(namespace), decl)
         )
+
+    def visit_conditional(self, node):
+        prev = self._stack
+        self._stack = []
+        self.visit(node.cond)
+        self._stack = prev
+
+        self.visit(node.true_branch)
+        self.visit(node.false_branch)
 
     def _handle_declaration(self, parent_node_id: str, node: ast.Node,
                             expr: ast.Expr, type_attr: str):
