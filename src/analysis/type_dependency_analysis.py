@@ -7,6 +7,9 @@ from src.ir.visitors import DefaultVisitor
 from src.transformations.base import change_namespace
 
 
+RET = "__RET__"
+
+
 class TypeVarNode(NamedTuple):
     node_id: str
     t: tp.TypeParameter
@@ -268,7 +271,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             DeclarationNode("/".join(namespace), decl)
         )
 
-    def _handle_declaration(self, parent_node_id, node, expr, type_attr):
+    def _handle_declaration(self, parent_node_id: str, node: ast.Node,
+                            expr: ast.Expr, type_attr: str):
         node_id = parent_node_id + "/" + node.name
         self._stack.append(node_id)
         node_type = getattr(node, type_attr, None)
@@ -320,7 +324,26 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     @change_namespace
     def visit_func_decl(self, node):
-        return super().visit_func_decl(node)
+
+        children = node.children()
+        if node.body is not None:
+            children = children[:-1]
+
+        for c in children:
+            self.visit(c)
+
+        if node.get_type() == self._bt_factory.get_void_type() or isinstance(
+                node.body, ast.Block):
+            self.visit(node.body)
+
+        parent_node_id = self._get_node_id()
+        node_id = parent_node_id + "/" + node.fun
+        # We create a "virtual" variable declaration representing the return
+        # value of the function.
+        ret_decl = ast.VariableDeclaration(RET, node.body, is_final=True,
+                                           var_type=node.get_type())
+        self._handle_declaration(node_id, ret_decl, node.body,
+                                 'var_type')
 
     def visit_field_access(self, node):
         parent_node_id = self._get_node_id()
