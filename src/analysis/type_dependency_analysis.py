@@ -136,7 +136,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return self.type_graph
 
     def _get_node_id(self):
-        top_stack = self._stack[-1]
+        try:
+            top_stack = self._stack[-1]
+        except:
+            import pdb; pdb.set_trace()
         return top_stack
 
     def _find_target_type_variable(self, source_type_var, type_var_deps,
@@ -332,15 +335,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for c in children:
             self.visit(c)
 
-        if node.get_type() == self._bt_factory.get_void_type() or isinstance(
-                node.body, ast.Block):
-            # If the body of the function is not an exception or the function
-            # returns void, we cannot omit the return type of the function.
-            # So, we simply visit its body.
+        if node.get_type() == self._bt_factory.get_void_type():
+            # If the body of function returns void, we cannot omit the
+            # return type of the function. So, we simply visit its body.
             self.visit(node.body)
 
-        parent_node_id = self._get_node_id()
-        node_id = parent_node_id + "/" + node.fun
+        node_id = "/".join(self._namespace)
+
         # We create a "virtual" variable declaration representing the return
         # value of the function.
         ret_decl = ast.VariableDeclaration(RET, node.body, is_final=True,
@@ -361,15 +362,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     def visit_func_call(self, node):
         parent_node_id = self._get_node_id()
-        node_id = parent_node_id + "/" + node.fun
+        node_id = parent_node_id + "/" + node.func
         fun_decl = get_decl(self._context, self._namespace,
                             node.func)
         assert fun_decl is not None
         namespace, fun_decl = fun_decl
 
         for i, c in enumerate(node.children()):
-            self._handle_declaration(node_id, node.args[i], c,
-                                     'param_type')
+            self._handle_declaration(node_id, fun_decl.params[i],
+                                     c, 'param_type')
         self._inferred_nodes[parent_node_id].append(
             TypeNode(tu.get_type_hint(node, self._context, self._namespace,
                                       self._bt_factory, self._types))
