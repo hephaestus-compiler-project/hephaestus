@@ -363,12 +363,32 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_func_call(self, node):
         parent_node_id = self._get_node_id()
         node_id = parent_node_id + "/" + node.func
-        fun_decl = get_decl(self._context, self._namespace,
-                            node.func)
+        if node.receiver is None:
+            fun_decl = get_decl(self._context, self._namespace,
+                                node.func)
+        else:
+            # If the function call involves a receiver, we need to look up
+            # this function in the inheritance chain of the receiver.
+            receiver_t = tu.get_type_hint(node.receiver, self._context,
+                                          self._namespace, self._bt_factory,
+                                          self._types)
+            fun_decl = tu.get_decl_from_inheritance(receiver_t,
+                                                    node.func, self._context)
+            # We compute the namespace where the function declaration was
+            # found.
+            namespace = fun_decl[1].name
+            fun_decl = (namespace, fun_decl[0])
+
         assert fun_decl is not None
         namespace, fun_decl = fun_decl
 
-        for i, c in enumerate(node.children()):
+        if node.receiver is not None:
+            rec_node_id = node_id + "/__REC__"
+            self._stack.append(rec_node_id)
+            self.visit(node.receiver)
+            self._stack.pop()
+
+        for i, c in enumerate(node.args):
             self._handle_declaration(node_id, fun_decl.params[i],
                                      c, 'param_type')
         self._inferred_nodes[parent_node_id].append(

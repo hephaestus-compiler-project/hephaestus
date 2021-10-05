@@ -198,3 +198,30 @@ def test_program5():
             '-> !TypeVariable[global/y/A/T] (inferred)',
         ]
     }
+
+
+def test_program6():
+    # class A<T> {
+    #     fun foo(x: T) = x
+    # }
+    # val y: String = A<String>().foo()
+    program = tap.program6
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        'Declaration[global/A/foo/__RET__]': [
+            '-> Declaration[global/A/foo/x] (inferred)',
+            '-> Type[T] (declared)'
+        ],
+        'Declaration[global/A/foo/x]': ['-> Type[T] (declared)'],
+        'Declaration[global/x]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'TypeConInstCall[global/x/foo/__REC__/A]': [
+            '-> TypeVariable[global/x/foo/__REC__/A/T] (declared)'
+        ],
+        'TypeVariable[global/x/foo/__REC__/A/T]': ['-> Type[String] (declared)'],
+    }
