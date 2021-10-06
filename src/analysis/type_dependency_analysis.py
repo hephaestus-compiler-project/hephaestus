@@ -1,3 +1,4 @@
+from copy import deepcopy
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
@@ -264,6 +265,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_char_type()))
 
+    def visit_bottom_constant(self, node):
+        if node.t is None:
+            return
+        node_id = self._get_node_id()
+        self._inferred_nodes[node_id].append(TypeNode(node.t))
+
     def visit_logical_expr(self, node):
         prev = self._stack
         self._stack = []
@@ -325,8 +332,36 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._handle_declaration(node_id, decl, node.expr,
                                      attribute_names[type(decl)])
         else:
-            # TODO
-            pass
+            self.visit(node.receiver)
+            receiver_t = tu.get_type_hint(node.receiver, self._context,
+                                          self._namespace, self._bt_factory,
+                                          self._types)
+            type_var_map = {}
+            if receiver_t.is_parameterized():
+                type_var_map = {
+                    t_param: receiver_t.type_args[i]
+                    for i, t_param in enumerate(
+                        receiver_t.t_constructor.type_parameters)
+                }
+            if receiver_t.is_type_var():
+                name = receiver_t.get_bound_rec(self._bt_factory)
+            else:
+                name = receiver_t.name
+            class_decl = get_decl(self._context, ast.GLOBAL_NAMESPACE,
+                                  name)
+            assert class_decl is not None, (
+                "Unable to find class declaration with name " + name)
+
+            _, class_decl = class_decl
+            f = class_decl.get_field(node.name)
+            assert f is not None, (
+                "Field " + node.name + " was not found in class " + name)
+            field_type = tp.substitute_type(f.get_type(), type_var_map)
+            field_decl = deepcopy(f)
+            field_decl.field_type = field_type
+            node_id = self._get_node_id() + "/" + name
+            self._handle_declaration(node_id, field_decl, node.expr,
+                                     "field_type")
 
     def visit_conditional(self, node):
         prev = self._stack
@@ -349,16 +384,16 @@ class TypeDependencyAnalysis(DefaultVisitor):
         source = DeclarationNode(parent_node_id, node)
 
         inferred_nodes = self._inferred_nodes.pop(node_id, [])
-        added_declared = False
         for n in inferred_nodes:
             edge_label = (
                 Edge.DECLARED
                 if isinstance(n, TypeConstructorInstantiationDeclNode)
                 else Edge.INFERRED
             )
-            if edge_label == Edge.DECLARED:
-                added_declared = True
             construct_edge(self.type_graph, source, n, edge_label)
+
+        added_declared = any(e.is_declared()
+                             for e in self.type_graph[source])
 
         if not added_declared and node_type is not None and inferred_nodes:
             if getattr(node, 'inferred_type', False) is not False:
@@ -501,6 +536,22 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return main_node, type_var_nodes
 
+    def _remove_declared_edge(self, parent_node_id):
+        node = None
+        for k in self.type_graph.keys():
+            if not isinstance(k, DeclarationNode):
+                continue
+            if k.node_id + "/" + k.decl.name == parent_node_id:
+                node = k
+                break
+        if node is not None:
+            edges = [
+                e
+                for e in self.type_graph[node]
+                if not e.is_declared()
+            ]
+            self.type_graph[node] = edges
+
     def visit_new(self, node):
         # First, we use the context to retrieve the declaration of the class
         # we initialize in this node
@@ -532,4 +583,5 @@ class TypeDependencyAnalysis(DefaultVisitor):
         if self._exp_type:
             target = self._convert_type_to_node(self._exp_type, main_node,
                                                 parent_node_id)
+            self._remove_declared_edge(parent_node_id)
             self._inferred_nodes[parent_node_id].append(target)

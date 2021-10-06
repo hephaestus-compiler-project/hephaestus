@@ -273,6 +273,7 @@ def test_program8():
     assert res == {
         '!TypeVariable[global/foo/x/A/T]': ['-> Type[String] (declared)'],
         'Declaration[global/foo/x]': [
+            '-> Type[A] (inferred)',
             '-> TypeConInstCall[global/foo/x/A] (inferred)',
             '-> TypeConInstDecl[global/foo/x/A] (declared)'
         ],
@@ -285,5 +286,38 @@ def test_program8():
         'TypeVariable[global/foo/x/A/T]': [
             '-> Type[String] (declared)',
             '-> !TypeVariable[global/foo/x/A/T] (inferred)'
+        ]
+    }
+
+
+def test_program9():
+    # class Bar(val f: A<String)
+    # var x: Bar() = TODO()
+    # x.f = A<String>()
+    program = tap.program9
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        '!TypeVariable[1/B/f/A/T]': ['-> Type[String] (declared)'],
+        'Declaration[1/B/f]': [
+            '-> TypeConInstCall[1/B/f/A] (inferred)',
+            '-> TypeConInstDecl[1/B/f/A] (declared)',
+        ],
+        'Declaration[global/B/f]': ['-> Type[A] (declared)'],
+        'Declaration[global/foo/x]': [
+            '-> Type[B] (inferred)',
+            '-> Type[B] (declared)',
+        ],
+        'TypeConInstCall[1/B/f/A]': [
+            '-> TypeVariable[1/B/f/A/T] (declared)'
+        ],
+        'TypeConInstDecl[1/B/f/A]': [
+            '-> !TypeVariable[1/B/f/A/T] (declared)'
+        ],
+        'TypeVariable[1/B/f/A/T]': [
+            '-> Type[String] (declared)',
+            '-> !TypeVariable[1/B/f/A/T] (inferred)'
         ]
     }
