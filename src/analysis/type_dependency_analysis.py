@@ -517,10 +517,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for i, c in enumerate(node.args):
             self._handle_declaration(node_id, fun_decl.params[i],
                                      c, 'param_type')
-        self._inferred_nodes[parent_node_id].append(
-            TypeNode(tu.get_type_hint(node, self._context, self._namespace,
-                                      self._bt_factory, self._types))
-        )
+        ret_type = tu.get_type_hint(node, self._context, self._namespace,
+                                    self._bt_factory, self._types)
+        if ret_type != self._bt_factory.get_void_type():
+            self._inferred_nodes[parent_node_id].append(
+                TypeNode(ret_type)
+            )
 
     def _infer_type_variables_by_call_arguments(self, node_id, class_decl,
                                                 type_var_nodes,
