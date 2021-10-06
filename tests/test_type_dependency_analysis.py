@@ -22,7 +22,7 @@ def to_str_dict(res):
 def test_program1():
     # Foo<String> x = new Foo<String>()
     program = tap.program1
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
     assert res == {
@@ -50,7 +50,7 @@ def test_program2():
     # String x = "f"
     # Foo<String> y = new Foo<String>(x)
     program = tap.program2
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -87,7 +87,7 @@ def test_program3():
     # String x ="f"
     # Bar y = new Bar(new Foo<String>(x))
     program = tap.program3
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -132,7 +132,7 @@ def test_program4():
     # val x: A<String> = new C<String>()
 
     program = tap.program4
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -164,7 +164,7 @@ def test_program5():
     # }
     # val y: A<String> = A<String>(foo())
     program = tap.program5
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -206,7 +206,7 @@ def test_program6():
     # }
     # val y: String = A<String>().foo()
     program = tap.program6
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -231,7 +231,7 @@ def test_program7():
     # val x: A<String> = new A<String>()
     # val y: A<String> = if (true) x else new A<String>()
     program = tap.program7
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -266,7 +266,7 @@ def test_program8():
     # var x: A<String> = TODO()
     # x = A<String>()
     program = tap.program8
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -295,7 +295,7 @@ def test_program9():
     # var x: Bar() = TODO()
     # x.f = A<String>()
     program = tap.program9
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -328,7 +328,7 @@ def test_program10():
     #  (new A<String>("x")).f = "fda"
     # }
     program = tap.program10
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -350,7 +350,7 @@ def test_program11():
     #  (new A<A<String>>(new A<String>(""))).f = new A<String>("x")
     # }
     program = tap.program11
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -399,7 +399,7 @@ def test_program12():
     #     (if (true) new A<String>() else x).f = "fda"
     # }
     program = tap.program12
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 
@@ -429,7 +429,7 @@ def test_program13():
     #     val y: String = (if (true) new A<String>(t) else x).f
     # }
     program = tap.program13
-    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
     res = to_str_dict(a.result())
 

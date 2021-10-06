@@ -129,8 +129,8 @@ def construct_edge(type_graph, source, target, edge_label):
 
 
 class TypeDependencyAnalysis(DefaultVisitor):
-    def __init__(self, program, bt_factory):
-        self._bt_factory = bt_factory
+    def __init__(self, program):
+        self._bt_factory = program.bt_factory
         self.type_graph: Dict[
             Union[
                 TypeNode,
