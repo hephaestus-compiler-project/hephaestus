@@ -604,6 +604,12 @@ class ClassDeclaration(Declaration):
     def is_regular(self):
         return self.class_type == self.REGULAR
 
+    def get_field(self, field_name):
+        for f in self.fields:
+            if f.name == field_name:
+                return f
+        return None
+
     def get_overridable_functions(self):
         return [
             f
