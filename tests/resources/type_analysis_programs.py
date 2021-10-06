@@ -189,3 +189,62 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 program11 = ast.Program(context, "kotlin")
+
+
+# program 12
+t1 = cls1.get_type().new([kt.String])
+cls2 = ast.ClassDeclaration("B",
+                            [ast.SuperClassInstantiation(
+                                t1, [ast.StringConstant("x")])],
+                            0)
+new1 = ast.New(t1, [ast.StringConstant("x")])
+new2 = ast.New(cls2.get_type(), [])
+var1 = ast.VariableDeclaration("x", new2, var_type=cls2.get_type())
+cond = ast.Conditional(ast.BooleanConstant("true"), new1, ast.Variable("x"),
+                       t1)
+assign = ast.Assignment("f", ast.StringConstant("x"), cond)
+body = ast.Block([var1, assign])
+func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
+                               ast.FunctionDeclaration.FUNCTION)
+FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
+
+context = ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(FUNC_NAMESPACE, var1.name, var1)
+program12 = ast.Program(context, "kotlin")
+
+
+# program 13
+f = ast.FieldDeclaration("f", type_param1)
+cls1 = ast.ClassDeclaration("A", [], 0, type_parameters=[type_param1],
+                            fields=[f])
+t1 = cls1.get_type().new([kt.String])
+cls2 = ast.ClassDeclaration("B",
+                            [ast.SuperClassInstantiation(
+                                t1, [ast.StringConstant("x")])],
+                            0)
+new1 = ast.New(t1, [ast.Variable("t")])
+new2 = ast.New(cls2.get_type(), [])
+var1 = ast.VariableDeclaration("x", new2, var_type=cls2.get_type())
+cond = ast.Conditional(ast.BooleanConstant("true"), new1, ast.Variable("x"),
+                       t1)
+var2 = ast.VariableDeclaration("y", ast.FieldAccess(cond, "f"),
+                               var_type=kt.String)
+var3 = ast.VariableDeclaration("t", ast.StringConstant("x"),
+                               var_type=kt.String)
+body = ast.Block([var3, var1, var2])
+func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
+                               ast.FunctionDeclaration.FUNCTION)
+FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
+
+context = ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
+context.add_var(FUNC_NAMESPACE, var1.name, var1)
+context.add_var(FUNC_NAMESPACE, var2.name, var2)
+context.add_var(FUNC_NAMESPACE, var3.name, var3)
+program13 = ast.Program(context, "kotlin")

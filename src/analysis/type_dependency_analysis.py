@@ -474,7 +474,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     def visit_field_access(self, node):
         parent_node_id = self._get_node_id()
-        node_id = parent_node_id + "/" + node.f
+        node_id = parent_node_id + "/" + node.field
         self._stack.append(node_id)
         super().visit_field_access(node)
         self._stack.pop()

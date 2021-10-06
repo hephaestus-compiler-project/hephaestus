@@ -389,3 +389,73 @@ def test_program11():
         ],
 
     }
+
+
+def test_program12():
+    # class A<T>
+    # class B: A<String>()
+    # fun foo() {
+    #     val x: B = new B()
+    #     (if (true) new A<String>() else x).f = "fda"
+    # }
+    program = tap.program12
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+
+    assert res == {
+        'Declaration[2/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[4/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[global/A/f]': ['-> Type[T] (declared)'],
+        'Declaration[global/foo/x]': [
+            '-> Type[B] (inferred)',
+            '-> Type[B] (declared)',
+        ],
+        'TypeConInstCall[2/A]': ['-> TypeVariable[2/A/T] (declared)'],
+        'TypeVariable[2/A/T]': [
+            '-> Type[String] (declared)',
+            '-> Type[String] (inferred)',
+        ]
+    }
+
+
+def test_program13():
+    # class A<T>
+    # class B: A<String>()
+    # fun foo() {
+    #     val t: String = "fdf"
+    #     val x: B = new B()
+    #     val y: String = (if (true) new A<String>(t) else x).f
+    # }
+    program = tap.program13
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+
+    assert res == {
+        'Declaration[global/A/f]': ['-> Type[T] (declared)'],
+        'Declaration[global/foo/t]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'Declaration[global/foo/x]': [
+            '-> Type[B] (inferred)',
+            '-> Type[B] (declared)',
+        ],
+        'Declaration[global/foo/y/f/A/f]': [
+            '-> Declaration[global/foo/t] (inferred)'
+        ],
+        'Declaration[global/foo/y]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'TypeConInstCall[global/foo/y/f/A]': [
+            '-> TypeVariable[global/foo/y/f/A/T] (declared)'
+        ],
+        'TypeVariable[global/foo/y/f/A/T]': [
+            '-> Type[String] (declared)',
+            '-> Declaration[global/foo/t] (inferred)'
+        ]
+    }
