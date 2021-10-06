@@ -321,3 +321,71 @@ def test_program9():
             '-> !TypeVariable[1/B/f/A/T] (inferred)'
         ]
     }
+
+
+def test_program10():
+    # fun foo() {
+    #  (new A<String>("x")).f = "fda"
+    # }
+    program = tap.program10
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        'Declaration[0/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[1/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[global/A/f]': ['-> Type[T] (declared)'],
+        'TypeConInstCall[0/A]': ['-> TypeVariable[0/A/T] (declared)'],
+        'TypeVariable[0/A/T]': [
+            '-> Type[String] (declared)',
+            '-> Type[String] (inferred)',
+        ]
+
+    }
+
+
+def test_program11():
+    # fun foo() {
+    #  (new A<A<String>>(new A<String>(""))).f = new A<String>("x")
+    # }
+    program = tap.program11
+    a = tda.TypeDependencyAnalysis(program, kt.KotlinBuiltinFactory())
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        '!TypeVariable[0/A/f/A/T]': ['-> Type[String] (declared)'],
+        '!TypeVariable[1/A/f/A/T]': ['-> Type[String] (declared)'],
+        'Declaration[0/A/f/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[0/A/f]': [
+            '-> TypeConInstCall[0/A/f/A] (inferred)',
+            '-> TypeConInstDecl[0/A/f/A] (declared)',
+        ],
+        'Declaration[1/A/f/A/f]': ['-> Type[String] (inferred)'],
+        'Declaration[1/A/f]': [
+            '-> TypeConInstCall[1/A/f/A] (inferred)',
+            '-> TypeConInstDecl[1/A/f/A] (declared)',
+        ],
+        'Declaration[global/A/f]': ['-> Type[T] (declared)'],
+        'TypeConInstCall[0/A/f/A]': ['-> TypeVariable[0/A/f/A/T] (declared)'],
+        'TypeConInstCall[0/A]': ['-> TypeVariable[0/A/T] (declared)'],
+        'TypeConInstCall[1/A/f/A]': ['-> TypeVariable[1/A/f/A/T] (declared)'],
+        'TypeConInstDecl[0/A/f/A]': ['-> !TypeVariable[0/A/f/A/T] (declared)'],
+        'TypeConInstDecl[1/A/f/A]': ['-> !TypeVariable[1/A/f/A/T] (declared)'],
+        'TypeVariable[0/A/T]': [
+            '-> Type[A] (declared)',
+            '-> TypeConInstCall[0/A/f/A] (inferred)'
+        ],
+        'TypeVariable[0/A/f/A/T]': [
+            '-> Type[String] (declared)',
+            '-> Type[String] (inferred)',
+            '-> !TypeVariable[0/A/f/A/T] (inferred)'
+        ],
+        'TypeVariable[1/A/f/A/T]': [
+            '-> Type[String] (declared)',
+            '-> Type[String] (inferred)',
+            '-> !TypeVariable[1/A/f/A/T] (inferred)'
+        ],
+
+    }

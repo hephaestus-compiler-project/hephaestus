@@ -520,14 +520,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
         )
 
     def _infer_type_variables_by_call_arguments(self, node_id, class_decl,
-                                                type_var_nodes):
+                                                type_var_nodes,
+                                                inferred_fields):
         # Add this point, we furher examine the fields of the constructor to
         # see if any of its type variables can be inferred by the arguments
         # passed in the constructor invocation, i.e., A<String>(x)
-        for i, f in enumerate(class_decl.fields):
-            if not f.get_type().is_type_var():
-                continue
-            source = type_var_nodes[f.get_type()]
+        for f, f_type in inferred_fields:
+            source = type_var_nodes[f_type]
 
             inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
             for n in inferred_nodes:
@@ -588,8 +587,22 @@ class TypeDependencyAnalysis(DefaultVisitor):
         node_id = parent_node_id + "/" + class_decl.name
         # First we visit the children of this node (i.e., its arguments),
         # and handle them as declarations.
+        inferred_fields = []
         for i, c in enumerate(node.children()):
-            self._handle_declaration(node_id, class_decl.fields[i], c,
+            f = deepcopy(class_decl.fields[i])
+            if node.class_type.is_parameterized():
+                type_var_map = {
+                    t_param: node.class_type.type_args[j]
+                    for j, t_param in enumerate(
+                        node.class_type.t_constructor.type_parameters
+                    )
+                }
+                f.field_type = tp.substitute_type(f.get_type(), type_var_map)
+                # Here we add fields initialized in a constructor invocation,
+                # which are also used for inferring the type arguments of
+                # the corresponding type constructor instantiation.
+                inferred_fields.append((f, class_decl.fields[i].get_type()))
+            self._handle_declaration(node_id, f, c,
                                      'field_type')
 
         if not node.class_type.is_parameterized():
@@ -603,7 +616,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._handle_type_constructor_instantiation(node, parent_node_id)
         )
         self._infer_type_variables_by_call_arguments(node_id, class_decl,
-                                                     type_var_nodes)
+                                                     type_var_nodes,
+                                                     inferred_fields)
         if self._exp_type:
             target = self._convert_type_to_node(self._exp_type, main_node,
                                                 parent_node_id)
