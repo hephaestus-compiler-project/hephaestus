@@ -317,6 +317,44 @@ class TypeDependencyAnalysis(DefaultVisitor):
             DeclarationNode("/".join(namespace), decl)
         )
 
+    def _visit_assign_with_receiver(self, node):
+        self.visit(node.receiver)
+        # We need to infer the type of the receiver.
+        receiver_t = tu.get_type_hint(node.receiver, self._context,
+                                      self._namespace, self._bt_factory,
+                                      self._types)
+        type_var_map = {}
+        # If the receiver type is parameterized, compute type variable
+        # assignments
+        if receiver_t.is_parameterized():
+            type_var_map = {
+                t_param: receiver_t.type_args[i]
+                for i, t_param in enumerate(
+                    receiver_t.t_constructor.type_parameters)
+            }
+        # If the type of receiver is a type variable, get its bound.
+        if receiver_t.is_type_var():
+            name = receiver_t.get_bound_rec(self._bt_factory)
+        else:
+            name = receiver_t.name
+        # And find the corresponding class declaration.
+        class_decl = get_decl(self._context, ast.GLOBAL_NAMESPACE,
+                              name)
+        assert class_decl is not None, (
+            "Unable to find class declaration with name " + name)
+
+        _, class_decl = class_decl
+        f = class_decl.get_field(node.name)
+        assert f is not None, (
+            "Field " + node.name + " was not found in class " + name)
+        # Substitute field type
+        field_type = tp.substitute_type(f.get_type(), type_var_map)
+        field_decl = deepcopy(f)
+        field_decl.field_type = field_type
+        node_id = self._get_node_id() + "/" + name
+        self._handle_declaration(node_id, field_decl, node.expr,
+                                 "field_type")
+
     def visit_assign(self, node):
         attribute_names = {
             ast.FieldDeclaration: "field_type",
@@ -332,36 +370,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._handle_declaration(node_id, decl, node.expr,
                                      attribute_names[type(decl)])
         else:
-            self.visit(node.receiver)
-            receiver_t = tu.get_type_hint(node.receiver, self._context,
-                                          self._namespace, self._bt_factory,
-                                          self._types)
-            type_var_map = {}
-            if receiver_t.is_parameterized():
-                type_var_map = {
-                    t_param: receiver_t.type_args[i]
-                    for i, t_param in enumerate(
-                        receiver_t.t_constructor.type_parameters)
-                }
-            if receiver_t.is_type_var():
-                name = receiver_t.get_bound_rec(self._bt_factory)
-            else:
-                name = receiver_t.name
-            class_decl = get_decl(self._context, ast.GLOBAL_NAMESPACE,
-                                  name)
-            assert class_decl is not None, (
-                "Unable to find class declaration with name " + name)
-
-            _, class_decl = class_decl
-            f = class_decl.get_field(node.name)
-            assert f is not None, (
-                "Field " + node.name + " was not found in class " + name)
-            field_type = tp.substitute_type(f.get_type(), type_var_map)
-            field_decl = deepcopy(f)
-            field_decl.field_type = field_type
-            node_id = self._get_node_id() + "/" + name
-            self._handle_declaration(node_id, field_decl, node.expr,
-                                     "field_type")
+            self._visit_assign_with_receiver(node)
 
     def visit_conditional(self, node):
         prev = self._stack
