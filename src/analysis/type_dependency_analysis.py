@@ -582,7 +582,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     def visit_new(self, node):
         parent_node_id = self._get_node_id()
-        if node.class_type.is_builtin():
+        if node.class_type == self._bt_factory.get_any_type() or (
+              node.class_type.name == self._bt_factory.get_array_type().name):
             self._inferred_nodes[parent_node_id].append(
                 TypeNode(node.class_type))
             return
