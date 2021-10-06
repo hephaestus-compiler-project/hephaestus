@@ -581,6 +581,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self.type_graph[node] = edges
 
     def visit_new(self, node):
+        parent_node_id = self._get_node_id()
+        if node.class_type.is_builtin():
+            self._inferred_nodes[parent_node_id].append(
+                TypeNode(node.class_type))
+            return
+
         # First, we use the context to retrieve the declaration of the class
         # we initialize in this node
         class_decl = get_decl(self._context, self._namespace,
@@ -588,7 +594,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
         assert class_decl is not None
         namespace, class_decl = class_decl
 
-        parent_node_id = self._get_node_id()
         node_id = parent_node_id + "/" + class_decl.name
         # First we visit the children of this node (i.e., its arguments),
         # and handle them as declarations.
