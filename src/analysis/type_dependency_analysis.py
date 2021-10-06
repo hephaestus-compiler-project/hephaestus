@@ -457,6 +457,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for c in children:
             self.visit(c)
 
+        if node.body is None:
+            return
+
         if node.get_type() == self._bt_factory.get_void_type():
             # If the body of function returns void, we cannot omit the
             # return type of the function. So, we simply visit its body.
@@ -526,6 +529,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         # see if any of its type variables can be inferred by the arguments
         # passed in the constructor invocation, i.e., A<String>(x)
         for f, f_type in inferred_fields:
+            if not f_type.is_type_var():
+                continue
             source = type_var_nodes[f_type]
 
             inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
