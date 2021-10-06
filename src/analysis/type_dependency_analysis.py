@@ -2,7 +2,6 @@ from copy import deepcopy
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
-from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -13,64 +12,80 @@ RET = "__RET__"
 
 
 class TypeVarNode(NamedTuple):
-    node_id: str
+    parent_id: str
     t: tp.TypeParameter
     is_decl: bool
 
     def __str__(self):
-        node_id = self.node_id + "/" + self.t.name
         prefix = "!" if self.is_decl else ""
-        return prefix + "TypeVariable[{}]".format(node_id)
+        return prefix + "TypeVariable[{}]".format(self.node_id)
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def node_id(self):
+        return self.parent_id + "/" + self.t.name
 
 
 class TypeNode(NamedTuple):
     t: tp.Type
 
     def __str__(self):
-        return "Type[{}]".format(self.t.name)
+        return "Type[{}]".format(self.node_id)
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def node_id(self):
+        return self.t.name
 
 
 class DeclarationNode(NamedTuple):
-    node_id: str
+    parent_id: str
     decl: ast.Declaration
 
     def __str__(self):
-        node_id = self.node_id + "/" + self.decl.name
-        return "Declaration[{}]".format(node_id)
+        return "Declaration[{}]".format(self.node_id)
 
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def node_id(self):
+        return self.parent_id + "/" + self.decl.name
+
 
 class TypeConstructorInstantiationCallNode(NamedTuple):
-    node_id: str
+    parent_id: str
     t: tp.ParameterizedType
     constructor_call: ast.New
 
     def __str__(self):
-        node_id = self.node_id + "/" + self.t.name
-        return "TypeConInstCall[{}]".format(node_id)
+        return "TypeConInstCall[{}]".format(self.node_id)
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def node_id(self):
+        return self.parent_id + "/" + self.t.name
 
 
 class TypeConstructorInstantiationDeclNode(NamedTuple):
-    node_id: str
+    parent_id: str
     t: tp.ParameterizedType
 
     def __str__(self):
-        node_id = self.node_id + "/" + self.t.name
-        return "TypeConInstDecl[{}]".format(node_id)
+        return "TypeConInstDecl[{}]".format(self.node_id)
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def node_id(self):
+        return self.parent_id + "/" + self.t.name
 
 
 class Edge(NamedTuple):
@@ -169,7 +184,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for n in nodes:
             if not isinstance(n, TypeVarNode):
                 continue
-            type_var_id = n.node_id.rsplit("/", 1)[1] + "." + n.t.name
+            type_var_id = n.parent_id.rsplit("/", 1)[1] + "." + n.t.name
             if type_var == type_var_id:
                 return n
 
@@ -550,7 +565,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for k in self.type_graph.keys():
             if not isinstance(k, DeclarationNode):
                 continue
-            if k.node_id + "/" + k.decl.name == parent_node_id:
+            if k.node_id == parent_node_id:
                 node = k
                 break
         if node is not None:
