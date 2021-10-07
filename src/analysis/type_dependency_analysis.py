@@ -449,13 +449,16 @@ class TypeDependencyAnalysis(DefaultVisitor):
         source = DeclarationNode("/".join(self._namespace), node)
         target = TypeNode(node.get_type())
         construct_edge(self.type_graph, source, target, Edge.DECLARED)
-        return super().visit_field_decl(node)
 
     def visit_param_decl(self, node):
-        source = DeclarationNode("/".join(self._namespace), node)
-        target = TypeNode(node.get_type())
-        construct_edge(self.type_graph, source, target, Edge.DECLARED)
-        return super().visit_param_decl(node)
+        parent = "/".join(self._namespace)
+        if node.default is not None:
+            self._handle_declaration(parent, node, node.default,
+                                     "param_type")
+        else:
+            source = DeclarationNode("/".join(self._namespace), node)
+            target = TypeNode(node.get_type())
+            construct_edge(self.type_graph, source, target, Edge.DECLARED)
 
     @change_namespace
     def visit_class_decl(self, node):
