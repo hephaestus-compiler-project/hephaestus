@@ -333,11 +333,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         # If the receiver type is parameterized, compute type variable
         # assignments
         if receiver_t.is_parameterized():
-            type_var_map = {
-                t_param: receiver_t.type_args[i]
-                for i, t_param in enumerate(
-                    receiver_t.t_constructor.type_parameters)
-            }
+            type_var_map = receiver_t.get_type_variable_assignments()
         # If the type of receiver is a type variable, get its bound.
         if receiver_t.is_type_var():
             receiver_t = receiver_t.get_bound_rec(self._bt_factory)
@@ -620,12 +616,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for i, c in enumerate(node.children()):
             f = deepcopy(class_decl.fields[i])
             if node.class_type.is_parameterized():
-                type_var_map = {
-                    t_param: node.class_type.type_args[j]
-                    for j, t_param in enumerate(
-                        node.class_type.t_constructor.type_parameters
-                    )
-                }
+                type_var_map = node.class_type.get_type_variable_assignments()
                 f.field_type = tp.substitute_type(f.get_type(), type_var_map)
                 # Here we add fields initialized in a constructor invocation,
                 # which are also used for inferring the type arguments of
