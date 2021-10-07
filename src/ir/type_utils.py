@@ -837,12 +837,16 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             return None
         decl, rec_t = decl
         if decl.get_type().has_type_variables():
-            assert isinstance(rec_t, tp.ParameterizedType)
-            type_param_map = {
-                t_param: rec_t.type_args[i]
-                for i, t_param in enumerate(
-                    rec_t.t_constructor.type_parameters)
-            }
+            if rec_t.is_parameterized():
+                # Here, the return type can have a type parameter taken
+                # from a function.
+                type_param_map = {
+                    t_param: rec_t.type_args[i]
+                    for i, t_param in enumerate(
+                        rec_t.t_constructor.type_parameters)
+                }
+            else:
+                type_param_map = {}
             return tp.substitute_type(decl.get_type(), type_param_map)
         else:
             return decl.get_type()
