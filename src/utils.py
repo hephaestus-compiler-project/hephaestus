@@ -1,3 +1,4 @@
+from collections import defaultdict
 import random
 import string
 import pickle
@@ -144,3 +145,17 @@ class RandomUtils():
 
 
 random = RandomUtils()
+
+
+class IdGen():
+    def __init__(self):
+        self._cache = defaultdict(lambda: 1)
+
+    def get_node_id(self, node_id):
+        if node_id not in self._cache:
+            self._cache[node_id]
+            return node_id
+        else:
+            value = self._cache[node_id]
+            self._cache[node_id] += 1
+            return node_id + "/" + str(value)
