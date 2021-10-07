@@ -1,6 +1,6 @@
 # pylint: disable=abstract-method
 from __future__ import annotations
-from copy import deepcopy
+from copy import deepcopy, copy
 from collections import defaultdict
 from typing import List, Dict, Set
 
@@ -477,8 +477,11 @@ class TypeConstructor(AbstractType):
     def new(self, type_args: List[Type]):
         type_map = {tp: type_args[i]
                     for i, tp in enumerate(self.type_parameters)}
+        old_supertypes = self.supertypes
         type_con = perform_type_substitution(self, type_map)
-        return ParameterizedType(type_con, type_args)
+        etype = ParameterizedType(type_con, type_args)
+        etype.t_constructor.supertypes = old_supertypes
+        return etype
 
 
 def _to_type_variable_free(t: Type, t_param, factory) -> Type:
@@ -552,6 +555,8 @@ class ParameterizedType(SimpleClassifier):
         self._can_infer_type_args = can_infer_type_args
         super().__init__(self.t_constructor.name,
                          self.t_constructor.supertypes)
+        # XXX revisit
+        self.supertypes = copy(self.t_constructor.supertypes)
 
     def is_parameterized(self):
         return True
