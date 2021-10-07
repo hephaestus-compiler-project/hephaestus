@@ -146,7 +146,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._context = self.program.context
         self._namespace = ast.GLOBAL_NAMESPACE
         self._types = self.program.get_types()
-        self._stack: list = []
+        self._stack: list = ["global"]
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
         self._stream = iter(range(0, 10000))
@@ -157,8 +157,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return self.type_graph
 
     def _get_node_id(self):
-        if not self._stack:
-            return str(next(self._stream))
         top_stack = self._stack[-1]
         return self._id_gen.get_node_id(top_stack)
 
@@ -289,30 +287,21 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(TypeNode(node.t))
 
     def visit_logical_expr(self, node):
-        prev = self._stack
-        self._stack = []
         super().visit_logical_expr(node)
-        self._stack = prev
 
         node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_equality_expr(self, node):
-        prev = self._stack
-        self._stack = []
         super().visit_equality_expr(node)
-        self._stack = prev
 
         node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_comparison_expr(self, node):
-        prev = self._stack
-        self._stack = []
         super().visit_comparison_expr(node)
-        self._stack = prev
 
         node_id = self._get_node_id()
         self._inferred_nodes[node_id].append(
@@ -390,13 +379,14 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._visit_assign_with_receiver(node)
 
     def visit_conditional(self, node):
-        prev = self._stack
-        self._stack = []
         self.visit(node.cond)
-        self._stack = prev
+        namespace = self._namespace
 
+        self._namespace = namespace + ("true_block",)
         self.visit(node.true_branch)
+        self._namespace = namespace + ("false_block",)
         self.visit(node.false_branch)
+        self._namespace = namespace
 
     def _handle_declaration(self, parent_node_id: str, node: ast.Node,
                             expr: ast.Expr, type_attr: str):
@@ -419,7 +409,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, n, edge_label)
 
         added_declared = any(e.is_declared()
-                             for e in self.type_graph[source])
+                             for e in self.type_graph.get(source, []))
 
         if not added_declared and node_type is not None and inferred_nodes:
             if getattr(node, 'inferred_type', False) is not False:
