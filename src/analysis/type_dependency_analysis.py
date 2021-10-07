@@ -550,7 +550,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 continue
             source = type_var_nodes[f_type]
 
-            inferred_nodes = self.type_graph[DeclarationNode(node_id, f)]
+            inferred_nodes = self.type_graph.get(
+                DeclarationNode(node_id, f), [])
             for n in inferred_nodes:
                 if n.label == Edge.DECLARED:
                     continue
