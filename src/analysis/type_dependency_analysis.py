@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy, copy
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
@@ -287,21 +287,30 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes[node_id].append(TypeNode(node.t))
 
     def visit_logical_expr(self, node):
+        prev = copy(self._stack)
+        self._stack.append("LOGICAL")
         super().visit_logical_expr(node)
+        self._stack = prev
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_equality_expr(self, node):
+        prev = copy(self._stack)
+        self._stack.append("EQUALITY")
         super().visit_equality_expr(node)
+        self._stack = prev
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_comparison_expr(self, node):
+        prev = copy(self._stack)
+        self._stack.append("EQUALITY")
         super().visit_comparison_expr(node)
+        self._stack = prev
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
@@ -450,7 +459,14 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     @change_namespace
     def visit_class_decl(self, node):
-        return super().visit_class_decl(node)
+        if node.superclasses:
+            prev = copy(self._stack)
+            self._stack.append("SUPER " + node.name)
+            self.visit(node.superclasses[0])
+            self._stack = prev
+
+        for c in node.fields + node.functions:
+            self.visit(c)
 
     @change_namespace
     def visit_func_decl(self, node):
