@@ -806,7 +806,8 @@ def get_decl_from_inheritance(receiver_t: tp.Type,
     # We need to traverse also the subtypes due to smart cast.
     # For example, a function may be defined in a child class but in the
     # context, we have the parent class due to smart cast.
-    subtypes = list(find_subtypes(receiver_t, classes, include_self=False))
+    types = [c.get_type() for c in classes]
+    subtypes = list(find_subtypes(receiver_t, types, include_self=False))
     for st in supertypes + subtypes:
         decl = ctx.get_decl(context, ast.GLOBAL_NAMESPACE + (st.name,),
                             decl_name)
