@@ -514,8 +514,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self.visit(node.receiver)
             self._stack.pop()
 
+        params_nu = len(fun_decl.params)
         for i, c in enumerate(node.args):
-            self._handle_declaration(node_id, fun_decl.params[i],
+            param_index = i
+            # If we provide too much arguments, this is because the parameter
+            # is a vararg. So just take the declaration of the last formal
+            # parameter.
+            if i >= params_nu:
+                param_index = params_nu - 1
+            self._handle_declaration(node_id, fun_decl.params[param_index],
                                      c, 'param_type')
         ret_type = tu.get_type_hint(node, self._context, self._namespace,
                                     self._bt_factory, self._types)
