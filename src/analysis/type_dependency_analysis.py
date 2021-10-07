@@ -340,24 +340,18 @@ class TypeDependencyAnalysis(DefaultVisitor):
             }
         # If the type of receiver is a type variable, get its bound.
         if receiver_t.is_type_var():
-            name = receiver_t.get_bound_rec(self._bt_factory)
-        else:
-            name = receiver_t.name
-        # And find the corresponding class declaration.
-        class_decl = get_decl(self._context, ast.GLOBAL_NAMESPACE,
-                              name)
-        assert class_decl is not None, (
-            "Unable to find class declaration with name " + name)
+            receiver_t = receiver_t.get_bound_rec(self._bt_factory)
 
-        _, class_decl = class_decl
-        f = class_decl.get_field(node.name)
+        f = tu.get_decl_from_inheritance(receiver_t, node.name, self._context)
         assert f is not None, (
-            "Field " + node.name + " was not found in class " + name)
+            "Field " + node.name + " was not found in class " +
+            receiver_t.name)
+        f, _ = f
         # Substitute field type
         field_type = tp.substitute_type(f.get_type(), type_var_map)
         field_decl = deepcopy(f)
         field_decl.field_type = field_type
-        node_id = self._get_node_id() + "/" + name
+        node_id = self._get_node_id() + "/" + receiver_t.name
         self._handle_declaration(node_id, field_decl, node.expr,
                                  "field_type")
 
