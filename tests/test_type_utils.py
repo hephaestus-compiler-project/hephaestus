@@ -746,6 +746,25 @@ def test_type_hint_func_call_receiver():
     assert (tutils.get_type_hint(
         expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.Integer)
 
+def test_type_hint_func_call_receiver_parameterized():
+    context = ctx.Context()
+    type_param = tp.TypeParameter("T")
+    func = ast.FunctionDeclaration("func", params=[], ret_type=type_param,
+                                   body=None,
+                                   func_type=ast.FunctionDeclaration.CLASS_METHOD,
+                                   type_parameters=[type_param])
+    cls = ast.ClassDeclaration("Foo", [], 0, functions=[func])
+
+    context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
+    context.add_func(ast.GLOBAL_NAMESPACE + (cls.name,), func.name, func)
+
+    new_expr = ast.New(cls.get_type(), [])
+    decl = ast.VariableDeclaration("x", new_expr,
+                                   var_type=cls.get_type())
+    context.add_var(ast.GLOBAL_NAMESPACE, decl.name, decl)
+    expr = ast.FunctionCall("func", [], ast.Variable("x"), [kt.String])
+    assert tutils.get_type_hint(
+        expr, context, ast.GLOBAL_NAMESPACE, KT_FACTORY, []) == kt.String
 
 def test_type_hint_field_access():
     context = ctx.Context()

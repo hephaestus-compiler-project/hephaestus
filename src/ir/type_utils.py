@@ -827,9 +827,13 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
     # In the generated programs this works.
     """
 
+    # This list is used to store attribute names and any extra type arguments.
+    # These extra type arguments are used if we use an attribute corresponding
+    # to a parameterized function. So, we use them to properly instantiate
+    # type variables coming from the function's declaration.
     names = []
 
-    def _comp_type(t, name):
+    def _comp_type(t, name, type_args):
         if t is None:
             return None
         decl = get_decl_from_inheritance(t, name, context)
@@ -840,13 +844,15 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             if rec_t.is_parameterized():
                 # Here, the return type can have a type parameter taken
                 # from a function.
-                type_param_map = {
-                    t_param: rec_t.type_args[i]
-                    for i, t_param in enumerate(
-                        rec_t.t_constructor.type_parameters)
-                }
+                type_param_map = rec_t.get_type_variable_assignments()
             else:
                 type_param_map = {}
+            if isinstance(decl, ast.FunctionDeclaration) and (
+                  decl.is_parameterized()):
+                type_param_map.update({
+                    t_param: type_args[i]
+                    for i, t_param in enumerate(decl.type_parameters)
+                })
             return tp.substitute_type(decl.get_type(), type_param_map)
         else:
             return decl.get_type()
@@ -854,8 +860,8 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
     def _return_type_hint(t):
         if not names:
             return t
-        for name in reversed(names):
-            t = _comp_type(t, name)
+        for name, type_args in reversed(names):
+            t = _comp_type(t, name, type_args)
             if t is None:
                 return None
         return t
@@ -918,14 +924,16 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
                 funcdecl = ctx.get_decl(context, namespace, expr.func)
                 return _return_type_hint(
                     None if funcdecl is None else funcdecl[1].get_type())
-            names.append(expr.func)
+            # Beyond function's name, we also pass the type arguments of
+            # the function
+            names.append((expr.func, expr.type_args or []))
             expr = expr.receiver
 
         elif isinstance(expr, ast.FunctionReference):
             return expr.signature
 
         elif isinstance(expr, ast.FieldAccess):
-            names.append(expr.field)
+            names.append((expr.field, []))
             expr = expr.expr
 
         else:
