@@ -2,6 +2,7 @@ from copy import deepcopy
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
+from src import utils
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -149,6 +150,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
         self._stream = iter(range(0, 10000))
+        self._func_non_void_block_type = None
+        self._id_gen = utils.IdGen()
 
     def result(self):
         return self.type_graph
@@ -156,9 +159,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def _get_node_id(self):
         if not self._stack:
             return str(next(self._stream))
-
         top_stack = self._stack[-1]
-        return top_stack
+        return self._id_gen.get_node_id(top_stack)
 
     def _find_target_type_variable(self, source_type_var, type_var_deps,
                                    target_type_constructor, node_id):
@@ -427,6 +429,23 @@ class TypeDependencyAnalysis(DefaultVisitor):
                                TypeNode(node_type), Edge.DECLARED)
         self._exp_type = prev
 
+    def visit_block(self, node):
+        if not self._func_non_void_block_type:
+            super().visit_block(node)
+            return
+        children = node.children()
+        for c in children[:-1]:
+            self.visit(c)
+        ret_expr = children[-1]
+        # We create a "virtual" variable declaration representing the
+        # return value of the function.
+        parent_id = self._get_node_id()
+        ret_decl = ast.VariableDeclaration(
+            RET, ret_expr, is_final=True,
+            var_type=self._func_non_void_block_type)
+        self._handle_declaration(parent_id, ret_decl, ret_expr,
+                                 'var_type')
+
     def visit_var_decl(self, node):
         self._handle_declaration("/".join(self._namespace),
                                  node, node.expr, 'var_type')
@@ -460,20 +479,25 @@ class TypeDependencyAnalysis(DefaultVisitor):
         if node.body is None:
             return
 
-        if node.get_type() == self._bt_factory.get_void_type():
-            # If the body of function returns void, we cannot omit the
-            # return type of the function. So, we simply visit its body.
-            self.visit(node.body)
-            return
-
         node_id = "/".join(self._namespace)
-
-        # We create a "virtual" variable declaration representing the return
-        # value of the function.
-        ret_decl = ast.VariableDeclaration(RET, node.body, is_final=True,
-                                           var_type=node.get_type())
-        self._handle_declaration(node_id, ret_decl, node.body,
-                                 'var_type')
+        self._stack.append(node_id)
+        func_non_void_block_type = self._func_non_void_block_type
+        self._func_non_void_block_type = (
+            None
+            if node.get_type() == self._bt_factory.get_void_type()
+            else node.get_type()
+        )
+        if isinstance(node.body, ast.Block):
+            self.visit(node.body)
+        else:
+            # We create a "virtual" variable declaration representing the
+            # return value of the function.
+            ret_decl = ast.VariableDeclaration(RET, node.body, is_final=True,
+                                               var_type=node.get_type())
+            self._handle_declaration(node_id, ret_decl, node.body,
+                                     'var_type')
+        self._stack.pop()
+        self._func_non_void_block_type = func_non_void_block_type
 
     def visit_field_access(self, node):
         parent_node_id = self._get_node_id()
