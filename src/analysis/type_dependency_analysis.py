@@ -258,57 +258,57 @@ class TypeDependencyAnalysis(DefaultVisitor):
         return main_node
 
     def visit_integer_constant(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.integer_type))
 
     def visit_real_constant(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.real_type))
 
     def visit_string_constant(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_string_type()))
 
     def visit_boolean_constant(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_char_constant(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_char_type()))
 
     def visit_bottom_constant(self, node):
         if node.t is None:
             return
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.t))
 
     def visit_logical_expr(self, node):
         super().visit_logical_expr(node)
 
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_equality_expr(self, node):
         super().visit_equality_expr(node)
 
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_comparison_expr(self, node):
         super().visit_comparison_expr(node)
 
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             TypeNode(self._bt_factory.get_boolean_type()))
 
     def visit_array_expr(self, node):
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(TypeNode(node.array_type))
 
     def visit_variable(self, node):
@@ -318,7 +318,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # If we cannot find declaration in context, then abort.
             return
         namespace, decl = decl
-        node_id = self._get_node_id()
+        node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
             DeclarationNode("/".join(namespace), decl)
         )
@@ -347,7 +347,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         field_type = tp.substitute_type(f.get_type(), type_var_map)
         field_decl = deepcopy(f)
         field_decl.field_type = field_type
-        node_id = self._get_node_id() + "/" + receiver_t.name
+        parent_id, nu = self._get_node_id()
+        node_id = parent_id + ("/" + nu if nu else "") + "/" + receiver_t.name
         self._handle_declaration(node_id, field_decl, node.expr,
                                  "field_type")
 
@@ -369,7 +370,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self._visit_assign_with_receiver(node)
 
     def visit_conditional(self, node):
+        from copy import copy
+        prev = copy(self._stack)
+        self._stack.append("COND")
         self.visit(node.cond)
+        self._stack = prev
+
         namespace = self._namespace
 
         self._namespace = namespace + ("true_block",)
@@ -419,7 +425,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         ret_expr = children[-1]
         # We create a "virtual" variable declaration representing the
         # return value of the function.
-        parent_id = self._get_node_id()
+        parent_id, _ = self._get_node_id()
         ret_decl = ast.VariableDeclaration(
             RET, ret_expr, is_final=True,
             var_type=self._func_non_void_block_type)
@@ -480,8 +486,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._func_non_void_block_type = func_non_void_block_type
 
     def visit_field_access(self, node):
-        parent_node_id = self._get_node_id()
-        node_id = parent_node_id + "/" + node.field
+        parent_node_id, nu = self._get_node_id()
+        node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.field
         self._stack.append(node_id)
         super().visit_field_access(node)
         self._stack.pop()
@@ -491,8 +497,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         )
 
     def visit_func_call(self, node):
-        parent_node_id = self._get_node_id()
-        node_id = parent_node_id + "/" + node.func
+        parent_node_id, nu = self._get_node_id()
+        node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.func
         if node.receiver is None:
             fun_decl = get_decl(self._context, self._namespace,
                                 node.func)
@@ -595,7 +601,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             self.type_graph[node] = edges
 
     def visit_new(self, node):
-        parent_node_id = self._get_node_id()
+        parent_node_id, nu = self._get_node_id()
         if node.class_type == self._bt_factory.get_any_type() or (
               node.class_type.name == self._bt_factory.get_array_type().name):
             self._inferred_nodes[parent_node_id].append(
@@ -609,7 +615,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         assert class_decl is not None
         namespace, class_decl = class_decl
 
-        node_id = parent_node_id + "/" + class_decl.name
+        node_id = parent_node_id + ("/" + nu if nu else "") + "/" + class_decl.name
         # First we visit the children of this node (i.e., its arguments),
         # and handle them as declarations.
         inferred_fields = []

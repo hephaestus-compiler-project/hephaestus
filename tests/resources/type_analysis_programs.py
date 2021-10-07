@@ -155,6 +155,7 @@ FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
 context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
 program9 = ast.Program(context, "kotlin")
@@ -173,6 +174,7 @@ func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
 
 context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 program10 = ast.Program(context, "kotlin")
 
@@ -187,6 +189,7 @@ func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
 
 context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 program11 = ast.Program(context, "kotlin")
 
@@ -212,6 +215,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
 program12 = ast.Program(context, "kotlin")
 
