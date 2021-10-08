@@ -1,5 +1,5 @@
 # pylint: disable=too-many-instance-attributes,dangerous-default-value
-from copy import deepcopy
+from copy import deepcopy, copy
 import itertools
 from typing import Tuple
 
@@ -7,8 +7,8 @@ from src.ir import ast
 from src.ir import types
 from src.ir import type_utils as tp
 from src.transformations.base import Transformation, change_namespace
+from src.analysis import type_dependency_analysis as tda
 from src.analysis.use_analysis import UseAnalysis, GNode
-from src.analysis.type_dependency_analysis import TypeDependencyAnalysis
 
 
 def deepcopynode(func):
@@ -38,22 +38,33 @@ class TypeErasure(Transformation):
 
     @change_namespace
     def visit_func_decl(self, node):
-        t_an = TypeDependencyAnalysis(self.program,
-                                      namespace=self._namespace[:-1])
+        t_an = tda.TypeDependencyAnalysis(self.program,
+                                          namespace=self._namespace[:-1])
         t_an.visit(node)
         type_graph = t_an.result()
         ommitable_nodes = [n for n in type_graph.keys()
                            if n.is_omittable()]
+        # We enumerate all combinations of omittable nodes.
         combinations = [
-            itertools.combinations(ommitable_nodes, k)
+            [
+                i
+                for comb in itertools.combinations(ommitable_nodes, k)
+                for i in comb
+            ]
             for k in range(len(ommitable_nodes), 0, -1)
         ]
         for combination in combinations:
-            type_graph = deepcopy(type_graph)
-            if is_combination_feasible(type_graph, combination):
-                # TODO perform in place update
-                pass
-
+            type_graph = copy(type_graph)
+            # We are trying to find the maximal combination that is feasible.
+            if tda.is_combination_feasible(type_graph, combination):
+                for g_node in combination:
+                    self.is_transformed = True
+                    if isinstance(g_node, tda.DeclarationNode):
+                        g_node.decl.var_type = None
+                    if isinstance(g_node,
+                                  tda.TypeConstructorInstantiationCallNode):
+                        g_node.t.can_infer_type_args = True
+                break
         return node
 
 

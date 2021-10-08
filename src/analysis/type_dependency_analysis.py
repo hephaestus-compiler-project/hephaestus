@@ -152,21 +152,26 @@ def _handle_declaration_node(type_graph, node):
             new_edges.append(e)
             continue
         if isinstance(e.target, TypeConstructorInstantiationDeclNode):
+            for type_var in type_graph[e.target]:
+                type_graph[type_var.target] = []
             type_graph[e.target] = []
+    type_graph[node] = new_edges
 
 
 def _handle_type_inst_call_node(type_graph, node):
     for type_var in type_graph[node]:
-        edges = type_graph[type_var]
+        edges = type_graph[type_var.target]
         edges = [
             e
             for e in edges
             if not e.is_declared()
         ]
-        type_graph[type_var] = edges
+        type_graph[type_var.target] = edges
 
 
 def is_combination_feasible(type_graph, combination):
+    # Step 1: Remove all required edges from the graph. These edge removals
+    # represent the type infromation that is omitted from the program.
     for node in combination:
         assert node in type_graph, (
             "Node {} was not found in type graph".format(node))
@@ -176,18 +181,23 @@ def is_combination_feasible(type_graph, combination):
             _handle_type_inst_call_node(type_graph, node)
         else:
             continue
+
+    # Step 2 (Verification): verify that all declaration node lead to type
+    # nodes corresponding to the same type with that they are declared. Also
+    # verify that all type variable nodes lead to type nodes that are the same
+    # with those they are instantiated.
     for node in combination:
         if isinstance(node, DeclarationNode):
             reachable = gu.dfs(type_graph, node)
-            if not any(getattr(n, 't', None) == n.decl.get_type()
+            if not any(getattr(n, 't', None) == node.decl.get_type()
                        for n in reachable):
                 return False
 
         if isinstance(node, TypeConstructorInstantiationCallNode):
             type_assignments = node.t.get_type_variable_assignments()
             for type_var in type_graph[node]:
-                assigned_t = type_assignments[type_var.t]
-                reachable = gu.dfs(type_graph, type_var)
+                assigned_t = type_assignments[type_var.target.t]
+                reachable = gu.dfs(type_graph, type_var.target)
                 if not any(getattr(n, 't', None) == assigned_t
                            for n in reachable):
                     return False
