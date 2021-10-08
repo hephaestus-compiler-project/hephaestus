@@ -383,6 +383,7 @@ class KotlinTranslator(BaseTranslator):
             kt.Long: ".toLong()",
             kt.Short: ".toShort()",
             kt.Byte: ".toByte()",
+            kt.Number: " as Number",
         }
         suffix = integer_types.get(node.integer_type, "")
         literal = str(node.literal)
