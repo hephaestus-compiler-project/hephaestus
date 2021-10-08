@@ -34,8 +34,8 @@ def dfs(graph, source):
 
     def _dfs(n):
         visited[n] = True
-        for e in graph.get(n):
-            if not visited[e.target]:
+        for e in graph.get(n, []):
+            if not visited.get(e.target, False):
                 _dfs(e.target)
     _dfs(source)
     return {
