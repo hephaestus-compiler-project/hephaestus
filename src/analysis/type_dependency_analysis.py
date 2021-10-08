@@ -2,7 +2,7 @@ from copy import deepcopy, copy
 from collections import defaultdict
 from typing import NamedTuple, Union, Dict, List
 
-from src import utils
+from src import utils, graph_utils as gu
 from src.ir import ast, types as tp, type_utils as tu
 from src.ir.context import get_decl
 from src.ir.visitors import DefaultVisitor
@@ -28,6 +28,9 @@ class TypeVarNode(NamedTuple):
     def node_id(self):
         return self.parent_id + "/" + self.t.name
 
+    def is_omittable(self):
+        return False
+
 
 class TypeNode(NamedTuple):
     t: tp.Type
@@ -41,6 +44,9 @@ class TypeNode(NamedTuple):
     @property
     def node_id(self):
         return self.t.name
+
+    def is_omittable(self):
+        return False
 
 
 class DeclarationNode(NamedTuple):
@@ -56,6 +62,9 @@ class DeclarationNode(NamedTuple):
     @property
     def node_id(self):
         return self.parent_id + "/" + self.decl.name
+
+    def is_omittable(self):
+        return getattr(self.decl, "inferred_type", False) is not False
 
 
 class TypeConstructorInstantiationCallNode(NamedTuple):
@@ -73,6 +82,9 @@ class TypeConstructorInstantiationCallNode(NamedTuple):
     def node_id(self):
         return self.parent_id + "/" + self.t.name
 
+    def is_omittable(self):
+        return True
+
 
 class TypeConstructorInstantiationDeclNode(NamedTuple):
     parent_id: str
@@ -87,6 +99,9 @@ class TypeConstructorInstantiationDeclNode(NamedTuple):
     @property
     def node_id(self):
         return self.parent_id + "/" + self.t.name
+
+    def is_omittable(self):
+        return False
 
 
 class Edge(NamedTuple):
@@ -129,8 +144,58 @@ def construct_edge(type_graph, source, target, edge_label):
         type_graph[source].append(Edge(target, edge_label))
 
 
+def _handle_declaration_node(type_graph, node):
+    edges = type_graph[node]
+    new_edges = []
+    for e in edges:
+        if not e.is_declared():
+            new_edges.append(e)
+            continue
+        if isinstance(e.target, TypeConstructorInstantiationDeclNode):
+            type_graph[e.target] = []
+
+
+def _handle_type_inst_call_node(type_graph, node):
+    for type_var in type_graph[node]:
+        edges = type_graph[type_var]
+        edges = [
+            e
+            for e in edges
+            if not e.is_declared()
+        ]
+        type_graph[type_var] = edges
+
+
+def is_combination_feasible(type_graph, combination):
+    for node in combination:
+        assert node in type_graph, (
+            "Node {} was not found in type graph".format(node))
+        if isinstance(node, DeclarationNode):
+            _handle_declaration_node(type_graph, node)
+        elif isinstance(node, TypeConstructorInstantiationCallNode):
+            _handle_type_inst_call_node(type_graph, node)
+        else:
+            continue
+    for node in combination:
+        if isinstance(node, DeclarationNode):
+            reachable = gu.dfs(type_graph, node)
+            if not any(getattr(n, 't', None) == n.decl.get_type()
+                       for n in reachable):
+                return False
+
+        if isinstance(node, TypeConstructorInstantiationCallNode):
+            type_assignments = node.t.get_type_variable_assignments()
+            for type_var in type_graph[node]:
+                assigned_t = type_assignments[type_var.t]
+                reachable = gu.dfs(type_graph, type_var)
+                if not any(getattr(n, 't', None) == assigned_t
+                           for n in reachable):
+                    return False
+    return True
+
+
 class TypeDependencyAnalysis(DefaultVisitor):
-    def __init__(self, program):
+    def __init__(self, program, namespace=None):
         self._bt_factory = program.bt_factory
         self.type_graph: Dict[
             Union[
@@ -144,7 +209,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         ] = {}
         self.program = program
         self._context = self.program.context
-        self._namespace = ast.GLOBAL_NAMESPACE
+        self._namespace = namespace or ast.GLOBAL_NAMESPACE
         self._types = self.program.get_types()
         self._stack: list = ["global"]
         self._inferred_nodes: dict = defaultdict(list)
