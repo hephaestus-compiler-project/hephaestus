@@ -29,6 +29,22 @@ def reachable(graph, start_vertex, dest_vertex):
     return False
 
 
+def dfs(graph, source):
+    visited = {k: False for k in graph.keys()}
+
+    def _dfs(n):
+        visited[n] = True
+        for e in graph.get(n):
+            if not visited[e.target]:
+                _dfs(e.target)
+    _dfs(source)
+    return {
+        n
+        for n, is_visited in visited.items()
+        if is_visited and n != source
+    }
+
+
 def bi_reachable(graph, start_vertex, dest_vertex):
     """Bidirectional reachable"""
     # pylint: disable=arguments-out-of-order
