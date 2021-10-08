@@ -25,6 +25,9 @@ def deepcopynode(func):
     return inner
 
 
+
+
+
 class TypeErasure(Transformation):
     CORRECTNESS_PRESERVING = True
 
@@ -44,15 +47,11 @@ class TypeErasure(Transformation):
         type_graph = t_an.result()
         ommitable_nodes = [n for n in type_graph.keys()
                            if n.is_omittable()]
-        # We enumerate all combinations of omittable nodes.
-        combinations = [
-            [
-                i
-                for comb in itertools.combinations(ommitable_nodes, k)
-                for i in comb
-            ]
-            for k in range(len(ommitable_nodes), 0, -1)
-        ]
+        # We compute the powerset of omittable nodes.
+        combinations = itertools.chain.from_iterable(
+            itertools.combinations(ommitable_nodes, r)
+            for r in range(len(ommitable_nodes), 0, -1)
+        )
         for combination in combinations:
             type_graph = copy(type_graph)
             # We are trying to find the maximal combination that is feasible.
@@ -60,7 +59,7 @@ class TypeErasure(Transformation):
                 for g_node in combination:
                     self.is_transformed = True
                     if isinstance(g_node, tda.DeclarationNode):
-                        g_node.decl.var_type = None
+                        g_node.decl.omit_type()
                     if isinstance(g_node,
                                   tda.TypeConstructorInstantiationCallNode):
                         g_node.t.can_infer_type_args = True

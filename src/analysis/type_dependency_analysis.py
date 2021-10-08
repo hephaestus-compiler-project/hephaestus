@@ -189,9 +189,12 @@ def is_combination_feasible(type_graph, combination):
     for node in combination:
         if isinstance(node, DeclarationNode):
             reachable = gu.dfs(type_graph, node)
-            if not any(getattr(n, 't', None) == node.decl.get_type()
-                       for n in reachable):
-                return False
+            for n in reachable:
+                if isinstance(n, (TypeNode,
+                                  TypeConstructorInstantiationCallNode,
+                                  TypeConstructorInstantiationDeclNode)):
+                    if n.t != node.decl.get_type():
+                        return False
 
         if isinstance(node, TypeConstructorInstantiationCallNode):
             type_assignments = node.t.get_type_variable_assignments()
@@ -574,8 +577,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # return value of the function.
             ret_decl = ast.VariableDeclaration(RET, node.body, is_final=True,
                                                var_type=node.get_type())
-            self._handle_declaration(node_id, ret_decl, node.body,
-                                     'var_type')
+            self._handle_declaration(node_id, node, node.body,
+                                     'ret_type')
         self._stack.pop()
         self._func_non_void_block_type = func_non_void_block_type
 
