@@ -467,8 +467,7 @@ def _instantiate_type_param_rec(t_param: types.TypeParameter,
                                                         type_var_map)
     return new_t_param
 
-# @theosotr Should we change it to Expr? I think get_type will be useful
-class Lambda(Declaration):
+class Lambda(Expr):
     # body can be Block or Expr
     def __init__(self,
                  shadow_name: str,  # we use it in namespace

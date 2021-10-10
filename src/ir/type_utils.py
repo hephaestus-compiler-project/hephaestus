@@ -1,11 +1,27 @@
 from collections import OrderedDict
-from typing import List, Tuple, Dict
+from typing import TypeVar, List, Tuple, Dict
 
-import src.ir.ast as ast
 import src.ir.types as tp
 import src.ir.context as ctx
 import src.ir.builtins as bt
+from src.ir import ast
 from src import utils
+
+
+TypeVarMap = TypeVar('TypeVarMap', bound=Dict[tp.TypeParameter, tp.Type])
+TypeVarMap.__doc__ = """
+A dict from TypeParameter to Type. We use this structure for replacing
+type parameters when we want to instantiate type constructors and
+parameterized functions.
+"""
+
+VarianceChoices = TypeVar('VarianceChoices', bound=Dict[tp.TypeParameter,
+                          Tuple[bool, bool]])
+VarianceChoices.__doc__ = """
+A boolean map that specifies if in place of a TypeParameter we can use
+use-site variance. The first value is for covariance
+and the second for contravariance.
+"""
 
 
 def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
