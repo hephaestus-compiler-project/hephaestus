@@ -435,7 +435,6 @@ def test_program13():
     a.visit(program)
     res = to_str_dict(a.result())
 
-
     assert res == {
         'Declaration[global/A/f]': ['-> Type[T] (declared)'],
         'Declaration[global/foo/t]': [
@@ -461,3 +460,25 @@ def test_program13():
             '-> Declaration[global/foo/t] (inferred)'
         ]
     }
+
+
+def test_program14():
+    # fun foo() {
+    #     val x: Any = "fdf"
+    #     x = Any()
+    # }
+    program = tap.program14
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+
+    assert res == {
+        'Declaration[global/foo/x]': [
+            '-> Type[String] (inferred)',
+            '-> Type[Any] (declared)',
+            '-> Type[Any] (inferred)',
+        ]
+    }
+
+    assert not tda.is_combination_feasible(a.result(), list(a.result().keys()))

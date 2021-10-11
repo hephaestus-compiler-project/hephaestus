@@ -252,3 +252,17 @@ context.add_var(FUNC_NAMESPACE, var1.name, var1)
 context.add_var(FUNC_NAMESPACE, var2.name, var2)
 context.add_var(FUNC_NAMESPACE, var3.name, var3)
 program13 = ast.Program(context, "kotlin")
+
+
+# program 14
+var1 = ast.VariableDeclaration("x", ast.StringConstant("x"), var_type=kt.Any)
+assign = ast.Assignment("x", ast.New(kt.Any, []), None)
+body = ast.Block([var1, assign])
+func = ast.FunctionDeclaration("foo", [], kt.Unit, body,
+                               ast.FunctionDeclaration.FUNCTION)
+
+FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
+context = ctx.Context()
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(FUNC_NAMESPACE, var1.name, var1)
+program14 = ast.Program(context, "kotlin")
