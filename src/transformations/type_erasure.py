@@ -35,17 +35,32 @@ class TypeErasure(Transformation):
         self.max_combinations = options.get(
             'max_combinations', 2000
         )
+        self.global_type_graph = {}
 
     @change_namespace
     def visit_class_decl(self, node):
         return super().visit_class_decl(node)
 
+    def visit_var_decl(self, node):
+        if self._namespace != ast.GLOBAL_NAMESPACE:
+            return super().visit_var_decl(node)
+
+        # We need this analysis, we have to include type information of global
+        # variables.
+        t_an = tda.TypeDependencyAnalysis(self.program,
+                                          namespace=ast.GLOBAL_NAMESPACE)
+        t_an.visit(node)
+        self.global_type_graph.update(t_an.result())
+        return node
+
     @change_namespace
     def visit_func_decl(self, node):
         t_an = tda.TypeDependencyAnalysis(self.program,
-                                          namespace=self._namespace[:-1])
+                                          namespace=self._namespace[:-1],
+                                          type_graph=None)
         t_an.visit(node)
         type_graph = t_an.result()
+        type_graph.update(self.global_type_graph)
         omittable_nodes = [n for n in type_graph.keys()
                            if n.is_omittable()]
         # We compute the powerset of omittable nodes.
@@ -56,9 +71,9 @@ class TypeErasure(Transformation):
         for i, combination in enumerate(combinations):
             if i > self.max_combinations:
                 break
-            type_graph = copy(type_graph)
+            c_type_graph = copy(type_graph)
             # We are trying to find the maximal combination that is feasible.
-            if tda.is_combination_feasible(type_graph, combination):
+            if tda.is_combination_feasible(c_type_graph, combination):
                 for g_node in combination:
                     self.is_transformed = True
                     if isinstance(g_node, tda.DeclarationNode):

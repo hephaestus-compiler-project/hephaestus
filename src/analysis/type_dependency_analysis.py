@@ -210,7 +210,7 @@ def is_combination_feasible(type_graph, combination):
 
 
 class TypeDependencyAnalysis(DefaultVisitor):
-    def __init__(self, program, namespace=None):
+    def __init__(self, program, namespace=None, type_graph=None):
         self._bt_factory = program.bt_factory
         self.type_graph: Dict[
             Union[
@@ -221,7 +221,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 TypeConstructorInstantiationDeclNode
             ],
             List[Edge]
-        ] = {}
+        ] = type_graph or {}
         self.program = program
         self._context = self.program.context
         self._namespace = namespace or ast.GLOBAL_NAMESPACE
