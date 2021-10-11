@@ -605,6 +605,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             receiver_t = tu.get_type_hint(node.receiver, self._context,
                                           self._namespace, self._bt_factory,
                                           self._types)
+            if receiver_t.is_type_var():
+                receiver_t = receiver_t.get_bound_rec(self._bt_factory)
             fun_decl = tu.get_decl_from_inheritance(receiver_t,
                                                     node.func, self._context)
             # We compute the namespace where the function declaration was
