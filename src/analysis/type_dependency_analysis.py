@@ -43,6 +43,8 @@ class TypeNode(NamedTuple):
 
     @property
     def node_id(self):
+        if self.t is None:
+            return "*"
         return self.t.name
 
     def is_omittable(self):
