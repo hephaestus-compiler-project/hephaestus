@@ -35,11 +35,6 @@ class Generator():
         self.context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.cfg = GenConfig()
-        self.disable_inference_in_closures = options.get(
-            "disable_inference_in_closures", False)
-        self.disable_var_type_inference = options.get(
-            "disable_var_type_inference", False
-        )
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
@@ -228,7 +223,7 @@ class Generator():
         if is_interface or (abstract and ut.random.bool()):
             body, inferred_type = None, None
         else:
-            body, inferred_type = self._gen_func_body(ret_type)
+            body = self._gen_func_body(ret_type)
         self._inside_java_lambda = prev_inside_java_lamdba
         self.depth = initial_depth
         self.namespace = initial_namespace
@@ -238,7 +233,7 @@ class Generator():
                        if class_method
                        else ast.FunctionDeclaration.FUNCTION),
             is_final=not can_override,
-            inferred_type=inferred_type,
+            inferred_type=None,
             type_parameters=type_params,
         )
 
@@ -1260,7 +1255,7 @@ class Generator():
 
         params = params if params is not None else self._gen_func_params()
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
-        body, _ = self._gen_func_body(ret_type)
+        body = self._gen_func_body(ret_type)
         param_types = [p.param_type for p in params]
         signature = tp.ParameterizedType(
             self.bt_factory.get_function_type(len(params)),
@@ -2215,14 +2210,14 @@ class Generator():
             return ut.random.choice(param_types)
         return self.select_type(exclude_contravariants=True)
 
-    def _gen_func_body(self, ret_type: tp.Type) -> Tuple[ast.Block, tp.Type]:
+    def _gen_func_body(self, ret_type: tp.Type):
         """Generate the body of a function or a lambda.
 
         Args:
             ret_type: Return type of the function
 
         Returns:
-            A tuple of the function block and its return type.
+            ast.Block or ast.Expr
         """
         expr_type = (
             self.select_type(ret_types=False)
@@ -2234,50 +2229,17 @@ class Generator():
             self.namespace, True).values())
         var_decls = [d for d in decls
                      if not isinstance(d, ast.ParameterDeclaration)]
-        # TODO remove type inference from functions
-        if (not var_decls and
-                ret_type != self.bt_factory.get_void_type() and
-                self.can_infer_function_ret_type(expr, decls)):
+        if (not var_decls and ret_type != self.bt_factory.get_void_type()):
             # The function does not contain any declarations and its return
             # type is not Unit. So, we can create an expression-based function.
-            inferred_type = ret_type
-            body = expr
-            # If the return type is Number, then this must be explicit.
-            # If the return value is the bottom constant, then again the
-            # return type must be explicit.
-            if ret_type != self.bt_factory.get_number_type() and not (
-                  expr.is_bottom()):
-                ret_type = None
+            body = expr if ut.random.bool(self.cfg.prob.function_expr) else \
+                ast.Block([expr])
         else:
-            inferred_type = None
             exprs, decls = self._gen_side_effects()
             body = ast.Block(decls + exprs + [expr])
-        return body, inferred_type
+        return body
 
     # Where
-
-    # TODO probably we have to remove this functions.
-    # theosotr what is the exact role of this function?
-    def can_infer_function_ret_type(self, func_expr, decls):
-        if not self.disable_inference_in_closures:
-            return True
-
-        # TODO theosotr
-        # We want to disable inference in the following situations
-        # fun foo(x: Any) {
-        #    if (x is String) {
-        #       fun bar() = x
-        #       return bar()
-        #    } else return ""
-        # }
-        # This will help us to avoid the repetition of an already discovered
-        # bug.
-        if not isinstance(func_expr, ast.Variable):
-            return True
-
-        return func_expr.name in {d.name for d in decls}
-
-    # And
 
     def _gen_side_effects(self) -> Tuple[List[ast.Expr], List[ast.Declaration]]:
         """Generate expressions with side-effects for function bodies.

@@ -42,6 +42,11 @@ class GenLimits:
     max_depth: int # max depth of leaves in programs
 
 
+@dataclass
+class Probabilities:
+    function_expr: float # functions that their body are expressions
+
+
 class GenConfig:
     def __init__(self, kwargs={}):
         # Default values
@@ -60,6 +65,9 @@ class GenConfig:
             max_top_level=10,
             min_top_level=5,
             max_depth=7
+        )
+        self.prob=Probabilities(
+                function_expr=1.0
         )
         for key, value in kwargs.items():
             process_arg(self, key, value)
