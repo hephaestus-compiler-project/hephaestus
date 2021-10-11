@@ -131,5 +131,8 @@ class RandomUtils():
             if res not in blacklist:
                 return res
 
+    def range(self, from_value, to_value):
+        return range(0, self.integer(from_value, to_value))
+
 
 random = RandomUtils()

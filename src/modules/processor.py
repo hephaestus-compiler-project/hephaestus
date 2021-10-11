@@ -101,7 +101,6 @@ class ProgramProcessor():
         else:
             logger = None
         generator = Generator(
-            max_depth=self.args.max_depth,
             language=self.args.language,
             logger=logger,
             options=self.args.options["Generator"])

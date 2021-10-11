@@ -15,6 +15,7 @@ from typing import Tuple, List, Callable
 from src import utils as ut
 from src.generators import generators as gens
 from src.generators import utils as gu
+from src.generators.config import GenConfig
 from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
@@ -23,9 +24,7 @@ from src.ir import BUILTIN_FACTORIES
 
 class Generator():
     # TODO document
-    def __init__(self, max_depth=7, max_fields=2, max_funcs=2, max_params=2,
-                 max_var_decls=3, max_side_effects=1, max_type_params=3,
-                 max_functional_params=3,
+    def __init__(self,
                  language=None,
                  options={},
                  logger=None,
@@ -35,14 +34,7 @@ class Generator():
         self.logger = logger
         self.context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
-        self.max_depth = max_depth
-        self.max_fields = max_fields
-        self.max_funcs = max_funcs
-        self.max_params = max_params
-        self.max_type_params = max_type_params
-        self.max_var_decls = max_var_decls
-        self.max_side_effects = max_side_effects
-        self.max_functional_params = max_functional_params
+        self.cfg = GenConfig()
         self.disable_inference_in_closures = options.get(
             "disable_inference_in_closures", False)
         self.disable_var_type_inference = options.get(
@@ -61,7 +53,7 @@ class Generator():
 
         self.function_type = type(self.bt_factory.get_function_type())
         self.function_types = self.bt_factory.get_function_types(
-            max_functional_params)
+            self.cfg.limits.max_functional_params)
 
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
@@ -83,7 +75,8 @@ class Generator():
         It first generates a number `n` top-level declarations,
         and then it generates the main function.
         """
-        for _ in range(0, ut.random.integer(0, 10)):
+        for _ in ut.random.range(self.cfg.limits.min_top_level,
+                                 self.cfg.limits.max_top_level):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         self.namespace = ('global',)
@@ -258,7 +251,7 @@ class Generator():
         """
         has_default = False
         params = []
-        for _ in range(ut.random.integer(0, self.max_params)):
+        for _ in range(ut.random.integer(0, self.cfg.limits.fn.max_params)):
             param = self.gen_param_decl()
             if not has_default:
                 has_default = ut.random.bool()
@@ -400,7 +393,8 @@ class Generator():
         Returns:
             A list of field declarations
         """
-        max_fields = self.max_fields - 1 if field_type else self.max_fields
+        max_fields = self.cfg.limits.cls.max_fields - 1 if field_type \
+            else self.cfg.limits.cls.max_fields
         fields = []
         if field_type:
             self._add_field_to_class(
@@ -460,7 +454,8 @@ class Generator():
             fret_type: At least one method will return this type.
         """
         funcs = []
-        max_funcs = self.max_funcs - 1 if fret_type else self.max_funcs
+        max_funcs = self.cfg.limits.cls.max_funcs - 1 if fret_type \
+            else self.cfg.limits.cls.max_funcs
         abstract = not curr_cls.is_regular()
         if fret_type:
             self._add_func_to_class(
@@ -760,7 +755,7 @@ class Generator():
         gen_var = (
             not only_leaves and
             expr_type != self.bt_factory.get_void_type() and
-            self._vars_in_context[self.namespace] < self.max_var_decls and
+            self._vars_in_context[self.namespace] < self.cfg.limits.max_var_decls and
             ut.random.bool()
         )
         if gen_var:
@@ -1993,13 +1988,13 @@ class Generator():
             return [gen_fun_call,
                     lambda x: self.gen_assignment(x, only_leaves)]
 
-        if self.depth >= self.max_depth or only_leaves:
+        if self.depth >= self.cfg.limits.max_depth or only_leaves:
             gen_con = constant_candidates.get(expr_type.name)
             if gen_con is not None:
                 return [gen_con]
             gen_var = (
                 self._vars_in_context.get(
-                    self.namespace, 0) < self.max_var_decls and not
+                    self.namespace, 0) < self.cfg.limits.max_var_decls and not
                 only_leaves and not exclude_var)
             if gen_var:
                 # Decide if we can generate a variable.
@@ -2131,7 +2126,7 @@ class Generator():
         type_params = []
         type_param_names = blacklist or []
         variances = [tp.Invariant, tp.Covariant, tp.Contravariant]
-        for _ in range(ut.random.integer(count or 1, self.max_type_params)):
+        for _ in range(ut.random.integer(count or 1, self.cfg.limits.max_type_params)):
             name = ut.random.caps(blacklist=type_param_names)
             type_param_names.append(name)
             if for_function:
@@ -2174,7 +2169,7 @@ class Generator():
         arr_index = None
         vararg_found = False
         vararg = None
-        for i in range(ut.random.integer(0, self.max_params)):
+        for i in range(ut.random.integer(0, self.cfg.limits.fn.max_params)):
             param = self.gen_param_decl()
             # If the type of the parameter is an array consider make it
             # a vararg.
@@ -2299,7 +2294,7 @@ class Generator():
         Example side-effects: assignment, variable declaration, etc.
         """
         exprs = []
-        for _ in range(ut.random.integer(0, self.max_side_effects)):
+        for _ in range(ut.random.integer(0, self.cfg.limits.fn.max_side_effects)):
             expr = self.generate_expr(self.bt_factory.get_void_type())
             if expr:
                 exprs.append(expr)

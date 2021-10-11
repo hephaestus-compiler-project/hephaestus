@@ -74,12 +74,6 @@ parser.add_argument(
     help="Generate closures that have an explicit return type"
 )
 parser.add_argument(
-    "--max-depth",
-    type=int,
-    default=7,
-    help="Max depth of generated programs"
-)
-parser.add_argument(
     "-S", "--print-stacktrace",
     action="store_true",
     help="When an error occurs print stack trace"
