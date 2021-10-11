@@ -687,18 +687,9 @@ class Generator():
                                           sam_coercion=True)
         self.depth = initial_depth
         is_final = ut.random.bool()
-        # We never omit type in non-final variables or in variables that
-        # correspond to a bottom constant.
-        # TODO Disable type inference in the generator
-        omit_type = (
-            not self.disable_var_type_inference and
-            ut.random.bool() and
-            is_final and
-            var_type != self.bt_factory.get_number_type()
-        )
-        vtype = None if omit_type and not expr.is_bottom() else var_type
-        if vtype is not None and vtype.is_wildcard():
-            vtype = vtype.get_bound_rec()
+        # We cannot set ? extends X as the type of a variable.
+        vtype = var_type.get_bound_rec() if var_type.is_wildcard() else \
+            var_type
         return ast.VariableDeclaration(
             gu.gen_identifier('lower'),
             expr=expr,
