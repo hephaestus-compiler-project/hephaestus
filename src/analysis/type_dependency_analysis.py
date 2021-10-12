@@ -676,6 +676,25 @@ class TypeDependencyAnalysis(DefaultVisitor):
         for i, t_param in enumerate(t.t_constructor.type_parameters):
             type_var_id = parent_node_id + "/" + t.name
             source = TypeVarNode(type_var_id, t_param, False)
+            # At this point, we connect type variables that have dependencies
+            # with other type variables. For example
+            # class A<T1, T2: T1>
+            # In this case, we connect T2 -> T1 (i.e., meaning that the
+            # compiler can infer the type argument of T2, if it knows the
+            # type argument of T1).
+            if t_param.bound and t_param.bound.has_type_variables():
+                if t_param.bound.is_type_var():
+                    type_vars = [t_param.bound]
+                else:
+                    type_vars = t_param.bound.get_type_variables(
+                        self._bt_factory)
+                if t_param.bound.is_parameterized():
+                    construct_edge(self.type_graph, source,
+                                   TypeNode(t_param.bound), Edge.INFERRED)
+                for t_var in type_vars:
+                    bounded_type_var = TypeVarNode(type_var_id, t_var, False)
+                    construct_edge(self.type_graph, source, bounded_type_var,
+                                   Edge.INFERRED)
             type_var_nodes[t_param] = source
             target = TypeNode(t.type_args[i])
             # This edge connects type constructor with its type variables.

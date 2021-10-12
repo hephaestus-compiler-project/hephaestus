@@ -266,3 +266,18 @@ context = ctx.Context()
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
 program14 = ast.Program(context, "kotlin")
+
+
+# program15
+f = ast.FieldDeclaration("f", type_param1)
+type_param2 = tp.TypeParameter("T2", bound=type_param1)
+cls1 = ast.ClassDeclaration("A", [], 0, fields=[f],
+                            type_parameters=[type_param1, type_param2])
+t = cls1.get_type().new([kt.Number, kt.Integer])
+new = ast.New(t, [ast.IntegerConstant(1, kt.Number)])
+var = ast.VariableDeclaration("x", new, var_type=t)
+context = ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
+context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
+program15 = ast.Program(context, "kotlin")

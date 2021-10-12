@@ -482,3 +482,41 @@ def test_program14():
     }
 
     assert not tda.is_combination_feasible(a.result(), list(a.result().keys()))
+
+
+def test_program15():
+    # class A<T1, T2: T1>(val x: T1)
+    # val x: A<Number, Intgeger> = new A<Number, Integer>(1)
+    program = tap.program15
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        '!TypeVariable[global/x/A/T2]': ['-> Type[Int] (declared)'],
+        '!TypeVariable[global/x/A/T]': ['-> Type[Number] (declared)'],
+        'Declaration[global/A/f]': ['-> Type[T] (declared)'],
+        'Declaration[global/x/A/f]': ['-> Type[Number] (inferred)'],
+        'Declaration[global/x]': [
+            '-> TypeConInstCall[global/x/A] (inferred)',
+            '-> TypeConInstDecl[global/x/A] (declared)',
+        ],
+        'TypeConInstCall[global/x/A]': [
+            '-> TypeVariable[global/x/A/T] (declared)',
+            '-> TypeVariable[global/x/A/T2] (declared)'
+        ],
+        'TypeConInstDecl[global/x/A]': [
+            '-> !TypeVariable[global/x/A/T] (declared)',
+            '-> !TypeVariable[global/x/A/T2] (declared)'
+        ],
+        'TypeVariable[global/x/A/T2]': [
+            '-> TypeVariable[global/x/A/T] (inferred)',
+            '-> Type[Int] (declared)',
+            '-> !TypeVariable[global/x/A/T2] (inferred)'
+        ],
+        'TypeVariable[global/x/A/T]': [
+            '-> Type[Number] (declared)',
+            '-> Type[Number] (inferred)',
+            '-> !TypeVariable[global/x/A/T] (inferred)'
+        ]
+    }
