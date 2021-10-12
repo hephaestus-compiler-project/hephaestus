@@ -1192,7 +1192,7 @@ class FunctionCall(Expr):
         self.receiver = receiver
         self.type_args = type_args
         self.is_ref_call = is_ref_call
-        self.inferred_type_args = self.type_args
+        self._can_infer_type_args = False
 
     def children(self):
         if self.receiver is None:
@@ -1207,14 +1207,15 @@ class FunctionCall(Expr):
             self.receiver = children[0]
             self.args = children[1:]
 
-    def omit_type_args(self):
-        self.type_args = None
+    @property
+    def can_infer_type_args(self):
+        return self._can_infer_type_args
 
-    def get_type_args(self):
-        return self.inferred_type_args
-
-    def get_actual_type_args(self):
-        return self.type_args
+    @can_infer_type_args.setter
+    def can_infer_type_args(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("Must be bool")
+        self._can_infer_type_args = value
 
     def __str__(self):
         type_args_str = (
