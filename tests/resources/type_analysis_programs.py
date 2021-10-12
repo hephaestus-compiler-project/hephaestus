@@ -281,3 +281,20 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
 program15 = ast.Program(context, "kotlin")
+
+# program16
+param1 = ast.ParameterDeclaration("x", type_param1)
+func = ast.FunctionDeclaration("foo", [param1], kt.String,
+                               ast.BottomConstant(kt.String),
+                               ast.FunctionDeclaration.FUNCTION,
+                               type_parameters=[type_param1])
+func_call = ast.FunctionCall("foo", [ast.StringConstant("x")],
+                             type_args=[kt.String])
+func2 = ast.FunctionDeclaration("bar", [], kt.Unit,
+                                ast.Block([func_call]),
+                                ast.FunctionDeclaration.FUNCTION)
+context = ctx.Context()
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_func(ast.GLOBAL_NAMESPACE, func2.name, func2)
+context.add_var(ast.GLOBAL_NAMESPACE + (func.name,), param1.name, param1)
+program16 = ast.Program(context, "kotlin")

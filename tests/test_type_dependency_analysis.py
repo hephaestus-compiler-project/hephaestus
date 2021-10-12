@@ -211,7 +211,7 @@ def test_program6():
     res = to_str_dict(a.result())
 
     assert res == {
-        'Declaration[global/A/foo/__RET__]': [
+        'Declaration[global/A/foo/foo]': [
             '-> Declaration[global/A/foo/x] (inferred)',
             '-> Type[T] (declared)'
         ],
@@ -518,5 +518,32 @@ def test_program15():
             '-> Type[Number] (declared)',
             '-> Type[Number] (inferred)',
             '-> !TypeVariable[global/x/A/T] (inferred)'
+        ]
+    }
+
+
+def test_program16():
+    # fun <T> foo(x: T): String = ""
+    # fun bar() {
+    #  foo("x")
+    # }
+    program = tap.program16
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        'Declaration[global/bar/foo/x]': ['-> Type[String] (inferred)'],
+        'Declaration[global/foo/foo]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'Declaration[global/foo/x]': ['-> Type[T] (declared)'],
+        'TypeConInstCall[global/bar/foo]': [
+            '-> TypeVariable[global/bar/foo/T] (declared)'
+        ],
+        'TypeVariable[global/bar/foo/T]': [
+            '-> Type[String] (declared)',
+            '-> Type[String] (inferred)',
         ]
     }
