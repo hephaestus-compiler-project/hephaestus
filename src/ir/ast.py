@@ -178,6 +178,9 @@ class VariableDeclaration(Declaration):
     def children(self):
         return [self.expr]
 
+    def omit_type(self):
+        self.var_type = None
+
     def get_type(self):
         return self.inferred_type
 
@@ -410,6 +413,9 @@ class FunctionDeclaration(Declaration):
         if self.body is None:
             return
         self.body = children[-1]
+
+    def omit_type(self):
+        self.ret_type = None
 
     def get_type(self):
         return self.inferred_type
@@ -1186,6 +1192,7 @@ class FunctionCall(Expr):
         self.receiver = receiver
         self.type_args = type_args
         self.is_ref_call = is_ref_call
+        self.inferred_type_args = self.type_args
 
     def children(self):
         if self.receiver is None:
@@ -1199,6 +1206,15 @@ class FunctionCall(Expr):
         else:
             self.receiver = children[0]
             self.args = children[1:]
+
+    def omit_type_args(self):
+        self.type_args = None
+
+    def get_type_args(self):
+        return self.inferred_type_args
+
+    def get_actual_type_args(self):
+        return self.type_args
 
     def __str__(self):
         type_args_str = (

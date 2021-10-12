@@ -590,8 +590,9 @@ class KotlinTranslator(BaseTranslator):
         self.ident = old_ident
         children_res = self.pop_children_res(children)
         type_args = (
-            "<" + ",".join([self.get_type_name(t) for t in node.type_args]) + ">"
-            if node.type_args
+            "<" + ",".join(
+                [self.get_type_name(t) for t in node.get_type_args()]) + ">"
+            if node.get_type_args()
             else ""
         )
         if node.receiver:
