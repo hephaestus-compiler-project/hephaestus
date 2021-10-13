@@ -1904,6 +1904,9 @@ class Generator():
                 type_var_map[fparam] = eparam
         # Create a parameterized type with the correct type arguments
         parent = self.context.get_parent(namespace)
+        # TODO Handle parameterized functions
+        if parent is None:
+            return None
         parent_type = parent.get_type()
         if not isinstance(parent_type, tp.TypeConstructor):
             return None
