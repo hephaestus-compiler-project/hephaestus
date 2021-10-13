@@ -1200,6 +1200,32 @@ def test_unify_types_function_type():
     }
 
 
+def test_unify_types_with_simple_and_parameterized_types():
+    factory = kt.KotlinBuiltinFactory()
+    type_param1 = tp.TypeParameter("T1")
+    foo = tp.TypeConstructor("A", [type_param1])
+    bar = tp.SimpleClassifier("B", [foo.new([kt.String])])
+    foo_d = foo.new([type_param1])
+
+    params = tutils.unify_types(bar, foo_d, factory, same_type=False)
+    assert params == {type_param1: kt.String}
+    assert tutils.unify_types(foo_d, bar, factory, same_type=False) == {}
+
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("A", [type_param1, type_param2])
+    bar = tp.SimpleClassifier("B", [foo.new([kt.String, kt.Long])])
+    foo_d = foo.new([kt.String, type_param1])
+    params = tutils.unify_types(bar, foo_d, factory, same_type=False)
+    assert params == {type_param1: kt.Long}
+
+    bar = tp.TypeConstructor("B", [type_param2],
+                             [foo.new([kt.String, type_param2])])
+    bar_d = bar.new([kt.Long])
+    params = tutils.unify_types(bar_d, foo_d, factory, same_type=False)
+    print('ddd', params)
+    assert params == {type_param1: kt.Long}
+
+
 def test_build_type_variable_dependencies():
     assert tutils.build_type_variable_dependencies(kt.String, kt.String) == {}
     assert tutils.build_type_variable_dependencies(kt.String, kt.Integer) == {}

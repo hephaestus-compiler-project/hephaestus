@@ -995,7 +995,8 @@ def _update_type_var_map(type_var_map, key, value):
     return True
 
 
-def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
+def unify_types(t1: tp.Type, t2: tp.Type, factory,
+                same_type=True) -> dict:
     """
     This function performs unification on two types. The second type is
     the type we try to match with the first one, by substituting any
@@ -1013,9 +1014,20 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
       unify_types(A<String>, A<Int>) = {}
       unify_types(A<String, Long>, A<String, T>) = {T: Long}
       unify_types(A<String, Long>, A<Long, T>) = {}
+      unify_types(B(), A<T>) = {T: String}
+
+    For the last example, assume that
+      class A<T>
+      class B : A<String>()
     """
-    if type(t1) != type(t2):
+    if same_type and type(t1) != type(t2):
         return {}
+
+    if t1.name != t2.name and not (t1.is_type_var() and t2.is_type_var()):
+        if not t1.supertypes:
+            return {}
+        supertype = t1.supertypes[0]
+        return unify_types(supertype, t2, factory, same_type=same_type)
 
     is_type_var = isinstance(t1, tp.TypeParameter)
     is_type_var2 = isinstance(t2, tp.TypeParameter)
