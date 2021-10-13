@@ -1023,7 +1023,7 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
     if same_type and type(t1) != type(t2):
         return {}
 
-    if t1.name != t2.name and not (t1.is_type_var() and t2.is_type_var()):
+    if t1.name != t2.name and not t2.is_type_var():
         if not t1.supertypes:
             return {}
         supertype = t1.supertypes[0]
@@ -1039,6 +1039,11 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
 
         if not bound2 or (bound1 and bound1.is_subtype(bound2)):
             return {t2: t1}
+    if is_type_var2:
+        bound = t2.get_bound_rec(factory)
+        if bound and not t1.is_subtype(bound):
+            return {}
+        return {t2: t1}
 
     if not isinstance(t1, tp.ParameterizedType):
         return {}
