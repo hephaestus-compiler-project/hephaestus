@@ -635,3 +635,50 @@ def test_program19():
             '-> !TypeVariable[global/x/C/T] (inferred)'
         ]
     }
+
+
+def test_program20():
+    # class A<T>
+    # class B<T> (val f: A<T>)
+    # val x: B<String> = new B<String>(new A<String>())
+    program = tap.program20
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        '!TypeVariable[global/x/B/T]': ['-> Type[String] (declared)'],
+        '!TypeVariable[global/x/B/f/A/T]': [
+            '-> TypeVariable[global/x/B/T] (inferred)'
+        ],
+        'Declaration[global/B/f]': ['-> Type[A] (declared)']
+        'Declaration[global/x/B/f]': [
+            '-> TypeConInstCall[global/x/B/f/A] (inferred)',
+            '-> TypeConInstDecl[global/x/B/f/A] (declared)',
+        ],
+        'Declaration[global/x]': [
+            '-> TypeConInstCall[global/x/B] (inferred)'
+            '-> TypeConInstDecl[global/x/B] (declared)'
+        ],
+        'TypeConInstCall[global/x/B/f/A]': [
+            '-> TypeVariable[global/x/B/f/A/T] (declared)'
+        ],
+        'TypeConInstCall[global/x/B]': [
+            '-> TypeVariable[global/x/B/T] (declared)'
+        ],
+        'TypeConInstDecl[global/x/B/f/A]': [
+            '-> !TypeVariable[global/x/B/f/A/T] (declared)'
+        ],
+        'TypeConInstDecl[global/x/B]': [
+            '-> !TypeVariable[global/x/B/T] (declared)'
+        ],
+        'TypeVariable[global/x/B/T]': [
+            '-> Type[String] (declared)',
+            '-> TypeVariable[global/x/B/f/A/T] (inferred)',
+            '-> !TypeVariable[global/x/B/T] (inferred)'
+        ],
+        'TypeVariable[global/x/B/f/A/T]': [
+            '-> Type[String] (declared)',
+            '-> !TypeVariable[global/x/B/f/A/T] (inferred)'
+        ]
+    }

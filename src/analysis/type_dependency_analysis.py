@@ -736,19 +736,59 @@ class TypeDependencyAnalysis(DefaultVisitor):
         inferred_nodes = self.type_graph.get(
             DeclarationNode(node_id, field_decl), [])
         type_assignments = {}
+
+        has_decl_node = False
         for n in inferred_nodes:
-            if n.is_declared():
-                continue
-            type_assignments = tu.unify_types(n.target.get_type(), t,
-                                              self._bt_factory,
-                                              same_type=False)
-            break
-        for t_var, t in type_assignments.items():
+            if not type_assignments:
+                type_assignments = tu.unify_types(n.target.get_type(), t,
+                                                  self._bt_factory,
+                                                  same_type=False)
+            if isinstance(n.target, TypeConstructorInstantiationDeclNode):
+                has_decl_node = True
+                break
+
+        type_var_map = t.get_type_variable_assignments()
+        for t_var, t_arg in type_assignments.items():
+
             source = type_var_nodes.get(t_var)
             if source is None:
                 continue
-            construct_edge(self.type_graph, source, TypeNode(t),
-                           Edge.INFERRED)
+
+            # In this case we have a scenario like the following.
+            # class A<T> (val f: B<T>)
+            # class C: B<String>()
+            # A<String>(new C())
+            #
+            # In this case, the things are simple add an edge from the type
+            # variable of type constructor A to a hardcoded type, which is
+            # previously inferred from the type unification we performed.
+            if not has_decl_node:
+                construct_edge(self.type_graph, source, TypeNode(t_arg),
+                               Edge.INFERRED)
+
+            # Otherwise, we are in a case like the following:
+            # class A<T>(val f: B<T>)
+            # A<String>(new B<String>())
+            #
+            # i.e., the argument of the primary type constructor corresponds
+            # to another type constructor.
+            # In this case, the type variable of TypeConstInstDeclNode
+            # corresponding to the declaration of field f has a dependency
+            # to type variable A.T. Moreover, the type variable A.T has
+            # dependency to the type variable B.T. Therefore, we add the
+            # corresponding edges.
+            else:
+                for k, v in type_var_map.items():
+                    if v.name == t_var.name:
+                        nid = "/".join([node_id, field_decl.name,
+                                        t.name])
+                        decl_type_var_node = TypeVarNode(nid, k, True)
+                        call_type_var_node = TypeVarNode(nid, k, False)
+                        self.type_graph[decl_type_var_node] = []
+                        construct_edge(self.type_graph, decl_type_var_node,
+                                       source, Edge.INFERRED)
+                        construct_edge(self.type_graph, source,
+                                       call_type_var_node, Edge.INFERRED)
 
     def _infer_type_variables_by_call_arguments(self, node_id, type_var_nodes,
                                                 inferred_fields):
