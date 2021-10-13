@@ -967,7 +967,9 @@ class Generator():
             self.generate_expr(etype, only_leaves=only_leaves, subtype=subtype)
             for _ in range(arr_len)
         ]
-        return ast.ArrayExpr(expr_type, arr_len, exprs)
+        # An array expression (i.e., emptyArray<T>(), arrayOf<T>) cannot
+        # take wildcards.
+        return ast.ArrayExpr(expr_type.to_variance_free(), arr_len, exprs)
 
     # pylint: disable=unused-argument
     def gen_equality_expr(self,
