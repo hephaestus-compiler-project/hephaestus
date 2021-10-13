@@ -731,6 +731,23 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, n.target,
                            Edge.INFERRED)
 
+    def _infer_reciprocal_type_var_deps(self, node_id, t, type_var_node):
+        type_var_map = t.get_type_variable_assignments()
+        for k, v in type_var_map.items():
+            if v.name == type_var_node.t.name:
+                nid = node_id + "/" + t.name
+                call_type_var_node = TypeVarNode(nid, k, False)
+                construct_edge(self.type_graph, call_type_var_node,
+                               type_var_node, Edge.INFERRED)
+                construct_edge(self.type_graph, type_var_node,
+                               call_type_var_node, Edge.INFERRED)
+            elif v.is_parameterized():
+                nid = "/".join([node_id, t.name, k.name])
+                self._infer_reciprocal_type_var_deps(
+                    nid, v, type_var_node)
+            else:
+                pass
+
     def _infer_type_variables_from_unification(self, node_id, t,
                                                type_var_nodes, field_decl):
         inferred_nodes = self.type_graph.get(
@@ -747,13 +764,16 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 has_decl_node = True
                 break
 
-        type_var_map = t.get_type_variable_assignments()
         for t_var, t_arg in type_assignments.items():
 
             source = type_var_nodes.get(t_var)
             if source is None:
                 continue
 
+            if t.is_type_var():
+                for n in inferred_nodes:
+                    construct_edge(self.type_graph, source, n.target,
+                                   n.label)
             # In this case we have a scenario like the following.
             # class A<T> (val f: B<T>)
             # class C: B<String>()
@@ -762,10 +782,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # In this case, the things are simple add an edge from the type
             # variable of type constructor A to a hardcoded type, which is
             # previously inferred from the type unification we performed.
-            if not has_decl_node:
+            elif not has_decl_node:
                 construct_edge(self.type_graph, source, TypeNode(t_arg),
                                Edge.INFERRED)
-
             # Otherwise, we are in a case like the following:
             # class A<T>(val f: B<T>)
             # A<String>(new B<String>())
@@ -778,17 +797,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # dependency to the type variable B.T. Therefore, we add the
             # corresponding edges.
             else:
-                for k, v in type_var_map.items():
-                    if v.name == t_var.name:
-                        nid = "/".join([node_id, field_decl.name,
-                                        t.name])
-                        decl_type_var_node = TypeVarNode(nid, k, True)
-                        call_type_var_node = TypeVarNode(nid, k, False)
-                        self.type_graph[decl_type_var_node] = []
-                        construct_edge(self.type_graph, decl_type_var_node,
-                                       source, Edge.INFERRED)
-                        construct_edge(self.type_graph, source,
-                                       call_type_var_node, Edge.INFERRED)
+                nid = node_id + "/" + field_decl.name
+                self._infer_reciprocal_type_var_deps(nid, t, source)
 
     def _infer_type_variables_by_call_arguments(self, node_id, type_var_nodes,
                                                 inferred_fields):
@@ -799,19 +809,25 @@ class TypeDependencyAnalysis(DefaultVisitor):
             if not f_type.has_type_variables():
                 continue
 
-            if f_type.is_type_var():
-                # Case 1:
-                # class A<T> (val x: T)
-                # A<String>("fo")
-                self._infer_single_type_variable(node_id, f_type,
-                                                 type_var_nodes, f)
-                continue
-
-            # Case 2:
-            # class A<T> (val x: B<T>)
-            # A<String>(B<String>("f"))
             self._infer_type_variables_from_unification(node_id, f_type,
                                                         type_var_nodes, f)
+
+    def _parameterized_type2node(self, node_id, t):
+        main_node = TypeConstructorInstantiationDeclNode(node_id, t)
+        type_var_id = node_id + "/" + t.name
+        for i, t_param in enumerate(t.t_constructor.type_parameters):
+            t_var = TypeVarNode(type_var_id, t_param, False)
+            construct_edge(self.type_graph, main_node, t_var, Edge.DECLARED)
+            type_arg = t.type_args[i]
+            if type_arg.is_parameterized():
+
+                target = self._parameterized_type2node(t_var.node_id,
+                                                       type_arg)
+                construct_edge(self.type_graph, t_var, target, Edge.DECLARED)
+            else:
+                construct_edge(self.type_graph, t_var,
+                               TypeNode(type_arg), Edge.DECLARED)
+        return main_node
 
     def _handle_type_constructor_instantiation(self, node,
                                                parent_node_id):
@@ -845,7 +861,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
                     construct_edge(self.type_graph, source, bounded_type_var,
                                    Edge.INFERRED)
             type_var_nodes[t_param] = source
-            target = TypeNode(t.type_args[i])
+            if t.type_args[i].is_parameterized():
+                target = self._parameterized_type2node(source.node_id,
+                                                       t.type_args[i])
+            else:
+                target = TypeNode(t.type_args[i])
             # This edge connects type constructor with its type variables.
             construct_edge(self.type_graph, main_node, source, Edge.DECLARED)
             # This edge connects every type variable with the type arguments

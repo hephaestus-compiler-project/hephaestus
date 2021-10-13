@@ -378,3 +378,41 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
 program20 = ast.Program(context, "kotlin")
+
+
+# program 21
+cl2 = ast.ClassDeclaration("B", [], 0, type_parameters=[type_param1])
+t1 = cls1.get_type().new([type_param1])
+t2 = cls2.get_type().new([t1])
+f = ast.FieldDeclaration("f", t2)
+cls3 = ast.ClassDeclaration("C", [], 0, fields=[f], type_parameters=[type_param1])
+new = ast.New(cls2.get_type().new([cls1.get_type().new([kt.String])]), [])
+new = ast.New(cls3.get_type().new([kt.String]), [new])
+var1 = ast.VariableDeclaration("x", new, var_type=cls3.get_type().new([kt.String]))
+
+context = ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls3.name,), cls3.name, cls3)
+context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
+program21 = ast.Program(context, "kotlin")
+
+
+# program 22
+cls1 = ast.ClassDeclaration("A", [], 0, type_parameters=[type_param1])
+type_param2 = tp.TypeParameter("T2")
+f = ast.FieldDeclaration("f", type_param2)
+cls2 = ast.ClassDeclaration("B", [], 0, type_parameters=[type_param2],
+                            fields=[f])
+t1 = cls1.get_type().new([kt.String])
+t2 = cls2.get_type().new([t1])
+new = ast.New(t1, [])
+new2 = ast.New(t2, [new])
+var1 = ast.VariableDeclaration("x", new2, var_type=t2)
+context = ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
+context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
+program22 = ast.Program(context, "kotlin")
