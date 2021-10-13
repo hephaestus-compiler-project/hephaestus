@@ -42,15 +42,22 @@ class GenLimits:
     max_depth: int # max depth of leaves in programs
 
 
+# In many scenarios like func_ref_call, there may be a slighter change that
+# we will generate the specified expression based on the current program
 @dataclass
 class Probabilities:
     function_expr: float # functions that their body are expressions
     bounded_type_parameters: float
+    func_ref_call: float # use function reference call instead of function call
 
 
 class GenConfig:
     def __init__(self, kwargs={}):
-        # Default values
+        self._set_default()
+        for key, value in kwargs.items():
+            process_arg(self, key, value)
+
+    def _set_default(self):
         self.limits = GenLimits(
             cls=ClassLimits(
                 max_fields=2,
@@ -69,10 +76,9 @@ class GenConfig:
         )
         self.prob=Probabilities(
                 function_expr=1.0,
-                bounded_type_parameters=0.0
+                bounded_type_parameters=0.0,
+                func_ref_call=1.0
         )
-        for key, value in kwargs.items():
-            process_arg(self, key, value)
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

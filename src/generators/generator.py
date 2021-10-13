@@ -1337,6 +1337,8 @@ class Generator():
 
         The function call could be either a normal function call, or a function
         call from a function reference.
+        Note that this function may generate a new function/class as a side
+        effect.
 
         Args:
             etype: the type that the function call should return.
@@ -1346,10 +1348,12 @@ class Generator():
         Returns:
             A function call.
         """
-        if ut.random.bool():
+        if ut.random.bool(self.cfg.prob.func_ref_call):
             ref_call = self._gen_func_call_ref(etype, only_leaves, subtype)
             if ref_call:
                 return ref_call
+            # NOTE we could use _gen_func_call to generate function references
+            # for producing function calls, but then we should always cast them.
         return self._gen_func_call(etype, only_leaves, subtype)
 
     # gen_func_call Where
@@ -1516,14 +1520,16 @@ class Generator():
                            subtype=False) -> ast.FunctionCall:
         """Generate a function call from a reference.
 
+        This function searches for variables and receivers in current scope.
+
         Args:
             etype: the type that the function call should return.
             only_leaves: do not generate new leaves except from `expr`.
             subtype: The returned type could be a subtype of `etype`.
         """
-        # Tuple of signature and name
+        # Tuple of signature, name, receiver
         refs = []
-        # TODO using existing functions
+        # Search for function references in current scope
         variables = self.context.get_vars(self.namespace).values()
         if self._inside_java_lambda:
             variables = list(filter(
@@ -1535,13 +1541,22 @@ class Generator():
             if not getattr(var_type, 'is_function_type', lambda: False)():
                 continue
             ret_type = var_type.type_args[-1]
-            # NOTE not very frequent (~4%), we could generate a function or
-            # an appropriate lambda and use it directly.
-            if (subtype and ret_type.is_subtype(etype)) or ret_type == etype:
-                refs.append((var_type, var.name))
+            if (subtype and ret_type.is_assignable(etype)) or ret_type == etype:
+                refs.append((var_type, var.name, None))
+
+        if not refs:
+            # Detect receivers
+            objs = self._get_matching_objects(etype, subtype, 'fields', True)
+            refs = [(tp.substitute_type(variable.get_type(), type_map_var),
+                    variable.name,
+                    receiver)
+                    for receiver, type_map_var, variable in objs
+                   ]
+
         if not refs:
             return None
-        signature, name = ut.random.choice(refs)
+
+        signature, name, receiver = ut.random.choice(refs)
 
         # Generate arguments
         args = []
@@ -1555,7 +1570,7 @@ class Generator():
             args.append(ast.CallArgument(arg))
         self.depth = initial_depth
 
-        return ast.FunctionCall(name, args, receiver=None, is_ref_call=True)
+        return ast.FunctionCall(name, args, receiver=receiver, is_ref_call=True)
 
     # pylint: disable=unused-argument
     def gen_new(self,
@@ -2285,7 +2300,8 @@ class Generator():
     def _get_matching_objects(self,
                               etype: tp.Type,
                               subtype: bool,
-                              attr_name: str
+                              attr_name: str,
+                              signature: bool = False
                              ) -> List[Tuple[ast.Expr,
                                        tu.TypeVarMap,
                                        ast.Declaration]]:
@@ -2304,7 +2320,8 @@ class Generator():
 
         Returns:
             A list that contains tuples of variables, their TypeVarMaps
-            and declarations (field or function).
+            and declarations (field or function), and in case of function its
+            TypeVarMap.
         """
         decls = []
         variables = self.context.get_vars(self.namespace).values()
@@ -2328,6 +2345,11 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
+                if signature:
+                    if not getattr(attr_type, 'is_function_type', lambda: False)():
+                        continue
+                    attr_type = attr_type.type_args[-1]
+
                 cond = (
                     attr_type.is_assignable(etype)
                     if subtype
@@ -2661,12 +2683,19 @@ class Generator():
                 return c, type_var_map
         return None
 
-    # theosotr check the following docstring
     def _get_var_type_to_search(self, var_type: tp.Type) -> tp.TypeParameter:
-        """Find if the variable is bounded to a type parameter.
+        """Get the type that we want to search for.
+
+        We exclude:
+            * built-ins
+            * type variables/wildcards without bounds
+            * type variables/wildcards with bounds to a type variable
 
         Args:
             var_type: The type of the variable.
+
+        Returns:
+            var_type or None
         """
         # We are only interested in variables of class types.
         if tu.is_builtin(var_type, self.bt_factory):
