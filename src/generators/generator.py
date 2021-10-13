@@ -2604,7 +2604,7 @@ class Generator():
             return type_params, {etype: type_params[0]}, True
 
         # the given type is parameterized
-        assert isinstance(etype, tp.ParameterizedType)
+        assert isinstance(etype, (tp.ParameterizedType, tp.WildCardType))
         type_vars = etype.get_type_variables(self.bt_factory)
         type_params = self.gen_type_params(
             len(type_vars), with_variance=self.language == 'kotlin')
