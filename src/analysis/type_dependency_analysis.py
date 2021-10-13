@@ -31,6 +31,9 @@ class TypeVarNode(NamedTuple):
     def is_omittable(self):
         return False
 
+    def get_type(self):
+        return self.t
+
 
 class TypeNode(NamedTuple):
     t: tp.Type
@@ -50,6 +53,9 @@ class TypeNode(NamedTuple):
     def is_omittable(self):
         return False
 
+    def get_type(self):
+        return self.t
+
 
 class DeclarationNode(NamedTuple):
     parent_id: str
@@ -67,6 +73,9 @@ class DeclarationNode(NamedTuple):
 
     def is_omittable(self):
         return getattr(self.decl, "inferred_type", False) is not False
+
+    def get_type(self):
+        return self.decl.get_type()
 
 
 class TypeConstructorInstantiationCallNode(NamedTuple):
@@ -87,6 +96,9 @@ class TypeConstructorInstantiationCallNode(NamedTuple):
     def is_omittable(self):
         return True
 
+    def get_type(self):
+        return self.t
+
 
 class TypeConstructorInstantiationDeclNode(NamedTuple):
     parent_id: str
@@ -104,6 +116,9 @@ class TypeConstructorInstantiationDeclNode(NamedTuple):
 
     def is_omittable(self):
         return False
+
+    def get_type(self):
+        return self.t
 
 
 class Edge(NamedTuple):
@@ -474,9 +489,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._namespace = namespace
 
     def _handle_declaration(self, parent_node_id: str, node: ast.Node,
-                            expr: ast.Expr, type_attr: str):
+                            expr: ast.Expr, type_attr: str,
+                            propagate_decl_nodes=False):
         node_id = parent_node_id + "/" + node.name
-        print(node_id)
         self._stack.append(node_id)
         node_type = getattr(node, type_attr, None)
         prev = self._exp_type
@@ -487,6 +502,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
         inferred_nodes = self._inferred_nodes.pop(node_id, [])
         for n in inferred_nodes:
+            if isinstance(n, TypeConstructorInstantiationDeclNode) and \
+                    propagate_decl_nodes:
+                self._inferred_nodes[node_id].append(n)
             edge_label = (
                 Edge.DECLARED
                 if isinstance(n, TypeConstructorInstantiationDeclNode)
@@ -610,6 +628,19 @@ class TypeDependencyAnalysis(DefaultVisitor):
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return main_node, type_var_nodes
 
+    def _handle_func_call_param(self, node_id, param, param_decl_type, arg,
+                                func_type_var_map):
+        if not func_type_var_map:
+            self._handle_declaration(node_id, param, arg, 'param_type')
+        if param_decl_type in func_type_var_map:
+            source = TypeVarNode(node_id, param_decl_type, False)
+            self._handle_declaration(node_id, param, arg, 'param_type',
+                                     propagate_decl_nodes=True)
+            inferred_nodes = self._inferred_nodes.pop(
+                node_id + "/" + param.name, [])
+            for n in inferred_nodes:
+                construct_edge(self.type_graph, source, n, Edge.DECLARED)
+
     def visit_func_call(self, node):
         parent_node_id, nu = self._get_node_id()
         node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.func
@@ -644,11 +675,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
         type_var_map = {}
         if node.receiver and receiver_t.is_parameterized():
             type_var_map.update(receiver_t.get_type_variable_assignments())
+        func_type_var_map = {}
         if fun_decl.is_parameterized():
-            type_var_map.update({
+            func_type_var_map = {
                 t_param: node.type_args[i]
                 for i, t_param in enumerate(fun_decl.type_parameters)
-            })
+            }
+            type_var_map.update(func_type_var_map)
         inferred_params = []
         for i, c in enumerate(node.args):
             param_index = i
@@ -657,12 +690,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # parameter.
             if i >= params_nu:
                 param_index = params_nu - 1
-            param = deepcopy(fun_decl.params[param_index])
+            p = fun_decl.params[param_index]
+            param = deepcopy(p)
             param.param_type = tp.substitute_type(param.get_type(),
                                                   type_var_map)
-            inferred_params.append(
-                (param, fun_decl.params[param_index].get_type()))
-            self._handle_declaration(node_id, param, c, 'param_type')
+            inferred_params.append((param, p.get_type()))
+            self._handle_func_call_param(node_id, param, p.get_type(), c,
+                                         func_type_var_map)
         _, type_var_nodes = self._handle_parameterized_func_call(
             node, fun_decl, parent_node_id, node_id)
         self._infer_type_variables_by_call_arguments(node_id,
@@ -680,28 +714,64 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 TypeNode(ret_type)
             )
 
+    def _infer_single_type_variable(self, node_id, type_var, type_var_nodes,
+                                    field_decl):
+        source = type_var_nodes.get(type_var)
+        if source is None:
+            return
+
+        inferred_nodes = self.type_graph.get(
+            DeclarationNode(node_id, field_decl), [])
+        for n in inferred_nodes:
+            if n.label == Edge.DECLARED:
+                continue
+            # This edge connects the corresponding type variable with
+            # the type inferred for the respective argument of
+            # constructor.
+            construct_edge(self.type_graph, source, n.target,
+                           Edge.INFERRED)
+
+    def _infer_type_variables_from_unification(self, node_id, t,
+                                               type_var_nodes, field_decl):
+        inferred_nodes = self.type_graph.get(
+            DeclarationNode(node_id, field_decl), [])
+        type_assignments = {}
+        for n in inferred_nodes:
+            if n.is_declared():
+                continue
+            type_assignments = tu.unify_types(n.target.get_type(), t,
+                                              self._bt_factory,
+                                              same_type=False)
+            break
+        for t_var, t in type_assignments.items():
+            source = type_var_nodes.get(t_var)
+            if source is None:
+                continue
+            construct_edge(self.type_graph, source, TypeNode(t),
+                           Edge.INFERRED)
+
     def _infer_type_variables_by_call_arguments(self, node_id, type_var_nodes,
                                                 inferred_fields):
         # Add this point, we furher examine the fields of the constructor to
         # see if any of its type variables can be inferred by the arguments
         # passed in the constructor invocation, i.e., A<String>(x)
         for f, f_type in inferred_fields:
-            if not f_type.is_type_var():
-                continue
-            source = type_var_nodes.get(f_type)
-            if source is None:
+            if not f_type.has_type_variables():
                 continue
 
-            inferred_nodes = self.type_graph.get(
-                DeclarationNode(node_id, f), [])
-            for n in inferred_nodes:
-                if n.label == Edge.DECLARED:
-                    continue
-                # This edge connects the corresponding type variable with
-                # the type inferred for the respective argument of
-                # constructor.
-                construct_edge(self.type_graph, source, n.target,
-                               Edge.INFERRED)
+            if f_type.is_type_var():
+                # Case 1:
+                # class A<T> (val x: T)
+                # A<String>("fo")
+                self._infer_single_type_variable(node_id, f_type,
+                                                 type_var_nodes, f)
+                continue
+
+            # Case 2:
+            # class A<T> (val x: B<T>)
+            # A<String>(B<String>("f"))
+            self._infer_type_variables_from_unification(node_id, f_type,
+                                                        type_var_nodes, f)
 
     def _handle_type_constructor_instantiation(self, node,
                                                parent_node_id):
