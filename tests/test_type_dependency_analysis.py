@@ -584,9 +584,8 @@ def test_program17():
             '-> !TypeVariable[global/bar/foo/x/A/T2] (declared)'
         ],
         'TypeVariable[global/bar/foo/T]': [
+            '-> TypeConInstCall[global/bar/foo/x/A] (inferred)',
             '-> TypeConInstDecl[global/bar/foo/x/A] (declared)',
-            '-> Type[A] (declared)',
-            '-> TypeConInstCall[global/bar/foo/x/A] (inferred)'
         ],
         'TypeVariable[global/bar/foo/x/A/T2]': [
             '-> Type[String] (declared)',
@@ -606,7 +605,36 @@ def test_program18():
     res = to_str_dict(a.result())
 
 
-    assert res == {}
+    assert res == {
+        '!TypeVariable[global/bar/foo/x/A/T2]': ['-> Type[String] (declared)'],
+        'Declaration[global/bar/foo/x]': [
+            '-> TypeConInstCall[global/bar/foo/x/A] (inferred)',
+            '-> TypeConInstDecl[global/bar/foo/x/A] (declared)',
+        ],
+        'Declaration[global/foo/foo]': [
+            '-> Type[String] (inferred)',
+            '-> Type[String] (declared)',
+        ],
+        'Declaration[global/foo/x]': ['-> Type[A] (declared)'],
+        'TypeConInstCall[global/bar/foo/x/A]': [
+            '-> TypeVariable[global/bar/foo/x/A/T2] (declared)'
+        ],
+        'TypeConInstCall[global/bar/foo]': [
+            '-> TypeVariable[global/bar/foo/T] (declared)'
+        ],
+        'TypeConInstDecl[global/bar/foo/x/A]': [
+            '-> !TypeVariable[global/bar/foo/x/A/T2] (declared)'
+        ],
+        'TypeVariable[global/bar/foo/T]': [
+            '-> Type[String] (declared)',
+            '-> TypeVariable[global/bar/foo/x/A/T2] (inferred)'
+        ],
+        'TypeVariable[global/bar/foo/x/A/T2]': [
+            '-> Type[String] (declared)',
+            '-> !TypeVariable[global/bar/foo/x/A/T2] (inferred)',
+            '-> TypeVariable[global/bar/foo/T] (inferred)'
+        ]
+    }
 
 
 def test_program19():

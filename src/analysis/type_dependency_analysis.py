@@ -694,9 +694,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
             param = deepcopy(p)
             param.param_type = tp.substitute_type(param.get_type(),
                                                   type_var_map)
+            self._handle_declaration(node_id, param, c, 'param_type')
             inferred_params.append((param, p.get_type()))
-            self._handle_func_call_param(node_id, param, p.get_type(), c,
-                                         func_type_var_map)
         _, type_var_nodes = self._handle_parameterized_func_call(
             node, fun_decl, parent_node_id, node_id)
         self._infer_type_variables_by_call_arguments(node_id,
