@@ -205,24 +205,36 @@ def is_combination_feasible(type_graph, combination):
     # nodes corresponding to the same type with that they are declared. Also
     # verify that all type variable nodes lead to type nodes that are the same
     # with those they are instantiated.
+    removed_decls = set()
     for node in combination:
-        if isinstance(node, DeclarationNode):
-            reachable = gu.dfs(type_graph, node)
-            for n in reachable:
-                if isinstance(n, (TypeNode,
-                                  TypeConstructorInstantiationCallNode,
-                                  TypeConstructorInstantiationDeclNode)):
-                    if n.t != node.decl.get_type():
-                        return False
+        if not isinstance(node, DeclarationNode):
+            continue
+        reachable = gu.dfs(type_graph, node)
+        for n in reachable:
+            if isinstance(n, (TypeNode,
+                              TypeConstructorInstantiationCallNode,
+                              TypeConstructorInstantiationDeclNode)):
+                if n.t != node.decl.get_type():
+                    return False
+        removed_decls.add(node.node_id)
 
+    for node in combination:
         if isinstance(node, TypeConstructorInstantiationCallNode):
             type_assignments = node.t.get_type_variable_assignments()
             for type_var in type_graph[node]:
                 assigned_t = type_assignments[type_var.target.t]
                 reachable = gu.dfs(type_graph, type_var.target)
-                if not any(getattr(n, 't', None) == assigned_t
-                           for n in reachable):
+                is_ok = False
+                for n in reachable:
+                    if isinstance(n, TypeNode) and n.parent_id:
+                        is_ok = n.parent_id not in removed_decls
+                    else:
+                        is_ok = getattr(n, 't', None) == assigned_t
+                    if is_ok:
+                        break
+                if not is_ok:
                     return False
+
     return True
 
 
@@ -246,6 +258,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack: list = ["global"]
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
+        self._exp_node_id = None
         self._stream = iter(range(0, 10000))
         self._func_non_void_block_type = None
         self._id_gen = utils.IdGen()
@@ -497,7 +510,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack.append(node_id)
         node_type = getattr(node, type_attr, None)
         prev = self._exp_type
+        prev_node_id = self._exp_node_id
         self._exp_type = node_type
+        self._exp_node_id = node_id
         self.visit(expr)
         self._stack.pop()
         source = DeclarationNode(parent_node_id, node)
@@ -524,6 +539,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 construct_edge(self.type_graph, source,
                                TypeNode(node_type, node_id), Edge.DECLARED)
         self._exp_type = prev
+        self._exp_node_id = prev_node_id
 
     def visit_block(self, node):
         if not self._func_non_void_block_type:
@@ -616,6 +632,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     def _handle_parameterized_func_call(self, fun_call, fun_decl,
                                         parent_id, node_id):
+        fun_call.type_parameters = fun_decl.type_parameters
         main_node = TypeConstructorInstantiationCallNode(
             parent_id, fun_call, fun_decl)
         type_var_nodes = {}
@@ -659,7 +676,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             else:
                 # This target type depends on the declaration of the parent,
                 # so we also provide the parent id to the ID.
-                target = TypeNode(self._exp_type, parent_id)
+                target = TypeNode(self._exp_type, self._exp_node_id)
 
             construct_edge(self.type_graph, source, target, Edge.INFERRED)
             self._inferred_nodes[parent_id].append(target)
@@ -670,8 +687,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 self._inferred_nodes[parent_id].append(
                     TypeNode(ret_type, None))
                 return
-            assert self._exp_type.is_parameterized()
-            target = self._parameterized_type2node(node_id, self._exp_type)
+            if self._exp_type.is_parameterized():
+                target = self._parameterized_type2node(node_id, self._exp_type)
+            else:
+                # This target type depends on the declaration of the parent,
+                # so we also provide the parent id to the ID.
+                target = TypeNode(self._exp_type, parent_id)
             self._inferred_nodes[parent_id].append(target)
             for t_var in decl_ret_type.get_type_variable_assignments():
                 if t_var not in func_type_parameters:
@@ -679,9 +700,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 source = type_var_nodes.get(t_var)
                 if not source:
                     return
-                nid = node_id
-                self._infer_reciprocal_type_var_deps(nid, decl_ret_type,
-                                                     source)
+                if self._exp_type.is_parameterized():
+                    nid = node_id
+                    self._infer_reciprocal_type_var_deps(nid, decl_ret_type,
+                                                         source)
+                else:
+                    construct_edge(self.type_graph, source, target,
+                                   Edge.INFERRED)
 
     def visit_func_call(self, node):
         parent_node_id, nu = self._get_node_id()
