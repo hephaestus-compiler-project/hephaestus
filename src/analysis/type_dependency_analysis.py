@@ -714,23 +714,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 TypeNode(ret_type)
             )
 
-    def _infer_single_type_variable(self, node_id, type_var, type_var_nodes,
-                                    field_decl):
-        source = type_var_nodes.get(type_var)
-        if source is None:
-            return
-
-        inferred_nodes = self.type_graph.get(
-            DeclarationNode(node_id, field_decl), [])
-        for n in inferred_nodes:
-            if n.label == Edge.DECLARED:
-                continue
-            # This edge connects the corresponding type variable with
-            # the type inferred for the respective argument of
-            # constructor.
-            construct_edge(self.type_graph, source, n.target,
-                           Edge.INFERRED)
-
     def _infer_reciprocal_type_var_deps(self, node_id, t, type_var_node):
         type_var_map = t.get_type_variable_assignments()
         for k, v in type_var_map.items():
