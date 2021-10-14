@@ -592,7 +592,7 @@ class KotlinTranslator(BaseTranslator):
         type_args = (
             "<" + ",".join(
                 [self.get_type_name(t) for t in node.type_args]) + ">"
-            if node.can_infer_type_args
+            if not node.can_infer_type_args and node.type_args
             else ""
         )
         if node.receiver:
