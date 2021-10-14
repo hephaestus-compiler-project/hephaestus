@@ -671,7 +671,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
                     TypeNode(ret_type, None))
                 return
             assert self._exp_type.is_parameterized()
-            self._parameterized_type2node(node_id, self._exp_type)
+            target = self._parameterized_type2node(node_id, self._exp_type)
+            self._inferred_nodes[parent_id].append(target)
             for t_var in decl_ret_type.get_type_variable_assignments():
                 if t_var not in func_type_parameters:
                     continue
@@ -679,7 +680,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 if not source:
                     return
                 nid = node_id
-                self._infer_reciprocal_type_var_deps(nid, self._exp_type,
+                self._infer_reciprocal_type_var_deps(nid, decl_ret_type,
                                                      source)
 
     def visit_func_call(self, node):
