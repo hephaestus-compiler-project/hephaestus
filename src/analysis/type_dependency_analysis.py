@@ -772,6 +772,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
             if t.is_type_var():
                 for n in inferred_nodes:
+                    if n.is_declared():
+                        self.type_graph[source] = [
+                            e
+                            for e in self.type_graph.get(source, [])
+                            if not e.is_declared()
+                        ]
                     construct_edge(self.type_graph, source, n.target,
                                    n.label)
             # In this case we have a scenario like the following.

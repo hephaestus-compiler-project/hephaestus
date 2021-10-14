@@ -383,7 +383,6 @@ def test_program11():
         ],
         'TypeVariable[global/foo/A/T/A/T]': ['-> Type[String] (declared)'],
         'TypeVariable[global/foo/A/T]': [
-            '-> TypeConInstDecl[global/foo/A/T/A] (declared)',
             '-> TypeConInstCall[global/foo/A/f/A] (inferred)',
             '-> TypeConInstDecl[global/foo/A/f/A] (declared)',
         ],
@@ -780,7 +779,6 @@ def test_program22():
         'TypeConInstDecl[global/x/B]': ['-> !TypeVariable[global/x/B/T2] (declared)'],
         'TypeVariable[global/x/B/T2/A/T]': ['-> Type[String] (declared)'],
         'TypeVariable[global/x/B/T2]': [
-            '-> TypeConInstDecl[global/x/B/T2/A] (declared)',
             '-> TypeConInstCall[global/x/B/f/A] (inferred)',
             '-> TypeConInstDecl[global/x/B/f/A] (declared)',
             '-> !TypeVariable[global/x/B/T2] (inferred)',
