@@ -730,18 +730,21 @@ class TypeDependencyAnalysis(DefaultVisitor):
             else:
                 pass
 
-    def _infer_type_variables_from_unification(self, node_id, t,
-                                               type_var_nodes, field_decl):
+    def _infer_type_variables(self, node_id, t, type_var_nodes, param_decl):
         inferred_nodes = self.type_graph.get(
-            DeclarationNode(node_id, field_decl), [])
+            DeclarationNode(node_id, param_decl), [])
         type_assignments = {}
-
         has_decl_node = False
         for n in inferred_nodes:
             if not type_assignments:
+                # Compute how the type variables at declaration point are
+                # instantiated based on the type of passed in the corresponding
+                # argument.
                 type_assignments = tu.unify_types(n.target.get_type(), t,
                                                   self._bt_factory,
                                                   same_type=False)
+            # We know now that that the argument corresponds to a
+            # type constructor instantiation
             if isinstance(n.target, TypeConstructorInstantiationDeclNode):
                 has_decl_node = True
                 break
@@ -751,9 +754,15 @@ class TypeDependencyAnalysis(DefaultVisitor):
             source = type_var_nodes.get(t_var)
             if source is None:
                 continue
-
+            # We are in the following case:
+            # class A<T> (val f: T)
+            #
+            # Therefore, connect the corresponding type variable with all
+            # the nodes inferred for call argument.
             if t.is_type_var():
                 for n in inferred_nodes:
+                    # Remove the previously added declaration node, and
+                    # add the new one.
                     if n.is_declared():
                         self.type_graph[source] = [
                             e
@@ -785,20 +794,19 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # dependency to the type variable B.T. Therefore, we add the
             # corresponding edges.
             else:
-                nid = node_id + "/" + field_decl.name
+                nid = node_id + "/" + param_decl.name
                 self._infer_reciprocal_type_var_deps(nid, t, source)
 
     def _infer_type_variables_by_call_arguments(self, node_id, type_var_nodes,
                                                 inferred_fields):
-        # Add this point, we furher examine the fields of the constructor to
+        # Add this point, we furher examine the arguments of a call to
         # see if any of its type variables can be inferred by the arguments
-        # passed in the constructor invocation, i.e., A<String>(x)
+        # passed in the invocation, i.e., A<String>(x)
         for f, f_type in inferred_fields:
             if not f_type.has_type_variables():
                 continue
 
-            self._infer_type_variables_from_unification(node_id, f_type,
-                                                        type_var_nodes, f)
+            self._infer_type_variables(node_id, f_type, type_var_nodes, f)
 
     def _parameterized_type2node(self, node_id, t):
         main_node = TypeConstructorInstantiationDeclNode(node_id, t)
