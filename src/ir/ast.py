@@ -1193,6 +1193,7 @@ class FunctionCall(Expr):
         self.type_args = type_args
         self.is_ref_call = is_ref_call
         self._can_infer_type_args = False
+        self.type_parameters = []
 
     def children(self):
         if self.receiver is None:
@@ -1207,9 +1208,19 @@ class FunctionCall(Expr):
             self.receiver = children[0]
             self.args = children[1:]
 
+    def get_type_variable_assignments(self):
+        return {
+            t_param: self.type_args[i]
+            for i, t_param in enumerate(self.type_parameters)
+        }
+
     @property
     def can_infer_type_args(self):
         return self._can_infer_type_args
+
+    @property
+    def name(self):
+        return self.func
 
     @can_infer_type_args.setter
     def can_infer_type_args(self, value):
