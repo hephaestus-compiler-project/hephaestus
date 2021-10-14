@@ -1023,7 +1023,7 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
     if same_type and type(t1) != type(t2):
         return {}
 
-    if t1.name != t2.name and not t2.is_type_var():
+    if not same_type and t1.name != t2.name and not t2.is_type_var():
         if not t1.supertypes:
             return {}
         supertype = t1.supertypes[0]
