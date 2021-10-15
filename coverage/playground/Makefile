@@ -37,10 +37,8 @@ java:
 kotlin:
 	 $(JAVA_8) \
 		-javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-kt.exec \
-		-cp $(KOTLIN_SRC)/dist/kotlinc/lib/kotlin-preloader.jar \
-		org.jetbrains.kotlin.preloading.Preloader \
 		-cp $(KOTLIN_SRC)/dist/kotlinc/lib/kotlin-compiler.jar \
-		org.jetbrains.kotlin.cli.jvm.K2JVMCompiler main.kt
+		org.jetbrains.kotlin.cli.jvm.K2JVMCompiler main.kt 
 	$(JAVA_8) \
 		-jar $(JACOCO)/lib/jacococli.jar report jacoco-kt.exec \
 		--classfiles $(KOTLIN_SRC)/dist/kotlinc/lib/kotlin-compiler.jar \
