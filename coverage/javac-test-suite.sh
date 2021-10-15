@@ -45,7 +45,7 @@ for program in $JAVAC_TEST; do
     run_javac $counter $program
 done
 cd $TEST_SUITE_RES
-$JAVA_17 -jar $JACOCO/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
+$JAVA_17 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
 $JAVA_17 -jar $JACOCO/lib/jacococli.jar report jacoco.exec \
 	--classfiles $JAVA_SRC/build/$JAVA_BUILD/buildtools/interim_langtools_modules/jdk.compiler.interim/com/sun/tools/javac/ \
 	--html javac-test-suite
