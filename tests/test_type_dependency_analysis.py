@@ -893,10 +893,74 @@ def test_program25():
         ],
         'TypeVariable[global/x/foo/A/T]': [
             '-> Type[String] (declared)',
-            '-> TypeVariable[global/x/foo/T] (inferred)'
         ],
         'TypeVariable[global/x/foo/T]': [
             '-> Type[String] (declared)',
             '-> TypeVariable[global/x/foo/A/T] (inferred)'
+        ]
+    }
+
+
+def test_program26():
+    program = tap.program26
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        'Declaration[global/foo/foo]': [
+            '-> Type[B] (inferred)',
+            '-> Type[global/foo/foo/B] (declared)'
+        ],
+        'Declaration[global/x]': [
+            '-> TypeConInstDecl[global/x/foo/A] (declared)'
+        ],
+        'TypeConInstCall[global/x/foo]': [
+            '-> TypeVariable[global/x/foo/T] (declared)'
+        ],
+        'TypeConInstDecl[global/x/foo/A]': [
+            '-> TypeVariable[global/x/foo/A/T] (declared)'
+        ],
+        'TypeVariable[global/x/foo/A/T]': [
+            '-> Type[String] (declared)',
+        ],
+        'TypeVariable[global/x/foo/T]': [
+            '-> Type[String] (declared)',
+            '-> TypeVariable[global/x/foo/A/T] (inferred)'
+        ]
+
+    }
+
+
+def test_program27():
+    program = tap.program27
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    res = to_str_dict(a.result())
+
+    assert res == {
+        'Declaration[global/foo/foo]': [
+            '-> Type[B] (inferred)',
+            '-> Type[global/foo/foo/B] (declared)'
+        ],
+        'Declaration[global/x]': [
+            '-> TypeConInstDecl[global/x/foo/A] (declared)'
+        ],
+        'TypeConInstCall[global/x/foo]': [
+            '-> TypeVariable[global/x/foo/T] (declared)'
+        ],
+        'TypeConInstDecl[global/x/foo/A]': [
+            '-> TypeVariable[global/x/foo/A/T] (declared)',
+            '-> TypeVariable[global/x/foo/A/T2] (declared)'
+        ],
+        'TypeVariable[global/x/foo/A/T2]': [
+            '-> Type[Int] (declared)',
+        ],
+        'TypeVariable[global/x/foo/A/T]': [
+            '-> Type[String] (declared)',
+        ],
+        'TypeVariable[global/x/foo/T]': [
+            '-> Type[String] (declared)',
+            '-> TypeVariable[global/x/foo/A/T2] (inferred)'
         ]
     }

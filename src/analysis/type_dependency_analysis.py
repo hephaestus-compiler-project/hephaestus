@@ -270,8 +270,19 @@ class TypeDependencyAnalysis(DefaultVisitor):
         top_stack = self._stack[-1]
         return self._id_gen.get_node_id(top_stack)
 
-    def _find_target_type_variable(self, source_type_var, type_var_deps,
-                                   target_type_constructor, node_id):
+    def _find_target_type_variable(self, type_var_id):
+        nodes = set(self.type_graph.keys())
+        nodes.update({v for value in self.type_graph.values() for v in value})
+
+        for n in nodes:
+            if not isinstance(n, TypeVarNode):
+                continue
+            if n.node_id == type_var_id:
+                return n
+        return None
+
+    def _find_dependent_type_variable(self, source_type_var, type_var_deps,
+                                      target_type_constructor, node_id):
         if not type_var_deps:
             return None
         targets = type_var_deps.get(source_type_var, [])
@@ -290,15 +301,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
         nodes = set(self.type_graph.keys())
         nodes.update({v for value in self.type_graph.values() for v in value})
-
-        for n in nodes:
-            if not isinstance(n, TypeVarNode):
-                continue
-            type_var_id = n.parent_id.rsplit("/", 1)[1] + "." + n.t.name
-            if type_var == type_var_id:
-                return n
-
-        return None
+        type_var_id = node_id + "/" + type_var.replace(".", "/")
+        return self._find_target_type_variable(type_var_id)
 
     def _convert_type_to_node(self, t, infer_t, node_id):
         """
@@ -352,7 +356,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 #
                 # In the above example, we connect the type variable of A
                 # with the type variable of A.
-                target_var = self._find_target_type_variable(
+                target_var = self._find_dependent_type_variable(
                     t.name + "." + t_param.name, type_deps, infer_t.t.name,
                     node_id)
             use_site_type_var, decl_site_type_var = target_var, source
@@ -660,6 +664,51 @@ class TypeDependencyAnalysis(DefaultVisitor):
             for n in inferred_nodes:
                 construct_edge(self.type_graph, source, n, Edge.DECLARED)
 
+    def _infer_type_variables_parameterized_by_ret(self, parent_id,
+                                                   node_id, ret_type,
+                                                   func_type_parameters,
+                                                   type_var_nodes):
+        for t_var, assigned_t in ret_type.\
+                get_type_variable_assignments().items():
+            if assigned_t not in func_type_parameters:
+                continue
+            source = type_var_nodes.get(assigned_t)
+            if not source:
+                return
+
+            # Case 1:
+            # fun <T> foo(): A<T>
+            # val x: A<String> = foo()
+            if self._exp_type.name == ret_type.name:
+                target = self._parameterized_type2node(node_id, self._exp_type)
+                type_var_id = "/".join((node_id, self._exp_type.name))
+                target_var = TypeVarNode(type_var_id, t_var, False)
+                construct_edge(self.type_graph, source, target_var,
+                               Edge.INFERRED)
+            # Case 2:
+            # fun <T> foo(): B<T>
+            # val x: A<String> = foo()
+            elif self._exp_type.is_parameterized():
+                target = self._parameterized_type2node(node_id, self._exp_type)
+                # Presumably the expected type and the ret type have
+                # subtyping relations.
+                type_deps = tu.build_type_variable_dependencies(
+                    ret_type, self._exp_type)
+                t_var_name = ret_type.name + "." + t_var.name
+                for k, v in type_deps.items():
+                    if t_var_name not in v:
+                        continue
+                    type_var_id = node_id + "/" + k.replace(".", "/")
+                    target_var = self._find_target_type_variable(type_var_id)
+                    if target_var:
+                        construct_edge(self.type_graph, source,
+                                       target_var, Edge.INFERRED)
+            else:
+                target = TypeNode(self._exp_type, parent_id)
+                construct_edge(self.type_graph, source, target,
+                               Edge.INFERRED)
+        self._inferred_nodes[parent_id].append(target)
+
     def _infer_type_variable_by_ret(self, parent_id, node_id, ret_type,
                                     decl_ret_type, type_var_nodes,
                                     func_type_parameters):
@@ -687,26 +736,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 self._inferred_nodes[parent_id].append(
                     TypeNode(ret_type, None))
                 return
-            if self._exp_type.is_parameterized():
-                target = self._parameterized_type2node(node_id, self._exp_type)
-            else:
-                # This target type depends on the declaration of the parent,
-                # so we also provide the parent id to the ID.
-                target = TypeNode(self._exp_type, parent_id)
-            self._inferred_nodes[parent_id].append(target)
-            for t_var in decl_ret_type.get_type_variable_assignments():
-                if t_var not in func_type_parameters:
-                    continue
-                source = type_var_nodes.get(t_var)
-                if not source:
-                    return
-                if self._exp_type.is_parameterized():
-                    nid = node_id
-                    self._infer_reciprocal_type_var_deps(nid, decl_ret_type,
-                                                         source)
-                else:
-                    construct_edge(self.type_graph, source, target,
-                                   Edge.INFERRED)
+            self._infer_type_variables_parameterized_by_ret(
+                parent_id, node_id, decl_ret_type, func_type_parameters,
+                type_var_nodes)
 
     def visit_func_call(self, node):
         parent_node_id, nu = self._get_node_id()

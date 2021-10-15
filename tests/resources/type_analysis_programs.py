@@ -460,3 +460,49 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
 program25 = ast.Program(context, "kotlin")
+
+
+# program 26
+cls1 = ast.ClassDeclaration("A", [], 0, type_parameters=[type_param1])
+t = cls1.get_type().new([type_param1])
+cls2 = ast.ClassDeclaration("B",
+                            [ast.SuperClassInstantiation(t, [])],
+                            0, type_parameters=[type_param1])
+b = cls2.get_type().new([type_param1])
+func = ast.FunctionDeclaration("foo", [], b,
+                               ast.BottomConstant(b),
+                               ast.FunctionDeclaration.FUNCTION,
+                               type_parameters=[type_param1])
+t = cls1.get_type().new([kt.String])
+func_call = ast.FunctionCall("foo", [], type_args=[kt.String])
+var1 = ast.VariableDeclaration("x", func_call, var_type=t)
+context= ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
+program26 = ast.Program(context, "kotlin")
+
+
+# program 27
+type_param2 = tp.TypeParameter("T2")
+cls1 = ast.ClassDeclaration("A", [], 0, type_parameters=[type_param1,
+                                                         type_param2])
+t = cls1.get_type().new([kt.String, type_param1])
+cls2 = ast.ClassDeclaration("B",
+                            [ast.SuperClassInstantiation(t, [])],
+                            0, type_parameters=[type_param1])
+b = cls2.get_type().new([type_param1])
+func = ast.FunctionDeclaration("foo", [], b,
+                               ast.BottomConstant(b),
+                               ast.FunctionDeclaration.FUNCTION,
+                               type_parameters=[type_param1])
+t = cls1.get_type().new([kt.String, kt.Integer])
+func_call = ast.FunctionCall("foo", [], type_args=[kt.String])
+var1 = ast.VariableDeclaration("x", func_call, var_type=t)
+context= ctx.Context()
+context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
+context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
+context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
+context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
+program27 = ast.Program(context, "kotlin")
