@@ -9,7 +9,7 @@ JAVA_SRC=$HOME/coverage/jdk
 JACOCO=$HOME/coverage/jacoco
 JAVAC_TEST=$(find $JAVA_SRC/test/langtools/tools/javac -type f -name "*.java")
 
-TEST_SUITE_RES=jacoco-test-suite
+TEST_SUITE_RES=java-test-suite
 mkdir -p $TEST_SUITE_RES
 cd $TEST_SUITE_RES
 TEST_SUITE_RES=$(pwd)
