@@ -1,15 +1,14 @@
-HOME=/Users/schaliasos
 MAC_BUILD=macosx-x86_64-server-release
 LINUX_BUILD=linux-x86_64-server-release
-JAVA_BUILD=$(MAC_BUILD)
-KOTLIN_STD=$(HOME)/.sdkman/candidates/kotlin/current/lib/kotlin-stdlib.jar
-JAVA_8=$(HOME)/.sdkman/candidates/java/8.0.282.j9-adpt/bin/java
-JAVA_17=$(HOME)/.sdkman/candidates/java/17.ea.27-open/bin/java
-JAVA_11=$(HOME)/.sdkman/candidates/java/11.0.2-open/bin/java
-KOTLIN_SRC=$(HOME)/coverage/kotlin
-GROOVY_SRC=$(HOME)/coverage/groovy
-JAVA_SRC=$(HOME)/coverage/jdk
-JACOCO=$(HOME)/coverage/jacoco
+JAVA_BUILD=${MAC_BUILD}
+KOTLIN_STD=${HOME}/.sdkman/candidates/kotlin/current/lib/kotlin-stdlib.jar
+JAVA_8=${HOME}/.sdkman/candidates/java/8.0.282.j9-adpt/bin/java
+JAVA_17=${HOME}/.sdkman/candidates/java/17.ea.27-open/bin/java
+JAVA_11=${HOME}/.sdkman/candidates/java/11.0.2-open/bin/java
+KOTLIN_SRC=${HOME}/coverage/kotlin
+GROOVY_SRC=${HOME}/coverage/groovy
+JAVA_SRC=${HOME}/coverage/jdk
+JACOCO=${HOME}/coverage/jacoco
 
 all: java kotlin groovy
 
