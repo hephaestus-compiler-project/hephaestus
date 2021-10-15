@@ -1,6 +1,15 @@
 Perform coverage experiments
 ============================
 
+Install Java Versions
+---------------------
+
+```
+sdk install java 8.0.282.j9-adpt
+sdk install java 17.ea.27-open
+sdk install java 11.0.2-open
+```
+
 Create coverage directory
 -------------------------
 

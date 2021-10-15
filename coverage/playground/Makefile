@@ -9,11 +9,7 @@ KOTLIN_SRC=${HOME}/coverage/kotlin
 GROOVY_SRC=${HOME}/coverage/groovy
 JAVA_SRC=${HOME}/coverage/jdk
 JACOCO=${HOME}/coverage/jacoco
-
-all: java kotlin groovy
-
-java:
-	$(JAVA_17) -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco.exec \
+JAVAC=$(JAVA_17) -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco.exec \
 		-XX:+UseSerialGC -Xms32M -Xmx512M -XX:TieredStopAtLevel=1 \
 		-XX:+UnlockDiagnosticVMOptions -XX:-VerifySharedSpaces -Xshare:auto \
 		-XX:SharedArchiveFile=$(JAVA_SRC)/build/$(JAVA_BUILD)/configure-support/classes.jsa \
@@ -27,10 +23,16 @@ java:
 		--add-exports java.base/sun.invoke.util=jdk.compiler.interim \
 		--add-exports java.base/jdk.internal.javac=java.compiler.interim \
 		--add-exports java.base/jdk.internal.javac=jdk.compiler.interim \
-		-m jdk.compiler.interim/com.sun.tools.javac.Main HelloWorld.java 
-	$(JAVA_17) -jar $(JACOCO)/lib/jacococli.jar report jacoco.exec \
+		-m jdk.compiler.interim/com.sun.tools.javac.Main
+JAVA_REPORT=$(JAVA_17) -jar $(JACOCO)/lib/jacococli.jar report jacoco.exec \
 		--classfiles $(JAVA_SRC)/build/$(JAVA_BUILD)/buildtools/interim_langtools_modules/jdk.compiler.interim/com/sun/tools/javac/ \
-		--html java
+		--html 
+
+all: java kotlin groovy
+
+java: 
+	$(JAVAC) HelloWorld.java 
+	$(JAVA_REPORT) java
 
 kotlin:
 	 $(JAVA_8) \
@@ -44,14 +46,6 @@ kotlin:
 		--classfiles $(KOTLIN_SRC)/dist/kotlinc/lib/kotlin-compiler.jar \
 		--html kotlin
 
-groovy:
-	java -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-groovy.exec \
-		-cp $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
-		org.codehaus.groovy.tools.FileSystemCompiler Main.groovy
-	java -jar $(JACOCO)/lib/jacococli.jar report jacoco-groovy.exec \
-		--classfiles $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
-		--html groovy
-
 kotlin-minimal:
 	kotlinc-jvm main.kt -d Main.jar
 	java -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-ktm.exec \
@@ -60,7 +54,15 @@ kotlin-minimal:
 	java -jar $(JACOCO)/lib/jacococli.jar report jacoco-ktm.exec \
 		--classfiles main.jar --html kotlin-minimal
 
+groovy:
+	java -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-groovy.exec \
+		-cp $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
+		org.codehaus.groovy.tools.FileSystemCompiler Main.groovy
+	java -jar $(JACOCO)/lib/jacococli.jar report jacoco-groovy.exec \
+		--classfiles $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
+		--html groovy
+
 clean:
 	rm -rf HelloWorld.class java jacoco.exec jacoco-kt.exec META-INF Main.jar \
 		MainKt.class kotlin Main.class jacoco-groovy.exec groovy \
-		jacoco-ktm.exec kotlin-minimal
+		jacoco-ktm.exec kotlin-minimal javac-test-suite
