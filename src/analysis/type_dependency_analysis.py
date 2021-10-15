@@ -668,6 +668,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
                                                    node_id, ret_type,
                                                    func_type_parameters,
                                                    type_var_nodes):
+        target = (
+            self._parameterized_type2node(node_id, self._exp_type)
+            if self._exp_type.is_parameterized()
+            else TypeNode(self._exp_type, parent_id)
+        )
         for t_var, assigned_t in ret_type.\
                 get_type_variable_assignments().items():
             if assigned_t not in func_type_parameters:
@@ -680,7 +685,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # fun <T> foo(): A<T>
             # val x: A<String> = foo()
             if self._exp_type.name == ret_type.name:
-                target = self._parameterized_type2node(node_id, self._exp_type)
                 type_var_id = "/".join((node_id, self._exp_type.name))
                 target_var = TypeVarNode(type_var_id, t_var, False)
                 construct_edge(self.type_graph, source, target_var,
@@ -689,7 +693,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # fun <T> foo(): B<T>
             # val x: A<String> = foo()
             elif self._exp_type.is_parameterized():
-                target = self._parameterized_type2node(node_id, self._exp_type)
                 # Presumably the expected type and the ret type have
                 # subtyping relations.
                 type_deps = tu.build_type_variable_dependencies(
@@ -704,7 +707,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
                         construct_edge(self.type_graph, source,
                                        target_var, Edge.INFERRED)
             else:
-                target = TypeNode(self._exp_type, parent_id)
                 construct_edge(self.type_graph, source, target,
                                Edge.INFERRED)
         self._inferred_nodes[parent_id].append(target)
