@@ -1,6 +1,14 @@
 Perform coverage experiments
 ============================
 
+Create coverage directory
+-------------------------
+
+```
+mkdir ~/coverage
+cd ~/coverage
+```
+
 Install Java
 ------------
 
