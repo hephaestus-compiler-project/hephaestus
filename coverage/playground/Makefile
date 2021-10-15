@@ -44,19 +44,11 @@ kotlin:
 		--classfiles $(KOTLIN_SRC)/dist/kotlinc/lib/kotlin-compiler.jar \
 		--html kotlin
 
-kotlin-minimal:
-	kotlinc-jvm main.kt -d Main.jar
-	java -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-ktm.exec \
-		-classpath Main.jar:$(KOTLIN_STD) \
-		MainKt
-	java -jar $(JACOCO)/lib/jacococli.jar report jacoco-ktm.exec \
-		--classfiles main.jar --html kotlin-minimal
-
 groovy:
-	java -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-groovy.exec \
+	$(JAVA_11) -javaagent:$(JACOCO)/lib/jacocoagent.jar=destfile=jacoco-groovy.exec \
 		-cp $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
 		org.codehaus.groovy.tools.FileSystemCompiler Main.groovy
-	java -jar $(JACOCO)/lib/jacococli.jar report jacoco-groovy.exec \
+	$(JAVA_11) -jar $(JACOCO)/lib/jacococli.jar report jacoco-groovy.exec \
 		--classfiles $(GROOVY_SRC)/build/libs/groovy-4.0.0-SNAPSHOT.jar \
 		--html groovy
 
