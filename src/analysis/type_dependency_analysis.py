@@ -403,8 +403,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_logical_expr(self, node):
         prev = copy(self._stack)
         self._stack.append("LOGICAL")
+        prev_expt = self._exp_type
+        self._exp_type = None
         super().visit_logical_expr(node)
         self._stack = prev
+        self._exp_type = prev_expt
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
@@ -413,8 +416,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_equality_expr(self, node):
         prev = copy(self._stack)
         self._stack.append("EQUALITY")
+        prev_expt = self._exp_type
+        self._exp_type = None
         super().visit_equality_expr(node)
         self._stack = prev
+        self._exp_type = prev_expt
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
@@ -423,8 +429,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_comparison_expr(self, node):
         prev = copy(self._stack)
         self._stack.append("EQUALITY")
+        prev_expt = self._exp_type
+        self._exp_type = None
         super().visit_comparison_expr(node)
         self._stack = prev
+        self._exp_type = prev_expt
 
         node_id, _ = self._get_node_id()
         self._inferred_nodes[node_id].append(
@@ -447,7 +456,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
         )
 
     def _visit_assign_with_receiver(self, node):
+        prev_expt = self._exp_type
+        self._exp_type = None
         self.visit(node.receiver)
+        self._exp_type = prev_expt
+
         # We need to infer the type of the receiver.
         receiver_t = tu.get_type_hint(node.receiver, self._context,
                                       self._namespace, self._bt_factory,
@@ -496,8 +509,11 @@ class TypeDependencyAnalysis(DefaultVisitor):
         from copy import copy
         prev = copy(self._stack)
         self._stack.append("COND")
+        prev_expt = self._exp_type
+        self._exp_type = None
         self.visit(node.cond)
         self._stack = prev
+        self._exp_type = prev_expt
 
         namespace = self._namespace
 
@@ -626,9 +642,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def visit_field_access(self, node):
         parent_node_id, nu = self._get_node_id()
         node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.field
+        prev = self._exp_type
+        self._exp_type = None
         self._stack.append(node_id)
         super().visit_field_access(node)
         self._stack.pop()
+        self._exp_type = prev
         self._inferred_nodes[parent_node_id].append(
             TypeNode(tu.get_type_hint(node, self._context, self._namespace,
                                       self._bt_factory, self._types), None)
@@ -650,19 +669,6 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # with which it is explicitly instantiated.
             construct_edge(self.type_graph, source, target, Edge.DECLARED)
         return main_node, type_var_nodes
-
-    def _handle_func_call_param(self, node_id, param, param_decl_type, arg,
-                                func_type_var_map):
-        if not func_type_var_map:
-            self._handle_declaration(node_id, param, arg, 'param_type')
-        if param_decl_type in func_type_var_map:
-            source = TypeVarNode(node_id, param_decl_type, False)
-            self._handle_declaration(node_id, param, arg, 'param_type',
-                                     propagate_decl_nodes=True)
-            inferred_nodes = self._inferred_nodes.pop(
-                node_id + "/" + param.name, [])
-            for n in inferred_nodes:
-                construct_edge(self.type_graph, source, n, Edge.DECLARED)
 
     def _infer_type_variables_parameterized_by_ret(self, parent_id,
                                                    node_id, ret_type,
@@ -772,10 +778,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
         namespace, fun_decl = fun_decl
 
         if node.receiver is not None:
+            prev = self._exp_type
+            self._exp_type = None
             rec_node_id = node_id + "/__REC__"
             self._stack.append(rec_node_id)
             self.visit(node.receiver)
             self._stack.pop()
+            self._exp_type = prev
 
         params_nu = len(fun_decl.params)
         type_var_map = {}
@@ -820,7 +829,9 @@ class TypeDependencyAnalysis(DefaultVisitor):
             if v.name == type_var_node.t.name:
                 nid = node_id + "/" + t.name
                 call_type_var_node = TypeVarNode(nid, k, False)
-                construct_edge(self.type_graph, call_type_var_node,
+                decl_type_var_node = TypeVarNode(nid, k, True)
+                self.type_graph[decl_type_var_node] = []
+                construct_edge(self.type_graph, decl_type_var_node,
                                type_var_node, Edge.INFERRED)
                 construct_edge(self.type_graph, type_var_node,
                                call_type_var_node, Edge.INFERRED)
