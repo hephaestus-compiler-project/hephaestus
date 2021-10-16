@@ -1,3 +1,5 @@
+from copy import copy
+
 from src.analysis import type_dependency_analysis as tda
 from src.ir import ast, types as tp, kotlin_types as kt, context as ctx
 from tests.resources import type_analysis_programs as tap
@@ -19,7 +21,7 @@ def to_str_dict(res):
     return new_res
 
 
-def find_node(node_id, nodes):
+def find_omittable_node(node_id, nodes):
     for n in nodes:
         if n.node_id == node_id and n.is_omittable():
             return n
@@ -364,6 +366,7 @@ def test_program11():
     assert res == {
         '!TypeVariable[global/foo/1/A/f/A/T]': ['-> Type[String] (declared)'],
         '!TypeVariable[global/foo/A/f/A/T]': ['-> Type[String] (declared)'],
+        '!TypeVariable[global/foo/A/T/A/T]': ['-> Type[String] (declared)'],
         'Declaration[global/foo/1/A/f/A/f]': ['-> Type[String] (inferred)'],
         'Declaration[global/foo/1/A/f]': [
             '-> TypeConInstCall[global/foo/1/A/f/A] (inferred)',
@@ -381,14 +384,13 @@ def test_program11():
         'TypeConInstDecl[global/foo/A/f/A]': ['-> !TypeVariable[global/foo/A/f/A/T] (declared)'],
         'TypeConInstDecl[global/foo/1/A/f/A]': ['-> !TypeVariable[global/foo/1/A/f/A/T] (declared)'],
         'TypeConInstDecl[global/foo/A/T/A]': [
-            '-> TypeVariable[global/foo/A/T/A/T] (declared)',
+            '-> !TypeVariable[global/foo/A/T/A/T] (declared)',
         ],
         'TypeVariable[global/foo/1/A/f/A/T]': [
             '-> Type[String] (declared)',
             '-> Type[String] (inferred)',
             '-> !TypeVariable[global/foo/1/A/f/A/T] (inferred)'
         ],
-        'TypeVariable[global/foo/A/T/A/T]': ['-> Type[String] (declared)'],
         'TypeVariable[global/foo/A/T]': [
             '-> TypeConInstCall[global/foo/A/f/A] (inferred)',
             '-> TypeConInstDecl[global/foo/A/f/A] (declared)',
@@ -613,7 +615,9 @@ def test_program18():
 
 
     assert res == {
-        '!TypeVariable[global/bar/foo/x/A/T2]': ['-> Type[String] (declared)'],
+        '!TypeVariable[global/bar/foo/x/A/T2]': [
+            '-> TypeVariable[global/bar/foo/T] (inferred)'
+        ],
         'Declaration[global/bar/foo/x]': [
             '-> TypeConInstCall[global/bar/foo/x/A] (inferred)',
             '-> TypeConInstDecl[global/bar/foo/x/A] (declared)',
@@ -639,7 +643,6 @@ def test_program18():
         'TypeVariable[global/bar/foo/x/A/T2]': [
             '-> Type[String] (declared)',
             '-> !TypeVariable[global/bar/foo/x/A/T2] (inferred)',
-            '-> TypeVariable[global/bar/foo/T] (inferred)'
         ]
     }
 
@@ -688,7 +691,7 @@ def test_program20():
     assert res == {
         '!TypeVariable[global/x/B/T]': ['-> Type[String] (declared)'],
         '!TypeVariable[global/x/B/f/A/T]': [
-            '-> Type[String] (declared)'
+            '-> TypeVariable[global/x/B/T] (inferred)'
         ],
         'Declaration[global/B/f]': ['-> Type[A] (declared)'],
         'Declaration[global/x/B/f]': [
@@ -719,7 +722,6 @@ def test_program20():
         'TypeVariable[global/x/B/f/A/T]': [
             '-> Type[String] (declared)',
             '-> !TypeVariable[global/x/B/f/A/T] (inferred)',
-            '-> TypeVariable[global/x/B/T] (inferred)'
         ]
     }
 
@@ -737,6 +739,9 @@ def test_program21():
     assert res == {
         '!TypeVariable[global/x/C/T]': ['-> Type[String] (declared)'],
         '!TypeVariable[global/x/C/f/B/T]': ['-> Type[A] (declared)'],
+        '!TypeVariable[global/x/C/f/B/T/A/T]': [
+            '-> TypeVariable[global/x/C/T] (inferred)'
+        ],
         'Declaration[global/B/f]': ['-> Type[A] (declared)'],
         'Declaration[global/C/f]': ['-> Type[B] (declared)'],
         'Declaration[global/x/C/f]': [
@@ -754,7 +759,7 @@ def test_program21():
             '-> TypeVariable[global/x/C/T] (declared)'
         ],
         'TypeConInstDecl[global/x/C/f/B/T/A]': [
-            '-> TypeVariable[global/x/C/f/B/T/A/T] (declared)'
+            '-> !TypeVariable[global/x/C/f/B/T/A/T] (declared)'
         ],
         'TypeConInstDecl[global/x/C/f/B]': [
             '-> !TypeVariable[global/x/C/f/B/T] (declared)'
@@ -766,10 +771,6 @@ def test_program21():
             '-> Type[String] (declared)',
             '-> TypeVariable[global/x/C/f/B/T/A/T] (inferred)',
             '-> !TypeVariable[global/x/C/T] (inferred)'
-        ],
-        'TypeVariable[global/x/C/f/B/T/A/T]': [
-            '-> Type[String] (declared)',
-            '-> TypeVariable[global/x/C/T] (inferred)'
         ],
         'TypeVariable[global/x/C/f/B/T]': [
             '-> TypeConInstDecl[global/x/C/f/B/T/A] (declared)',
@@ -788,6 +789,7 @@ def test_program22():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/x/B/T2/A/T]': ['-> Type[String] (declared)'],
         '!TypeVariable[global/x/B/T2]': ['-> Type[A] (declared)'],
         '!TypeVariable[global/x/B/f/A/T]': ['-> Type[String] (declared)'],
         'Declaration[global/B/f]': ['-> Type[T2] (declared)'],
@@ -806,13 +808,12 @@ def test_program22():
             '-> TypeVariable[global/x/B/T2] (declared)'
         ],
         'TypeConInstDecl[global/x/B/T2/A]': [
-            '-> TypeVariable[global/x/B/T2/A/T] (declared)'
+            '-> !TypeVariable[global/x/B/T2/A/T] (declared)'
         ],
         'TypeConInstDecl[global/x/B/f/A]': [
             '-> !TypeVariable[global/x/B/f/A/T] (declared)'
         ],
         'TypeConInstDecl[global/x/B]': ['-> !TypeVariable[global/x/B/T2] (declared)'],
-        'TypeVariable[global/x/B/T2/A/T]': ['-> Type[String] (declared)'],
         'TypeVariable[global/x/B/T2]': [
             '-> TypeConInstCall[global/x/B/f/A] (inferred)',
             '-> TypeConInstDecl[global/x/B/f/A] (declared)',
@@ -861,6 +862,7 @@ def test_program24():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/x/foo/A/T]': ['-> Type[String] (declared)'],
         'Declaration[global/foo/foo]': [
             '-> Type[T] (inferred)',
             '-> Type[global/foo/foo/T] (declared)'
@@ -872,9 +874,8 @@ def test_program24():
             '-> TypeVariable[global/x/foo/T] (declared)'
         ],
         'TypeConInstDecl[global/x/foo/A]': [
-            '-> TypeVariable[global/x/foo/A/T] (declared)'
+            '-> !TypeVariable[global/x/foo/A/T] (declared)'
         ],
-        'TypeVariable[global/x/foo/A/T]': ['-> Type[String] (declared)'],
         'TypeVariable[global/x/foo/T]': [
             '-> Type[String] (declared)',
             '-> TypeConInstDecl[global/x/foo/A] (inferred)',
@@ -891,6 +892,9 @@ def test_program25():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/x/foo/A/T]': [
+            '-> Type[String] (declared)',
+        ],
         'Declaration[global/foo/foo]': [
             '-> Type[A] (inferred)',
             '-> Type[global/foo/foo/A] (declared)'
@@ -902,14 +906,11 @@ def test_program25():
             '-> TypeVariable[global/x/foo/T] (declared)'
         ],
         'TypeConInstDecl[global/x/foo/A]': [
-            '-> TypeVariable[global/x/foo/A/T] (declared)'
-        ],
-        'TypeVariable[global/x/foo/A/T]': [
-            '-> Type[String] (declared)',
+            '-> !TypeVariable[global/x/foo/A/T] (declared)'
         ],
         'TypeVariable[global/x/foo/T]': [
             '-> Type[String] (declared)',
-            '-> TypeVariable[global/x/foo/A/T] (inferred)'
+            '-> !TypeVariable[global/x/foo/A/T] (inferred)'
         ]
     }
 
@@ -923,6 +924,9 @@ def test_program26():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/x/foo/A/T]': [
+            '-> Type[String] (declared)',
+        ],
         'Declaration[global/foo/foo]': [
             '-> Type[B] (inferred)',
             '-> Type[global/foo/foo/B] (declared)'
@@ -934,14 +938,11 @@ def test_program26():
             '-> TypeVariable[global/x/foo/T] (declared)'
         ],
         'TypeConInstDecl[global/x/foo/A]': [
-            '-> TypeVariable[global/x/foo/A/T] (declared)'
-        ],
-        'TypeVariable[global/x/foo/A/T]': [
-            '-> Type[String] (declared)',
+            '-> !TypeVariable[global/x/foo/A/T] (declared)'
         ],
         'TypeVariable[global/x/foo/T]': [
             '-> Type[String] (declared)',
-            '-> TypeVariable[global/x/foo/A/T] (inferred)'
+            '-> !TypeVariable[global/x/foo/A/T] (inferred)'
         ]
 
     }
@@ -956,6 +957,12 @@ def test_program27():
     res = to_str_dict(a.result())
 
     assert res == {
+        '!TypeVariable[global/x/foo/A/T2]': [
+            '-> Type[Int] (declared)',
+        ],
+        '!TypeVariable[global/x/foo/A/T]': [
+            '-> Type[String] (declared)',
+        ],
         'Declaration[global/foo/foo]': [
             '-> Type[B] (inferred)',
             '-> Type[global/foo/foo/B] (declared)'
@@ -967,18 +974,12 @@ def test_program27():
             '-> TypeVariable[global/x/foo/T] (declared)'
         ],
         'TypeConInstDecl[global/x/foo/A]': [
-            '-> TypeVariable[global/x/foo/A/T] (declared)',
-            '-> TypeVariable[global/x/foo/A/T2] (declared)'
-        ],
-        'TypeVariable[global/x/foo/A/T2]': [
-            '-> Type[Int] (declared)',
-        ],
-        'TypeVariable[global/x/foo/A/T]': [
-            '-> Type[String] (declared)',
+            '-> !TypeVariable[global/x/foo/A/T] (declared)',
+            '-> !TypeVariable[global/x/foo/A/T2] (declared)'
         ],
         'TypeVariable[global/x/foo/T]': [
             '-> Type[String] (declared)',
-            '-> TypeVariable[global/x/foo/A/T2] (inferred)'
+            '-> !TypeVariable[global/x/foo/A/T2] (inferred)'
         ]
     }
 
@@ -993,7 +994,7 @@ def test_program28():
     # }
     program = tap.program28
     a = tda.TypeDependencyAnalysis(tap.program28)
-    a.visit(tap.program28)
+    a.visit(program)
     type_graph = a.result()
     res = to_str_dict(type_graph)
 
@@ -1018,8 +1019,32 @@ def test_program28():
     }
 
     nodes = type_graph.keys()
-    decl_node = find_node("global/C/foo/x", nodes)
-    type_inst_node = find_node("global/C/foo/x/B", nodes)
+    decl_node = find_omittable_node("global/C/foo/x", nodes)
+    type_inst_node = find_omittable_node("global/C/foo/x/B", nodes)
 
     assert not tda.is_combination_feasible(type_graph,
                                            (decl_node, type_inst_node))
+
+
+def test_program29():
+    # class A<T>
+    # class B<T> (val f: A<T>)
+    # val x: B<String> = new B<String>(new A<String>())
+    program = tap.program29
+    a = tda.TypeDependencyAnalysis(program)
+    a.visit(program)
+    type_graph = a.result()
+    res = to_str_dict(type_graph)
+
+    nodes = type_graph.keys()
+    decl_node = find_omittable_node("global/x", nodes)
+    type_inst_node1 = find_omittable_node("global/x/B", nodes)
+    type_inst_node2 = find_omittable_node("global/x/B/f/A", nodes)
+
+    tg = copy(type_graph)
+    assert not tda.is_combination_feasible(
+        tg, (decl_node, type_inst_node1, type_inst_node2))
+    tg = copy(type_graph)
+    assert tda.is_combination_feasible(
+        tg, (type_inst_node1, type_inst_node2)
+    )
