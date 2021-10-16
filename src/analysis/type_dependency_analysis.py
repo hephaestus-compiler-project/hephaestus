@@ -692,7 +692,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             # val x: A<String> = foo()
             if self._exp_type.name == ret_type.name:
                 type_var_id = "/".join((node_id, self._exp_type.name))
-                target_var = TypeVarNode(type_var_id, t_var, False)
+                target_var = TypeVarNode(type_var_id, t_var, True)
                 construct_edge(self.type_graph, source, target_var,
                                Edge.INFERRED)
             # Case 2:
@@ -924,7 +924,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         main_node = TypeConstructorInstantiationDeclNode(node_id, t)
         type_var_id = node_id + "/" + t.name
         for i, t_param in enumerate(t.t_constructor.type_parameters):
-            t_var = TypeVarNode(type_var_id, t_param, False)
+            t_var = TypeVarNode(type_var_id, t_param, True)
             construct_edge(self.type_graph, main_node, t_var, Edge.DECLARED)
             type_arg = t.type_args[i]
             if type_arg.is_parameterized():
