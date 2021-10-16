@@ -19,6 +19,13 @@ def to_str_dict(res):
     return new_res
 
 
+def find_node(node_id, nodes):
+    for n in nodes:
+        if n.node_id == node_id and n.is_omittable():
+            return n
+    return None
+
+
 def test_program1():
     # Foo<String> x = new Foo<String>()
     program = tap.program1
@@ -819,6 +826,8 @@ def test_program22():
 
 
 def test_program23():
+    # fun <T> foo(): T
+    # var x: String = foo()
     program = tap.program23
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
@@ -844,6 +853,8 @@ def test_program23():
 
 
 def test_program24():
+    # fun <T> foo(): T
+    # var x: A<String> = foo()
     program = tap.program24
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
@@ -872,6 +883,8 @@ def test_program24():
 
 
 def test_program25():
+    # fun <T> foo(): A<T>
+    # var x: A<String> = foo()
     program = tap.program25
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
@@ -902,6 +915,8 @@ def test_program25():
 
 
 def test_program26():
+    # fun <T> foo(): B<T>
+    # var x: A<String> = foo()
     program = tap.program26
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
@@ -933,6 +948,8 @@ def test_program26():
 
 
 def test_program27():
+    # fun <T> foo(): B<T>
+    # var x: A<String, String> = foo()
     program = tap.program27
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)
@@ -964,3 +981,45 @@ def test_program27():
             '-> TypeVariable[global/x/foo/A/T2] (inferred)'
         ]
     }
+
+
+def test_program28():
+    # class A
+    # class B<T>(val x: A)
+    # class C<T> {
+    #   fun foo(): {
+    #     val x: B<T> = B<T>(A())
+    #   }
+    # }
+    program = tap.program28
+    a = tda.TypeDependencyAnalysis(tap.program28)
+    a.visit(tap.program28)
+    type_graph = a.result()
+    res = to_str_dict(type_graph)
+
+    assert res == {
+        '!TypeVariable[global/C/foo/x/B/T]': ['-> Type[T] (declared)'],
+        'Declaration[global/B/f]': ['-> Type[A] (declared)'],
+        'Declaration[global/C/foo/x/B/f]': ['-> Type[A] (inferred)'],
+        'Declaration[global/C/foo/x]': [
+            '-> TypeConInstCall[global/C/foo/x/B] (inferred)',
+            '-> TypeConInstDecl[global/C/foo/x/B] (declared)',
+        ],
+        'TypeConInstCall[global/C/foo/x/B]': [
+            '-> TypeVariable[global/C/foo/x/B/T] (declared)',
+        ],
+        'TypeConInstDecl[global/C/foo/x/B]': [
+            '-> !TypeVariable[global/C/foo/x/B/T] (declared)'
+        ],
+        'TypeVariable[global/C/foo/x/B/T]': [
+            '-> Type[T] (declared)',
+            '-> !TypeVariable[global/C/foo/x/B/T] (inferred)',
+        ]
+    }
+
+    nodes = type_graph.keys()
+    decl_node = find_node("global/C/foo/x", nodes)
+    type_inst_node = find_node("global/C/foo/x/B", nodes)
+
+    assert not tda.is_combination_feasible(type_graph,
+                                           (decl_node, type_inst_node))

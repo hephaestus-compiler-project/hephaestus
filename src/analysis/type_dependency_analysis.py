@@ -226,10 +226,10 @@ def is_combination_feasible(type_graph, combination):
                 reachable = gu.dfs(type_graph, type_var.target)
                 is_ok = False
                 for n in reachable:
-                    if isinstance(n, TypeNode) and n.parent_id:
-                        is_ok = n.parent_id not in removed_decls
-                    else:
-                        is_ok = getattr(n, 't', None) == assigned_t
+                    if isinstance(n, TypeNode):
+                        is_ok = n.t == assigned_t
+                        if n.parent_id:
+                            is_ok = is_ok and n.parent_id not in removed_decls
                     if is_ok:
                         break
                 if not is_ok:
