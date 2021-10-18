@@ -42,6 +42,27 @@ class AttrAccessInfo:
     attr_inst: tu.TypeVarMap
 
 
+@dataclass
+class AttrReceiverInfo:
+    """
+    A data class for storing information regarding a receiver object and one
+    of its attributes.
+
+    Attributes:
+        receiver_expr: The receiver expression (usually a Variable).
+        receiver_inst: TypeVarMap for receiver in case receiver is a
+            parameterized type.
+        attr_decl: The declaration corresponding to the attribute (either a field
+            declaration or a function declaration).
+        attr_inst: TypeVarMap for attr_decl if attr_decl is a parameterized
+            function.
+    """
+    receiver_expr: ast.Expr
+    receiver_inst: tu.TypeVarMap
+    attr_decl: ast.Declaration
+    attr_inst: tu.TypeVarMap
+
+
 ### Utility functions ###
 
 # NOTE maybe me can create an enum for class types

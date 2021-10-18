@@ -905,8 +905,9 @@ class Generator():
                     etype, 'fields', not_void=True,
                 )
             receiver = self.generate_expr(type_f.receiver_t, only_leaves)
-            objs.append((receiver, None, type_f.attr_decl))
-        objs = [(r, f) for r, _, f in objs]
+            objs.append(gu.AttrReceiverInfo(
+                receiver, None, type_f.attr_decl, None))
+        objs = [(obj.receiver_expr, obj.attr_decl) for obj in objs]
         receiver, attr = ut.random.choice(objs)
         self.depth = initial_depth
         return ast.FieldAccess(receiver, attr.name)
@@ -1380,9 +1381,15 @@ class Generator():
                 None if type_fun.receiver_t is None
                 else self.generate_expr(type_fun.receiver_t, only_leaves)
             )
-            funcs.append((receiver, type_fun.receiver_inst,
+            funcs.append(gu.AttrReceiverInfo(receiver, type_fun.receiver_inst,
                           type_fun.attr_decl, type_fun.attr_inst))
-        receiver, params_map, func, func_type_map = ut.random.choice(funcs)
+
+        rand_func = ut.random.choice(funcs)
+        receiver = rand_func.receiver_expr
+        params_map = rand_func.receiver_inst
+        func = rand_func.attr_decl
+        func_type_map = rand_func.attr_inst
+
         params_map.update(func_type_map or {})
         args = []
         initial_depth = self.depth
@@ -1426,7 +1433,7 @@ class Generator():
 
     # TODO use AttrAccessInfo
     def _get_function_declarations(self, etype: tp.Type, subtype: bool) -> \
-            List[Tuple[ast.Expr, ast.Declaration]]:
+            List[gu.AttrReceiverInfo]:
         """Get all available function declarations.
 
         This function searches functions in the current scope that return
@@ -1438,10 +1445,6 @@ class Generator():
                 return that type.
             subtype: The return type of the function could be a subtype of
                 `etype`.
-
-        Returns:
-            A list that contains tuples of receivers (Variable or None)
-            and function declarations.
         """
         functions = []
         # First find all top-level functions or methods included
@@ -1472,7 +1475,7 @@ class Generator():
 
             # Nice to have:  add `this` explicitly as the receiver in methods
             # of current class.
-            functions.append((None, {}, func, type_var_map))
+            functions.append(gu.AttrReceiverInfo(None, {}, func, type_var_map))
         return functions + self._get_matching_objects(etype, subtype,
                                                       'functions')
 
@@ -1547,10 +1550,11 @@ class Generator():
         if not refs:
             # Detect receivers
             objs = self._get_matching_objects(etype, subtype, 'fields', True)
-            refs = [(tp.substitute_type(variable.get_type(), type_map_var),
-                    variable.name,
-                    receiver)
-                    for receiver, type_map_var, variable in objs
+            refs = [(tp.substitute_type(
+                        obj.attr_decl.get_type(), obj.receiver_inst),
+                    obj.attr_decl.name,
+                    obj.receiver_expr)
+                    for obj in objs
                    ]
 
         if not refs:
@@ -2302,9 +2306,7 @@ class Generator():
                               subtype: bool,
                               attr_name: str,
                               signature: bool = False
-                             ) -> List[Tuple[ast.Expr,
-                                       tu.TypeVarMap,
-                                       ast.Declaration]]:
+                              ) -> List[gu.AttrReceiverInfo]:
         """Get objects that have an attribute of attr_name that is/return etype.
 
         This function essentially searches for variables containing objects
@@ -2319,9 +2321,7 @@ class Generator():
             attr_name: 'fields' or 'functions'
 
         Returns:
-            A list that contains tuples of variables, their TypeVarMaps
-            and declarations (field or function), and in case of function its
-            TypeVarMap.
+            AttrReceiverInfo
         """
         decls = []
         variables = self.context.get_vars(self.namespace).values()
@@ -2392,10 +2392,12 @@ class Generator():
                     else:
                         fun_type_var_map = {}
 
-                    decls.append((ast.Variable(var.name), type_map_var, attr,
-                                  fun_type_var_map))
+                    decls.append(gu.AttrReceiverInfo(
+                        ast.Variable(var.name), type_map_var,
+                        attr, fun_type_var_map))
                 else:
-                    decls.append((ast.Variable(var.name), type_map_var, attr))
+                    decls.append(gu.AttrReceiverInfo(
+                        ast.Variable(var.name), type_map_var, attr, None))
         return decls
 
     def _get_matching_class(self,
