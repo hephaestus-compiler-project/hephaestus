@@ -2,9 +2,10 @@
 
 # or we can use: https://adoptopenjdk.gitbooks.io/adoptopenjdk-getting-started-kit/content/en/advanced-steps/openjdk_code_coverage.html
 KOTLIN_SRC=$HOME/coverage/kotlin
-JAVA_8=$HOME/.sdkman/candidates/java/8.0.282.j9-adpt/bin/java
+KOTLIN_JAR=$HOME/.sdkman/candidates/kotlin/1.5.31/lib/kotlin-compiler.jar
+JAVA_8=$HOME/.sdkman/candidates/java/8.0.265-open/bin/java
 JACOCO=$HOME/coverage/jacoco
-KOTLINC_TEST=$(find $KOTLIN_SRC/compiler $(find $KOTLIN_SRC -not -path "./tests-spec/*" -type d -name "testData") -name "*.kt")
+KOTLINC_TEST=$(find $KOTLIN_SRC/compiler $(find $KOTLIN_SRC -not -path "./tests-spec/*" -type d -name "testData") -name "*.kt" -exec grep -Li '<!' {} \;)
 
 TEST_SUITE_RES=kotlin-test-suite
 mkdir -p $TEST_SUITE_RES
@@ -17,12 +18,12 @@ run_kotlinc () {
     iter=$1
     dir=$(dirname $2)
     program=$(basename $2)
-    echo $dir 
+    echo $dir
     echo $program
     cd $dir
 	$JAVA_8 \
-    	-javaagent:$JACOCO/lib/jacocoagent.jar=destfile=jacoco-$i.exec \
-		-cp $KOTLIN_SRC/dist/kotlinc/lib/kotlin-compiler.jar \
+    	-javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$TEST_SUITE_RES/jacoco-$iter.exec \
+		-cp $KOTLIN_JAR \
 		org.jetbrains.kotlin.cli.jvm.K2JVMCompiler $program
     cd $work_dir
 }
@@ -36,5 +37,5 @@ cd $TEST_SUITE_RES
 $JAVA_8 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
 $JAVA_8 \
     -jar $JACOCO/lib/jacococli.jar report jacoco-kt.exec \
-    --classfiles $KOTLIN_SRC/dist/kotlinc/lib/kotlin-compiler.jar \
+    --classfiles $KOTLIN_JAR \
     --html kotlin
