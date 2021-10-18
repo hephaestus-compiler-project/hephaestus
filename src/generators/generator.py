@@ -1601,7 +1601,8 @@ class Generator():
             return self._gen_func_ref_lambda(etype)
 
         # Apply SAM coercion
-        if sam_coercion and tu.is_sam(self.context, etype):
+        if (sam_coercion and tu.is_sam(self.context, etype)
+                and ut.random.bool(self.cfg.prob.sam_coercion)):
             type_var_map = tu.get_type_var_map_from_ptype(etype)
             sam_sig_etype = tu.find_sam_fun_signature(
                     self.context,
@@ -1724,7 +1725,7 @@ class Generator():
         Returns:
             ast.Lambda or ast.FunctionReference
         """
-        if ut.random.bool():
+        if ut.random.bool(self.cfg.prob.func_ref):
             func_refs = self._get_func_refs(etype)
             if len(func_refs) == 0:
                 func_ref = self.gen_func_ref(etype)
@@ -1732,6 +1733,8 @@ class Generator():
                     return func_ref
             else:
                 return ut.random.choice(func_refs)
+
+        # Generate Lambda
         prev_inside_java_lamdba = self._inside_java_lambda
         self._inside_java_lambda = self.language == "java"
         params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
