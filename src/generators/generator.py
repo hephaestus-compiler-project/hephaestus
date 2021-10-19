@@ -1,5 +1,18 @@
 """
 This file includes the program generator.
+
+Context:
+    The context is composed of three types of declarations:
+        * VariableDeclaration
+        * FunctionDeclaration
+        * ClassDeclaration
+    In the generator, we add declarations to the context after creating their
+    AST Nodes because only then we have generated all their values.
+    This introduces an issue when we want to look up the context when
+    creating subnodes. To solve this issue, we generate artificial nodes in
+    `gen_func_decl` and `gen_class_decl`, which we delete before returning
+    from those functions.
+
 TODO: describe the generation steps.
 
 TODOs:
@@ -20,6 +33,7 @@ from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
+from src.modules.logging import Logger
 
 
 class Generator():
@@ -31,8 +45,8 @@ class Generator():
                  context=None):
         assert language is not None, "You must specify the language"
         self.language = language
-        self.logger = logger
-        self.context = context or Context()
+        self.logger: Logger = logger
+        self.context: Context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.cfg = GenConfig()
         self.depth = 1
@@ -103,6 +117,10 @@ class Generator():
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
         """
+
+        # Add an artificial node for enabling context lookups
+        self.context.add_func(self.namespace, 'main', None)
+
         initial_namespace = self.namespace
         self.namespace += ('main', )
         initial_depth = self.depth
@@ -121,6 +139,10 @@ class Generator():
             body=body,
             func_type=ast.FunctionDeclaration.FUNCTION)
         self.namespace = initial_namespace
+
+        # Remove the artificial node
+        self.context.remove_func(self.namespace, 'main')
+
         return main_func
 
     ### Generators ###
@@ -160,6 +182,10 @@ class Generator():
             A function declaration node.
         """
         func_name = func_name or gu.gen_identifier('lower')
+
+        # Add an artificial node for enabling context lookups
+        self.context.add_func(self.namespace, func_name, None)
+
         initial_namespace = self.namespace
         if namespace:
             self.namespace = namespace + (func_name,)
@@ -227,6 +253,10 @@ class Generator():
         self._inside_java_lambda = prev_inside_java_lamdba
         self.depth = initial_depth
         self.namespace = initial_namespace
+
+        # Remove the artificial node
+        self.context.remove_func(self.namespace, func_name)
+
         return ast.FunctionDeclaration(
             func_name, params, ret_type, body,
             func_type=(ast.FunctionDeclaration.CLASS_METHOD
@@ -298,6 +328,10 @@ class Generator():
             A class declaration node.
         """
         class_name = class_name or gu.gen_identifier('capitalize')
+
+        # Add an artificial node for enabling context lookups
+        self.context.add_class(self.namespace, class_name, None)
+
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
@@ -327,6 +361,9 @@ class Generator():
         self.depth = initial_depth
         cls.fields = fields
         cls.functions = funcs
+
+        # Remove the artificial node
+        self.context.remove_class(self.namespace, class_name)
         return cls
 
     # Where
@@ -1281,7 +1318,16 @@ class Generator():
             shadow_name: give a specific shadow name.
             params: parameters for the lambda.
         """
+        if self.declaration_namespace:
+            namespace = self.declaration_namespace
+        else:
+            namespace = self.namespace
+
         shadow_name = shadow_name or gu.gen_identifier('lower')
+
+        # Add an artificial node for enabling context lookups
+        self.context.add_lambda(namespace, shadow_name, None)
+
         initial_namespace = self.namespace
         self.namespace += (shadow_name,)
         initial_depth = self.depth
@@ -1304,13 +1350,11 @@ class Generator():
         self.namespace = initial_namespace
         self._inside_java_lambda = prev_inside_java_lamdba
 
-        # Add to context
-        if self.declaration_namespace:
-            namespace = self.declaration_namespace
-        else:
-            namespace = self.namespace
-        self.context.add_lambda(namespace, shadow_name, res)
+        # Remove the artificial node
+        self.context.remove_lambda(namespace, shadow_name)
 
+        # Add to context
+        self.context.add_lambda(namespace, shadow_name, res)
         return res
 
     def gen_func_ref(self, etype):

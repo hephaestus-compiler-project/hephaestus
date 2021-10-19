@@ -78,30 +78,35 @@ class Context():
             decl = self._context.get(namespace, {}).get(decl_type)
             if decl is not None:
                 decls.update(decl)
-            namespaces.extend(self.find_namespaces(namespace))
+            namespaces.extend(self.find_namespaces(namespace, True))
         return decls
 
-    def _get_declarations(self, namespace, decl_type, only_current, glob):
+    def _get_declarations(self, namespace, decl_type, only_current, glob, none):
         len_namespace = len(namespace)
         assert len_namespace >= 1
+        decls = {}
         if glob:
-            return self._get_declarations_glob(namespace, decl_type)
-        if len_namespace == 1 or only_current:
-            return self._context.get(namespace, {}).get(decl_type, {})
-        start = (namespace[0],)
-        decls = OrderedDict(self._context.get(start, {}).get(decl_type) or {})
-        for ns in namespace[1:]:
-            start = start + (ns,)
-            decl = self._context.get(start, {}).get(decl_type)
-            if decl is not None:
-                decls.update(decl)
+            decls = self._get_declarations_glob(namespace, decl_type)
+        elif len_namespace == 1 or only_current:
+            decls = self._context.get(namespace, {}).get(decl_type, {})
+        else:
+            start = (namespace[0],)
+            decls = OrderedDict(self._context.get(start, {}).get(decl_type) or {})
+            for ns in namespace[1:]:
+                start = start + (ns,)
+                decl = self._context.get(start, {}).get(decl_type)
+                if decl is not None:
+                    decls.update(decl)
+        if not none:
+            # Do not return artificial nodes
+            decls = {k: v for k, v in decls.items() if v is not None}
         return decls
 
-    def find_namespaces(self, namespace):
+    def find_namespaces(self, namespace, none):
         func_namespaces = [namespace + (fname,)
-                           for fname in self.get_funcs(namespace, True)]
+                           for fname in self.get_funcs(namespace, True, none=none)]
         class_namespaces = [namespace + (cname,)
-                            for cname in self.get_classes(namespace, True)]
+                            for cname in self.get_classes(namespace, True, none=none)]
         return func_namespaces + class_namespaces
 
     def get_namespaces_decls(self, namespace, name, decl_type, glob=True):
@@ -121,7 +126,7 @@ class Context():
                     if decl_name == name:
                         ns = namespace + (name,)
                         namespaces_decls.add((ns, decl))
-            namespaces.extend(self.find_namespaces(namespace))
+            namespaces.extend(self.find_namespaces(namespace, none=False))
         return namespaces_decls
 
     def get_decl(self, namespace, name):
@@ -132,23 +137,23 @@ class Context():
         return self._context.get(namespace, {}).get('lambdas', {}).get(
             name, None)
 
-    def get_types(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'types', only_current, glob)
+    def get_types(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'types', only_current, glob, none)
 
-    def get_funcs(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'funcs', only_current, glob)
+    def get_funcs(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'funcs', only_current, glob, none)
 
-    def get_lambdas(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'lambdas', only_current, glob)
+    def get_lambdas(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'lambdas', only_current, glob, none)
 
-    def get_vars(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'vars', only_current, glob)
+    def get_vars(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'vars', only_current, glob, none)
 
-    def get_classes(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'classes', only_current, glob)
+    def get_classes(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'classes', only_current, glob, none)
 
-    def get_declarations(self, namespace, only_current=False, glob=False):
-        return self._get_declarations(namespace, 'decls', only_current, glob)
+    def get_declarations(self, namespace, only_current=False, glob=False, none=False):
+        return self._get_declarations(namespace, 'decls', only_current, glob, none)
 
     def remove_namespace(self, namespace):
         if namespace in self._context:
