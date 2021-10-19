@@ -92,6 +92,9 @@ class Type(Node):
     def is_type_constructor(self):
         return False
 
+    def is_function_type(self):
+        return False
+
     def get_supertypes(self):
         """Return self and the transitive closure of the supertypes"""
         stack = [self]
