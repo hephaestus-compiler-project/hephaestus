@@ -1357,38 +1357,6 @@ class Generator():
         self.context.add_lambda(namespace, shadow_name, res)
         return res
 
-    def gen_func_ref(self, etype):
-        """Generate a function declaration and then a function reference for it.
-
-        Args:
-            etype: signature of the function to generate.
-        """
-        def check_targ(targ):
-            """Return false if targ is TypeParameter or WildCardType.
-            """
-            if isinstance(targ, tp.ParameterizedType):
-                return all(check_targ(t) for t in targ.type_args)
-            if isinstance(targ, tp.TypeParameter):
-                return False
-            if (isinstance(targ, tp.WildCardType) and
-                    isinstance(targ.bound, tp.TypeParameter)):
-                return False
-            return True
-        # NOTE to handle the case where a type argument is a type parameter,
-        # we can either create a parameterized function or create a method
-        # to the current class.
-        # In the second case, we can use `this` or we can create
-        # a new object as a receiver.
-        if any(not check_targ(targ) for targ in etype.type_args):
-            return None
-        params = [self.gen_param_decl(t) for t in etype.type_args[:-1]]
-        ret_type = etype.type_args[-1]
-        func_decl = self.gen_func_decl(
-            etype=ret_type, params=params, namespace=('global',)
-        )
-        self.context.add_func(('global',), func_decl.name, func_decl)
-        return ast.FunctionReference(func_decl.name, None)
-
     def gen_func_call(self,
                       etype: tp.Type,
                       only_leaves=False,
@@ -1700,11 +1668,7 @@ class Generator():
         """
         if ut.random.bool(self.cfg.prob.func_ref):
             func_refs = self._get_func_refs(etype)
-            if len(func_refs) == 0:
-                func_ref = self.gen_func_ref(etype)
-                if func_ref:
-                    return func_ref
-            else:
+            if len(func_refs) > 0:
                 return ut.random.choice(func_refs)
 
         # Generate Lambda
@@ -1731,20 +1695,7 @@ class Generator():
         """
         refs = []
 
-        # We cannot handle parameterized types with type params as type args.
-        # To support them, they must be in the same type constructor (using this)
-        if any(isinstance(targ, tp.TypeParameter)
-               for targ in etype.type_args):
-            return refs
-
-        # When in top-level class declaration, we cannot generate a variable
-        # because generate_expr won't generate it correctly.
-        only_leaves = len(self.namespace) == 2 and self.namespace[1][0].isupper
-
-        # Step 1: Find all functions that can be used as function references
-        refs.extend(self._get_func_refs_from_functions(etype, only_leaves))
-
-        # Step 2: Find existing function references
+        # Get variables without receivers
         variables = list(self.context.get_vars(self.namespace).values())
         if self._inside_java_lambda:
             variables = list(filter(
@@ -1753,165 +1704,48 @@ class Generator():
                 variables))
         variables += list(self.context.get_vars(
             ('global',), only_current=True).values())
-        # Step 3: Find objects in scoped that can be used as receivers
         for var_decl in variables:
             var_type = var_decl.get_type()
             var = ast.Variable(var_decl.name)
-            class_decls = self.context.get_classes(('global',), glob=True)
             if var_type == etype:
                 refs.append(var)
-            # Check for receivers. For example, in the following case we should
-            # add the function reference a::foo if we are looking for function
-            # references with signature: Function0<Integer>.
-            #
-            #  class A {
-            #  	Integer foo() {return 1;}
-            #  }
-            #
-            #  public static void main(String[] args) {
-            #  	A a = new A();
-            #  }
-            elif isinstance(var_type, (tp.SimpleClassifier,
-                                       tp.ParameterizedType)):
-                class_decl = class_decls.get(var_type.name, None)
-                if not class_decl:
-                    continue
-                funcs = class_decl.get_callable_functions(class_decls.values())
-                for func in funcs:
-                    signature = func.get_signature(
-                        self.bt_factory.get_function_type(len(func.params))
-                    )
-                    if signature == etype:
-                        refs.append(ast.FunctionReference(func.name, var))
-        return refs
 
-    # Where
+        # Get variables with receivers
+        objs = self._get_matching_objects(
+                etype, False, 'fields', func_ref=True, signature=True)
+        for obj in objs:
+            refs.append(ast.FieldAccess(obj.receiver_expr, obj.attr_decl.name))
 
-    def _get_func_refs_from_functions(self,
-                                      etype: tp.Type,
-                                      only_leaves: bool
-                                     ) -> List[ast.FunctionReference]:
-        """Get function references to etype from function declarations.
+        # Get function references from functions in the current scope or
+        # methods that have a receiver in the current scope.
+        funcs = self._get_matching_function_declarations(
+            etype, False, signature=True)
+        for func in funcs:
+            refs.append(ast.FunctionReference(
+                func.attr_decl.name, func.receiver_expr))
 
-        We filter out nested functions.
-        For non-top-level functions we generate a receiver.
+        if refs:
+            return refs
 
-        Args:
-            etpye: function signature
-            only_leaves: do not generate new leaves except from `expr`.
-        """
-        refs = []
-        # Search in all global functions
-        for func in self.context.get_funcs(self.namespace, glob=True).values():
+        # NOTE a maximum recursion error may occur.
+        # Get function references from methods of classes.
+        type_fun = self._get_matching_class(
+            etype, False, 'functions', signature=True)
 
-            namespace = self.context.get_namespace(func) + (func.name,)
-            # Check if nested function
-            if not namespace[-2] == "global" and not namespace[-2][0].isupper():
-                continue
+        # Generate a matching function.
+        if not type_fun:
+            type_fun = self._gen_matching_func(
+                etype, not_void=True, signature=True)
 
-            signature = func.get_signature(
-                self.bt_factory.get_function_type(len(func.params))
+        if type_fun:
+            receiver = (
+                None if type_fun.receiver_t is None
+                else self.generate_expr(type_fun.receiver_t)
             )
 
-            if signature == etype:
-                if func.func_type == func.FUNCTION:
-                    refs.append(ast.FunctionReference(func.name, None))
-                else:
-                    parent = self.context.get_parent(namespace)
-                    parent_type = parent.get_type()
-                    # if parent is a type constructor then initialize a
-                    # ParameterizedType
-                    if isinstance(parent_type, tp.TypeConstructor):
-                        parent_type, _ = tu.instantiate_type_constructor(
-                            parent_type, self.get_types(),
-                            disable_variance_functions=self.disable_variance_functions,
-                            enable_pecs=self.enable_pecs
-                        )
+            refs = [ast.FunctionReference(type_fun.attr_decl.name, receiver)]
 
-                    receiver = self.generate_expr(parent_type,
-                                                  subtype=False,
-                                                  only_leaves=only_leaves,
-                                                  sam_coercion=False)
-                    refs.append(ast.FunctionReference(func.name, receiver))
-            # Handle functions of parameterized classes
-            else:
-                func_ref = self._get_func_ref_from_func_in_param_cls(
-                    only_leaves, etype, func, namespace
-                )
-                if func_ref:
-                    refs.append(func_ref)
-            # TODO handle parameterized functions
         return refs
-
-    # Where
-
-    def _get_func_ref_from_func_in_param_cls(self,
-                                             only_leaves: bool,
-                                             etype: tp.Type,
-                                             func: ast.FunctionDeclaration,
-                                             namespace
-                                            ) -> ast.FunctionReference:
-        """Get function reference from function in Parameterized Class
-
-        Args:
-            only_leaves: do not generate new leaves except from `expr`.
-            etpye: function signature.
-            func: Function declaration of the function.
-            namespace: namespace of the function.
-        """
-        is_param_type_param = any(isinstance(param, tp.TypeParameter)
-            for param in func.params)
-        is_ret_type_param = isinstance(func.ret_type, tp.TypeParameter)
-
-        if not is_param_type_param and not is_ret_type_param:
-            return None
-
-        def check_type(is_type_param , itype, etype):
-            if not is_type_param and itype == etype:
-                return True
-            if is_type_param:
-                if itype.bound and not etype.is_subtype(itype.bound):
-                    return False
-                return True
-            return False
-
-        etype_ret = etype.type_args[-1]
-        etype_params = etype.type_args[:-1]
-        type_var_map = {}
-
-        # Check if return type can conform to etype's return type.
-        if not check_type(is_ret_type_param, func.ret_type, etype_ret):
-            return None
-        if is_ret_type_param:
-            type_var_map[func.ret_type] = etype_ret
-        # Check if parameters can conform to etype's parameters.
-        if len(func.params) != len(etype_params):
-            return None
-        for fparam, eparam in zip(func.params, etype_params):
-            is_type_param = isinstance(fparam, tp.TypeParameter)
-            if not check_type(is_type_param, fparam, eparam):
-                return None
-            if is_type_param:
-                type_var_map[fparam] = eparam
-        # Create a parameterized type with the correct type arguments
-        parent = self.context.get_parent(namespace)
-        # TODO Handle parameterized functions
-        if parent is None:
-            return None
-        parent_type = parent.get_type()
-        if not isinstance(parent_type, tp.TypeConstructor):
-            return None
-
-        receiver_type, _ = tu.instantiate_type_constructor(
-            parent_type, self.get_types(), type_var_map=type_var_map,
-            disable_variance_functions=self.disable_variance_functions,
-            enable_pecs=self.enable_pecs
-        )
-        receiver = self.generate_expr(receiver_type,
-                                      subtype=False,
-                                      only_leaves=only_leaves,
-                                      sam_coercion=False)
-        return ast.FunctionReference(func.name, receiver)
 
     ### Standard API of Generator ###
 
@@ -2359,6 +2193,15 @@ class Generator():
         whose class has either a field of a specific value or a function that
         return a particular value.
 
+        As for func_ref and signatures there are the following scenarios:
+
+        1. func_ref = True and signature = False and attr_name = fields
+            -> find function references that return etype
+        2. func_ref = False and signature = True and attr_name = functions
+            -> find functions that have the given signature
+        2. func_ref = True and signature = True and attr_name = fields
+            -> find functions references that return etype (etype is signature)
+
         Args:
             etype: the targeted type that we are searching. Functions should
                 return that type.
@@ -2373,7 +2216,7 @@ class Generator():
         """
 
         def check_type(attr_type, attr):
-            if not signature:
+            if not signature or func_ref:
                 if subtype:
                     attr_type.is_assignable(etype)
                 return attr_type == etype
@@ -2410,7 +2253,8 @@ class Generator():
                 if func_ref:
                     if not getattr(attr_type, 'is_function_type', lambda: False)():
                         continue
-                    attr_type = attr_type.type_args[-1]
+                    attr_type = attr_type.type_args[-1] if not signature \
+                        else attr_type
 
                 if not check_type(attr_type, attr):
                     continue

@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from src import utils
+from src.ir import ast
 
 
 class Context():
@@ -177,6 +178,14 @@ class Context():
             return None
         parent_namespace = namespace[:-1]
         return self.get_decl(parent_namespace[:-1], parent_namespace[-1])
+
+    def get_parent_class(self, namespace):
+        parent = self.get_parent(namespace)
+        if parent is None:
+            return None
+        if isinstance(parent, ast.ClassDeclaration):
+            return parent
+        return self.get_parent_class(namespace[:-1])
 
 
 def get_decl(context, namespace, decl_name: str, limit=None):

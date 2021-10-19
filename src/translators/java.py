@@ -1056,9 +1056,32 @@ class JavaTranslator(BaseTranslator):
         self.ident = old_ident
 
         children_res = self.pop_children_res(children)
-        # TODO handle lambdas
-        receiver = children_res[0] if children_res else "Main"
-        receiver += "::"
+
+        # Set receiver
+        if children_res:
+            receiver = children_res[0]
+        else:
+            # Global function
+            receiver = "Main"
+            # Use `this` if its a method within current class
+            parent_cls = self.context.get_parent_class(self._namespace)
+            if parent_cls:
+                class_decls = self.context.get_classes(
+                    ('global',), glob=True).values()
+                parent_methods = parent_cls.get_callable_functions(class_decls)
+                if node.func in {m.name for m in parent_methods}:
+                    receiver = "this"
+            # Do not use a receiver if its a variable (lambda case)
+            variable_decl = get_decl(self.context, self._namespace, node.func)
+            if variable_decl:
+                namespace = variable_decl[0]
+                if namespace == ('global',):
+                    receiver = "Main"
+                else:
+                    receiver = ""
+
+        receiver += "::" if receiver != "" else ""
+
         res = "{ident}{receiver}{name}{semicolon}".format(
             ident=self.get_ident(),
             receiver=receiver,
