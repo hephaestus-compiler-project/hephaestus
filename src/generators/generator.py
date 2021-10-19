@@ -278,7 +278,9 @@ class Generator():
                        fret_type: tp.Type=None,
                        not_void: bool=False,
                        type_params: List[tp.TypeParameter]=None,
-                       class_name: str=None) -> ast.ClassDeclaration:
+                       class_name: str=None,
+                       signature: tp.ParameterizedType=None
+                       ) -> ast.ClassDeclaration:
         """Generate a class declaration.
 
         It generates all type of classes (regular, abstract, interface),
@@ -290,6 +292,7 @@ class Generator():
             not_void: Do not generate functions that return void.
             type_params: List with type parameters.
             class_name: Class name.
+            signature: Generate at least one function with the given signature.
 
         Returns:
             A class declaration node.
@@ -319,7 +322,7 @@ class Generator():
             else []
         )
         funcs = self.gen_class_functions(cls, super_cls_info,
-                                         not_void, fret_type)
+                                         not_void, fret_type, signature)
         self.namespace = initial_namespace
         self.depth = initial_depth
         cls.fields = fields
@@ -435,7 +438,9 @@ class Generator():
     def gen_class_functions(self,
                             curr_cls, super_cls_info,
                             not_void=False,
-                            fret_type=None) -> List[ast.FunctionDeclaration]:
+                            fret_type=None,
+                            signature: tp.ParameterizedType=None
+                            ) -> List[ast.FunctionDeclaration]:
         """Generate methods for a class.
 
         If the method has a superclass, then it will try to implement any
@@ -447,14 +452,24 @@ class Generator():
             super_cls_info: SuperClassInstantiation for curr_cls
             not_void: Do not create methods that return void.
             fret_type: At least one method will return this type.
+            signature: Generate at least one function with the given signature.
         """
         funcs = []
         max_funcs = self.cfg.limits.cls.max_funcs - 1 if fret_type \
             else self.cfg.limits.cls.max_funcs
+        max_funcs = max_funcs - 1 if signature else max_funcs
         abstract = not curr_cls.is_regular()
         if fret_type:
             self._add_func_to_class(
                 self.gen_func_decl(fret_type, not_void=not_void,
+                                   class_is_final=curr_cls.is_final,
+                                   abstract=abstract,
+                                   is_interface=curr_cls.is_interface()),
+                funcs)
+        if signature:
+            ret_type, params = self._gen_ret_and_paramas_from_sig(signature)
+            self._add_func_to_class(
+                self.gen_func_decl(ret_type, params=params, not_void=not_void,
                                    class_is_final=curr_cls.is_final,
                                    abstract=abstract,
                                    is_interface=curr_cls.is_interface()),
@@ -1370,7 +1385,7 @@ class Generator():
             only_leaves: do not generate new leaves except from `expr`.
             subtype: The returned type could be a subtype of `etype`.
         """
-        funcs = self._get_function_declarations(etype, subtype)
+        funcs = self._get_matching_function_declarations(etype, subtype)
         if not funcs:
             type_fun = self._get_matching_class(etype, subtype, 'functions')
             if type_fun is None:
@@ -1430,92 +1445,6 @@ class Generator():
                                 type_args=type_args)
 
     # Where
-
-    # TODO use AttrAccessInfo
-    def _get_function_declarations(self, etype: tp.Type, subtype: bool) -> \
-            List[gu.AttrReceiverInfo]:
-        """Get all available function declarations.
-
-        This function searches functions in the current scope that return
-        `etype`, and then it also searches for receivers whose class has a
-        function that return `etype`.
-
-        Args:
-            etype: the return type for the function to find
-                return that type.
-            subtype: The return type of the function could be a subtype of
-                `etype`.
-        """
-        functions = []
-        # First find all top-level functions or methods included
-        # in the current class.
-        for func in self.context.get_funcs(self.namespace).values():
-            cond = (
-                func.get_type() != self.bt_factory.get_void_type() and
-                func.get_type().is_assignable(etype)
-                if subtype else func.get_type() == etype
-            )
-            # The receiver object for this kind of functions is None.
-            if not cond:
-                continue
-
-            if func.is_parameterized() and func.is_class_method():
-                # TODO: Consider being less conservative.
-                # The problem is when the class method is parameterized,
-                # the receiver is parameterized, and the type parameters
-                # of functions have bounds corresponding to the type parameters
-                # of class.
-                continue
-
-            type_var_map = {}
-            if func.is_parameterized():
-                type_var_map = tu.instantiate_parameterized_function(
-                    func.type_parameters, self.get_types(),
-                    only_regular=True)
-
-            # Nice to have:  add `this` explicitly as the receiver in methods
-            # of current class.
-            functions.append(gu.AttrReceiverInfo(None, {}, func, type_var_map))
-        return functions + self._get_matching_objects(etype, subtype,
-                                                      'functions')
-
-    # And
-
-    def _gen_matching_func(self,
-                           etype: tp.Type,
-                           not_void=False) -> gu.AttrAccessInfo:
-        """ Generate a function or a class containing a function whose return
-        type is 'etype'.
-
-        Args:
-            etype: the targeted return type.
-            not_void: do not create functions that return void.
-        """
-        # Randomly choose to generate a function or a class method.
-        if ut.random.bool():
-            initial_namespace = self.namespace
-            # If the given type 'etype' is a type parameter, then the
-            # function we want to generate should be in the current namespace,
-            # so that the type parameter is accessible.
-            self.namespace = (
-                self.namespace
-                if ut.random.bool() or etype.has_type_variables()
-                else ast.GLOBAL_NAMESPACE
-            )
-            # Generate a function
-            func = self.gen_func_decl(etype, not_void=not_void)
-            self.context.add_func(self.namespace, func.name, func)
-            self.namespace = initial_namespace
-            func_type_var_map = {}
-            if func.is_parameterized():
-                func_type_var_map = tu.instantiate_parameterized_function(
-                    func.type_parameters, self.get_types(),
-                    only_regular=True, type_var_map={})
-            return gu.AttrAccessInfo(None, {}, func, func_type_var_map)
-        # Generate a class containing the requested function
-        return self._gen_matching_class(etype, 'functions')
-
-    # gen_func_call And
 
     def _gen_func_call_ref(self,
                            etype: tp.Type,
@@ -1735,11 +1664,7 @@ class Generator():
                 return ut.random.choice(func_refs)
 
         # Generate Lambda
-        prev_inside_java_lamdba = self._inside_java_lambda
-        self._inside_java_lambda = self.language == "java"
-        params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
-        self._inside_java_lambda = prev_inside_java_lamdba
-        ret_type = etype.type_args[-1]
+        ret_type, params = self._gen_ret_and_paramas_from_sig(etype, True)
         return self.gen_lambda(etype=ret_type, params=params)
 
     # Where
@@ -2194,6 +2119,79 @@ class Generator():
         """
         return list(self.context.get_types(self.namespace).keys())
 
+    def _get_func_ret_type(self,
+                           params: List[ast.ParameterDeclaration],
+                           etype: tp.Type,
+                           not_void=False) -> tp.Type:
+        """Get return type for a function or lambda.
+
+        Args:
+            params: function parameters.
+            etype: use this type as the return type
+            not_void: do not return void
+        """
+        if etype is not None:
+            return etype
+        param_types = [p.param_type for p in params
+                       if getattr(p.param_type,
+                                  'variance', None) != tp.Contravariant]
+        if param_types and ut.random.bool():
+            return ut.random.choice(param_types)
+        return self.select_type(exclude_contravariants=True)
+
+    def _get_class(self,
+                   etype: tp.Type
+                  ) -> Tuple[ast.ClassDeclaration, tu.TypeVarMap]:
+        """Find the class declaration for a given type.
+        """
+        # Get class declaration based on the given type.
+        class_decls = self.context.get_classes(self.namespace).values()
+        for c in class_decls:
+            cls_type = c.get_type()
+            t_con = getattr(etype, 't_constructor', None)
+            # or t == t_con: If etype is a parameterized type (i.e.,
+            # getattr(etype, 't_constructor', None) != None), we need to
+            # get the class corresponding to its type constructor.
+            if ((cls_type.is_assignable(etype) and cls_type.name == etype.name)
+                    or cls_type == t_con):
+                if c.is_parameterized():
+                    type_var_map = {
+                        t_param: etype.type_args[i]
+                        for i, t_param in enumerate(c.type_parameters)
+                    }
+                else:
+                    type_var_map = {}
+                return c, type_var_map
+        return None
+
+    def _get_var_type_to_search(self, var_type: tp.Type) -> tp.TypeParameter:
+        """Get the type that we want to search for.
+
+        We exclude:
+            * built-ins
+            * type variables/wildcards without bounds
+            * type variables/wildcards with bounds to a type variable
+
+        Args:
+            var_type: The type of the variable.
+
+        Returns:
+            var_type or None
+        """
+        # We are only interested in variables of class types.
+        if tu.is_builtin(var_type, self.bt_factory):
+            return None
+        if var_type.is_type_var() or var_type.is_wildcard():
+            args = [] if var_type.is_wildcard() else [self.bt_factory]
+            bound = var_type.get_bound_rec(*args)
+            if not bound or tu.is_builtin(bound, self.bt_factory) or (
+                  isinstance(bound, tp.TypeParameter)):
+                return None
+            var_type = bound
+        return var_type
+
+    # helper generators
+
     def _gen_func_params(self) -> List[ast.ParameterDeclaration]:
         """Generate parameters for a function or for a lambda.
         """
@@ -2235,26 +2233,6 @@ class Generator():
         # A vararg is actually a syntactic sugar for a parameter whose type
         # is an array of something.
         return param.get_type().name == 'Array'
-
-    def _get_func_ret_type(self,
-                           params: List[ast.ParameterDeclaration],
-                           etype: tp.Type,
-                           not_void=False) -> tp.Type:
-        """Get return type for a function or lambda.
-
-        Args:
-            params: function parameters.
-            etype: use this type as the return type
-            not_void: do not return void
-        """
-        if etype is not None:
-            return etype
-        param_types = [p.param_type for p in params
-                       if getattr(p.param_type,
-                                  'variance', None) != tp.Contravariant]
-        if param_types and ut.random.bool():
-            return ut.random.choice(param_types)
-        return self.select_type(exclude_contravariants=True)
 
     def _gen_func_body(self, ret_type: tp.Type):
         """Generate the body of a function or a lambda.
@@ -2304,10 +2282,31 @@ class Generator():
                  if not isinstance(d, ast.ParameterDeclaration)]
         return exprs, decls
 
+    def _gen_ret_and_paramas_from_sig(self, etype, inside_lambda=False) -> \
+            Tuple[tp.Type, ast.ParameterDeclaration]:
+        """Generate parameters from signature and return them along with return
+        type.
+
+        Args:
+            etype: signature type
+            inside_lambda: true if we want to generate parameters for a lambda
+        """
+        if inside_lambda:
+            prev_inside_java_lamdba = self._inside_java_lambda
+            self._inside_java_lambda = self.language == "java"
+        params = [self.gen_param_decl(et) for et in etype.type_args[:-1]]
+        if inside_lambda:
+            self._inside_java_lambda = prev_inside_java_lamdba
+        ret_type = etype.type_args[-1]
+        return ret_type, params
+
+    # Matching functions
+
     def _get_matching_objects(self,
                               etype: tp.Type,
                               subtype: bool,
                               attr_name: str,
+                              func_ref: bool = False,
                               signature: bool = False
                               ) -> List[gu.AttrReceiverInfo]:
         """Get objects that have an attribute of attr_name that is/return etype.
@@ -2322,10 +2321,24 @@ class Generator():
             subtype: The type of matching attribute could be a subtype of
                 `etype`.
             attr_name: 'fields' or 'functions'
+            func_ref: look for function reference variables
+            signature: etype is a signature.
 
         Returns:
             AttrReceiverInfo
         """
+
+        def check_type(attr_type, attr):
+            if not signature:
+                if subtype:
+                    attr_type.is_assignable(etype)
+                return attr_type == etype
+            param_types = [p.get_type() for p in attr.params]
+            sig = tp.ParameterizedType(
+                self.bt_factory.get_function_type(len(attr.params)),
+                param_types + [attr.get_type()])
+            return etype == sig
+
         decls = []
         variables = self.context.get_vars(self.namespace).values()
         if self._inside_java_lambda:
@@ -2341,6 +2354,8 @@ class Generator():
                           self.function_type):
                 continue
             cls, type_map_var = self._get_class(var_type)
+            # TODO for functions we should also consider
+            # get_callable_functions(class_decls.values())
             for attr in getattr(cls, attr_name):  # function or field
                 attr_type = tp.substitute_type(
                     attr.get_type(), type_map_var)
@@ -2348,17 +2363,12 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                if signature:
+                if func_ref:
                     if not getattr(attr_type, 'is_function_type', lambda: False)():
                         continue
                     attr_type = attr_type.type_args[-1]
 
-                cond = (
-                    attr_type.is_assignable(etype)
-                    if subtype
-                    else attr_type == etype
-                )
-                if not cond:
+                if not check_type(attr_type, attr):
                     continue
 
                 if attr_name == 'functions':
@@ -2403,10 +2413,114 @@ class Generator():
                         ast.Variable(var.name), type_map_var, attr, None))
         return decls
 
+    def _get_matching_function_declarations(self,
+                                            etype: tp.Type,
+                                            subtype: bool,
+                                            signature=False
+                                            ) -> List[gu.AttrReceiverInfo]:
+        """Get all available function declarations.
+
+        This function searches functions in the current scope that return
+        `etype`, and then it also searches for receivers whose class has a
+        function that return `etype` (a function with a specific signature
+        type).
+
+        Args:
+            etype: the return type for the function to find
+                return that type.
+            subtype: The return type of the function could be a subtype of
+                `etype`.
+            signature: etype is a signature.
+        """
+
+        def check_type(func):
+            if not signature:
+                if func.get_type() == self.bt_factory.get_void_type():
+                    return False
+                if subtype:
+                    return func.get_type().is_assignable(etype)
+                return func.get_type() == etype
+            param_types = [p.get_type() for p in func.params]
+            sig = tp.ParameterizedType(
+                self.bt_factory.get_function_type(len(func.params)),
+                param_types + [func.get_type()])
+            return etype == sig
+
+        functions = []
+        # First find all top-level functions or methods included
+        # in the current class.
+        for func in self.context.get_funcs(self.namespace).values():
+            # The receiver object for this kind of functions is None.
+            if not check_type(func):
+                continue
+
+            if func.is_parameterized() and func.is_class_method():
+                # TODO: Consider being less conservative.
+                # The problem is when the class method is parameterized,
+                # the receiver is parameterized, and the type parameters
+                # of functions have bounds corresponding to the type parameters
+                # of class.
+                continue
+
+            type_var_map = {}
+            if func.is_parameterized():
+                type_var_map = tu.instantiate_parameterized_function(
+                    func.type_parameters, self.get_types(),
+                    only_regular=True)
+
+            # Nice to have:  add `this` explicitly as the receiver in methods
+            # of current class.
+            functions.append(gu.AttrReceiverInfo(None, {}, func, type_var_map))
+        return functions + self._get_matching_objects(etype, subtype,
+                                                      'functions',
+                                                      signature=signature)
+
+    def _gen_matching_func(self,
+                           etype: tp.Type,
+                           not_void=False,
+                           signature=False
+                           ) -> gu.AttrAccessInfo:
+        """ Generate a function or a class containing a function whose return
+        type is 'etype'.
+
+        Args:
+            etype: the targeted return type.
+            not_void: do not create functions that return void.
+            signature: etype is a signature.
+        """
+        # Randomly choose to generate a function or a class method.
+        if ut.random.bool():
+            initial_namespace = self.namespace
+            # If the given type 'etype' is a type parameter, then the
+            # function we want to generate should be in the current namespace,
+            # so that the type parameter is accessible.
+            self.namespace = (
+                self.namespace
+                if ut.random.bool() or etype.has_type_variables()
+                else ast.GLOBAL_NAMESPACE
+            )
+            # Generate a function
+            params = None
+            if signature:
+                etype, params = self._gen_ret_and_paramas_from_sig(etype)
+            func = self.gen_func_decl(etype, params=params, not_void=not_void)
+            self.context.add_func(self.namespace, func.name, func)
+            self.namespace = initial_namespace
+            func_type_var_map = {}
+            if func.is_parameterized():
+                func_type_var_map = tu.instantiate_parameterized_function(
+                    func.type_parameters, self.get_types(),
+                    only_regular=True, type_var_map={})
+            return gu.AttrAccessInfo(None, {}, func, func_type_var_map)
+        # Generate a class containing the requested function
+        return self._gen_matching_class(etype, 'functions', signature=signature)
+
+
     def _get_matching_class(self,
                             etype:tp.Type,
                             subtype: bool,
-                            attr_name: str) -> gu.AttrAccessInfo:
+                            attr_name: str,
+                            signature=False) -> gu.AttrAccessInfo:
         """Get a class that has an attribute of attr_name that is/return etype.
 
         This function essentially searches for a class that has either a field
@@ -2418,12 +2532,14 @@ class Generator():
             subtype: The type of matching attribute could be a subtype of
                 `etype`.
             attr_name: 'fields' or 'functions'
+            signature: etype is a signature.
 
         Returns:
             An AttrAccessInfo with a matched class type and attribute
             declaration (field or function).
         """
-        class_decls = self._get_matching_class_decls(etype, subtype, attr_name)
+        class_decls = self._get_matching_class_decls(
+            etype, subtype, attr_name, signature)
         if not class_decls:
             return None
         cls, type_var_map, attr = ut.random.choice(class_decls)
@@ -2488,7 +2604,8 @@ class Generator():
     def _get_matching_class_decls(self,
                                   etype: tp.Type,
                                   subtype: bool,
-                                  attr_name: str
+                                  attr_name: str,
+                                  signature=False
                                  ) -> List[Tuple[ast.ClassDeclaration,
                                                  tu.TypeVarMap,
                                                  ast.Declaration]]:
@@ -2500,12 +2617,25 @@ class Generator():
             subtype: The type of matching attribute could be a subtype of
                 `etype`.
             attr_name: 'fields' or 'functions'
+            signature: etype is a signature.
 
         Returns:
             A list of tuples that include class declarations, TypeVarMaps for
             the attributes and the declarations of the attributes (fields or
             functions).
         """
+
+        def check_type(attr_type, attr):
+            if not signature:
+                if subtype:
+                    attr_type.is_assignable(etype)
+                return attr_type == etype
+            param_types = [p.get_type() for p in attr.params]
+            sig = tp.ParameterizedType(
+                self.bt_factory.get_function_type(len(attr.params)),
+                param_types + [attr.get_type()])
+            return etype == sig
+
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
@@ -2514,12 +2644,8 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                cond = (
-                    attr_type.is_assignable(etype)
-                    if subtype else
-                    attr_type == etype
-                )
                 type_var_map = None
+                cond = check_type(attr_type, attr)
                 # if the type of the attribute has type variables,
                 # then we have to unify it with the expected type so that
                 # we can instantiate the corresponding type constructor
@@ -2537,7 +2663,8 @@ class Generator():
     def _gen_matching_class(self,
                             etype: tp.Type,
                             attr_name: str,
-                            not_void=False) -> gu.AttrAccessInfo:
+                            not_void=False,
+                            signature=False) -> gu.AttrAccessInfo:
         """Generate a class that has an attribute of attr_name that is/return etype.
 
         Args:
@@ -2545,14 +2672,29 @@ class Generator():
                 return that type.
             attr_name: 'fields' or 'functions'
             not_void: Functions of the class should not return void.
+            signature: etype is a signature.
 
         Returns:
             An AttrAccessInfo for the generated class type and attribute
             declaration (field or function).
         """
+
+        def check_type(attr_type, attr, params_map):
+            # NOTE @theosotr probably we have to compare use etype2
+            if not signature:
+                return attr_type == etype
+            param_types = [tp.substitute_type(p.get_type(), params_map)
+                           for p in attr.params]
+            sig = tp.ParameterizedType(
+                self.bt_factory.get_function_type(len(attr.params)),
+                param_types + [tp.substitute_type(attr.get_type(), params_map)])
+            return etype == sig
+
         initial_namespace = self.namespace
         class_name = gu.gen_identifier('capitalize')
         type_params = None
+
+        # Get return type, type_var_map, and flag for wildcards
         if etype.has_type_variables():
             # We have to create a class that has an attribute whose type
             # is a type parameter. The only way to achieve this is to create
@@ -2564,16 +2706,23 @@ class Generator():
             etype2 = tp.substitute_type(etype, type_var_map)
         else:
             type_var_map, etype2, can_wildcard = {}, etype, False
+
         self.namespace = ast.GLOBAL_NAMESPACE
+
+        # Create class
         if attr_name == 'functions':
-            kwargs = {'fret_type': etype2}
+            kwargs = {'fret_type': etype2} if not signature \
+                else {'signature': etype2}
         else:
             kwargs = {'field_type': etype2}
         cls = self.gen_class_decl(**kwargs, not_void=not_void,
                                   type_params=type_params,
                                   class_name=class_name)
         self.context.add_class(self.namespace, cls.name, cls)
+
         self.namespace = initial_namespace
+
+        # Get receiver
         if cls.is_parameterized():
             type_map = {v: k for k, v in type_var_map.items()}
             if etype2.is_primitive() and (
@@ -2594,9 +2743,11 @@ class Generator():
             )
         else:
             cls_type, params_map = cls.get_type(), {}
+
+        # Generate func_type_var_map
         for attr in getattr(cls, attr_name):
             attr_type = tp.substitute_type(attr.get_type(), params_map)
-            if attr_type != etype:
+            if not check_type(attr_type, attr, params_map):
                 continue
 
             func_type_var_map = {}
@@ -2662,54 +2813,3 @@ class Generator():
             type_param.variance = tp.Invariant
             type_var_map[type_var] = type_param
         return type_params, type_var_map, can_wildcard
-
-    def _get_class(self,
-                   etype: tp.Type
-                  ) -> Tuple[ast.ClassDeclaration, tu.TypeVarMap]:
-        """Find the class declaration for a given type.
-        """
-        # Get class declaration based on the given type.
-        class_decls = self.context.get_classes(self.namespace).values()
-        for c in class_decls:
-            cls_type = c.get_type()
-            t_con = getattr(etype, 't_constructor', None)
-            # or t == t_con: If etype is a parameterized type (i.e.,
-            # getattr(etype, 't_constructor', None) != None), we need to
-            # get the class corresponding to its type constructor.
-            if ((cls_type.is_assignable(etype) and cls_type.name == etype.name)
-                    or cls_type == t_con):
-                if c.is_parameterized():
-                    type_var_map = {
-                        t_param: etype.type_args[i]
-                        for i, t_param in enumerate(c.type_parameters)
-                    }
-                else:
-                    type_var_map = {}
-                return c, type_var_map
-        return None
-
-    def _get_var_type_to_search(self, var_type: tp.Type) -> tp.TypeParameter:
-        """Get the type that we want to search for.
-
-        We exclude:
-            * built-ins
-            * type variables/wildcards without bounds
-            * type variables/wildcards with bounds to a type variable
-
-        Args:
-            var_type: The type of the variable.
-
-        Returns:
-            var_type or None
-        """
-        # We are only interested in variables of class types.
-        if tu.is_builtin(var_type, self.bt_factory):
-            return None
-        if var_type.is_type_var() or var_type.is_wildcard():
-            args = [] if var_type.is_wildcard() else [self.bt_factory]
-            bound = var_type.get_bound_rec(*args)
-            if not bound or tu.is_builtin(bound, self.bt_factory) or (
-                  isinstance(bound, tp.TypeParameter)):
-                return None
-            var_type = bound
-        return var_type
