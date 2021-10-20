@@ -3,8 +3,8 @@
 # or we can use: https://adoptopenjdk.gitbooks.io/adoptopenjdk-getting-started-kit/content/en/advanced-steps/openjdk_code_coverage.html
 MAC_BUILD=macosx-x86_64-server-release
 LINUX_BUILD=linux-x86_64-server-release
-JAVA_BUILD=$MAC_BUILD
-JAVA_17=$HOME/.sdkman/candidates/java/17.ea.27-open/bin/java
+JAVA_BUILD=$LINUX_BUILD
+JAVA_17=$HOME/.sdkman/candidates/java/17-open/bin/java
 JAVA_SRC=$HOME/coverage/jdk
 JACOCO=$HOME/coverage/jacoco
 JAVAC_TEST=$(find $JAVA_SRC/test/langtools/tools/javac -type f -name "*.java")
