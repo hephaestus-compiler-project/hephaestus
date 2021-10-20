@@ -898,11 +898,11 @@ class Variable(Expr):
 
 class Conditional(Expr):
     def __init__(self, cond: Expr, true_branch: Block, false_branch: Block,
-                 t: types.Type):
+                 inferred_type: types.Type):
         self.cond = cond
         self.true_branch = true_branch
         self.false_branch = false_branch
-        self.t = t
+        self.inferred_type = inferred_type
 
     def children(self):
         return [self.cond, self.true_branch, self.false_branch]
@@ -917,7 +917,7 @@ class Conditional(Expr):
         return self.true_branch.is_bottom() and self.false_branch.is_bottom()
 
     def get_type(self):
-        return self.t
+        return self.inferred_type
 
     def __str__(self):
         return "if ({})\n  {}\nelse\n  {}".format(
@@ -928,7 +928,7 @@ class Conditional(Expr):
             return (self.cond.is_equal(other.cond) and
                     self.true_branch.is_equal(other.true_branch) and
                     self.false_branch.is_equal(other.false_branch) and
-                    self.t == other.t)
+                    self.inferred_type == other.inferred_type)
         return False
 
 
