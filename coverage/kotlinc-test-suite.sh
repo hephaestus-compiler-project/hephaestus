@@ -34,7 +34,7 @@ for program in $KOTLINC_TEST; do
     run_kotlinc $counter $program
 done
 cd $TEST_SUITE_RES
-$JAVA_8 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
+$JAVA_8 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco-kt.exec
 $JAVA_8 \
     -jar $JACOCO/lib/jacococli.jar report jacoco-kt.exec \
     --classfiles $KOTLIN_JAR \
