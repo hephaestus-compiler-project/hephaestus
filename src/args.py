@@ -3,6 +3,7 @@ import os
 import sys
 from src.utils import random, mkdir
 from src.modules.processor import ProgramProcessor
+from src.generators.config import cfg
 
 
 cwd = os.getcwd()
@@ -249,3 +250,8 @@ args.options = {
 
 if args.language == "groovy":
     args.options["TypeSubstitution"]["disable_inverted_smart_cast"] = True
+
+# Set configurations
+
+cfg.dis.use_site_variance = args.disable_use_site_variance
+cfg.dis.use_site_contravariance = args.disable_contravariance_use_site

@@ -471,17 +471,18 @@ def _get_available_types(type_constructor,
 
 
 def _get_type_arg_variance(t_param, variance_choices):
-    from src.args import args
+    # import it here to prevent circular dependency
+    from src.generators.config import cfg
     if variance_choices is None:
         return tp.Invariant
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
-    if args.disable_use_site_variance:
+    if cfg.dis.use_site_variance:
         can_variant, can_contravariant = False, False
     covariance = [tp.Covariant] if can_variant else []
     contravariance = (
         [tp.Contravariant]
-        if can_contravariant and not args.disable_contravariance_use_site
+        if can_contravariant and not cfg.dis.use_site_contravariance
         else []
     )
     if t_param.is_invariant():

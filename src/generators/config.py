@@ -5,7 +5,13 @@ generation policies.
 import json
 from dataclasses import dataclass
 
-from src.utils import Singleton
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 def process_arg(config, name, value):
@@ -55,6 +61,14 @@ class Probabilities:
     sam_coercion: float # perform sam coercion whenever possible
 
 
+# Features that we want to either disable or enable
+# If something is set to True then it means it is disabled.
+@dataclass
+class Disabled:
+    use_site_variance: bool
+    use_site_contravariance: bool
+
+
 class GenConfig(metaclass=Singleton):
     def __init__(self):
         self.limits = GenLimits(
@@ -79,6 +93,10 @@ class GenConfig(metaclass=Singleton):
                 func_ref_call=1.0,
                 func_ref=0.5,
                 sam_coercion=1.0,
+        )
+        self.dis=Disabled(
+            use_site_variance=False,
+            use_site_contravariance=False
         )
 
     def json_config(self, kwargs):
