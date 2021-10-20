@@ -1096,6 +1096,11 @@ def is_sam(context, etype=None, cls_decl=None):
                 len(abstract_funcs) != 1 or
                 (abstract_funcs and
                  any(p.default for p in next(iter(abstract_funcs)).params)) or
+                 # We can't use a lambda expression for a functional interface,
+                 # if the method in the functional interface has type parameters
+                 # https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.27.3
+                 # TODO: check if this is the case for Kotlin.
+                 next(iter(abstract_funcs)).is_parameterized() or
                 not all(is_sam(context, etype=s) for s in cls_decl.supertypes)):
             return False
         return True
