@@ -5,6 +5,8 @@ generation policies.
 import json
 from dataclasses import dataclass
 
+from src.utils import Singleton
+
 
 def process_arg(config, name, value):
     assert hasattr(config, name), \
@@ -53,13 +55,8 @@ class Probabilities:
     sam_coercion: float # perform sam coercion whenever possible
 
 
-class GenConfig:
-    def __init__(self, kwargs={}):
-        self._set_default()
-        for key, value in kwargs.items():
-            process_arg(self, key, value)
-
-    def _set_default(self):
+class GenConfig(metaclass=Singleton):
+    def __init__(self):
         self.limits = GenLimits(
             cls=ClassLimits(
                 max_fields=2,
@@ -84,13 +81,19 @@ class GenConfig:
                 sam_coercion=1.0,
         )
 
+    def json_config(self, kwargs):
+        for key, value in kwargs.items():
+            process_arg(self, key, value)
+
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
 
 
+cfg = GenConfig()
+
+
 def main():
-    gen_config = GenConfig()
-    __import__('pprint').pprint(gen_config.to_json())
+    __import__('pprint').pprint(cfg.to_json())
 
 
 if __name__ == "__main__":

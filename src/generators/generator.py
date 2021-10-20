@@ -28,7 +28,7 @@ from typing import Tuple, List, Callable
 from src import utils as ut
 from src.generators import generators as gens
 from src.generators import utils as gu
-from src.generators.config import GenConfig
+from src.generators.config import cfg
 from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
@@ -48,7 +48,6 @@ class Generator():
         self.logger: Logger = logger
         self.context: Context = context or Context()
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
-        self.cfg = GenConfig()
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
@@ -62,7 +61,7 @@ class Generator():
 
         self.function_type = type(self.bt_factory.get_function_type())
         self.function_types = self.bt_factory.get_function_types(
-            self.cfg.limits.max_functional_params)
+            cfg.limits.max_functional_params)
 
         self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
@@ -84,8 +83,8 @@ class Generator():
         It first generates a number `n` top-level declarations,
         and then it generates the main function.
         """
-        for _ in ut.random.range(self.cfg.limits.min_top_level,
-                                 self.cfg.limits.max_top_level):
+        for _ in ut.random.range(cfg.limits.min_top_level,
+                                 cfg.limits.max_top_level):
             self.gen_top_level_declaration()
         main_func = self.generate_main_func()
         self.namespace = ('global',)
@@ -276,7 +275,7 @@ class Generator():
         """
         has_default = False
         params = []
-        for _ in range(ut.random.integer(0, self.cfg.limits.fn.max_params)):
+        for _ in range(ut.random.integer(0, cfg.limits.fn.max_params)):
             param = self.gen_param_decl()
             if not has_default:
                 has_default = ut.random.bool()
@@ -428,8 +427,8 @@ class Generator():
         Returns:
             A list of field declarations
         """
-        max_fields = self.cfg.limits.cls.max_fields - 1 if field_type \
-            else self.cfg.limits.cls.max_fields
+        max_fields = cfg.limits.cls.max_fields - 1 if field_type \
+            else cfg.limits.cls.max_fields
         fields = []
         if field_type:
             self._add_field_to_class(
@@ -492,8 +491,8 @@ class Generator():
             signature: Generate at least one function with the given signature.
         """
         funcs = []
-        max_funcs = self.cfg.limits.cls.max_funcs - 1 if fret_type \
-            else self.cfg.limits.cls.max_funcs
+        max_funcs = cfg.limits.cls.max_funcs - 1 if fret_type \
+            else cfg.limits.cls.max_funcs
         max_funcs = max_funcs - 1 if signature else max_funcs
         abstract = not curr_cls.is_regular()
         if fret_type:
@@ -793,7 +792,7 @@ class Generator():
         gen_var = (
             not only_leaves and
             expr_type != self.bt_factory.get_void_type() and
-            self._vars_in_context[self.namespace] < self.cfg.limits.max_var_decls and
+            self._vars_in_context[self.namespace] < cfg.limits.max_var_decls and
             ut.random.bool()
         )
         if gen_var:
@@ -1376,7 +1375,7 @@ class Generator():
         Returns:
             A function call.
         """
-        if ut.random.bool(self.cfg.prob.func_ref_call):
+        if ut.random.bool(cfg.prob.func_ref_call):
             ref_call = self._gen_func_call_ref(etype, only_leaves, subtype)
             if ref_call:
                 return ref_call
@@ -1543,7 +1542,7 @@ class Generator():
 
         # Apply SAM coercion
         if (sam_coercion and tu.is_sam(self.context, etype)
-                and ut.random.bool(self.cfg.prob.sam_coercion)):
+                and ut.random.bool(cfg.prob.sam_coercion)):
             type_var_map = tu.get_type_var_map_from_ptype(etype)
             sam_sig_etype = tu.find_sam_fun_signature(
                     self.context,
@@ -1666,7 +1665,7 @@ class Generator():
         Returns:
             ast.Lambda or ast.FunctionReference
         """
-        if ut.random.bool(self.cfg.prob.func_ref):
+        if ut.random.bool(cfg.prob.func_ref):
             func_refs = self._get_func_refs(etype)
             if len(func_refs) > 0:
                 return ut.random.choice(func_refs)
@@ -1694,6 +1693,7 @@ class Generator():
             etype: signature for function reference
         """
         refs = []
+        return refs
 
         # Get variables without receivers
         variables = list(self.context.get_vars(self.namespace).values())
@@ -1823,13 +1823,13 @@ class Generator():
             return [gen_fun_call,
                     lambda x: self.gen_assignment(x, only_leaves)]
 
-        if self.depth >= self.cfg.limits.max_depth or only_leaves:
+        if self.depth >= cfg.limits.max_depth or only_leaves:
             gen_con = constant_candidates.get(expr_type.name)
             if gen_con is not None:
                 return [gen_con]
             gen_var = (
                 self._vars_in_context.get(
-                    self.namespace, 0) < self.cfg.limits.max_var_decls and not
+                    self.namespace, 0) < cfg.limits.max_var_decls and not
                 only_leaves and not exclude_var)
             if gen_var:
                 # Decide if we can generate a variable.
@@ -1961,7 +1961,7 @@ class Generator():
         type_params = []
         type_param_names = blacklist or []
         variances = [tp.Invariant, tp.Covariant, tp.Contravariant]
-        for _ in range(ut.random.integer(count or 1, self.cfg.limits.max_type_params)):
+        for _ in range(ut.random.integer(count or 1, cfg.limits.max_type_params)):
             name = ut.random.caps(blacklist=type_param_names)
             type_param_names.append(name)
             if for_function:
@@ -1973,7 +1973,7 @@ class Generator():
             if with_variance and ut.random.bool():
                 variance = ut.random.choice(variances)
             bound = None
-            if ut.random.bool(self.cfg.prob.bounded_type_parameters):
+            if ut.random.bool(cfg.prob.bounded_type_parameters):
                 exclude_covariants = variance == tp.Contravariant or for_function
                 exclude_contravariants = True
                 bound = self.select_type(
@@ -2077,7 +2077,7 @@ class Generator():
         arr_index = None
         vararg_found = False
         vararg = None
-        for i in range(ut.random.integer(0, self.cfg.limits.fn.max_params)):
+        for i in range(ut.random.integer(0, cfg.limits.fn.max_params)):
             param = self.gen_param_decl()
             # If the type of the parameter is an array consider make it
             # a vararg.
@@ -2134,7 +2134,7 @@ class Generator():
         if (not var_decls and ret_type != self.bt_factory.get_void_type()):
             # The function does not contain any declarations and its return
             # type is not Unit. So, we can create an expression-based function.
-            body = expr if ut.random.bool(self.cfg.prob.function_expr) else \
+            body = expr if ut.random.bool(cfg.prob.function_expr) else \
                 ast.Block([expr])
         else:
             exprs, decls = self._gen_side_effects()
@@ -2149,7 +2149,7 @@ class Generator():
         Example side-effects: assignment, variable declaration, etc.
         """
         exprs = []
-        for _ in range(ut.random.integer(0, self.cfg.limits.fn.max_side_effects)):
+        for _ in range(ut.random.integer(0, cfg.limits.fn.max_side_effects)):
             expr = self.generate_expr(self.bt_factory.get_void_type())
             if expr:
                 exprs.append(expr)
