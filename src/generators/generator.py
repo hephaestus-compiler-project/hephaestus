@@ -1666,9 +1666,9 @@ class Generator():
             ast.Lambda or ast.FunctionReference
         """
         if ut.random.bool(cfg.prob.func_ref):
-            func_refs = self._get_func_refs(etype)
-            if len(func_refs) > 0:
-                return ut.random.choice(func_refs)
+            func_ref = self._gen_func_ref(etype)
+            if func_ref:
+                return func_ref
 
         # Generate Lambda
         ret_type, params = self._gen_ret_and_paramas_from_sig(etype, True)
@@ -1676,48 +1676,20 @@ class Generator():
 
     # Where
 
-    def _get_func_refs(self, etype: tp.Type) -> List[ast.FunctionReference]:
-        """Get a list with all function references that can assigned to etype.
+    def _gen_func_ref(self, etype: tp.Type) -> List[ast.FunctionReference]:
+        """Generate a function reference.
 
-        Currently, we cannot handle parameterized types that include type
-        parameters as type arguments.
-        To compute this list we perform the following steps:
-
-        1. We detect all declared functions and we create, if possible,
-            function references to those that can be assigned to etype.
-        2. We search for variables have been assigned values of etype.
-        3. We find variables declared in the current scope that can be used
-            as receivers of a function reference that can be assigned to etype.
+        1. Functions in current scope and global scope, or methods that have
+            a receiver in current scope.
+        2. Create receiver for a function reference.
+        3. Create a new function.
 
         Args:
             etype: signature for function reference
         """
-        refs = []
-        return refs
-
-        # Get variables without receivers
-        variables = list(self.context.get_vars(self.namespace).values())
-        if self._inside_java_lambda:
-            variables = list(filter(
-                lambda v: (getattr(v, 'is_final', False) or (
-                    v not in self.context.get_vars(self.namespace[:-1]).values())),
-                variables))
-        variables += list(self.context.get_vars(
-            ('global',), only_current=True).values())
-        for var_decl in variables:
-            var_type = var_decl.get_type()
-            var = ast.Variable(var_decl.name)
-            if var_type == etype:
-                refs.append(var)
-
-        # Get variables with receivers
-        objs = self._get_matching_objects(
-                etype, False, 'fields', func_ref=True, signature=True)
-        for obj in objs:
-            refs.append(ast.FieldAccess(obj.receiver_expr, obj.attr_decl.name))
-
         # Get function references from functions in the current scope or
         # methods that have a receiver in the current scope.
+        refs = []
         funcs = self._get_matching_function_declarations(
             etype, False, signature=True)
         for func in funcs:
@@ -1725,10 +1697,12 @@ class Generator():
                 func.attr_decl.name, func.receiver_expr))
 
         if refs:
-            return refs
+            return ut.random.choice(refs)
 
+        ref = None
         # NOTE a maximum recursion error may occur.
         # Get function references from methods of classes.
+        # ie create receiver
         type_fun = self._get_matching_class(
             etype, False, 'functions', signature=True)
 
@@ -1743,9 +1717,9 @@ class Generator():
                 else self.generate_expr(type_fun.receiver_t)
             )
 
-            refs = [ast.FunctionReference(type_fun.attr_decl.name, receiver)]
+            ref = ast.FunctionReference(type_fun.attr_decl.name, receiver)
 
-        return refs
+        return ref
 
     ### Standard API of Generator ###
 
@@ -2067,6 +2041,40 @@ class Generator():
                 return None
             var_type = bound
         return var_type
+
+    def _get_vars_of_function_types(self, etype: tp.Type):
+        """Get a variable or a field access whose type is a function type.
+
+        Args:
+            etype: function signature
+
+        Returns:
+            ast.Variable or ast.FieldAccess
+        """
+        refs = []
+
+        # Get variables without receivers
+        variables = list(self.context.get_vars(self.namespace).values())
+        if self._inside_java_lambda:
+            variables = list(filter(
+                lambda v: (getattr(v, 'is_final', False) or (
+                    v not in self.context.get_vars(self.namespace[:-1]).values())),
+                variables))
+        variables += list(self.context.get_vars(
+            ('global',), only_current=True).values())
+        for var_decl in variables:
+            var_type = var_decl.get_type()
+            var = ast.Variable(var_decl.name)
+            if var_type == etype:
+                refs.append(var)
+
+        # field accesses
+        objs = self._get_matching_objects(
+                etype, False, 'fields', func_ref=True, signature=True)
+        for obj in objs:
+            refs.append(ast.FieldAccess(obj.receiver_expr, obj.attr_decl.name))
+
+        return refs
 
     # helper generators
 
