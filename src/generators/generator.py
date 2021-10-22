@@ -2371,7 +2371,7 @@ class Generator():
             if not check_type(func):
                 continue
 
-            if is_nested_function and func.name == self.namespace[-1]:
+            if is_nested_function and func.name in self.namespace:
                 # Here, we disallow recursive calls because it may lead to
                 # recursive call on lambda expressions.
 
