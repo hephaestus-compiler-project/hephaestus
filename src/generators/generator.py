@@ -74,6 +74,7 @@ class Generator():
         # Almost always declaration_namespace is set to None to be ignored
         self.declaration_namespace = None
         self.int_stream = iter(range(1, 10000))
+        self._in_super_call = False
 
     ### Entry Point Generators ###
 
@@ -397,10 +398,12 @@ class Generator():
         else:
             cls_type, type_var_map = class_decl.get_type(), {}
         con_args = None if class_decl.is_interface() else []
+        self._in_super_call = True
         for f in class_decl.fields:
             field_type = tp.substitute_type(f.get_type(), type_var_map)
             con_args.append(self.generate_expr(field_type,
                                                only_leaves=True))
+        self._in_super_call = False
         return gu.SuperClassInfo(
             class_decl,
             type_var_map,
@@ -1675,7 +1678,8 @@ class Generator():
         Returns:
             ast.Lambda or ast.FunctionReference
         """
-        if ut.random.bool(cfg.prob.func_ref):
+        # We are unable to produce function references in super calls.
+        if ut.random.bool(cfg.prob.func_ref) and not self._in_super_call:
             func_ref = self._gen_func_ref(etype, only_leaves=only_leaves)
             if func_ref:
                 return func_ref
