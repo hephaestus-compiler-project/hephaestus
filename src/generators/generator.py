@@ -1625,10 +1625,13 @@ class Generator():
         self._new_from_class = None
         for field in class_decl.fields:
             expr_type = tp.substitute_type(field.get_type(), type_param_map)
-            # FIXME We set subtype=False to prevent infinite object
-            # initialization.
+            # Generate a bottom value, if we are in this case:
+            # class A(val x: A)
+            # Generating a bottom constants prevents us from infinite loops.
+            gen_bottom = expr_type.name == etype.name
             args.append(self.generate_expr(expr_type, only_leaves,
                                            subtype=False,
+                                           gen_bottom=gen_bottom,
                                            sam_coercion=True))
         self._new_from_class = prev
         self.depth = initial_depth
