@@ -18,11 +18,14 @@ run_kotlinc () {
     first=$1
     last=$2
     program=program.kt
-    target=$(eval echo "iter_{$first..$last}/program.kt")
-    for t in $target; do
+    #target=$(eval echo "iter_{$first..$last}/program.kt")
+    #for t in $target; do
+        #echo $t
+    for iter in $(seq $first 1 $last); do
+        t=iter_$iter/program.kt
         echo $t
         $JAVA_8 \
-            -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$RES/jacoco-$first.exec \
+            -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$RES/jacoco-$iter.exec \
             -cp $KOTLIN_JAR \
             org.jetbrains.kotlin.cli.jvm.K2JVMCompiler $t
     done

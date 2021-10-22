@@ -19,8 +19,11 @@ cd ..
 run_javac () {
     first=$1
     last=$2
-    target=$(eval echo "iter_{$first..$last}/Main.java")
-    for t in $target; do
+    #target=$(eval echo "iter_{$first..$last}/Main.java")
+    #for t in $target; do
+        #echo $t
+    for iter in $(seq $first 1 $last); do
+        t=iter_$iter/Main.java
         echo $t
         $JAVA_17 -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$RES/jacoco-$iter.exec \
             -XX:+UseSerialGC -Xms32M -Xmx512M -XX:TieredStopAtLevel=1 \
