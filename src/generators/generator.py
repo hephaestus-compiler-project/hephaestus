@@ -2359,6 +2359,11 @@ class Generator():
             return etype == sig
 
         functions = []
+        is_nested_function = (
+            self.namespace != ast.GLOBAL_NAMESPACE and
+            self.namespace[-2].islower() and
+            self.namespace[-2] != 'global'
+        )
         # First find all top-level functions or methods included
         # in the current class.
         for func in self.context.get_funcs(self.namespace).values():
@@ -2366,6 +2371,11 @@ class Generator():
             if not check_type(func):
                 continue
 
+            if is_nested_function and func.name == self.namespace[-1]:
+                # Here, we disallow recursive calls because it may lead to
+                # recursive call on lambda expressions.
+
+                continue
             if func.is_parameterized() and func.is_class_method():
                 # TODO: Consider being less conservative.
                 # The problem is when the class method is parameterized,
