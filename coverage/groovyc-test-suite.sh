@@ -2,6 +2,7 @@
 GROOVY_SRC=${HOME}/coverage/groovy
 JAVA_11=${HOME}/.sdkman/candidates/java/11.0.2-open/bin/java
 JACOCO=$HOME/coverage/jacoco
+STC=$GROOVY_SRC/src/test/groovy/transform/stc
 
 template='''
 abstract class BBASEE { \n
@@ -105,7 +106,7 @@ instrument_file() {
 }
 
 
-directory=$1
+directory=$STC
 cd $directory
 git checkout *.groovy
 keywords="StaticTypeCheckingTestCase CompilableTestSupport GroovyTestCase"
@@ -121,6 +122,7 @@ for i in $(ls $directory/*.groovy); do
     for keyword in $keywords; do
         if grep -q $keyword $i; then
             flag=true
+            instrument_file $i $filename $keyword
             if [ "$filename" = "GenericsSTCTest" ]; then
                 sed -i '993,1037d;1585,1628d;2348,2393d;2696,2758d;3321,3350d;3532,3564d;3600,3634d' $i
                 mkdir -p $dir/$filename
@@ -133,7 +135,6 @@ for i in $(ls $directory/*.groovy); do
                 sed -i '37,46d;71,79d' $i
             fi
             if [ "$filename" = "TypeCheckingExtensionsTest" ]; then
-                instrument_file $i $filename $keyword
                 sed -i '29,38d;61d;65d;67d;462,467d' $i
                 sed -i '28i    def extension' $i
             fi
@@ -162,7 +163,7 @@ for i in $(ls $directory/*.groovy); do
     fi
 done
 
-TEST_SUITE_PROGRAMS=$(ls $GROOVY_SRC/src/test/groovy/transform/stc/*/*.groovy)
+TEST_SUITE_PROGRAMS=$(ls $STC/*/*.groovy)
 
 run_groovyc () {
     iter=$1
