@@ -236,8 +236,14 @@ class Generator():
                 else self._gen_func_params_with_default()
             )
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
+        if is_interface or (abstract and ut.random.bool()):
+            body, inferred_type = None, None
+        else:
+            # If we are going to generate a non-abstract method, we generate
+            # a temporary body as a placeholder.
+            body = ast.BottomConstant(ret_type)
         func = ast.FunctionDeclaration(
-            func_name, params, ret_type, None,
+            func_name, params, ret_type, body,
             func_type=(ast.FunctionDeclaration.CLASS_METHOD
                        if class_method
                        else ast.FunctionDeclaration.FUNCTION),
@@ -249,9 +255,7 @@ class Generator():
         for p in params:
             self.context.add_var(self.namespace, p.name, p)
 
-        if is_interface or (abstract and ut.random.bool()):
-            body, inferred_type = None, None
-        else:
+        if func.body is not None:
             body = self._gen_func_body(ret_type)
         func.body = body
 
@@ -551,6 +555,7 @@ class Generator():
                 abstract_funcs = super_cls_info.super_cls\
                     .get_abstract_functions(class_decls)
                 for f in abstract_funcs:
+                    print('Adding abstract ', f.name, curr_cls.name)
                     funcs.append(
                         self._gen_func_from_existing(
                             f,
