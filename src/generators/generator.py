@@ -22,7 +22,6 @@ TODOs:
 import functools
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import dataclass
 from typing import Tuple, List, Callable
 
 from src import utils as ut
@@ -36,17 +35,17 @@ from src.ir import BUILTIN_FACTORIES
 from src.modules.logging import Logger
 
 
+
 class Generator():
     # TODO document
     def __init__(self,
                  language=None,
                  options={},
-                 logger=None,
-                 context=None):
+                 logger=None):
         assert language is not None, "You must specify the language"
         self.language = language
         self.logger: Logger = logger
-        self.context: Context = context or Context()
+        self.context: Context = None
         self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
@@ -74,21 +73,21 @@ class Generator():
         # namespaces. To use one namespace we must model scope better.
         # Almost always declaration_namespace is set to None to be ignored
         self.declaration_namespace = None
+        self.int_stream = iter(range(1, 10000))
 
     ### Entry Point Generators ###
 
-    def generate(self) -> ast.Program:
+    def generate(self, context=None) -> ast.Program:
         """Generate a program.
 
         It first generates a number `n` top-level declarations,
         and then it generates the main function.
         """
+        self.context = context or Context()
         for _ in ut.random.range(cfg.limits.min_top_level,
                                  cfg.limits.max_top_level):
             self.gen_top_level_declaration()
-        main_func = self.generate_main_func()
-        self.namespace = ('global',)
-        self.context.add_func(self.namespace, 'main', main_func)
+        self.generate_main_func()
         return ast.Program(self.context, self.language)
 
     def gen_top_level_declaration(self):
@@ -105,43 +104,37 @@ class Generator():
         declarations.
         """
         candidates = [
-            (self.gen_variable_decl, self.context.add_var),
-            (self.gen_class_decl, self.context.add_class),
-            (self.gen_func_decl, self.context.add_func)
+            self.gen_variable_decl,
+            self.gen_class_decl,
+            self.gen_func_decl,
         ]
-        gen_func, upd_context = ut.random.choice(candidates)
-        decl = gen_func()
-        upd_context(self.namespace, decl.name, decl)
+        gen_func = ut.random.choice(candidates)
+        gen_func()
 
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
         """
 
-        # Add an artificial node for enabling context lookups
-        self.context.add_func(self.namespace, 'main', None)
-
         initial_namespace = self.namespace
         self.namespace += ('main', )
         initial_depth = self.depth
         self.depth += 1
+        main_func = ast.FunctionDeclaration(
+            "main",
+            params=[],
+            ret_type=self.bt_factory.get_void_type(),
+            body=None,
+            func_type=ast.FunctionDeclaration.FUNCTION)
+        self._add_node_to_parent(self.namespace, main_func)
         expr = self.generate_expr()
         decls = list(self.context.get_declarations(
             self.namespace, True).values())
         decls = [d for d in decls
                  if not isinstance(d, ast.ParameterDeclaration)]
         body = ast.Block(decls + [expr])
+        main_func.body = body
         self.depth = initial_depth
-        main_func = ast.FunctionDeclaration(
-            "main",
-            params=[],
-            ret_type=self.bt_factory.get_void_type(),
-            body=body,
-            func_type=ast.FunctionDeclaration.FUNCTION)
         self.namespace = initial_namespace
-
-        # Remove the artificial node
-        self.context.remove_func(self.namespace, 'main')
-
         return main_func
 
     ### Generators ###
@@ -181,9 +174,6 @@ class Generator():
             A function declaration node.
         """
         func_name = func_name or gu.gen_identifier('lower')
-
-        # Add an artificial node for enabling context lookups
-        self.context.add_func(self.namespace, func_name, None)
 
         initial_namespace = self.namespace
         if namespace:
@@ -233,7 +223,7 @@ class Generator():
             type_params = []
         if params is not None:
             for p in params:
-                self.context.add_var(self.namespace, p.name, p)
+                self._add_node_to_parent(self.namespace, p)
         else:
             params = (
                 self._gen_func_params()
@@ -245,19 +235,8 @@ class Generator():
                 else self._gen_func_params_with_default()
             )
         ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
-        if is_interface or (abstract and ut.random.bool()):
-            body, inferred_type = None, None
-        else:
-            body = self._gen_func_body(ret_type)
-        self._inside_java_lambda = prev_inside_java_lamdba
-        self.depth = initial_depth
-        self.namespace = initial_namespace
-
-        # Remove the artificial node
-        self.context.remove_func(self.namespace, func_name)
-
-        return ast.FunctionDeclaration(
-            func_name, params, ret_type, body,
+        func = ast.FunctionDeclaration(
+            func_name, params, ret_type, None,
             func_type=(ast.FunctionDeclaration.CLASS_METHOD
                        if class_method
                        else ast.FunctionDeclaration.FUNCTION),
@@ -265,6 +244,20 @@ class Generator():
             inferred_type=None,
             type_parameters=type_params,
         )
+        self._add_node_to_parent(self.namespace[:-1], func)
+        for p in params:
+            self.context.add_var(self.namespace, p.name, p)
+
+        if is_interface or (abstract and ut.random.bool()):
+            body, inferred_type = None, None
+        else:
+            body = self._gen_func_body(ret_type)
+        func.body = body
+
+        self._inside_java_lambda = prev_inside_java_lamdba
+        self.depth = initial_depth
+        self.namespace = initial_namespace
+        return func
 
     # Where
 
@@ -289,7 +282,6 @@ class Generator():
                 self.declaration_namespace = prev_decl_namespace
                 param.default = expr
             params.append(param)
-            self.context.add_var(self.namespace, param.name, param)
         return params
 
     def gen_param_decl(self, etype=None) -> ast.ParameterDeclaration:
@@ -300,7 +292,8 @@ class Generator():
         """
         name = gu.gen_identifier('lower')
         param_type = etype or self.select_type(exclude_covariants=True)
-        return ast.ParameterDeclaration(name, param_type)
+        param = ast.ParameterDeclaration(name, param_type)
+        return param
 
     def gen_class_decl(self,
                        field_type: tp.Type=None,
@@ -327,10 +320,6 @@ class Generator():
             A class declaration node.
         """
         class_name = class_name or gu.gen_identifier('capitalize')
-
-        # Add an artificial node for enabling context lookups
-        self.context.add_class(self.namespace, class_name, None)
-
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
@@ -340,29 +329,28 @@ class Generator():
             ast.ClassDeclaration.REGULAR
         type_params = type_params or self.gen_type_params(
             with_variance=self.language == 'kotlin')
-        super_cls_info = self._select_superclass(
-            class_type == ast.ClassDeclaration.INTERFACE)
         cls = ast.ClassDeclaration(
             class_name,
             class_type=class_type,
-            superclasses=[super_cls_info.super_inst] if super_cls_info else [],
+            superclasses=[], # [super_cls_info.super_inst] if super_cls_info else [],
             type_parameters=type_params,
-            is_final=is_final
+            is_final=is_final,
+            fields=[],
+            functions=[]
         )
-        fields = (
+        self._add_node_to_parent(ast.GLOBAL_NAMESPACE, cls)
+
+        super_cls_info = self._select_superclass(
+            class_type == ast.ClassDeclaration.INTERFACE)
+        if super_cls_info:
+            cls.superclasses = [super_cls_info.super_inst]
+        if not cls.is_interface():
             self.gen_class_fields(cls, super_cls_info, field_type)
-            if not cls.is_interface()
-            else []
-        )
-        funcs = self.gen_class_functions(cls, super_cls_info,
-                                         not_void, fret_type, signature)
+
+        self.gen_class_functions(cls, super_cls_info,
+                                 not_void, fret_type, signature)
         self.namespace = initial_namespace
         self.depth = initial_depth
-        cls.fields = fields
-        cls.functions = funcs
-
-        # Remove the artificial node
-        self.context.remove_class(self.namespace, class_name)
         return cls
 
     # Where
@@ -379,9 +367,20 @@ class Generator():
                 its TypeVarMap, and a SuperClassInstantiation for the selected
                 class.
         """
+
+        current_cls = self.namespace[-1]
+
+        def is_cls_candidate(cls):
+            # A class should not inherit from itself to avoid circular
+            # dependency problems.
+            if cls.name == current_cls:
+                return False
+            return not cls.is_final and (cls.is_interface()
+                                         if only_interfaces else True)
+
         class_decls = [
             c for c in self.context.get_classes(self.namespace).values()
-            if not c.is_final and (c.is_interface() if only_interfaces else True)
+            if is_cls_candidate(c)
         ]
         if not class_decls:
             return None
@@ -431,13 +430,11 @@ class Generator():
             else cfg.limits.cls.max_fields
         fields = []
         if field_type:
-            self._add_field_to_class(
-                self.gen_field_decl(field_type, curr_cls.is_final), fields)
+            fields.append(self.gen_field_decl(field_type, curr_cls.is_final))
         if not super_cls_info:
             for _ in range(ut.random.integer(0, max_fields)):
-                self._add_field_to_class(
-                    self.gen_field_decl(class_is_final=curr_cls.is_final),
-                    fields)
+                fields.append(
+                    self.gen_field_decl(class_is_final=curr_cls.is_final))
         else:
             overridable_fields = super_cls_info.super_cls \
                 .get_overridable_fields()
@@ -451,23 +448,52 @@ class Generator():
                     new_f.name = f.name
                     new_f.override = True
                     new_f.is_final = f.is_final
-                    self._add_field_to_class(new_f, fields)
+                    fields.append(new_f)
                 max_fields = max_fields - len(chosen_fields)
             if max_fields < 0:
                 return fields
             for _ in range(ut.random.integer(0, max_fields)):
-                self._add_field_to_class(
-                    self.gen_field_decl(class_is_final=curr_cls.is_final),
-                    fields)
+                fields.append(
+                    self.gen_field_decl(class_is_final=curr_cls.is_final))
         return fields
 
     # Where
 
-    def _add_field_to_class(self, field, fields):
-        """Add a field to context and fields.
-        """
-        fields.append(field)
-        self.context.add_var(self.namespace, field.name, field)
+    def _add_node_to_class(self, cls, node):
+        if isinstance(node, ast.FunctionDeclaration):
+            cls.functions.append(node)
+            return
+
+        if isinstance(node, ast.FieldDeclaration):
+            cls.fields.append(node)
+            return
+
+        assert False, ('Trying to put a node in class other than a function',
+                       ' and a field')
+
+    def _add_node_to_parent(self, parent_namespace, node):
+        node_type = {
+            ast.FunctionDeclaration: self.context.add_func,
+            ast.ClassDeclaration: self.context.add_class,
+            ast.VariableDeclaration: self.context.add_var,
+            ast.FieldDeclaration: self.context.add_var,
+            ast.ParameterDeclaration: self.context.add_var,
+            ast.Lambda: self.context.add_lambda,
+        }
+        if parent_namespace == ast.GLOBAL_NAMESPACE:
+            node_type[type(node)](parent_namespace, node.name, node)
+            return
+        parent = self.context.get_decl(parent_namespace[:-1],
+                                       parent_namespace[-1])
+        if parent is None and 'lambda_' not in parent_namespace[-1]:
+            # We cannot retrieve parent
+            return
+
+        if isinstance(parent, ast.ClassDeclaration):
+            self._add_node_to_class(parent, node)
+
+        node_type[type(node)](parent_namespace, node.name, node)
+
 
     # And
 
@@ -496,28 +522,25 @@ class Generator():
         max_funcs = max_funcs - 1 if signature else max_funcs
         abstract = not curr_cls.is_regular()
         if fret_type:
-            self._add_func_to_class(
+            funcs.append(
                 self.gen_func_decl(fret_type, not_void=not_void,
                                    class_is_final=curr_cls.is_final,
                                    abstract=abstract,
-                                   is_interface=curr_cls.is_interface()),
-                funcs)
+                                   is_interface=curr_cls.is_interface()))
         if signature:
             ret_type, params = self._gen_ret_and_paramas_from_sig(signature)
-            self._add_func_to_class(
+            funcs.append(
                 self.gen_func_decl(ret_type, params=params, not_void=not_void,
                                    class_is_final=curr_cls.is_final,
                                    abstract=abstract,
-                                   is_interface=curr_cls.is_interface()),
-                funcs)
+                                   is_interface=curr_cls.is_interface()))
         if not super_cls_info:
             for _ in range(ut.random.integer(0, max_funcs)):
-                self._add_func_to_class(
+                funcs.append(
                     self.gen_func_decl(not_void=not_void,
                                        class_is_final=curr_cls.is_final,
                                        abstract=abstract,
-                                       is_interface=curr_cls.is_interface()),
-                    funcs)
+                                       is_interface=curr_cls.is_interface()))
         else:
             abstract_funcs = []
             class_decls = self.context.get_classes(self.namespace).values()
@@ -525,14 +548,13 @@ class Generator():
                 abstract_funcs = super_cls_info.super_cls\
                     .get_abstract_functions(class_decls)
                 for f in abstract_funcs:
-                    self._add_func_to_class(
+                    funcs.append(
                         self._gen_func_from_existing(
                             f,
                             super_cls_info.type_var_map,
                             curr_cls.is_final,
                             curr_cls.is_interface()
-                        ),
-                        funcs
+                        )
                     )
                 max_funcs = max_funcs - len(abstract_funcs)
             overridable_funcs = super_cls_info.super_cls \
@@ -550,31 +572,22 @@ class Generator():
                 else ut.random.sample(overridable_funcs, k=k)
             )
             for f in chosen_funcs:
-                self._add_func_to_class(
+                funcs.append(
                     self._gen_func_from_existing(f,
                                                  super_cls_info.type_var_map,
                                                  curr_cls.is_final,
-                                                 curr_cls.is_interface()),
-                    funcs)
+                                                 curr_cls.is_interface()))
             max_funcs = max_funcs - len(chosen_funcs)
             if max_funcs < 0:
                 return funcs
             for _ in range(ut.random.integer(0, max_funcs)):
-                self._add_func_to_class(
+                funcs.append(
                     self.gen_func_decl(not_void=not_void,
                                        class_is_final=curr_cls.is_final,
                                        abstract=abstract,
-                                       is_interface=curr_cls.is_interface()),
-                    funcs)
+                                       is_interface=curr_cls.is_interface()))
         return funcs
 
-    # Where
-
-    def _add_func_to_class(self, func, funcs):
-        """Add a function to context and to funcs (list of class methods).
-        """
-        funcs.append(func)
-        self.context.add_func(self.namespace, func.name, func)
 
     # And
 
@@ -705,8 +718,10 @@ class Generator():
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
                                                exclude_covariants=not is_final)
-        return ast.FieldDeclaration(name, field_type, is_final=is_final,
-                                    can_override=can_override)
+        field = ast.FieldDeclaration(name, field_type, is_final=is_final,
+                                     can_override=can_override)
+        self._add_node_to_parent(self.namespace, field)
+        return field
 
     def gen_variable_decl(self,
                           etype=None,
@@ -736,12 +751,14 @@ class Generator():
         # We cannot set ? extends X as the type of a variable.
         vtype = var_type.get_bound_rec() if var_type.is_wildcard() else \
             var_type
-        return ast.VariableDeclaration(
+        var_decl = ast.VariableDeclaration(
             gu.gen_identifier('lower'),
             expr=expr,
             is_final=is_final,
             var_type=vtype,
             inferred_type=var_type)
+        self._add_node_to_parent(self.namespace, var_decl)
+        return var_decl
 
     ##### Expressions #####
 
@@ -799,7 +816,6 @@ class Generator():
             self._vars_in_context[self.namespace] += 1
             var_decl = self.gen_variable_decl(expr_type, only_leaves,
                                               expr=expr)
-            self.context.add_var(self.namespace, var_decl.name, var_decl)
             expr = ast.Variable(var_decl.name)
         return expr
 
@@ -839,7 +855,6 @@ class Generator():
             var_decl = self.gen_variable_decl(etype, only_leaves)
             var_decl.is_final = False
             var_decl.var_type = var_decl.get_type()
-            self.context.add_var(self.namespace, var_decl.name, var_decl)
             self.depth = initial_depth
             return ast.Assignment(var_decl.name,
                                   self.generate_expr(var_decl.get_type(),
@@ -1303,8 +1318,8 @@ class Generator():
     def gen_lambda(self,
                    etype: tp.Type=None,
                    not_void=False,
-                   shadow_name: str=None,
-                   params: List[ast.ParameterDeclaration]=None
+                   params: List[ast.ParameterDeclaration]=None,
+                   only_leaves=False
                   ) -> ast.Lambda:
         """Generate a lambda expression.
 
@@ -1322,12 +1337,8 @@ class Generator():
         else:
             namespace = self.namespace
 
-        shadow_name = shadow_name or gu.gen_identifier('lower')
-
-        # Add an artificial node for enabling context lookups
-        self.context.add_lambda(namespace, shadow_name, None)
-
         initial_namespace = self.namespace
+        shadow_name = "lambda_" + str(next(self.int_stream))
         self.namespace += (shadow_name,)
         initial_depth = self.depth
         self.depth += 1
@@ -1336,24 +1347,22 @@ class Generator():
         self._inside_java_lambda = self.language == "java"
 
         params = params if params is not None else self._gen_func_params()
-        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
-        body = self._gen_func_body(ret_type)
         param_types = [p.param_type for p in params]
+        for p in params:
+            self.context.add_var(self.namespace, p.name, p)
+        ret_type = self._get_func_ret_type(params, etype, not_void=not_void)
         signature = tp.ParameterizedType(
             self.bt_factory.get_function_type(len(params)),
             param_types + [ret_type])
-
-        res = ast.Lambda(shadow_name, params, ret_type, body, signature)
+        res = ast.Lambda(shadow_name, params, ret_type, None, signature)
+        self.context.add_lambda(initial_namespace, shadow_name, res)
+        body = self._gen_func_body(ret_type)
+        res.body = body
 
         self.depth = initial_depth
         self.namespace = initial_namespace
         self._inside_java_lambda = prev_inside_java_lamdba
 
-        # Remove the artificial node
-        self.context.remove_lambda(namespace, shadow_name)
-
-        # Add to context
-        self.context.add_lambda(namespace, shadow_name, res)
         return res
 
     def gen_func_call(self,
@@ -1538,7 +1547,7 @@ class Generator():
         """
 
         if getattr(etype, 'is_function_type', lambda: False)():
-            return self._gen_func_ref_lambda(etype)
+            return self._gen_func_ref_lambda(etype, only_leaves=only_leaves)
 
         # Apply SAM coercion
         if (sam_coercion and tu.is_sam(self.context, etype)
@@ -1551,7 +1560,8 @@ class Generator():
                     type_var_map=type_var_map
             )
             if sam_sig_etype:
-                return self._gen_func_ref_lambda(sam_sig_etype)
+                return self._gen_func_ref_lambda(sam_sig_etype,
+                                                 only_leaves=only_leaves)
 
         class_decl = self._get_subclass(etype, subtype)
         if isinstance(etype, tp.ParameterizedType):
@@ -1656,7 +1666,7 @@ class Generator():
 
     # And
 
-    def _gen_func_ref_lambda(self, etype:tp.Type):
+    def _gen_func_ref_lambda(self, etype:tp.Type, only_leaves=False):
         """Generate a function reference or a lambda for a given signature.
 
         Args:
@@ -1666,17 +1676,19 @@ class Generator():
             ast.Lambda or ast.FunctionReference
         """
         if ut.random.bool(cfg.prob.func_ref):
-            func_ref = self._gen_func_ref(etype)
+            func_ref = self._gen_func_ref(etype, only_leaves=only_leaves)
             if func_ref:
                 return func_ref
 
         # Generate Lambda
         ret_type, params = self._gen_ret_and_paramas_from_sig(etype, True)
-        return self.gen_lambda(etype=ret_type, params=params)
+        return self.gen_lambda(etype=ret_type, params=params,
+                               only_leaves=only_leaves)
 
     # Where
 
-    def _gen_func_ref(self, etype: tp.Type) -> List[ast.FunctionReference]:
+    def _gen_func_ref(self, etype: tp.Type,
+                      only_leaves=False) -> List[ast.FunctionReference]:
         """Generate a function reference.
 
         1. Functions in current scope and global scope, or methods that have
@@ -1690,21 +1702,22 @@ class Generator():
         # Get function references from functions in the current scope or
         # methods that have a receiver in the current scope.
         refs = []
-        funcs = self._get_matching_function_declarations(
-            etype, False, signature=True)
-        for func in funcs:
-            refs.append(ast.FunctionReference(
-                func.attr_decl.name, func.receiver_expr))
+        # funcs = self._get_matching_function_declarations(
+        #     etype, False, signature=True)
+        # for func in funcs:
+        #     refs.append(ast.FunctionReference(
+        #         func.attr_decl.name, func.receiver_expr))
 
-        if refs:
-            return ut.random.choice(refs)
+        # if refs:
+        #     return ut.random.choice(refs)
 
-        ref = None
-        # NOTE a maximum recursion error may occur.
-        # Get function references from methods of classes.
-        # ie create receiver
-        type_fun = self._get_matching_class(
-            etype, False, 'functions', signature=True)
+        # ref = None
+        # # NOTE a maximum recursion error may occur.
+        # # Get function references from methods of classes.
+        # # ie create receiver
+        # type_fun = self._get_matching_class(
+        #     etype, False, 'functions', signature=True)
+        type_fun = None
 
         # Generate a matching function.
         if not type_fun:
@@ -1714,9 +1727,9 @@ class Generator():
         if type_fun:
             receiver = (
                 None if type_fun.receiver_t is None
-                else self.generate_expr(type_fun.receiver_t)
+                else self.generate_expr(type_fun.receiver_t,
+                                        only_leaves=only_leaves)
             )
-
             ref = ast.FunctionReference(type_fun.attr_decl.name, receiver)
 
         return ref
@@ -2096,7 +2109,6 @@ class Generator():
                 vararg = param
                 vararg_found = True
             params.append(param)
-            self.context.add_var(self.namespace, param.name, param)
         len_p = len(params)
         # If one of the parameters is a vararg, then place it to the back.
         if arr_index is not None and arr_index != len_p - 1:
@@ -2400,7 +2412,6 @@ class Generator():
             if signature:
                 etype, params = self._gen_ret_and_paramas_from_sig(etype)
             func = self.gen_func_decl(etype, params=params, not_void=not_void)
-            self.context.add_func(self.namespace, func.name, func)
             self.namespace = initial_namespace
             func_type_var_map = {}
             if func.is_parameterized():
@@ -2614,8 +2625,6 @@ class Generator():
         cls = self.gen_class_decl(**kwargs, not_void=not_void,
                                   type_params=type_params,
                                   class_name=class_name)
-        self.context.add_class(self.namespace, cls.name, cls)
-
         self.namespace = initial_namespace
 
         # Get receiver
