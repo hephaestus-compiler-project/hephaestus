@@ -502,11 +502,7 @@ class Generator():
             return
         parent = self.context.get_decl(parent_namespace[:-1],
                                        parent_namespace[-1])
-        if parent is None and 'lambda_' not in parent_namespace[-1]:
-            # We cannot retrieve parent
-            return
-
-        if isinstance(parent, ast.ClassDeclaration):
+        if parent and isinstance(parent, ast.ClassDeclaration):
             self._add_node_to_class(parent, node)
 
         node_type[type(node)](parent_namespace, node.name, node)
