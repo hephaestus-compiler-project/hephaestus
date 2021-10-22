@@ -75,6 +75,12 @@ class Generator():
         self.declaration_namespace = None
         self.int_stream = iter(range(1, 10000))
         self._in_super_call = False
+        # We use this data strcuture to store blacklisted classes, i.e.,
+        # classes that are incomplete (we do not have the information regarding
+        # their fields and functions yet). So, we avoid instantiating these
+        # classes or using them as supertypes, because we do not have the
+        # complete informations about them.
+        self._blacklisted_classes: set = set()
 
     ### Entry Point Generators ###
 
@@ -344,6 +350,7 @@ class Generator():
             functions=[]
         )
         self._add_node_to_parent(ast.GLOBAL_NAMESPACE, cls)
+        self._blacklisted_classes.add(class_name)
 
         super_cls_info = self._select_superclass(
             class_type == ast.ClassDeclaration.INTERFACE)
@@ -354,6 +361,7 @@ class Generator():
 
         self.gen_class_functions(cls, super_cls_info,
                                  not_void, fret_type, signature)
+        self._blacklisted_classes.remove(class_name)
         self.namespace = initial_namespace
         self.depth = initial_depth
         return cls
@@ -379,6 +387,8 @@ class Generator():
             # A class should not inherit from itself to avoid circular
             # dependency problems.
             if cls.name == current_cls:
+                return False
+            if cls.name in self._blacklisted_classes:
                 return False
             return not cls.is_final and (cls.is_interface()
                                          if only_interfaces else True)
@@ -555,7 +565,6 @@ class Generator():
                 abstract_funcs = super_cls_info.super_cls\
                     .get_abstract_functions(class_decls)
                 for f in abstract_funcs:
-                    print('Adding abstract ', f.name, curr_cls.name)
                     funcs.append(
                         self._gen_func_from_existing(
                             f,
@@ -1588,7 +1597,7 @@ class Generator():
         # the given type is a type parameter. So, if this type parameter has
         # a bound, generate a value of this bound. Otherwise, generate a bottom
         # value.
-        if class_decl is None:
+        if class_decl is None or etype.name in self._blacklisted_classes:
             t = etype
             # If the etype corresponds to a type variable not belonging to
             # to the current namespace, then create a bottom constant
@@ -1628,7 +1637,8 @@ class Generator():
             # Generate a bottom value, if we are in this case:
             # class A(val x: A)
             # Generating a bottom constants prevents us from infinite loops.
-            gen_bottom = expr_type.name == etype.name
+            gen_bottom = expr_type.name == etype.name or (self.depth > (
+                cfg.limits.max_depth * 2) and not expr_type.is_primitive())
             args.append(self.generate_expr(expr_type, only_leaves,
                                            subtype=False,
                                            gen_bottom=gen_bottom,
