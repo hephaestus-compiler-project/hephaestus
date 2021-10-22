@@ -412,12 +412,13 @@ class Generator():
         else:
             cls_type, type_var_map = class_decl.get_type(), {}
         con_args = None if class_decl.is_interface() else []
+        prev_super_call = self._in_super_call
         self._in_super_call = True
         for f in class_decl.fields:
             field_type = tp.substitute_type(f.get_type(), type_var_map)
             con_args.append(self.generate_expr(field_type,
                                                only_leaves=True))
-        self._in_super_call = False
+        self._in_super_call = prev_super_call
         return gu.SuperClassInfo(
             class_decl,
             type_var_map,
