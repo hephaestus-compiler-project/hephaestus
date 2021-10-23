@@ -1722,22 +1722,21 @@ class Generator():
         # Get function references from functions in the current scope or
         # methods that have a receiver in the current scope.
         refs = []
-        # funcs = self._get_matching_function_declarations(
-        #     etype, False, signature=True)
-        # for func in funcs:
-        #     refs.append(ast.FunctionReference(
-        #         func.attr_decl.name, func.receiver_expr))
+        funcs = self._get_matching_function_declarations(
+            etype, False, signature=True)
+        for func in funcs:
+            refs.append(ast.FunctionReference(
+                func.attr_decl.name, func.receiver_expr))
 
-        # if refs:
-        #     return ut.random.choice(refs)
+        if refs:
+            return ut.random.choice(refs)
 
-        # ref = None
-        # # NOTE a maximum recursion error may occur.
-        # # Get function references from methods of classes.
-        # # ie create receiver
-        # type_fun = self._get_matching_class(
-        #     etype, False, 'functions', signature=True)
-        type_fun = None
+        ref = None
+        # NOTE a maximum recursion error may occur.
+        # Get function references from methods of classes.
+        # ie create receiver
+        type_fun = self._get_matching_class(
+            etype, False, 'functions', signature=True)
 
         # Generate a matching function.
         if not type_fun:
