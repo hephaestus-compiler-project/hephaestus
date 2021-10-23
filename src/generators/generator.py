@@ -35,7 +35,6 @@ from src.ir import BUILTIN_FACTORIES
 from src.modules.logging import Logger
 
 
-
 class Generator():
     # TODO document
     def __init__(self,
@@ -1512,7 +1511,8 @@ class Generator():
 
         if not refs:
             # Detect receivers
-            objs = self._get_matching_objects(etype, subtype, 'fields', True)
+            objs = self._get_matching_objects(etype, subtype, 'fields',
+                                              signature=False, func_ref=True)
             refs = [(tp.substitute_type(
                         obj.attr_decl.get_type(), obj.receiver_inst),
                     obj.attr_decl.name,
@@ -1725,6 +1725,8 @@ class Generator():
         funcs = self._get_matching_function_declarations(
             etype, False, signature=True)
         for func in funcs:
+            if func.attr_decl.name == self.namespace[-1]:
+                continue
             refs.append(ast.FunctionReference(
                 func.attr_decl.name, func.receiver_expr))
 
@@ -2253,18 +2255,6 @@ class Generator():
         Returns:
             AttrReceiverInfo
         """
-
-        def check_type(attr_type, attr):
-            if not signature or func_ref:
-                if subtype:
-                    attr_type.is_assignable(etype)
-                return attr_type == etype
-            param_types = [p.get_type() for p in attr.params]
-            sig = tp.ParameterizedType(
-                self.bt_factory.get_function_type(len(attr.params)),
-                param_types + [attr.get_type()])
-            return etype == sig
-
         decls = []
         variables = self.context.get_vars(self.namespace).values()
         if self._inside_java_lambda:
@@ -2295,7 +2285,9 @@ class Generator():
                     attr_type = attr_type.type_args[-1] if not signature \
                         else attr_type
 
-                if not check_type(attr_type, attr):
+                if not self._is_sigtype_compatible(
+                        attr, etype, type_map_var, signature and not func_ref,
+                        subtype):
                     continue
 
                 if attr_name == 'functions':
@@ -2359,20 +2351,6 @@ class Generator():
                 `etype`.
             signature: etype is a signature.
         """
-
-        def check_type(func):
-            if not signature:
-                if func.get_type() == self.bt_factory.get_void_type():
-                    return False
-                if subtype:
-                    return func.get_type().is_assignable(etype)
-                return func.get_type() == etype
-            param_types = [p.get_type() for p in func.params]
-            sig = tp.ParameterizedType(
-                self.bt_factory.get_function_type(len(func.params)),
-                param_types + [func.get_type()])
-            return etype == sig
-
         functions = []
         is_nested_function = (
             self.namespace != ast.GLOBAL_NAMESPACE and
@@ -2383,7 +2361,11 @@ class Generator():
         # in the current class.
         for func in self.context.get_funcs(self.namespace).values():
             # The receiver object for this kind of functions is None.
-            if not check_type(func):
+            if func.get_type() == self.bt_factory.get_void_type():
+                continue
+
+            if not self._is_sigtype_compatible(func, etype, {},
+                                               signature, subtype):
                 continue
 
             if is_nested_function and func.name in self.namespace:
@@ -2545,7 +2527,69 @@ class Generator():
             cls_type, params_map = cls.get_type(), {}
         return gu.AttrAccessInfo(cls_type, params_map, attr, func_type_var_map)
 
-    # Where
+    def _is_sigtype_compatible(self, attr, etype, type_var_map,
+                               check_signature, subtype):
+        ret_type = tp.substitute_type(attr.get_type(), type_var_map)
+        if not check_signature:
+            if subtype:
+                return ret_type.is_assignable(etype)
+            return ret_type == etype
+        param_types = [
+            tp.substitute_type(p.get_type(), type_var_map)
+            for p in attr.params
+        ]
+        sig = tp.ParameterizedType(
+            self.bt_factory.get_function_type(len(attr.params)),
+            param_types + [ret_type])
+        return etype == sig
+
+    def _is_signature_compatible(self, attr, etype, check_signature,
+                                 subtype):
+        """
+        Checks if the signature of attr is compatible with etype.
+        """
+        type_var_map = {}
+        attr_type = attr.get_type()
+        if check_signature:
+            signature_types = [
+                p.get_type() for p in attr.params
+            ]
+            signature_types.append(attr_type)
+            # The signature of the function `attr` does not match with `etype`.
+            # Namely, attr does not contain the same number of parameters
+            # as `etype`.
+            if len(signature_types) != len(etype.type_args):
+                return False, None
+
+            for i, st in enumerate(signature_types):
+                if not st.has_type_variables():
+                    continue
+                # Unify its component of attr with the corresponding type
+                # argument of etype.
+                new_tvm = tu.unify_types(
+                    etype.type_args[i], st,
+                    self.bt_factory
+                )
+                if not new_tvm:
+                    return False, None
+                for k, v in new_tvm.items():
+                    assigned_t = type_var_map.get(k, v)
+                    # The instantiation of type variable k clashes with
+                    # a previous instantiation of this type variable.
+                    if assigned_t != v:
+                        return False, None
+                type_var_map.update(new_tvm)
+        else:
+            # if the type of the attribute has type variables,
+            # then we have to unify it with the expected type so that
+            # we can instantiate the corresponding type constructor
+            # accordingly
+            if attr_type.has_type_variables():
+                type_var_map = tu.unify_types(etype, attr_type,
+                                              self.bt_factory)
+        is_comb = self._is_sigtype_compatible(attr, etype, type_var_map,
+                                              check_signature, subtype)
+        return is_comb, type_var_map
 
     def _get_matching_class_decls(self,
                                   etype: tp.Type,
@@ -2571,17 +2615,6 @@ class Generator():
             functions).
         """
 
-        def check_type(attr_type, attr):
-            if not signature:
-                if subtype:
-                    attr_type.is_assignable(etype)
-                return attr_type == etype
-            param_types = [p.get_type() for p in attr.params]
-            sig = tp.ParameterizedType(
-                self.bt_factory.get_function_type(len(attr.params)),
-                param_types + [attr.get_type()])
-            return etype == sig
-
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
             for attr in getattr(c, attr_name):  # field or function
@@ -2590,16 +2623,13 @@ class Generator():
                     continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
-                type_var_map = None
-                cond = check_type(attr_type, attr)
-                # if the type of the attribute has type variables,
-                # then we have to unify it with the expected type so that
-                # we can instantiate the corresponding type constructor
-                # accordingly
-                if not cond or attr_type.has_type_variables():
-                    type_var_map = tu.unify_types(etype, attr_type,
-                                                  self.bt_factory)
-                if not type_var_map and not cond:
+                # Avoid recursive decls because of incomplete information.
+                if attr.name == self.namespace[-1] and signature:
+                    continue
+
+                is_comb, type_var_map = self._is_signature_compatible(
+                    attr, etype, signature, subtype)
+                if not is_comb:
                     continue
                 # Now here we keep the class and the function that match
                 # the given type.
@@ -2624,18 +2654,6 @@ class Generator():
             An AttrAccessInfo for the generated class type and attribute
             declaration (field or function).
         """
-
-        def check_type(attr_type, attr, params_map):
-            # NOTE @theosotr probably we have to compare use etype2
-            if not signature:
-                return attr_type == etype
-            param_types = [tp.substitute_type(p.get_type(), params_map)
-                           for p in attr.params]
-            sig = tp.ParameterizedType(
-                self.bt_factory.get_function_type(len(attr.params)),
-                param_types + [tp.substitute_type(attr.get_type(), params_map)])
-            return etype == sig
-
         initial_namespace = self.namespace
         class_name = gu.gen_identifier('capitalize')
         type_params = None
@@ -2690,8 +2708,8 @@ class Generator():
 
         # Generate func_type_var_map
         for attr in getattr(cls, attr_name):
-            attr_type = tp.substitute_type(attr.get_type(), params_map)
-            if not check_type(attr_type, attr, params_map):
+            if not self._is_sigtype_compatible(attr, etype, params_map,
+                                               signature, False):
                 continue
 
             func_type_var_map = {}
@@ -2702,7 +2720,7 @@ class Generator():
                     type_var_map=params_map)
 
             return gu.AttrAccessInfo(cls_type, params_map, attr,
-                                  func_type_var_map)
+                                     func_type_var_map)
         return None
 
     # Where
