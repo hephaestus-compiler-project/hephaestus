@@ -1537,7 +1537,8 @@ class Generator():
             args.append(ast.CallArgument(arg))
         self.depth = initial_depth
 
-        return ast.FunctionCall(name, args, receiver=receiver, is_ref_call=True)
+        return ast.FunctionCall(name, args, receiver=receiver,
+                                is_ref_call=True)
 
     # pylint: disable=unused-argument
     def gen_new(self,
@@ -2389,7 +2390,10 @@ class Generator():
             if is_nested_function and func.name in self.namespace:
                 # Here, we disallow recursive calls because it may lead to
                 # recursive call on lambda expressions.
-
+                continue
+            if is_nested_function and signature:
+                # Here we disallow nested functions to be used as function
+                # references
                 continue
             if func.is_parameterized() and func.is_class_method():
                 # TODO: Consider being less conservative.
@@ -2426,7 +2430,13 @@ class Generator():
             signature: etype is a signature.
         """
         # Randomly choose to generate a function or a class method.
-        if ut.random.bool():
+        gen_method = (
+            ut.random.bool() or
+            # We avoid generating nested functions that we are going to use
+            # as function references.
+            signature
+        )
+        if not gen_method:
             initial_namespace = self.namespace
             # If the given type 'etype' is a type parameter, then the
             # function we want to generate should be in the current namespace,
@@ -2449,7 +2459,8 @@ class Generator():
                     only_regular=True, type_var_map={})
             return gu.AttrAccessInfo(None, {}, func, func_type_var_map)
         # Generate a class containing the requested function
-        return self._gen_matching_class(etype, 'functions', signature=signature)
+        return self._gen_matching_class(etype, 'functions',
+                                        signature=signature)
 
 
     def _get_matching_class(self,
