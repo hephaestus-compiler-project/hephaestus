@@ -1069,11 +1069,13 @@ class JavaTranslator(BaseTranslator):
                 class_decls = self.context.get_classes(
                     ('global',), glob=True).values()
                 parent_methods = parent_cls.get_callable_functions(class_decls)
+                print(node.func, {m.name for m in parent_methods})
                 if node.func in {m.name for m in parent_methods}:
                     receiver = "this"
             # Do not use a receiver if its a variable (lambda case)
             variable_decl = get_decl(self.context, self._namespace, node.func)
-            if variable_decl:
+            if variable_decl and isinstance(variable_decl[1],
+                                            ast.VariableDeclaration):
                 namespace = variable_decl[0]
                 if namespace == ('global',):
                     receiver = "Main"
