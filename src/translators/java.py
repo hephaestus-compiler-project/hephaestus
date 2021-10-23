@@ -1069,7 +1069,6 @@ class JavaTranslator(BaseTranslator):
                 class_decls = self.context.get_classes(
                     ('global',), glob=True).values()
                 parent_methods = parent_cls.get_callable_functions(class_decls)
-                print(node.func, {m.name for m in parent_methods})
                 if node.func in {m.name for m in parent_methods}:
                     receiver = "this"
             # Do not use a receiver if its a variable (lambda case)
