@@ -35,8 +35,7 @@ SCHEMA = {
     "resolvedin": "",
     "test": [],
     "chars": {
-        "characteristics": [],
-        "categories": []
+        "characteristics": []
     },
     "errormsg": [],
     "comment": ""
@@ -118,13 +117,16 @@ def get_data(lookup):
                 print("{}: code fragments {}".format(
                     bug['bugid'], len(code_fragments)
                 ))
-
+            if bug.get('chars', None) is None:
+                bug['chars'] = SCHEMA['chars']
             results.append(bug)
         start_at += max_results
     # Add bugs in lookup but not in current set (e.g. from another tracker)
     ids = {bug['bugid'] for bug in results}
     for bug_id, bug in lookup.items():
         if bug_id not in ids:
+            if bug.get('chars', None) is None:
+                bug['chars'] = SCHEMA['chars']
             results.append(bug)
     return results
 

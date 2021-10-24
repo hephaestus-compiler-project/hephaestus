@@ -35,8 +35,7 @@ SCHEMA = {
     "resolvedin": "",
     "test": [],
     "chars": {
-        "characteristics": [],
-        "categories": []
+        "characteristics": []
     },
     "errormsg": [],
     "comment": ""
