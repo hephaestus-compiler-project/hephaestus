@@ -32,7 +32,14 @@
             "class C<T>"
         ],
         "chars": {
-            "characteristics": []
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameters",
+                "Use-site variance",
+                "Parameterized type",
+                "Parameterized function",
+                "Type argument inference"
+            ]
         },
         "errormsg": [
             "stacktrace",
@@ -307,7 +314,7 @@
             "fix": ""
         },
         "oracle": "crash",
-        "mutator": "generator",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
         "status": "Closed",
@@ -493,8 +500,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Type argument inference",
+                "Return type inference",
+                "Conditionals",
+                "Variable type inference",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -544,8 +556,15 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Parameterized function",
+                "Bounded type parameters",
+                "Type argument inference",
+                "Subtyping",
+                "Cast"
+            ]
         }
     },
     {
@@ -560,7 +579,7 @@
             "fix": ""
         },
         "oracle": "crash",
-        "mutator": "generator",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
         "status": "Submitted",
@@ -673,8 +692,11 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Array",
+                "Conditionals",
+                "Variable type inference"
+            ]
         }
     },
     {
@@ -689,7 +711,7 @@
             "fix": ""
         },
         "oracle": "error",
-        "mutator": "generator",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
         "status": "Submitted",
@@ -724,8 +746,12 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Function type",
+                "Lambda",
+                "Variable type inference",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -775,8 +801,10 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized function",
+                "Function type"
+            ]
         }
     },
     {
@@ -833,8 +861,12 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "SAM type",
+                "Lambda",
+                "Function reference",
+                "Function type"
+            ]
         }
     },
     {
@@ -849,7 +881,7 @@
             "fix": ""
         },
         "oracle": "crash",
-        "mutator": "generator",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
         "status": "Submitted",
@@ -1113,8 +1145,14 @@
         ],
         "comment": "Maybe inference",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                 "Parameterized class",
+                 "Parameterized type",
+                 "Bounded type parameters",
+                 "Declaration-site variance",
+                 "Variable type inference",
+                 "Use-site variance"
+            ]
         }
     },
     {
@@ -1159,8 +1197,11 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "SAM type",
+                "Parameterized function",
+                "Lambda"
+            ]
         }
     },
     {
@@ -1211,8 +1252,11 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "SAM type",
+                "Parameterized function",
+                "Lambda"
+            ]
         }
     },
     {
@@ -1342,8 +1386,10 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Array",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -1459,8 +1505,10 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Subtyping",
+                "Array"
+            ]
         }
     },
     {
@@ -1475,7 +1523,7 @@
             "fix": ""
         },
         "oracle": "error",
-        "mutator": "generator",
+        "mutator": "inference",
         "severity": "",
         "reporter": "theosotr",
         "status": "Submitted",
@@ -1499,8 +1547,11 @@
         ],
         "comment": "could be inference (smart cast)",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Flow typing",
+                "Variable type inference",
+                "Lambda"
+            ]
         }
     },
     {
@@ -1555,8 +1606,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Overriding",
+                "Conditionals"
+            ]
         }
     },
     {
@@ -1596,8 +1652,10 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Cast",
+                "Conditionals"
+            ]
         }
     },
     {
@@ -1638,8 +1696,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Conditionals",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -1681,8 +1744,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Overriding",
+                "Return type inference"
+            ]
         }
     },
     {
@@ -1724,8 +1792,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Inheritance",
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Bounded type parameters"
+            ]
         }
     },
     {
@@ -1765,8 +1838,14 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Declaration-site variance",
+                "Bounded type parameters",
+                "Use-site variance",
+                "Parameterized type",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -1809,8 +1888,12 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Subtyping"
+            ]
         }
     },
     {
@@ -1850,8 +1933,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Overriding",
+                "Variable arguments"
+            ]
         }
     },
     {
@@ -1892,8 +1980,16 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Bounded type parameters",
+                "Subtyping",
+                "Conditionals",
+                "Type argument inference",
+                "Variable type inference"
+            ]
         }
     },
     {
@@ -1955,8 +2051,9 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Conditionals"    
+            ]
         }
     },
     {
@@ -2054,7 +2151,6 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
             "categories": []
         }
     },
@@ -2097,8 +2193,11 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                 "Parameterized class",
+                 "Bounded type parameters",
+                 "Variable type inference"
+            ]
         }
     },
     {
@@ -2137,10 +2236,12 @@
             "foo.kt:7:29: error: unresolved reference: N",
             "  val y = Bar<Any, Any>(Foo<N>())"
         ],
-        "comment": "",
+        "comment": "revisit -- should we removed it?",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type"
+            ]
         }
     },
     {
@@ -2242,10 +2343,12 @@
             "        at org.jetbrains.org.objectweb.asm.tree.analysis.Frame.execute(Frame.java:573)",
             "        at org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:187)"
         ],
-        "comment": "",
+        "comment": "revisit -- nested function",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameters"
+            ]
         }
     },
     {
@@ -2291,8 +2394,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Bounded type parameters",
+                "Parameterized function",
+                "Subtyping",
+                "Type argument inference",
+                "Variable arguments"
+            ]
         }
     },
     {
@@ -2359,10 +2467,11 @@
             "        at org.jetbrains.kotlin.preloading.Preloader.run(Preloader.java:87)",
             "        at org.jetbrains.kotlin.preloading.Preloader.main(Preloader.java:44)"
         ],
-        "comment": "",
+        "comment": "revisit -- should we remove it? nested class",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                 "Parameterized class"
+            ]
         }
     },
     {
@@ -2482,8 +2591,14 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                 "Parameterized class",
+                 "Bounded type parameters",
+                 "Parameterized type",
+                 "Type argument inference",
+                 "Variable type inference",
+                 "Conditionals"
+            ]
         }
     },
     {
@@ -2519,10 +2634,15 @@
             "class C(override var x: Char): B<Char>('x')",
             "        ^"
         ],
-        "comment": "",
+        "comment": "revisit -- should we remove it? override field",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Overriding",
+                "Bounded type parameters"
+            ]
         }
     },
     {
@@ -7316,8 +7436,12 @@
         "errormsg": [],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameters",
+                "Use-site variance"
+            ]
         }
     },
     {
@@ -7387,8 +7511,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "SAM type",
+                "Function type",
+                "Use-site variance",
+                "Lambda",
+                "Function reference"
+            ]
         }
     },
     {
@@ -7428,8 +7557,11 @@
         "errormsg": [],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Function type",
+                "Flow typing",
+                "Lambda"
+            ]
         }
     },
     {
@@ -7486,8 +7618,14 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameters",
+                "Use-site variance",
+                "Inheritance",
+                "Variable type inference"
+            ]
         }
     },
     {
@@ -7538,8 +7676,12 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameters",
+                "Use-site variance"
+            ]
         }
     },
     {
@@ -7588,8 +7730,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Conditionals",
+                "Variable type inference"
+            ]
         }
     },
     {
@@ -7634,8 +7781,13 @@
         ],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameters",
+                "Cast",
+                "Conditionals",
+                "Variable type inference"
+            ]
         }
     },
     {
@@ -7668,8 +7820,11 @@
         "errormsg": [],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                 "Parameterized class",
+                 "Parameterized type",
+                 "Bounded type parameters"
+            ]
         }
     },
     {
@@ -7708,8 +7863,12 @@
         "errormsg": [],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Function type",
+                "Flow typing",
+                "Lambda",
+                "Conditionals"
+            ]
         }
     },
     {
@@ -7745,8 +7904,10 @@
         "errormsg": [],
         "comment": "",
         "chars": {
-            "characteristics": [],
-            "categories": []
+            "characteristics": [
+                "Conditionals",
+                "Lambda"
+            ]
         }
     }
 ]
