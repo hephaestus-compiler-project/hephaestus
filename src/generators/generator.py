@@ -1968,7 +1968,13 @@ class Generator():
         type_params = []
         type_param_names = blacklist or []
         variances = [tp.Invariant, tp.Covariant, tp.Contravariant]
-        for _ in range(ut.random.integer(count or 1, cfg.limits.max_type_params)):
+        limit = (
+            # In case etype is Function3<T1, T2, T3, F_N>
+            4
+            if count == 4 and cfg.limits.max_type_params < 4
+            else cfg.limits.max_type_params
+        )
+        for _ in range(ut.random.integer(count or 1, limit)):
             name = ut.random.caps(blacklist=type_param_names)
             type_param_names.append(name)
             if for_function:
