@@ -149,6 +149,42 @@ class Generator():
     # FunctionDeclaration, ParameterDeclaration, ClassDeclaration,
     # FieldDeclaration, and VariableDeclaration
 
+    def _remove_unused_type_params(self, type_params, params, ret_type):
+        """
+        Remove function's type parameters that are not included in its
+        signature.
+        """
+        def get_type_vars(t):
+            if t.is_type_var():
+                return [t]
+            return getattr(t, "get_type_variables", lambda x: [])(
+                self.bt_factory
+            )
+
+        replaced = {}
+        all_type_vars = []
+        param_types = [p.get_type() for p in params]
+        for t in param_types + [ret_type]:
+            all_type_vars.extend(get_type_vars(t))
+
+        for t_param in list(type_params):
+            if t_param in all_type_vars:
+                continue
+            bound = t_param.get_bound_rec(self.bt_factory)
+            type_vars = get_type_vars(t)
+            if any(t in replaced for t in type_vars):
+                bound = None
+            if bound is None:
+                bound = self.bt_factory.get_any_type()
+
+            replaced[t_param] = bound
+            self.context.remove_type(self.namespace, t_param.name)
+            type_params.remove(t_param)
+
+        for t_param in type_params:
+            if t_param.bound:
+                t_param.bound = tp.substitute_type(t_param.bound, replaced)
+
     def gen_func_decl(self,
                       etype:tp.Type=None,
                       not_void=False,
@@ -247,6 +283,7 @@ class Generator():
             # If we are going to generate a non-abstract method, we generate
             # a temporary body as a placeholder.
             body = ast.BottomConstant(ret_type)
+        self._remove_unused_type_params(type_params, params, ret_type)
         func = ast.FunctionDeclaration(
             func_name, params, ret_type, body,
             func_type=(ast.FunctionDeclaration.CLASS_METHOD
@@ -342,7 +379,7 @@ class Generator():
         cls = ast.ClassDeclaration(
             class_name,
             class_type=class_type,
-            superclasses=[], # [super_cls_info.super_inst] if super_cls_info else [],
+            superclasses=[],
             type_parameters=type_params,
             is_final=is_final,
             fields=[],
@@ -403,7 +440,8 @@ class Generator():
             cls_type, type_var_map = tu.instantiate_type_constructor(
                 class_decl.get_type(),
                 self.get_types(exclude_covariants=True,
-                               exclude_contravariants=True),
+                               exclude_contravariants=True,
+                               exclude_arrays=True),
                 enable_pecs=self.enable_pecs,
                 disable_variance_functions=self.disable_variance_functions,
                 only_regular=True,
