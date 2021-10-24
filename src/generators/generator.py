@@ -1536,7 +1536,6 @@ class Generator():
                                      gen_bottom=gen_bottom, sam_coercion=False)
             args.append(ast.CallArgument(arg))
         self.depth = initial_depth
-
         return ast.FunctionCall(name, args, receiver=receiver,
                                 is_ref_call=True)
 
@@ -2275,19 +2274,22 @@ class Generator():
             for attr in getattr(cls, attr_name):  # function or field
                 attr_type = tp.substitute_type(
                     attr.get_type(), type_map_var)
-                if not attr_type:
-                    continue
                 if attr_type == self.bt_factory.get_void_type():
                     continue
                 if func_ref:
-                    if not getattr(attr_type, 'is_function_type', lambda: False)():
+                    if not getattr(attr_type, 'is_function_type',
+                                   lambda: False)():
                         continue
-                    attr_type = attr_type.type_args[-1] if not signature \
-                        else attr_type
 
                 if not self._is_sigtype_compatible(
-                        attr, etype, type_map_var, signature and not func_ref,
-                        subtype):
+                        attr, etype, type_map_var,
+                        signature and not func_ref,
+                        subtype,
+                        lambda x: (
+                            x.get_type().type_args[-1]
+                            if not signature and func_ref
+                            else x.get_type()
+                        )):
                     continue
 
                 if attr_name == 'functions':
@@ -2528,19 +2530,21 @@ class Generator():
         return gu.AttrAccessInfo(cls_type, params_map, attr, func_type_var_map)
 
     def _is_sigtype_compatible(self, attr, etype, type_var_map,
-                               check_signature, subtype):
-        ret_type = tp.substitute_type(attr.get_type(), type_var_map)
+                               check_signature, subtype,
+                               get_attr_type=lambda x: x.get_type()):
+        attr_type = get_attr_type(attr)
+        attr_type = tp.substitute_type(attr_type, type_var_map)
         if not check_signature:
             if subtype:
-                return ret_type.is_assignable(etype)
-            return ret_type == etype
+                return attr_type.is_assignable(etype)
+            return attr_type == etype
         param_types = [
             tp.substitute_type(p.get_type(), type_var_map)
             for p in attr.params
         ]
         sig = tp.ParameterizedType(
             self.bt_factory.get_function_type(len(attr.params)),
-            param_types + [ret_type])
+            param_types + [attr_type])
         return etype == sig
 
     def _is_signature_compatible(self, attr, etype, check_signature,
