@@ -1,0 +1,42 @@
+{
+    "Parametric polymorphism": [
+        "Parameterized class",
+        "Parameterized type",
+        "Parameterized function",
+        "Use-site variance",
+        "Bounded type parameters",
+        "Declaration-site variance"
+    ],
+    "OOP features": [
+        "Inheritance",
+        "Overriding",
+    ],
+    "Type system-related features": [
+        "Subtyping",
+        "Primitive type",
+        "Wildcard type",
+        "Nothing"
+    ]
+    "Functional programming": [
+        "Lambda",
+        "Function reference",
+        "SAM type",
+        "Function type"
+    ]
+    "Standard language features": [
+        "Conditionals",
+        "Array",
+        "Cast",
+        "Variable arguments"
+    ]
+    "Type inference": [
+        "Type argument inference",
+        "Variable type inference",
+        "Parameter type inference",
+        "Flow typing",
+        "Return type inference"
+    ]
+    "Other": [
+        "Named arguments",
+    ]
+}
