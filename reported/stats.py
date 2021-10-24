@@ -97,6 +97,8 @@ def print_latex_commands(lang, stats, chars_view):
     print()
     for count, char in chars_view:
         char = char.replace(' ', '').replace('-', '').lower()
+        char = 'llambda' if char == 'lambda' else char
+        char = 'aarray' if char == 'array' else char
         print(template.format(
             lang="",
             category=char,
