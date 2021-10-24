@@ -571,14 +571,17 @@ def _compute_type_variable_assignments(
             if not a_types:
                 if t_param.bound:
                     if not t_param.bound.is_type_var():
+                        if t_param.bound.has_type_variables():
+                            bound = tp.substitute_type(
+                                t_param.bound, type_var_map)
+                        else:
+                            bound = t_param.bound
                         # If the type parameter has a bound, then find types
                         # that are subtypes to this bound.
-                        a_types = find_subtypes(t_param.bound, types, True)
+                        a_types = find_subtypes(bound, types, True)
                         for i, t in enumerate(a_types):
                             if isinstance(t, tp.ParameterizedType):
-                                tmp_t = tp.substitute_type_args(
-                                    t, type_var_map, cond=lambda t: False)
-                                a_types[i] = tmp_t.to_variance_free()
+                                a_types[i] = t.to_variance_free()
                     else:
                         try:
                             t_bound = type_var_map[t_param.bound]
