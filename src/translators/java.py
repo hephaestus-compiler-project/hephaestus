@@ -737,8 +737,9 @@ class JavaTranslator(BaseTranslator):
                 if node.get_type() != jt.Void:
                     body_res = ut.add_string_at(
                         body_res, "return ", ut.leading_spaces(body_res))
-                body = "{{{body};}}".format(
+                body = "{{{body};}}{semicolon}".format(
                     body=body_res,
+                    semicolon=";" if self._parent_is_block() else ""
                     #ident=self.get_ident(old_ident=old_ident)
                 )
             else:
@@ -1062,7 +1063,7 @@ class JavaTranslator(BaseTranslator):
             receiver = children_res[0]
         else:
             # Global function
-            receiver = "Main"
+            receiver = ""
             # Use `this` if its a method within current class
             parent_cls = self.context.get_parent_class(self._namespace)
             if parent_cls:
@@ -1072,14 +1073,12 @@ class JavaTranslator(BaseTranslator):
                 if node.func in {m.name for m in parent_methods}:
                     receiver = "this"
             # Do not use a receiver if its a variable (lambda case)
-            variable_decl = get_decl(self.context, self._namespace, node.func)
-            if variable_decl and isinstance(variable_decl[1],
-                                            ast.VariableDeclaration):
-                namespace = variable_decl[0]
-                if namespace == ('global',):
+            decl = get_decl(self.context, self._namespace, node.func)
+            if decl:
+                namespace, decl = decl
+                if namespace == ast.GLOBAL_NAMESPACE and isinstance(
+                        decl, ast.FunctionDeclaration):
                     receiver = "Main"
-                else:
-                    receiver = ""
 
         receiver += "::" if receiver != "" else ""
 
