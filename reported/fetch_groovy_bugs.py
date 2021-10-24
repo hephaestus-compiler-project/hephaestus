@@ -34,6 +34,10 @@ SCHEMA = {
     "bugtype": "",
     "resolvedin": "",
     "test": [],
+    "chars": {
+        "characteristics": [],
+        "categories": []
+    },
     "errormsg": [],
     "comment": ""
 }
