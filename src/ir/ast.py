@@ -622,7 +622,7 @@ class ClassDeclaration(Declaration):
         """All functions that can be called in instantiations of this class
         """
         # Get functions that are implemented in the current class
-        functions = {f for f in self.functions if f.body}
+        functions = set(self.functions)
 
         if not self.superclasses:
             return functions
