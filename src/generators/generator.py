@@ -2317,6 +2317,11 @@ class Generator():
                                 if not bound.has_type_variables():
                                     type_var_bounds[t_param] = bound
                         type_var_bounds.update(type_map_var)
+                        type_var_bounds.update(fun_type_var_map)
+                        fun_type_var_map = tu.instantiate_parameterized_function(
+                            attr.type_parameters, self.get_types(),
+                            type_var_map=type_var_bounds, only_regular=True
+                        )
                     else:
                         fun_type_var_map = {}
                     type_map_var.update(fun_type_var_map)
@@ -2395,6 +2400,10 @@ class Generator():
                                                    self.bt_factory)
                 if not func_type_var_map:
                     continue
+                func_type_var_map = tu.instantiate_parameterized_function(
+                    func.type_parameters, self.get_types(),
+                    type_var_map=func_type_var_map, only_regular=True
+                )
                 type_var_map.update(func_type_var_map)
 
             if not self._is_sigtype_compatible(func, etype, type_var_map,
