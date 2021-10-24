@@ -2336,10 +2336,11 @@ class Generator():
                         attr, etype, type_map_var,
                         signature and not func_ref,
                         subtype,
-                        lambda x: (
-                            x.get_type().type_args[-1]
+                        lambda x, y: (
+                            tp.substitute_type(
+                                x.get_type(), y).type_args[-1]
                             if not signature and func_ref
-                            else x.get_type()
+                            else tp.substitute_type(x.get_type(), y)
                         )):
                     continue
                 if getattr(attr, 'type_parameters', None):
@@ -2555,9 +2556,9 @@ class Generator():
 
     def _is_sigtype_compatible(self, attr, etype, type_var_map,
                                check_signature, subtype,
-                               get_attr_type=lambda x: x.get_type()):
-        attr_type = get_attr_type(attr)
-        attr_type = tp.substitute_type(attr_type, type_var_map)
+                               get_attr_type=lambda x, y: tp.substitute_type(
+                                   x.get_type(), y)):
+        attr_type = get_attr_type(attr, type_var_map)
         if not check_signature:
             if subtype:
                 return attr_type.is_assignable(etype)
