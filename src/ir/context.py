@@ -181,7 +181,8 @@ class Context():
 
     def get_parent_class(self, namespace):
         parent = self.get_parent(namespace)
-        if parent is None:
+        if parent is None and not (len(namespace) > 2 and
+                                   'lambda_' in namespace[-2]):
             return None
         if isinstance(parent, ast.ClassDeclaration):
             return parent
