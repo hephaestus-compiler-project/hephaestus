@@ -98,6 +98,8 @@ def get_data(lookup):
         bug['title'] = item['summary']
         bug['links']['issuetracker'] = youtrack_url + bid
         bug['reporter'] = reporter
+        if bug.get('chars', None) is None:
+            bug['chars'] = SCHEMA['chars']
 
         description = item['description']
         description = description if description is not None else ""
@@ -117,6 +119,8 @@ def get_data(lookup):
     ids = {bug['bugid'] for bug in results}
     for bug_id, bug in lookup.items():
         if bug_id not in ids:
+            if bug.get('chars', None) is None:
+                bug['chars'] = SCHEMA['chars']
             results.append(bug)
     return results
 

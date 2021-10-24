@@ -108,6 +108,8 @@ def get_data(lookup):
         if item['fields']['resolution']:
             bug['resolution'] = str(item['fields']['resolution']['name'])
         bug['status'] = str(item['fields']['status']['name'])
+        if bug.get('chars', None) is None:
+            bug['chars'] = SCHEMA['chars']
 
         description = item['fields']['description']
         code_fragments = get_code_fragments(description)
@@ -119,6 +121,8 @@ def get_data(lookup):
     ids = {bug['bugid'] for bug in results}
     for bug_id, bug in lookup.items():
         if bug_id not in ids:
+            if bug.get('chars', None) is None:
+                bug['chars'] = SCHEMA['chars']
             results.append(bug)
     return results
 
