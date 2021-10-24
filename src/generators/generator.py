@@ -29,7 +29,7 @@ from src.generators import generators as gens
 from src.generators import utils as gu
 from src.generators.config import cfg
 from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
-from src.ir.context import Context
+from src.ir.context import Context, get_decl
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
 from src.modules.logging import Logger
@@ -2281,19 +2281,13 @@ class Generator():
                                    lambda: False)():
                         continue
 
-                if not self._is_sigtype_compatible(
-                        attr, etype, type_map_var,
-                        signature and not func_ref,
-                        subtype,
-                        lambda x: (
-                            x.get_type().type_args[-1]
-                            if not signature and func_ref
-                            else x.get_type()
-                        )):
-                    continue
-
                 if attr_name == 'functions':
+                    fun_type_var_map = {}
                     if attr.is_parameterized():
+                        func_type_var_map = tu.unify_types(
+                            etype, attr.get_type(), self.bt_factory)
+                        if not func_type_var_map:
+                            continue
                         # Here we do the following. The retrieved attribute
                         # is a parameterized function. So, we need to
                         # instantiate it with some type arguments. However,
@@ -2317,14 +2311,27 @@ class Generator():
                             if bound.has_type_variables():
                                 bound = tp.substitute_type(
                                     bound, type_map_var)
+                                if func_type_var_map.get(
+                                        t_param, bound) != bound:
+                                    continue
                                 if not bound.has_type_variables():
                                     type_var_bounds[t_param] = bound
                         type_var_bounds.update(type_map_var)
-                        fun_type_var_map = tu.instantiate_parameterized_function(
-                            attr.type_parameters, self.get_types(),
-                            type_var_map=type_var_bounds, only_regular=True)
                     else:
                         fun_type_var_map = {}
+                    type_map_var.update(fun_type_var_map)
+
+                if not self._is_sigtype_compatible(
+                        attr, etype, type_map_var,
+                        signature and not func_ref,
+                        subtype,
+                        lambda x: (
+                            x.get_type().type_args[-1]
+                            if not signature and func_ref
+                            else x.get_type()
+                        )):
+                    continue
+                if getattr(attr, 'type_parameters', None):
 
                     decls.append(gu.AttrReceiverInfo(
                         ast.Variable(var.name), type_map_var,
@@ -2366,10 +2373,6 @@ class Generator():
             if func.get_type() == self.bt_factory.get_void_type():
                 continue
 
-            if not self._is_sigtype_compatible(func, etype, {},
-                                               signature, subtype):
-                continue
-
             if is_nested_function and func.name in self.namespace:
                 # Here, we disallow recursive calls because it may lead to
                 # recursive call on lambda expressions.
@@ -2388,9 +2391,15 @@ class Generator():
 
             type_var_map = {}
             if func.is_parameterized():
-                type_var_map = tu.instantiate_parameterized_function(
-                    func.type_parameters, self.get_types(),
-                    only_regular=True)
+                func_type_var_map = tu.unify_types(etype, func.get_type(),
+                                                   self.bt_factory)
+                if not func_type_var_map:
+                    continue
+                type_var_map.update(func_type_var_map)
+
+            if not self._is_sigtype_compatible(func, etype, type_var_map,
+                                               signature, subtype):
+                continue
 
             # Nice to have:  add `this` explicitly as the receiver in methods
             # of current class.
