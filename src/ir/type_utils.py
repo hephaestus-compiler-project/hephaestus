@@ -1027,6 +1027,13 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory) -> dict:
         t_arg1 = t_arg
         t_arg2 = t2.type_args[i]
 
+        if t_arg2.is_wildcard() and not t_arg1.is_wildcard():
+            return {}
+
+        if t_arg2.is_wildcard():
+            t_arg2 = t_arg2.bound
+            t_arg1 = t_arg1.bound
+
         is_type_var = t_arg2.has_type_variables()
 
         if not is_type_var:

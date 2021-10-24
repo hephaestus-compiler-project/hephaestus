@@ -1163,3 +1163,19 @@ def test_unify_types_with_conflicted_type_vars():
 
     params = tutils.unify_types(foo_a, foo_d, factory)
     assert params == {type_param1: type_param1, type_param2: type_param2}
+
+
+def test_unify_types_function_type():
+    factory = kt.KotlinBuiltinFactory()
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    t1 = kt.FunctionType(1).new([type_param1, tp.WildCardType(type_param2,
+                                                              tp.Covariant)])
+    t2 = kt.FunctionType(1).new([type_param1, tp.WildCardType(type_param2,
+                                                              tp.Covariant)])
+
+    params = tutils.unify_types(t1, t2, factory)
+    assert params == {
+        type_param1: type_param1,
+        type_param2: type_param2
+    }
