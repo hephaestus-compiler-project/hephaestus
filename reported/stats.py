@@ -23,8 +23,46 @@ def print_stats(lang, stats):
         print("{}: {}".format(category, ", ".join(res)))
         print(80*"=")
 
+def print_chars(chars_view):
+    lookup = {
+        "Parameterized class": "Parametric polymorphism",
+        "Parameterized type": "Parametric polymorphism",
+        "Parameterized function": "Parametric polymorphism",
+        "Use-site variance": "Parametric polymorphism",
+        "Bounded type parameters": "Parametric polymorphism",
+        "Declaration-site variance": "Parametric polymorphism",
+        "Inheritance": "OOP features",
+        "Overriding": "OOP features",
+        "Subtyping": "Type system-related features",
+        "Primitive type": "Type system-related features",
+        "Wildcard type": "Type system-related features",
+        "Nothing": "Type system-related features",
+        "Lambda": "Functional programming",
+        "Function reference": "Functional programming",
+        "SAM type": "Functional programming",
+        "Function type": "Functional programming",
+        "Conditionals": "Standard language features",
+        "Array": "Standard language features",
+        "Cast": "Standard language features",
+        "Variable arguments": "Standard language features",
+        "Type argument inference": "Type inference",
+        "Variable type inference": "Type inference",
+        "Parameter type inference": "Type inference",
+        "Flow typing": "Type inference",
+        "Return type inference": "Type inference",
+        "Named arguments": "Other"
+    }
+    print()
+    print(80*"=")
+    print("Characteristics")
+    print(80*"-")
+    for count, char in chars_view:
+        print("{:<29}{:<5}{:<50}".format(char, count, lookup[char]))
+    print(80*"=")
 
-def print_latex_commands(lang, stats):
+
+
+def print_latex_commands(lang, stats, chars_view):
     template = "\\newcommand{{\\{lang}{category}}}{{\\nnum{{{num}}}}}"
     lookup = {
             'Java': 'j',
@@ -56,10 +94,19 @@ def print_latex_commands(lang, stats):
         num=total
     ))
     print()
+    print()
+    for count, char in chars_view:
+        char = char.replace(' ', '').replace('-', '').lower()
+        print(template.format(
+            lang="",
+            category=char,
+            num=count
+        ))
 
 
 
-def process(bug, res):
+
+def process(bug, res, chars):
     d = {
         'status': {
             'Kotlin': {
@@ -121,11 +168,15 @@ def process(bug, res):
     res['total']['symptom'][symptom] += 1
     res['total']['mutator'][bmutator] += 1
 
+    for char in bug['chars']['characteristics']:
+        chars[char] += 1
+
 
 def main():
     args = get_args()
     with open(args.input, 'r') as f:
         data = json.load(f)
+    chars = defaultdict(lambda: 0)
     res = defaultdict(lambda: {
         'status': {
             'Reported': 0,
@@ -147,7 +198,7 @@ def main():
         }
     })
     for bug in data:
-        process(bug, res)
+        process(bug, res, chars)
     total = None
     for lang, values in res.items():
         if lang == "total":
@@ -156,14 +207,18 @@ def main():
             print_stats(lang, values)
     print_stats("total", total)
 
+    chars_view = [ (v,k) for k,v in chars.items() ]
+    chars_view.sort(reverse=True)
+    print_chars(chars_view)
+
     if args.latex:
         total = None
         for lang, values in res.items():
             if lang == "total":
                 total = values
             else:
-                print_latex_commands(lang, values)
-        print_latex_commands("Total", total)
+                print_latex_commands(lang, values, [])
+        print_latex_commands("Total", total, chars_view)
 
 if __name__ == "__main__":
     main()
