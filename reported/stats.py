@@ -88,6 +88,13 @@ def print_latex_commands(lang, stats, chars_view):
                 num=v
             ))
         print()
+    if lang == 'Total':
+        real_bugs = stats['status']['Confirmed'] + stats['status']['Fixed']
+        print(template.format(
+            lang='t',
+            category='real',
+            num=real_bugs
+        ))
     print(template.format(
         lang=lookup.get(lang, lang),
         category='total',
