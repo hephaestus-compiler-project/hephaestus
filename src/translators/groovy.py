@@ -825,7 +825,10 @@ class GroovyTranslator(BaseTranslator):
             c.accept(self)
         self.ident = old_ident
         children_res = self.pop_children_res(children)
-        func = self._get_main_prefix('funcs', node.func) + node.func
+        main_prefix = self._get_main_prefix('funcs', node.func)
+        if main_prefix == "":
+            main_prefix = self._get_main_prefix('vars', node.func)
+        func = main_prefix + node.func
         receiver = children_res[0] if node.receiver else None
         args = children_res[1:] if node.receiver else children_res
         if receiver:
@@ -836,10 +839,11 @@ class GroovyTranslator(BaseTranslator):
             )
         else:
             receiver_expr = ''
-        res = "{ident}{receiver}{name}({args})".format(
+        res = "{ident}{receiver}{name}{apply}({args})".format(
             ident=self.get_ident(),
             receiver=receiver_expr,
             name=func,
+            apply=".apply" if node.is_ref_call else "",
             args=", ".join(args)
         )
         self._cast_number = prev_cast_number
