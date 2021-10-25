@@ -22,7 +22,7 @@ run_groovyc () {
         echo $t
         $JAVA_11 -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$RES/jacoco-$iter.exec \
             -cp $GROOVY_SRC/build/libs/groovy-4.0.0-SNAPSHOT.jar \
-            org.codehaus.groovy.tools.FileSystemCompiler $t
+            org.codehaus.groovy.tools.FileSystemCompiler --compile-static $t
     done
 }
 
