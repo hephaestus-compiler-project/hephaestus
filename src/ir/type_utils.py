@@ -918,11 +918,7 @@ def get_type_hint(expr, context: ctx.Context, namespace: Tuple[str],
             expr = expr.receiver
 
         elif isinstance(expr, ast.FunctionReference):
-            return _return_type_hint(
-                get_function_reference_type(
-                    expr, context, namespace, factory, types, smart_casts
-                )
-            )
+            return expr.signature
 
         elif isinstance(expr, ast.FieldAccess):
             names.append(expr.field)

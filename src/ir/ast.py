@@ -1219,9 +1219,10 @@ class FunctionCall(Expr):
 
 
 class FunctionReference(Expr):
-    def __init__(self, func: str, receiver: Expr):
+    def __init__(self, func: str, receiver: Expr, signature: types.Type):
         self.func = func
         self.receiver = receiver
+        self.signature = signature
 
     def children(self):
         if not self.receiver:
@@ -1232,6 +1233,9 @@ class FunctionReference(Expr):
         super().update_children(children)
         if self.receiver:
             self.receiver = children[0]
+
+    def get_signature(self):
+        return self.signature
 
     def __str__(self):
         return "{}::{}".format(str(self.receiver), self.func)
