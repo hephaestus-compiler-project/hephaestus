@@ -30,6 +30,7 @@ elif [ "$language" = "kotlin" ]; then
     SOURCES=$KOTLIN_JAR
     JAVA=$JAVA_8
 elif [ "$language" = "groovy" ]; then
+    SOURCES=$GROOVY_JAR
     JAVA=$JAVA_11
 else
     echo "language must be: java, kotlin, or groovy"

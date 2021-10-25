@@ -8,6 +8,8 @@ JAVA_8_MAC=${HOME}/.sdkman/candidates/java/8.0.282.j9-adpt/bin/java
 JAVA_11=${HOME}/.sdkman/candidates/java/11.0.2-open/bin/java
 JAVA_SRC=$HOME/coverage/jdk
 KOTLIN_JAR=$HOME/.sdkman/candidates/kotlin/1.5.31/lib/kotlin-compiler.jar
+GROOVY_SRC=${HOME}/coverage/groovy
+GROOVY_JAR=$GROOVY_SRC/build/libs/groovy-4.0.0-SNAPSHOT.jar
 JACOCO=$HOME/coverage/jacoco
 
 distro=$1
