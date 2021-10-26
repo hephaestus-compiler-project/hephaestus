@@ -8,11 +8,13 @@ def get_args():
     parser = argparse.ArgumentParser(
         description='Compute coverage'
     )
+    parser.add_argument("lang", help="language")
     parser.add_argument("testsuite", help="CSV for test suite")
     parser.add_argument("generator", help="CSV for combination")
     parser.add_argument("combination", help="CSV for combination")
     parser.add_argument("whitelist",
                         help="Whitelist of packages we should include.")
+    parser.add_argument("--latex", action="store_true")
     return parser.parse_args()
 
 
@@ -78,59 +80,68 @@ def compute_abs_diff(res1, res2, metric):
     covered2 = res2[covered]
     return covered1 - covered2
 
-def print_perc(pkg, res, metric):
-    print("{:<70}{:>5.2f}".format(pkg, compute_perc(res, metric)))
 
-def print_res(testsuite, generator, comb):
-    #for pkg, res in comb.items():
-    #    if pkg == 'total':
-    #        continue
-    #    print_perc(pkg, res, 'branch')
-    #print_perc('total', comb['total'], 'branch')
+def print_latex_command(lang, category, d):
+    template = "\\newcommand{{\\{lang}cov{category}{metric}}}{{\\nnum{{{num}}}}}"
+    for k, v in d.items():
+        v="{:.2f}".format(v) if isinstance(v, float) else v
+        print(template.format(
+            lang=lang,
+            category=category,
+            metric=k,
+            num=v
+        ))
+
+
+def get_dict_format(line, function, branch):
+    return {"line": line, "function": function, "branch": branch}
+
+
+def print_dict(name, d, template):
+    print(template.format(name, d['line'], d['function'], d['branch']))
+
+
+def print_res(lang, testsuite, generator, comb, latex):
     template = "{:<20} {:>18} {:>18} {:>18}"
     template_f = "{:<20} {:>18.2f} {:>18.2f} {:>18.2f}"
     print(template.format(
         "", "Line Coverage", "Function Coverage", "Branch Coverage"
     ))
-    ts_pers_line = compute_perc(testsuite['total'], 'line')
-    ts_pers_function = compute_perc(testsuite['total'], 'function')
-    ts_pers_branch = compute_perc(testsuite['total'], 'branch')
-    generator_pers_line = compute_perc(generator['total'], 'line')
-    generator_pers_function = compute_perc(generator['total'], 'function')
-    generator_pers_branch = compute_perc(generator['total'], 'branch')
-    comb_pers_line = compute_perc(comb['total'], 'line')
-    comb_pers_function = compute_perc(comb['total'], 'function')
-    comb_pers_branch = compute_perc(comb['total'], 'branch')
-    print(template_f.format(
-        "Test suite",
-        ts_pers_line,
-        ts_pers_function,
-        ts_pers_branch
-    ))
-    print(template_f.format(
-        "Generator",
-        generator_pers_line,
-        generator_pers_function,
-        generator_pers_branch
-    ))
-    print(template_f.format(
-        "Combination",
-        comb_pers_line,
-        comb_pers_function,
-        comb_pers_branch,
-    ))
-    print(template_f.format(
-        "% change",
-        comb_pers_line - ts_pers_line,
-        comb_pers_function - ts_pers_function,
-        comb_pers_branch - ts_pers_branch,
-    ))
-    print(template.format(
-        "absolute change",
+    ts_dict = get_dict_format(
+        compute_perc(testsuite['total'], 'line'),
+        compute_perc(testsuite['total'], 'function'),
+        compute_perc(testsuite['total'], 'branch'))
+    generator_dict = get_dict_format(
+        compute_perc(generator['total'], 'line'),
+        compute_perc(generator['total'], 'function'),
+        compute_perc(generator['total'], 'branch'))
+    comb_dict = get_dict_format(
+        compute_perc(comb['total'], 'line'),
+        compute_perc(comb['total'], 'function'),
+        compute_perc(comb['total'], 'branch'))
+    change_dict = get_dict_format(
+        comb_dict['line'] - ts_dict['line'],
+        comb_dict['function'] - ts_dict['function'],
+        comb_dict['branch'] - ts_dict['branch'])
+    abs_dict = get_dict_format(
         compute_abs_diff(comb['total'], testsuite['total'], 'line'),
         compute_abs_diff(comb['total'], testsuite['total'], 'function'),
-        compute_abs_diff(comb['total'], testsuite['total'], 'branch')
-    ))
+        compute_abs_diff(comb['total'], testsuite['total'], 'branch'))
+    print_dict("Test Suite", ts_dict, template_f)
+    print_dict("Generator", generator_dict, template_f)
+    print_dict("Combination", comb_dict, template_f)
+    print_dict("% change", change_dict, template_f)
+    print_dict("Absolute change", abs_dict, template)
+    if latex:
+        categories = [
+            ('test', ts_dict),
+            ('gen', generator_dict),
+            ('comb', comb_dict),
+            ('change', change_dict),
+            ('abs', abs_dict)
+        ]
+        for category, d in categories:
+            print_latex_command(lang, category, d)
 
 
 def main():
@@ -142,7 +153,7 @@ def main():
     testsuite = read_csv(args.testsuite, whitelist)
     generator = read_csv(args.generator, whitelist)
     comb = read_csv(args.combination, whitelist)
-    print_res(testsuite, generator, comb)
+    print_res(args.lang, testsuite, generator, comb, args.latex)
 
 
 
