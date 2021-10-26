@@ -15,6 +15,7 @@ def get_args():
     parser.add_argument("whitelist",
                         help="Whitelist of packages we should include.")
     parser.add_argument("--latex", action="store_true")
+    parser.add_argument("--inf", action="store_true")
     return parser.parse_args()
 
 
@@ -81,13 +82,14 @@ def compute_abs_diff(res1, res2, metric):
     return covered1 - covered2
 
 
-def print_latex_command(lang, category, d):
-    template = "\\newcommand{{\\{lang}cov{category}{metric}}}{{\\nnum{{{num}}}}}"
+def print_latex_command(lang, category, d, inf):
+    template = "\\newcommand{{\\{lang}cov{inf}{category}{metric}}}{{\\nnum{{{num}}}}}"
     for k, v in d.items():
         v="{:.2f}".format(v) if isinstance(v, float) else v
         print(template.format(
             lang=lang,
             category=category,
+            inf="inf" if inf else "",
             metric=k,
             num=v
         ))
@@ -101,7 +103,7 @@ def print_dict(name, d, template):
     print(template.format(name, d['line'], d['function'], d['branch']))
 
 
-def print_res(lang, testsuite, generator, comb, latex):
+def print_res(lang, testsuite, generator, comb, latex, inf):
     template = "{:<20} {:>18} {:>18} {:>18}"
     template_f = "{:<20} {:>18.2f} {:>18.2f} {:>18.2f}"
     print(template.format(
@@ -141,7 +143,7 @@ def print_res(lang, testsuite, generator, comb, latex):
             ('abs', abs_dict)
         ]
         for category, d in categories:
-            print_latex_command(lang, category, d)
+            print_latex_command(lang, category, d, inf)
 
 
 def main():
@@ -153,7 +155,7 @@ def main():
     testsuite = read_csv(args.testsuite, whitelist)
     generator = read_csv(args.generator, whitelist)
     comb = read_csv(args.combination, whitelist)
-    print_res(args.lang, testsuite, generator, comb, args.latex)
+    print_res(args.lang, testsuite, generator, comb, args.latex, args.inf)
 
 
 
