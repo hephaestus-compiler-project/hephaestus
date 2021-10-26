@@ -3,11 +3,43 @@ import json
 from collections import defaultdict
 
 
+features_lookup = {
+    "Parameterized class": "Parametric polymorphism",
+    "Parameterized type": "Parametric polymorphism",
+    "Parameterized function": "Parametric polymorphism",
+    "Use-site variance": "Parametric polymorphism",
+    "Bounded type parameters": "Parametric polymorphism",
+    "Declaration-site variance": "Parametric polymorphism",
+    "Inheritance": "OOP features",
+    "Overriding": "OOP features",
+    "Subtyping": "Type system-related features",
+    "Primitive type": "Type system-related features",
+    "Wildcard type": "Type system-related features",
+    "Nothing": "Type system-related features",
+    "Lambda": "Functional programming",
+    "Function reference": "Functional programming",
+    "SAM type": "Functional programming",
+    "Function type": "Functional programming",
+    "Conditionals": "Standard language features",
+    "Array": "Standard language features",
+    "Cast": "Standard language features",
+    "Variable arguments": "Standard language features",
+    "Type argument inference": "Type inference",
+    "Variable type inference": "Type inference",
+    "Parameter type inference": "Type inference",
+    "Flow typing": "Type inference",
+    "Return type inference": "Type inference",
+    "Named arguments": "Other"
+}
+
+
 def get_args():
     parser = argparse.ArgumentParser(
         description='Compute statistics for the bugs.')
     parser.add_argument("input", help="File with bugs.")
     parser.add_argument("--latex", action='store_true', 
+                        help='Print latex commands')
+    parser.add_argument("--combinations", action='store_true', 
                         help='Print latex commands')
     return parser.parse_args()
 
@@ -24,42 +56,13 @@ def print_stats(lang, stats):
         print(80*"=")
 
 def print_chars(chars_view):
-    lookup = {
-        "Parameterized class": "Parametric polymorphism",
-        "Parameterized type": "Parametric polymorphism",
-        "Parameterized function": "Parametric polymorphism",
-        "Use-site variance": "Parametric polymorphism",
-        "Bounded type parameters": "Parametric polymorphism",
-        "Declaration-site variance": "Parametric polymorphism",
-        "Inheritance": "OOP features",
-        "Overriding": "OOP features",
-        "Subtyping": "Type system-related features",
-        "Primitive type": "Type system-related features",
-        "Wildcard type": "Type system-related features",
-        "Nothing": "Type system-related features",
-        "Lambda": "Functional programming",
-        "Function reference": "Functional programming",
-        "SAM type": "Functional programming",
-        "Function type": "Functional programming",
-        "Conditionals": "Standard language features",
-        "Array": "Standard language features",
-        "Cast": "Standard language features",
-        "Variable arguments": "Standard language features",
-        "Type argument inference": "Type inference",
-        "Variable type inference": "Type inference",
-        "Parameter type inference": "Type inference",
-        "Flow typing": "Type inference",
-        "Return type inference": "Type inference",
-        "Named arguments": "Other"
-    }
     print()
     print(80*"=")
     print("Characteristics")
     print(80*"-")
     for count, char in chars_view:
-        print("{:<29}{:<5}{:<50}".format(char, count, lookup[char]))
+        print("{:<29}{:<5}{:<50}".format(char, count, features_lookup[char]))
     print(80*"=")
-
 
 
 def print_latex_commands(lang, stats, chars_view):
@@ -113,9 +116,7 @@ def print_latex_commands(lang, stats, chars_view):
         ))
 
 
-
-
-def process(bug, res, chars):
+def process(bug, res, chars, combinations):
     d = {
         'status': {
             'Kotlin': {
@@ -179,6 +180,12 @@ def process(bug, res, chars):
 
     for char in bug['chars']['characteristics']:
         chars[char] += 1
+        categories = set()
+        for comb in bug['chars']['characteristics']:
+            if char != comb:
+                categories.add(features_lookup[comb])
+        for cat in categories:
+            combinations[char][cat] += 1
 
 
 def main():
@@ -186,6 +193,7 @@ def main():
     with open(args.input, 'r') as f:
         data = json.load(f)
     chars = defaultdict(lambda: 0)
+    combinations = defaultdict(lambda: defaultdict(lambda: 0))
     res = defaultdict(lambda: {
         'status': {
             'Reported': 0,
@@ -207,7 +215,7 @@ def main():
         }
     })
     for bug in data:
-        process(bug, res, chars)
+        process(bug, res, chars, combinations)
     total = None
     for lang, values in res.items():
         if lang == "total":
@@ -228,6 +236,11 @@ def main():
             else:
                 print_latex_commands(lang, values, [])
         print_latex_commands("Total", total, chars_view)
+
+    if args.combinations:
+        for char, combs in combinations.items():
+            for comb, value in combs.items():
+                print("{:<29} {:<29} {:>5}".format(char, comb, value))
 
 if __name__ == "__main__":
     main()
