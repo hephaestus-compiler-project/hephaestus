@@ -1,0 +1,9 @@
+org.codehaus.groovy.ast
+org.codehaus.groovy.control
+org.codehaus.groovy.classgen.asm
+org.codehaus.groovy.classgen
+org.codehaus.groovy.transform.stc
+org.codehaus.groovy.transform.trait
+org.apache.groovy.ast.tools
+org.codehaus.groovy.ast.expr
+org.codehaus.groovy.transform.sc
