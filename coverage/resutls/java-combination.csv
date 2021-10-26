@@ -1,0 +1,1268 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ReferenceParser.ParseException,7,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.EmptyEndPosTable,0,13,0,0,0,7,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.Token,30,156,5,17,6,33,8,12,3,6
+JaCoCo Coverage Report,com.sun.tools.javac.parser,UnicodeReader.PositionTrackingReader,15,39,1,3,3,10,3,3,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.LambdaClassifier,10,102,9,19,0,18,7,11,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.parser,TextBlockSupport,139,0,26,0,27,0,16,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,LazyDocCommentTable.Entry,6,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.SimpleEndPosTable,70,0,6,0,16,0,9,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens,0,100,0,10,0,19,0,10,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.TagParser,65,0,8,0,17,0,11,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.LambdaParameterKind,0,39,0,0,0,8,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.StringToken,6,19,1,1,1,6,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ReferenceParser.Reference,15,0,0,0,6,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavadocTokenizer.JavadocComment,251,0,42,0,71,0,29,0,8,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ReferenceParser,462,13,44,1,87,4,29,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.parser,UnicodeReader.UnicodeEscapeResult,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.ParseException,12,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser,768,11133,250,1451,151,2345,223,889,7,175
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.EnumeratorEstimate,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.BasicErrorRecoveryAction.new JavacParser.BasicErrorRecoveryAction() {...},0,8,0,0,0,1,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.BasicErrorRecoveryAction.new JavacParser.BasicErrorRecoveryAction() {...},0,8,0,0,0,1,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.TokenKind,18,883,8,7,9,131,9,12,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ReferenceParser.TypeAnnotationFinder,11,0,2,0,3,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},40,0,2,0,8,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.NamedToken,6,19,1,1,1,6,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},29,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},29,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},59,0,6,0,13,0,5,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.PatternResult,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser,2350,0,345,0,508,0,231,0,43,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.AbstractEndPosTable,0,21,0,2,0,9,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ParserFactory,8,84,0,2,1,20,1,5,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.parser,LazyDocCommentTable,83,0,8,0,18,0,10,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.Phase,21,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.Comment.CommentStyle,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},49,0,2,0,10,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},127,0,23,0,20,0,15,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},43,0,5,0,8,0,5,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},29,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},59,0,6,0,14,0,5,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},25,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},26,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},310,0,38,0,56,0,22,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,TextBlockSupport.WhitespaceChecks,15,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Scanner,10,124,0,6,2,30,1,14,1,11
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavadocTokenizer,40,0,0,0,10,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.ParensResult,0,27,0,0,0,5,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,ScannerFactory,41,64,5,3,6,17,5,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavadocTokenizer.OffsetMap,201,0,24,0,37,0,19,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavacParser.BasicErrorRecoveryAction,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,UnicodeReader,4,571,10,96,0,134,10,73,0,29
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.WhitespaceRetentionPolicy,21,0,0,0,4,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavaTokenizer,140,1354,31,210,35,385,26,142,2,34
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.TagParser.Kind,21,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.Token.Tag,0,27,0,0,0,5,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.parser,JavaTokenizer.BasicComment,4,119,2,29,2,37,4,18,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.parser,Tokens.NumericToken,6,20,1,1,1,6,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},37,0,2,0,7,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},25,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},37,0,2,0,7,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},68,0,8,0,13,0,6,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},20,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},29,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.parser,DocCommentParser.new DocCommentParser.TagParser() {...},26,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,DiagnosticFormatter.Configuration.MultilineLimit,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.api,BasicJavacTask,309,76,32,6,80,20,38,3,19,3
+JaCoCo Coverage Report,com.sun.tools.javac.api,WrappingJavaFileManager,105,0,2,0,19,0,15,0,14,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new Type.ClassType() {...},18,0,0,0,3,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new Tokens.Comment() {...},36,0,0,0,9,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new DocCommentTable() {...},27,0,0,0,6,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new JCTree.JCCompilationUnit() {...},33,0,0,0,8,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new DocSourcePositions() {...},45,0,0,0,10,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new TreeScanner() {...},116,0,4,0,24,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.new DocTreeScanner() {...},18,0,2,0,3,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacScope.new JavacScope() {...},18,0,0,0,4,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacScope.new JavacScope() {...},28,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool,236,0,10,0,55,0,12,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedJavaFileObject,74,0,0,0,24,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,Entity,6685,0,14,0,2144,0,12,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,DiagnosticFormatter.Configuration.DiagnosticPart,0,33,0,0,0,6,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool.ReusableContext.ReusableLog.new DiagnosticListener() {...},22,0,2,0,5,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool.ReusableContext.ReusableJavaCompiler,12,0,0,0,7,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedStandardJavaFileManager,229,0,0,0,82,0,15,0,15,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedDiagnosticListener,37,0,0,0,11,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedTaskListener,49,0,0,0,18,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskImpl.new JavacTaskImpl.Filter() {...},23,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskImpl.new JavacTaskImpl.Filter() {...},25,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.Copier,40,0,2,0,11,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacScope,137,0,24,0,22,0,25,0,13,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTool,341,0,50,0,76,0,34,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper,212,22,35,1,41,7,31,2,13,2
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.DiagnosticSourceUnwrapper,53,0,0,0,13,0,11,0,11,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,DiagnosticFormatter.PositionKind,0,33,0,0,0,6,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedJavaFileManager,341,0,0,0,103,0,21,0,21,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool.ReusableContext.ReusableLog,29,0,0,0,10,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees.HtmlFileObject,15,0,0,0,6,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,Formattable.LocalizedString,5,14,0,0,2,4,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool.ReusableContext,150,0,4,0,43,0,8,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,ClientCodeWrapper.WrappedFileObject,138,0,0,0,49,0,11,0,11,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,MultiTaskListener,192,47,15,3,32,13,15,5,7,4
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTrees,1818,103,290,2,408,28,206,3,57,3
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskPool.ReusableContext.new TreeScanner() {...},98,0,16,0,20,0,13,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskImpl,1023,0,132,0,226,0,92,0,25,0
+JaCoCo Coverage Report,com.sun.tools.javac.api,JavacTaskImpl.Filter,88,0,14,0,22,0,9,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryFileManager.new SimpleJavaFileObject() {...},16,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main,588,0,53,0,134,0,37,0,10,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryFileManager,39,0,4,0,8,0,5,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.Context,27,0,0,0,6,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MainClassListener,24,0,6,0,8,0,5,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryClassLoader.new Enumeration() {...},38,0,4,0,8,0,5,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.Fault,9,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryFileManager.1.new ByteArrayOutputStream() {...},20,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.new SimpleJavaFileObject() {...},35,0,4,0,6,0,7,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryClassLoader.MemoryURLConnection,43,0,4,0,13,0,7,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryClassLoader.MemoryURLStreamHandler,34,0,2,0,4,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.launcher,Main.MemoryClassLoader,212,0,22,0,48,0,20,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Profile.new Profile() {...},2,5,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.Item,17,88,0,8,4,22,4,11,4,7
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.ProxyType,32,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.AttributeWriter,11,191,1,12,2,41,2,15,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.new Items.Item() {...},2,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.TypeAnnotationCompleter,73,0,2,0,17,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter.SimpleTypeVisitor,75,0,0,0,19,0,15,0,15,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.State,193,465,39,47,41,90,30,30,3,13
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},87,10,10,0,19,1,6,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,28,0,2,0,6,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},7,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,53,1,5,0,10,1,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},54,96,5,11,5,20,5,8,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},8,23,1,1,1,4,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,46,1,3,0,8,1,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},3,24,1,1,0,4,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant.LoadableConstant,0,34,0,0,0,5,0,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new Type.ClassType() {...},34,35,3,3,9,9,3,3,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.IndexedItem,14,52,0,0,4,11,3,5,3,5
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter,994,57,166,2,248,16,123,4,25,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,CRTable.CRTEntry,15,0,0,0,6,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.EnumAttributeProxy,6,15,0,0,1,5,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.AttributeKind,0,15,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter,976,2926,141,298,170,613,109,173,8,41
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter.TypeSignature,81,0,2,0,18,0,6,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.PoolOverflow,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant,0,2,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen,509,5590,100,554,78,1152,95,334,3,93
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.Mneumonics,816,0,0,0,205,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.ArrayAttributeProxy,4,12,0,0,1,4,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame.FullFrame,25,77,4,8,2,19,4,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.UsesProvidesCompleter,126,15,6,0,23,5,4,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.GenContext,0,32,0,0,0,10,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ModuleNameReader,218,0,16,0,48,0,17,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,StringConcat.IndyConstants,32,269,5,21,6,54,5,11,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant.Dynamic.BsmKey,1,57,3,3,0,13,3,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.AssignItem,18,31,0,0,6,9,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter.TypeSignature.JvmTypeVisitor,95,0,14,0,28,0,17,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ModuleNameReader.BadClassFile,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.CodeSizeOverflow,3,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.StackMapFormat.new Code.StackMapFormat() {...},0,8,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.StackMapFormat.new Code.StackMapFormat() {...},3,5,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.LocalVar.Range,41,26,2,2,8,6,5,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassFile,0,79,0,8,0,15,0,9,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.SourceFileObject,85,6,6,0,20,3,18,1,15,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame.SameLocals1StackItemFrame,8,43,2,6,2,14,2,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.InterimUsesDirective,0,6,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.LocalVar,99,109,15,15,17,28,14,12,3,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.SelfItem,7,23,2,0,1,6,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ByteCodes,44,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.StaticItem,4,64,0,0,1,12,1,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter.TypeSignature.SignatureException,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame.ChopFrame,5,24,1,1,1,9,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,StringConcat.Indy,0,126,1,9,0,26,1,8,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.GenFinalizer,0,9,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,StringConcat.Inline,230,0,12,0,42,0,12,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StringOverflow,0,6,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolWriter.WriteablePoolHelper,28,421,2,28,6,93,2,24,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.CondItem,80,136,2,14,16,25,7,14,5,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,StringConcat,35,166,13,13,8,39,11,11,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader,1801,3067,243,263,347,525,185,165,17,53
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolReader,112,330,6,19,17,76,9,30,4,16
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,CRTable,223,0,32,0,50,0,22,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code,756,3192,152,375,156,756,134,266,5,82
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.Chain,0,12,0,0,0,5,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.StackMapFrame,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.TypeAnnotationProxy,9,0,0,0,4,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.MemberItem,19,113,2,6,4,21,4,9,3,6
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.AnnotationDeproxy,126,293,13,15,26,60,15,15,5,11
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.InterimProvidesDirective,0,9,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant.NameAndType,0,23,0,0,0,6,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.StackItem,8,55,1,5,1,12,2,8,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame,23,221,9,49,4,41,7,28,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.AnnotationCompleter,19,124,4,14,3,23,5,7,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,StringConcat.IndyPlain,206,0,18,0,39,0,12,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.ClassReferenceVisitor,13,65,1,3,4,17,2,9,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.AttributeReader,70,29,10,2,7,8,6,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.AnnotationDefaultCompleter,12,56,1,1,1,13,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Profile,57,102,10,4,9,24,9,5,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.ParameterAnnotations,17,0,2,0,5,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},72,10,6,0,18,1,4,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},5,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},5,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},7,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},1,56,3,5,0,9,3,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},75,10,8,0,13,1,6,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},1,45,4,4,0,6,4,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},55,449,9,33,4,72,9,16,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,CRTable.SourceComputer,1292,0,26,0,241,0,68,0,55,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.LocalItem,59,113,6,8,9,18,6,6,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},7,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},7,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},7,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,15,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},1,107,1,9,0,19,1,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},15,10,0,0,4,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame.AppendFrame,9,45,2,4,1,13,2,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},5,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,15,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.CompoundAnnotationProxy,65,12,4,0,15,4,3,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},5,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.new ClassReader.AttributeReader() {...},0,15,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolReader.ImmutablePoolHelper,49,81,3,5,3,17,3,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items,10,137,0,2,2,24,2,14,2,13
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,JNIWriter.EncoderType,33,0,0,0,6,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassFile.Version,0,149,0,0,0,24,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.new Gen.GenFinalizer() {...},1,85,1,9,0,12,1,9,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.new TreeScanner() {...},2,15,0,0,2,3,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Gen.new Gen.GenFinalizer() {...},1,63,2,2,0,10,2,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolWriter,13,371,2,31,2,73,2,37,0,22
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.DynamicItem,40,42,3,1,7,8,5,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,CRTable.SourceRange,74,0,14,0,18,0,10,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.ClassAttributeProxy,4,12,0,0,1,4,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,UninitializedType,11,30,0,0,1,8,1,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolWriter.SharedSignatureGenerator,10,53,1,1,2,18,1,8,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassWriter.StackMapTableFrame.SameFrame,5,31,1,5,1,9,1,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant.LoadableConstant.BasicConstant,0,15,0,0,0,6,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,ClassReader.CompleterDeproxy,21,68,1,5,3,17,2,4,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Code.StackMapFormat,3,21,0,0,1,4,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Target,24,348,12,14,2,55,13,15,2,13
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,Items.ImmediateItem,30,356,4,60,6,68,5,43,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.jvm,PoolConstant.Dynamic,0,20,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.OptionGroup,0,27,0,0,0,5,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,DelegatingJavaFileManager,192,0,8,0,37,0,27,0,23,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler.CompilePolicy,20,25,7,1,7,6,4,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.HiddenGroup,64,0,2,0,12,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavacToolProvider,17,0,0,0,4,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},77,10,8,0,18,1,7,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},113,10,12,0,23,1,12,1,6,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},5,9,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},0,14,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},12,10,0,0,4,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},12,10,0,0,4,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},18,18,2,0,4,3,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},18,18,2,0,4,3,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Arguments.ErrorMode,0,21,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},5,9,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Arguments.new OptionHelper() {...},38,24,0,0,9,6,5,4,5,4
+JaCoCo Coverage Report,com.sun.tools.javac.main,Arguments.new OptionHelper.GrumpyHelper() {...},23,7,0,0,6,1,4,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,DelegatingJavaFileManager.DelegatingSJFM,88,0,0,0,22,0,16,0,16,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler.new TreeTranslator() {...},206,0,38,0,27,0,24,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.PkgInfo,3,30,1,1,1,7,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.OptionKind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,CommandLine,154,53,37,6,44,15,24,4,3,3
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler.new Symbol() {...},7,11,0,0,2,1,2,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Main.new OptionHelper.GrumpyHelper() {...},12,0,0,0,3,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,Arguments,1052,729,219,81,209,150,154,32,11,23
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler,1447,1645,218,166,305,388,181,79,30,37
+JaCoCo Coverage Report,com.sun.tools.javac.main,Main,615,234,58,26,148,65,52,6,12,4
+JaCoCo Coverage Report,com.sun.tools.javac.main,CommandLine.Tokenizer,179,0,44,0,48,0,29,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,OptionHelper.GrumpyHelper,34,6,0,0,8,3,8,1,8,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler.new TreeScanner() {...},0,88,0,10,0,23,0,9,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.main,OptionHelper,0,11,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.ArgKind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.InvalidValueException,5,4,0,0,2,2,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,CommandLine.UnmatchedQuote,6,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,JavaCompiler.ImplicitSourcePolicy,14,25,5,1,5,6,3,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},16,10,2,0,5,1,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},26,9,0,0,5,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},26,9,0,0,5,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},28,9,0,0,7,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},43,11,6,0,11,1,6,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},6,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},6,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},61,10,6,0,11,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},61,10,6,0,11,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},65,10,2,0,15,1,3,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},28,10,0,0,7,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},16,10,2,0,3,1,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},6,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},6,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},42,10,6,0,10,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},21,9,0,0,6,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},99,16,2,0,14,3,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},5,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},7,9,0,0,3,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},5,9,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},5,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},41,45,9,5,9,11,6,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},139,9,16,0,19,1,12,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},6,10,0,0,2,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},43,9,4,0,8,1,5,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},40,10,6,0,9,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},40,10,6,0,9,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},40,10,6,0,9,1,5,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},30,10,4,0,7,1,4,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Option() {...},25,10,2,0,8,1,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.new Comparator() {...},19,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.main,Main.Result,7,46,2,0,1,9,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option,426,1337,65,43,83,160,55,35,14,22
+JaCoCo Coverage Report,com.sun.tools.javac.main,Option.ChoiceKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter,25,470,6,52,5,90,8,35,2,12
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.Error,0,7,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Iterators.new Iterator() {...},0,47,0,6,0,12,0,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.util,Iterators.new Iterator() {...},2,5,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,ByteBuffer,37,410,0,2,13,71,0,21,0,20
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.CompletionCause,0,57,0,0,0,10,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Context.Key,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,AbstractDiagnosticFormatter,125,524,32,56,24,113,29,41,1,21
+JaCoCo Coverage Report,com.sun.tools.javac.util,Name,6,222,0,16,1,46,1,24,1,16
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.Node,109,0,8,0,20,0,13,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,FatalError,10,5,0,0,4,2,2,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,AbstractDiagnosticFormatter.SimpleConfiguration,135,93,30,5,32,27,19,8,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,AbstractDiagnosticFormatter.new Printer() {...},35,6,2,0,5,1,4,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Names,10,749,1,3,2,155,2,9,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.CompletionNode.Kind,25,0,0,0,6,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.DeferredDiagnosticHandler,34,37,6,4,10,10,9,3,5,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,MandatoryWarningHandler,111,162,16,20,19,39,12,12,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.util,ForwardingDiagnosticFormatter,43,13,0,0,8,4,8,1,8,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Options,46,167,10,16,9,33,14,22,5,18
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.new Types.DefaultSymbolVisitor() {...},0,45,0,4,0,10,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.new Types.UnaryVisitor() {...},4,427,5,41,2,76,5,30,0,12
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils.AbstractNode,48,6,4,0,7,3,4,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.Fragment,0,7,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,ListBuffer,68,244,7,23,15,59,12,33,8,22
+JaCoCo Coverage Report,com.sun.tools.javac.util,UnsharedNameTable.HashEntry,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,DiagnosticSource.new DiagnosticSource() {...},2,3,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Position.LineMapImpl,89,122,9,17,14,35,15,10,9,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,BasicDiagnosticFormatter,83,314,25,42,20,60,22,26,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,List.new List() {...},4,7,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,List.new Iterator() {...},8,33,1,3,2,7,2,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,List.new Iterator() {...},8,5,0,0,2,2,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.CompletionNode,50,0,10,0,12,0,8,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Abort,7,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,List,267,611,65,91,55,147,52,76,12,38
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.Factory,77,217,1,7,9,38,9,23,8,20
+JaCoCo Coverage Report,com.sun.tools.javac.util,Bits.BitsState,0,32,0,4,0,9,0,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,StringUtils,28,4,2,0,5,1,5,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.Note,0,7,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,BasicDiagnosticFormatter.BasicConfiguration.BasicFormatKind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.WriterKind,0,33,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.DiagnosticType,0,39,0,0,0,8,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.DiagnosticFlag,0,51,0,0,0,9,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.RichPrinter,14,247,6,28,3,45,7,20,1,9
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log,474,559,64,41,107,134,65,47,23,34
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.FilterVisitor,48,0,8,0,11,0,7,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils.TarjanNode,16,7,4,0,1,3,3,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.DiscardDiagnosticHandler,0,7,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,ArrayUtils,43,68,3,7,11,17,4,7,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.RichConfiguration,92,25,16,2,18,7,12,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,UnsharedNameTable,160,0,12,0,38,0,12,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,ListBuffer.new Iterator() {...},8,34,1,3,2,7,2,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,Position.LineTabMapImpl,73,0,8,0,21,0,8,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,ClientCodeException,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Name.Table,0,72,0,8,0,15,0,9,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.util,PropagatedException,8,0,0,0,3,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,ModuleHelper,81,0,2,0,5,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,MatchingUtils,126,0,20,0,28,0,15,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Iterators.CompoundIterator,11,59,4,10,2,15,4,8,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils.Tarjan,0,138,0,14,0,33,0,12,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils.DotVisitor,81,0,0,0,14,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Warner,0,71,1,3,0,22,1,10,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.util,BasicDiagnosticFormatter.BasicConfiguration.SourcePosition,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,DefinedBy.Api,39,0,0,0,8,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,DiagnosticSource,79,221,20,31,18,51,17,19,1,9
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.ClassNameSimplifier,0,132,3,19,0,31,3,11,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,JavacMessages,73,277,14,28,22,70,17,26,5,17
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils,45,8,0,0,8,2,2,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Bits,85,597,29,56,12,111,25,44,2,24
+JaCoCo Coverage Report,com.sun.tools.javac.util,Position,35,12,9,1,7,4,6,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Iterators,3,17,0,0,1,3,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,RawDiagnosticFormatter,329,0,34,0,66,0,24,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,ForwardingDiagnosticFormatter.ForwardingConfiguration,23,6,0,0,7,3,5,1,5,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.DiagnosticInfo,15,57,1,4,6,12,4,6,3,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies,205,0,18,0,45,0,18,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.DefaultDiagnosticHandler,19,102,8,19,3,18,8,9,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,Assert,57,27,18,8,25,16,20,8,7,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,SharedNameTable.NameImpl,0,49,1,5,0,10,1,10,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,IntHashTable,283,0,36,0,66,0,28,0,10,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,RawDiagnosticFormatter.RawDiagnosticPosHelper,38,0,2,0,10,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.SourcePosition,12,35,3,3,2,7,4,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,AbstractLog,96,177,1,7,18,36,10,18,9,15
+JaCoCo Coverage Report,com.sun.tools.javac.util,MandatoryWarningHandler.DeferredDiagnosticKind,0,44,0,0,0,7,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic,126,125,21,12,27,33,26,21,13,16
+JaCoCo Coverage Report,com.sun.tools.javac.util,GraphUtils.NodeVisitor,22,0,2,0,5,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.WhereClauseKind,0,35,0,0,0,8,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.DiagnosticHandler,0,11,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.DependenciesMode,83,0,8,0,17,0,7,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,LayoutCharacters,8,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies,0,26,0,2,0,8,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,BasicDiagnosticFormatter.BasicConfiguration,98,134,16,4,29,38,14,11,2,11
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.MultilineDiagnostic,0,23,0,0,0,7,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.DummyDependencies,0,6,0,0,0,4,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,RichDiagnosticFormatter.RichConfiguration.RichFormatterFeature,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.util,Log.PrefixKind,0,30,0,0,0,7,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.util,Pair,23,53,4,8,1,11,4,7,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.util,Dependencies.GraphDependencies.PruneVisitor,14,0,2,0,4,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,UnsharedNameTable.NameImpl,27,0,0,0,9,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.SimpleDiagnosticPosition,8,9,0,0,3,4,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.util,Convert,190,472,21,48,41,90,27,33,9,13
+JaCoCo Coverage Report,com.sun.tools.javac.util,Context,51,139,14,12,8,36,11,13,1,10
+JaCoCo Coverage Report,com.sun.tools.javac.util,SharedNameTable,20,227,4,20,6,52,3,17,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.util,Constants,246,0,49,0,48,0,39,0,11,0
+JaCoCo Coverage Report,com.sun.tools.javac.util,JCDiagnostic.Warning,0,7,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCEndPosTree,14,0,0,0,5,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCMemberReference.ReferenceKind,0,73,0,0,0,13,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCPolyExpression.PolyKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.new DocTreeScanner() {...},22,0,2,0,3,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.new JCDiagnostic.DiagnosticPosition() {...},35,0,0,0,5,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCErroneous,3,19,0,0,1,7,1,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCAttribute,43,0,6,0,11,0,9,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCPackageDecl,10,18,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.PosKind,0,37,0,0,0,8,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCParam,28,0,0,0,10,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCUses,10,12,0,0,3,5,3,3,3,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeMaker.AnnotationBuilder,13,222,1,9,3,34,2,15,1,11
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree,27,38,0,2,8,12,1,11,1,10
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree,237,0,31,0,49,0,27,0,8,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCSkip,2,14,0,0,1,5,1,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCAssignOp,12,33,1,1,3,9,4,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCBinary,12,31,1,1,3,9,4,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCExports,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCText,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.DeclScanner,17,92,5,15,3,24,5,14,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCBindingPattern,5,17,0,0,2,7,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,Pretty.UncheckedIOException,6,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.LetExpr,10,15,0,0,2,6,2,3,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSee,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCUnknownInlineTag,23,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCEntity,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCLambda,11,50,0,6,4,16,3,9,3,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.new TreeScanner() {...},36,0,4,0,9,0,4,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCExpressionStatement,26,17,0,0,8,6,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCUnknownBlockTag,23,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCIdent,3,22,0,0,1,8,1,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCStartElement,28,0,0,0,10,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCPrimitiveTypeTree,4,19,0,0,1,7,1,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCFieldAccess,3,28,0,0,1,10,1,6,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCClassDecl,18,83,3,5,7,22,7,9,4,8
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCAnnotation,6,28,0,0,2,9,2,5,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCBlockTag,7,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTypeApply,0,28,0,0,0,10,0,7,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTypeCast,6,22,0,0,2,8,2,5,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCHidden,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCBreak,17,20,4,0,3,7,5,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeMaker.new JCTree.JCNewClass() {...},0,13,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCMethodDecl,24,49,0,0,8,17,8,6,8,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSnippet,22,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTry,14,26,0,0,5,9,5,4,5,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCAuthor,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCUses,22,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCDefaultCaseLabel,2,18,0,0,1,8,1,6,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCStatement,0,15,0,0,0,5,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCWhileLoop,8,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCCompilationUnit,67,98,12,16,14,24,14,14,8,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCInheritDoc,10,0,0,0,3,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo,734,1410,197,265,195,308,179,202,16,64
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCThrow,5,17,0,0,2,6,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCComment,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCAssert,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCLambda.ParameterKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCProvides,22,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCParenthesizedPattern,16,6,0,0,6,3,5,1,5,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCOperatorExpression.OperandPos,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCContinue,10,15,0,0,3,6,3,3,3,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCDocComment,54,0,0,0,18,0,10,0,10,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCProvides,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCModuleDecl,17,24,0,0,5,9,5,4,5,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCSwitchExpression,8,23,0,0,3,8,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.Visitor,162,111,0,0,41,28,41,28,41,28
+JaCoCo Coverage Report,com.sun.tools.javac.tree,Pretty,2601,800,280,55,778,239,233,54,56,43
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCNewArray,15,31,0,0,5,11,5,5,5,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.Tag,16,702,6,10,2,118,5,12,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCErroneous,56,0,2,0,14,0,10,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSerial,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSummary,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSystemProperty,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCCatch,8,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCExpression,2,21,0,0,1,8,1,6,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCFunctionalExpression,3,15,1,1,0,4,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCIf,11,23,0,0,4,8,4,4,4,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCYield,5,20,0,0,2,7,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCLiteral,30,0,4,0,8,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCGuardPattern,19,9,0,0,7,4,6,1,6,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DocTreeMaker.new Tokens.Comment() {...},14,0,0,0,5,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCSwitch,8,23,0,0,3,8,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCDirective,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCReturn,24,0,0,0,9,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCWildcard,7,38,1,3,1,12,1,8,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCOperatorExpression,3,6,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DocPretty.UncheckedIOException,6,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTypeParameter,9,25,0,0,3,9,3,5,3,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DocPretty,1087,0,81,0,369,0,86,0,44,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCModifiers,9,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCMethodInvocation,3,41,0,2,1,14,1,9,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCRequires,16,18,0,0,5,7,5,3,5,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCNewClass,15,37,0,2,5,13,5,7,5,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCPattern,2,5,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.PatternPrimaryType,0,15,0,0,0,1,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCAssign,8,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCDocType,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCImport,10,18,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCDoWhileLoop,8,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCInstanceOf,36,22,6,0,3,8,6,5,3,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCParens,5,17,0,0,2,6,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCAnnotatedType,1,36,2,2,0,11,2,7,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCArrayTypeTree,0,22,0,0,0,8,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCPolyExpression,8,11,2,2,1,2,2,3,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCUnary,7,25,0,0,2,9,2,5,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCReturn,5,17,0,0,2,6,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSince,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeCopier,395,1382,4,14,62,221,19,61,16,55
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCMemberReference.OverloadKind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCVariableDecl,12,86,0,4,4,24,4,12,4,10
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCLabeledStatement,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCBlock,13,26,2,0,2,9,3,5,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCArrayAccess,8,20,0,0,3,7,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCLink,36,0,4,0,10,0,7,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCLiteral,24,46,4,3,6,13,4,7,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCCaseLabel,11,3,4,0,1,1,3,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCThrows,36,0,4,0,10,0,7,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSerialField,28,0,0,0,10,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.TypeBoundKind,12,10,0,0,3,4,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.new TreeInfo.DeclScanner() {...},0,30,0,4,0,8,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.TypeAnnotationFinder,1,28,3,5,0,8,3,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCVersion,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.new Error() {...},6,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCIndex,22,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCReference,28,0,0,0,10,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,Pretty.new TreeScanner() {...},30,0,6,0,6,0,6,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeMaker,183,1941,26,110,30,394,27,164,4,116
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCSerialData,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCDocRoot,10,0,0,0,3,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCSynchronized,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCConditional,11,23,0,0,4,8,4,4,4,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeTranslator,134,979,1,17,34,226,12,67,11,59
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCCase,40,46,4,2,6,14,11,6,8,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeInfo.new JCDiagnostic.DiagnosticPosition() {...},12,12,0,0,3,2,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCValue,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTypeIntersection,2,20,0,0,1,7,1,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCDeprecated,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCForLoop,14,26,0,0,5,9,5,4,5,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,TreeScanner,49,556,0,10,19,183,8,68,8,63
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DocTreeMaker,1036,54,65,2,240,13,87,4,53,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCTypeUnion,0,22,0,0,0,8,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCInlineTag,7,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCOpens,13,15,0,0,4,6,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCMemberReference,6,49,0,2,2,16,2,11,2,10
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCEndElement,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.tree,JCTree.JCEnhancedForLoop,11,23,0,0,4,8,4,4,4,4
+JaCoCo Coverage Report,com.sun.tools.javac.tree,DCTree.DCIdentifier,16,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ModuleLocationHandler,33,31,0,0,8,10,7,4,7,4
+JaCoCo Coverage Report,com.sun.tools.javac.file,RelativePath.RelativeFile,20,55,1,1,5,10,4,5,3,5
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager,1011,661,137,49,231,167,123,45,39,36
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.JRTImageContainer,121,0,18,0,29,0,15,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,RelativePath,46,22,4,0,7,6,7,3,5,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject,131,262,18,18,31,59,24,25,10,21
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ModuleTable,100,56,10,2,27,10,13,5,8,4
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.OutputLocationHandler,222,14,33,1,46,4,24,2,7,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.SystemModulesLocationHandler,274,111,26,6,66,25,24,6,9,5
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ModuleSourcePathLocationHandler,728,26,88,2,161,7,66,3,19,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations,336,386,60,16,78,54,47,20,13,16
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.SimpleLocationHandler,49,23,5,1,11,8,7,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,JRTIndex,270,46,33,4,62,13,22,5,4,4
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject.SimpleFileObject,40,42,6,0,12,10,5,6,2,6
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.SearchPath,164,138,28,16,45,33,23,12,5,8
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.LocationHandler,8,10,0,2,4,2,4,3,4,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.SortFiles,15,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject.JRTFileObject,32,0,0,0,7,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JRTIndex.CtSym,72,0,10,0,20,0,8,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,FSInfo,162,17,21,1,44,6,18,3,7,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ClassPathLocationHandler,2,63,4,6,1,18,4,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.DirectoryContainer,48,114,8,12,13,30,8,8,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.ArchiveContainer.new SimpleFileVisitor() {...},36,0,2,0,5,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.ArchiveContainer.new SimpleFileVisitor() {...},49,0,6,0,8,0,6,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JRTIndex.Entry,15,0,0,0,5,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,BaseFileManager.new Thread() {...},54,0,2,0,13,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,BaseFileManager.new OptionHelper.GrumpyHelper() {...},12,20,0,0,3,4,2,3,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject.CannotCreateUriError,5,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,BaseFileManager.ByteBufferCache,0,33,0,6,0,8,0,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject.DirectoryFileObject,7,43,0,0,1,9,1,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.BasicLocationHandler,69,14,9,1,17,5,9,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.PatchModulesLocationHandler,118,26,7,1,23,5,12,2,8,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,CacheFSInfo,51,76,2,0,13,14,4,9,3,9
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ModulePathLocationHandler,295,24,39,3,69,9,33,2,12,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.PathAndContainer,53,12,8,0,6,5,7,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.SortFiles.new JavacFileManager.SortFiles() {...},11,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.SortFiles.new JavacFileManager.SortFiles() {...},11,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.ModulePathLocationHandler.ModulePathIterator,665,0,72,0,150,0,43,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,RelativePath.RelativeDirectory,82,23,8,4,14,3,9,4,5,2
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.ArchiveContainer,160,0,18,0,37,0,16,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.new Iterator() {...},21,0,0,0,4,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.new Iterator() {...},6,21,0,0,2,4,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,JavacFileManager.new JavacFileManager.Container() {...},8,3,0,0,5,1,5,1,5,1
+JaCoCo Coverage Report,com.sun.tools.javac.file,BaseFileManager,214,429,20,39,45,115,23,35,4,24
+JaCoCo Coverage Report,com.sun.tools.javac.file,Locations.BootClassPathLocationHandler,147,164,22,10,39,32,22,5,5,5
+JaCoCo Coverage Report,com.sun.tools.javac.file,BaseFileManager.ContentCacheEntry,1,27,1,1,0,6,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.file,PathFileObject.JarFileObject,83,0,2,0,15,0,8,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,JDKPlatformProvider.PlatformDescriptionImpl.SigJavaFileObject,16,0,0,0,5,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,JDKPlatformProvider.PlatformDescriptionImpl.1.new Iterator() {...},78,0,14,0,19,0,10,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,JDKPlatformProvider.PlatformDescriptionImpl,353,0,28,0,81,0,27,0,13,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,JDKPlatformProvider.PlatformDescriptionImpl.new JavacFileManager() {...},94,0,8,0,19,0,10,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,PlatformUtils,70,0,4,0,16,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,PlatformProvider.PlatformNotSupported,3,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.platform,JDKPlatformProvider,167,0,14,0,38,0,14,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,LauncherProperties,3,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,launcher_zh_CN,201,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,launcher_ja,201,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,CompilerProperties.Warnings,1510,533,0,0,104,48,104,21,104,21
+JaCoCo Coverage Report,com.sun.tools.javac.resources,legacy,7091,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,CompilerProperties.Fragments,3110,2261,0,0,165,210,165,73,165,73
+JaCoCo Coverage Report,com.sun.tools.javac.resources,compiler_zh_CN,11875,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,compiler_ja,11875,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,LauncherProperties.Errors,152,0,0,0,15,0,10,0,10,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,launcher,201,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,version,45,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,javac_zh_CN,1865,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,CompilerProperties,3,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,javac_ja,1865,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,CompilerProperties.Errors,2812,4081,0,0,159,375,159,163,159,163
+JaCoCo Coverage Report,com.sun.tools.javac.resources,compiler,0,12161,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.resources,ct,9691,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.resources,javac,0,1891,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.resources,CompilerProperties.Notes,1060,97,0,0,53,12,53,1,53,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractHeaderPhase.Synthesizer,41,221,3,13,7,44,4,13,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer.PendingExit,0,7,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check,1387,8683,405,1369,261,1607,306,791,18,187
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Enter.UnenterScanner,0,43,0,2,0,11,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionContext,6,90,0,2,2,16,2,5,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodReferenceCheck,9,46,0,2,2,8,2,4,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredType.SpeculativeCache,0,69,0,8,0,14,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InvisibleSymbolError,29,125,3,9,2,21,3,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.ComparisonKind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ConstFold,254,737,32,108,42,117,28,85,0,11
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ResolveDeferredRecoveryMap,0,41,0,7,0,10,0,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaSymbolKind,0,42,0,2,0,9,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrContext,2,288,1,31,2,62,1,23,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrRecover,0,528,3,51,0,97,3,33,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns.BindingContext,0,6,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrNode.new Check.NestedCheckContext() {...},0,19,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.AccessError,129,168,8,16,14,20,7,9,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InapplicableSymbolsError,17,287,3,27,1,59,3,18,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.DiamondInitializer,128,9,22,0,24,3,14,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.new TreeScanner() {...},0,161,2,20,0,26,2,15,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InterfaceLookupPhase.new Resolve.InterfaceLookupPhase() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InterfaceLookupPhase.new Resolve.InterfaceLookupPhase() {...},0,16,0,2,0,4,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BadClassFileError,0,50,0,0,0,9,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.SwitchExpressionType,19,106,0,4,2,20,0,8,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.SwitchExpressionType.new DeferredAttr.SwitchExpressionScanner() {...},0,24,1,1,0,5,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryBooleanOperator,0,39,0,4,0,6,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.LambdaTranslationContext,36,916,18,65,8,142,17,41,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.SnippetAliveAnalyzer,0,17,0,2,0,4,0,5,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrContext,14,151,2,4,4,42,3,6,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InvalidSymbolError,6,39,1,3,1,8,2,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryStringOperator,0,103,2,20,0,16,2,13,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.FlowAnalyzer,48,1616,20,154,5,338,18,100,0,31
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.AssignAnalyzer.AssignPendingExit,0,48,0,0,0,12,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new JCTree.Visitor() {...},0,34,1,5,0,8,1,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.UnaryReferenceOperator,0,18,0,0,0,5,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.AnnotationTypeVisitor,29,80,1,5,4,20,3,6,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.PostAttrAnalyzer,95,259,13,29,9,65,10,27,0,16
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.MemberReferenceToLambda,3,562,4,37,0,99,4,25,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ExplicitLambdaType.new DeferredAttr.LambdaReturnScanner() {...},0,15,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new TreeScanner() {...},0,24,0,4,0,5,0,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrRecover.RecoverTodo,0,21,0,0,0,8,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.TreeRewriter,55,0,6,0,13,0,6,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ConditionalType,19,83,0,4,2,13,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.CheckUpperBounds,7,146,6,20,1,23,6,10,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer.JumpKind.new Flow.BaseAnalyzer.JumpKind() {...},0,10,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer.JumpKind.new Flow.BaseAnalyzer.JumpKind() {...},0,10,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer.JumpKind.new Flow.BaseAnalyzer.JumpKind() {...},0,10,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrDiagHandler.PosScanner,0,23,0,4,0,9,0,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.AbstractMethodCheck,14,225,0,36,2,38,0,23,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.RecordPhase,0,96,0,10,0,20,0,7,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.BasicFreeVarCollector,0,47,0,2,0,13,0,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceException,0,12,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.AnnotationContext,0,27,0,0,0,9,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryNumericOperator,0,48,0,4,0,10,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.ClashFilter,0,57,1,13,0,9,1,9,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.L2MSignatureGenerator,3,50,1,1,1,15,1,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.Liveness,0,37,0,2,0,7,0,5,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.HeaderPhase,10,194,1,21,1,30,1,12,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryShiftOperator,0,47,1,7,0,7,1,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.FilterScanner,0,28,0,4,0,9,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodReferenceLookupHelper.new Resolve.ReferenceLookupHelper() {...},5,19,0,0,3,2,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.CheckMode.new Attr.CheckMode() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.CheckMode.new Attr.CheckMode() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.LocalInitScanner,0,72,1,7,0,27,1,10,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.RedundantLocalVarTypeAnalyzer,34,8,8,0,6,3,7,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredType.SpeculativeCache.Entry,0,23,0,2,0,5,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.UnaryPrefixPostfixOperator,0,16,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Env.new Iterator() {...},38,0,4,0,9,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.RedundantTypeArgAnalyzer,33,9,6,0,8,3,6,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ExplicitLambdaType,23,228,3,12,5,44,3,16,1,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TreeHasher,2,131,2,10,1,40,2,14,0,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.SubstBounds,12,100,1,9,2,19,2,7,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.FreeVarCollector,0,227,1,47,0,44,1,30,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.BestLeafSolver,5,158,1,15,1,29,1,10,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators,5,1990,4,36,1,227,4,45,0,29
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.IncorporationAction,22,28,0,0,1,6,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodReferenceCheck.new Resolve.MethodCheckContext() {...},16,49,0,6,2,7,1,5,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.AbstractMethodCheck.SharedInapplicableMethodException,0,12,0,0,0,5,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrDiagHandler,0,18,0,0,0,5,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Enter,175,1134,29,95,35,230,25,64,5,22
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AnonClassConstructorHelper,0,187,1,15,0,33,1,13,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.ReferenceTranslationContext,66,168,13,30,6,27,10,23,2,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Attr.PostAttrAnalyzer() {...},0,23,0,6,0,7,0,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Types.MapVisitor() {...},0,85,0,6,0,16,0,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Attr.PostAttrAnalyzer() {...},0,35,2,8,0,11,2,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Check.NestedCheckContext() {...},0,29,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep,0,81,0,4,0,12,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new TreeScanner() {...},6,48,2,4,0,8,2,5,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new TreeTranslator() {...},0,13,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Check.NestedCheckContext() {...},0,18,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Check.NestedCheckContext() {...},0,18,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Check.NestedCheckContext() {...},0,20,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.new TreeScanner() {...},1,46,0,6,1,11,1,7,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.ExpressionLambdaReturnContext,0,46,0,4,0,12,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.CycleChecker,0,238,2,34,0,56,2,24,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.new Lower.BasicFreeVarCollector() {...},0,64,2,10,0,13,2,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TreeDiffer,895,923,241,107,145,164,192,50,34,34
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.MethodAttrInfo,16,26,0,0,4,7,4,4,4,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.CheckInst,16,25,0,0,3,7,2,3,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.LambdaAssignAnalyzer,1,50,1,5,1,13,2,6,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodReferenceLookupHelper,0,130,0,14,0,19,0,11,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryEqualityOperator,1,87,2,18,0,21,2,12,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.SymbolNotFoundError,4,264,2,36,1,36,2,23,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.LowerSignatureGenerator,39,0,0,0,11,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow,0,208,0,6,0,47,0,11,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.TranslationContext,4,114,2,14,2,22,2,11,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ReferenceLookupHelper,0,32,0,2,0,9,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.RedundantLocalVarTypeAnalyzerForEach,44,8,2,0,7,3,4,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionDiagHelper,3,91,0,4,1,15,1,4,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.LambdaAliveAnalyzer,0,33,0,4,0,10,0,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.LookupFilter,0,41,2,8,0,5,2,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrNode.LambdaBodyStructChecker,0,26,0,2,0,10,0,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ArgumentType,0,125,0,16,0,25,0,12,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr,0,485,0,34,0,87,0,42,0,25
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrNode,8,111,3,10,2,23,3,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer,231,1426,44,173,35,264,37,101,0,26
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns,856,734,77,28,142,163,56,37,15,25
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate,194,2149,49,233,32,435,44,151,1,53
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.ConversionWarner,7,95,5,8,1,18,5,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.AssignAnalyzer.new Flow.BaseAnalyzer.PendingExit() {...},0,57,0,2,0,8,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Todo,150,66,25,7,37,20,20,9,6,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.FlowAnalyzer.ThrownPendingExit,0,10,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnvs,8,50,0,2,2,12,2,7,2,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter,25,495,7,35,5,102,7,32,0,18
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.UnaryOperatorHelper,0,52,0,0,0,7,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InapplicableSymbolsError.MostSpecificMap,15,68,3,7,4,11,3,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.FlowKind,0,33,0,0,0,8,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.KlassInfo,0,77,0,0,0,13,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.BasicConstructorHelper,0,89,0,8,0,17,0,10,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer.JumpKind,0,32,0,0,0,7,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Env,33,77,3,3,7,21,4,6,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.Frame,0,22,0,2,0,7,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.LookupHelper,0,44,1,7,0,10,1,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.AttrMode,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.GraphSolver.InferenceGraph,77,198,3,21,9,41,3,15,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ReferenceLookupResult,0,115,1,13,0,26,1,16,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules,1846,1390,281,150,388,312,194,89,27,39
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Todo.FileQueue,66,0,6,0,14,0,9,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.new Analyzer.DeferredAnalysisHelper() {...},2,6,0,0,2,1,2,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.new Analyzer.DeferredAnalysisHelper() {...},55,16,5,1,9,4,5,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.Phase,14,127,3,7,3,30,2,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.CaptureAnalyzer,54,289,9,43,15,72,11,35,3,15
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredType,16,200,5,22,4,37,7,16,2,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ResolveError,7,31,0,0,2,7,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MostSpecificCheck,4,82,0,4,2,13,1,5,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionPhase,0,46,0,0,0,11,0,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BadRestrictedTypeError,0,31,0,0,0,5,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.DependencyKind,25,0,0,0,6,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,CompileStates,0,44,0,6,0,11,0,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.DedupedLambda,0,65,2,6,0,11,2,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ReferenceLookupResult.StaticKind,4,47,2,6,2,10,2,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ConstructorReferenceLookupHelper,0,97,0,8,0,13,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.AssignopDependencyScanner,8,43,3,5,4,13,3,5,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.StaticError,0,57,0,4,0,8,0,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.RecoveryInfo,0,24,0,0,0,5,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.ImplicitArgType,0,48,0,4,0,9,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.LambdaTranslationContext.new Symbol.VarSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.LambdaTranslationContext.new Symbol.VarSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.LambdaTranslationContext.new Symbol.VarSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.LambdaTranslationContext.new Symbol.MethodSymbol() {...},0,19,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodCheckDiag,0,61,0,0,0,10,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.RecordConstructorHelper,0,208,0,18,0,35,0,14,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules.UsesProvidesVisitor,261,578,59,39,50,96,41,21,1,12
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.TypeAnnotationsValidator,9,598,11,97,2,135,11,57,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.DiamondError,0,84,1,9,0,18,1,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.MembersPhase,0,821,4,74,0,145,4,49,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InterfaceLookupPhase,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.UnaryNumericOperator,0,32,0,0,0,8,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.PermitsPhase,0,76,2,14,0,13,2,8,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Resolve.InapplicableSymbolError() {...},0,25,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new TreeScanner() {...},0,31,0,0,0,8,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.new Check.NestedCheckContext() {...},0,15,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.BinaryOperatorHelper,0,72,0,4,0,9,0,8,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.DefaultMethodClashFilter,0,36,1,7,0,7,1,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.IdentAttributer,72,6,8,0,10,1,6,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.4.new Resolve.MethodCheckContext() {...},16,22,0,2,2,3,1,2,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InapplicableSymbolError,6,198,3,13,2,33,4,11,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.2.new JCTree.JCMemberReference() {...},1,41,1,7,0,7,1,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.LambdaAnalyzer,112,9,16,0,23,3,12,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.HierarchyPhase,1,166,1,17,0,35,1,13,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransTypes,125,2450,30,182,17,451,29,141,2,62
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.EqCheckLegacy,33,0,2,0,7,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.CheckMode,0,25,0,0,0,6,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,MatchBindingsComputer.MatchBindings,0,18,0,0,0,7,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrRecover.new TreeTranslator() {...},2,82,1,5,2,17,3,6,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns.BasicBindingContext,2,201,1,15,1,36,2,17,1,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.LambdaReturnScanner,0,51,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.AnalyzerCopier,60,8,6,0,12,3,6,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.AbstractIncorporationEngine,0,31,0,2,0,6,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.UnboundMethodReferenceLookupHelper,2,41,0,4,1,7,1,4,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules.new Symbol.Completer() {...},6,46,1,3,3,10,2,3,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules.new Symbol.Completer() {...},6,73,0,0,1,14,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules.new Symbol.Completer() {...},40,43,4,4,14,9,6,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.AmbiguityError,0,159,0,6,0,27,0,10,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.UnaryBooleanOperator,0,23,0,0,0,5,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ArrayConstructorReferenceLookupHelper,0,76,0,0,0,9,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.SwitchExpressionScanner,0,51,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.Liveness.new Flow.Liveness() {...},0,9,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.Liveness.new Flow.Liveness() {...},14,5,4,0,6,1,4,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.Liveness.new Flow.Liveness() {...},0,9,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.GraphSolver,9,111,1,9,1,25,1,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrContext.StuckNode,17,15,2,0,4,5,3,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.FunctionalReturnContext,0,33,0,0,0,6,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.new MemberEnter.InitTreeVisitor() {...},0,8,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.new Annotate.AnnotationTypeCompleter() {...},0,17,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.LegacyInferenceSteps,29,0,0,0,6,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractMembersPhase,0,110,0,8,0,26,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.new Attr.MethodAttrInfo() {...},0,27,0,2,0,2,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.BoundFilter,0,22,1,5,0,5,1,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InapplicableSymbolsError.new Resolve.InapplicableSymbolError() {...},0,15,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrRecover.RecoveryErrorType,0,10,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.ReferenceChooser,0,20,0,2,0,4,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.AnnotationTypeMetadata.new Annotate.AnnotationTypeMetadata() {...},17,7,0,0,6,2,6,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.Queues,0,30,0,0,0,8,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ResolvedMethodType,0,42,0,0,0,8,0,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.RecoveryDeferredTypeMap,0,208,3,41,0,31,3,24,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BadConstructorReferenceError,0,39,0,0,0,5,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrContextEnv,0,5,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionContext.Candidate,0,25,0,2,0,7,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.CheckStuckPolicy,0,238,0,22,0,54,0,20,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.UniquePos,11,44,2,4,1,7,3,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns.BindingDeclarationFenceBindingContext,0,9,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor,96,1219,32,186,23,245,29,111,1,26
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.AnnotationTypeMetadata,13,140,3,13,5,38,6,15,3,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr,899,13851,235,1688,164,2400,217,955,16,183
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns.new TransPatterns.BindingContext() {...},12,9,0,0,6,2,6,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TransPatterns.new TransPatterns.BindingDeclarationFenceBindingContext() {...},0,24,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.CheckBounds,70,154,7,19,6,30,6,15,1,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve,659,5135,163,727,115,844,133,417,5,96
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ResolvedConstructorType,4,64,1,1,0,9,1,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr,4,381,1,9,0,70,1,14,0,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MostSpecificCheck.MostSpecificCheckContext.MostSpecificFunctionReturnChecker.new DeferredAttr.LambdaReturnScanner() {...},13,9,2,0,3,1,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.AnalyzerMode,58,51,11,1,10,11,6,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredAttrNode.StructuralStuckChecker,28,389,1,32,5,79,1,26,0,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.ImportsPhase,13,551,4,44,1,100,5,32,1,12
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BadMethodReferenceError,0,68,0,6,0,12,0,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.LambdaFlowAnalyzer,1,66,2,4,1,18,3,3,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.GraphInferenceSteps,0,40,0,0,0,7,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.CheckStuckPolicy.new DeferredAttr.LambdaReturnScanner() {...},0,31,0,2,0,7,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.RecoveryDeferredTypeMap.new Attr.RecoveryInfo() {...},0,23,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.CheckStuckPolicy.new DeferredAttr.SwitchExpressionScanner() {...},0,26,0,0,0,6,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.PartiallyInferredMethodType,11,135,1,9,3,30,1,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.NestedCheckContext,0,34,0,0,0,9,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.StatementScanner,142,0,12,0,39,0,20,0,14,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.OverloadStuckPolicy,0,41,0,8,0,12,0,8,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,MemberEnter,85,908,8,82,13,154,7,55,2,15
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.EnumMapping,0,336,0,4,0,51,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.Validator,8,280,1,41,2,61,1,32,0,12
+JaCoCo Coverage Report,com.sun.tools.javac.comp,CompileStates.CompileState,9,97,2,2,1,16,2,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower,1203,8672,173,699,214,1602,153,455,6,154
+JaCoCo Coverage Report,com.sun.tools.javac.comp,MatchBindingsComputer,22,383,8,37,5,68,9,26,1,11
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.GraphStrategy.NodeNotFoundException,6,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.InapplicableMethodException,0,9,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Enter.new TreeScanner() {...},0,43,0,0,0,12,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.AssignAnalyzer,104,3252,46,280,20,672,42,179,0,57
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new TreeScanner() {...},233,0,26,0,55,0,22,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new Types.UnaryVisitor() {...},2,39,2,2,0,6,2,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new Types.SimpleVisitor() {...},17,53,1,9,3,10,4,8,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Check.new Check.CheckContext() {...},2,39,0,0,1,7,1,6,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.AttributionMode,3,49,0,0,1,10,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractHeaderPhase.new Type.ErrorType() {...},0,41,0,2,0,4,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionDiagHelper.ArgMismatchRewriter,0,33,0,2,0,8,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractHeaderPhase,0,396,1,37,0,76,1,25,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,InferenceContext,67,899,10,78,16,179,10,77,4,39
+JaCoCo Coverage Report,com.sun.tools.javac.comp,AttrRecover.1.new TreeTranslator() {...},0,23,0,2,0,3,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ResolvedMemberType,0,50,0,6,0,10,0,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.IncorporationBinaryOp,1,91,4,4,0,15,4,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.StatementAnalyzer,7,12,0,0,1,4,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.TargetInfo,0,12,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractHeaderPhase.Synthesizer.new Type.ErrorType() {...},3,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.AbstractHeaderPhase.Synthesizer.new Type.ErrorType() {...},3,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.BreakAttr,6,0,0,0,3,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionPhase.new Resolve.MethodResolutionPhase() {...},1,50,2,11,0,11,2,7,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.LambdaAnalyzerPreprocessor.SyntheticMethodNameCounter,0,40,0,2,0,9,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,InferenceContext.ReachabilityVisitor,6,241,0,24,1,42,1,20,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,InferenceContext.new Infer.BestLeafSolver() {...},0,19,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.SnippetBreakAnalyzer,0,82,0,4,0,23,0,10,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.comp,InferenceContext.new Infer.LeafSolver() {...},0,15,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,InferenceContext.new Infer.BestLeafSolver() {...},0,27,0,2,0,2,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,TypeEnter.DefaultConstructorHelper,0,2,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.AnnotationValueContext,0,21,0,4,0,4,0,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.ResultInfo,9,121,2,0,3,19,2,11,1,11
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.RecoveryLoadClass() {...},1,69,1,3,0,12,1,8,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.RedundantLocalVarTypeAnalyzerBase,39,9,6,0,8,3,6,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.LogResolveHelper() {...},0,15,0,2,0,3,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Symbol.MethodSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Iterator() {...},14,98,4,10,2,18,4,8,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.LogResolveHelper() {...},0,10,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResultInfo,8,89,1,7,1,16,2,8,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.OperatorType,0,127,0,0,0,16,0,14,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.AbstractMethodCheck() {...},2,8,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.AbstractMethodCheck() {...},23,118,1,11,2,18,2,12,1,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Types.SimpleVisitor() {...},0,97,0,4,0,18,0,9,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.MethodCheck() {...},0,9,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BasicLookupHelper,0,77,0,4,0,15,0,7,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodCheckContext,2,61,0,2,1,13,1,7,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.LocalCacheContext,0,21,0,0,0,6,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Modules.ModuleVisitor,82,580,20,46,17,113,15,36,2,16
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.PropagateBounds,27,168,0,20,1,27,1,15,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Operators.OperatorHelper,0,54,0,0,0,15,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionDiagHelper.new Resolve.MethodResolutionDiagHelper.Template() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionDiagHelper.new Resolve.MethodResolutionDiagHelper.Template() {...},0,70,0,8,0,14,0,9,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,ArgumentAttr.ParensType,0,43,0,0,0,7,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.BaseAnalyzer,0,120,0,14,0,31,0,16,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,MemberEnter.InitTreeVisitor,4,162,1,3,2,27,1,12,0,11
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer.RewritingContext,55,0,4,0,13,0,5,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},0,13,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MethodResolutionDiagHelper.Template,2,49,1,7,1,12,1,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.PolyScanner,0,9,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Annotate.TypeAnnotate,0,175,1,7,0,41,1,12,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},24,6,4,0,2,1,4,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},0,46,1,5,0,7,1,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},0,54,0,4,0,9,0,7,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},10,36,2,4,1,6,2,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Lower.ClassMap,0,18,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.InferenceStep.new Infer.InferenceStep() {...},3,76,2,6,0,12,2,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod.new TreeTranslator() {...},39,36,1,5,4,9,1,6,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.BasicLookupHelper() {...},0,65,0,4,0,11,0,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Symbol.MethodSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.LogResolveHelper() {...},0,35,1,7,0,5,1,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.BasicLookupHelper() {...},0,26,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Symbol.MethodSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.ReferenceChooser() {...},0,105,0,34,0,17,0,20,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.BasicLookupHelper() {...},0,31,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.BasicLookupHelper() {...},0,101,0,8,0,14,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MostSpecificCheck.MostSpecificCheckContext.MostSpecificFunctionReturnChecker,7,294,5,39,2,50,6,24,1,7
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.new Resolve.ReferenceChooser() {...},13,63,5,17,1,12,5,9,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.GraphSolver.InferenceGraph.Node,108,177,9,23,22,43,9,21,4,10
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.VerboseResolutionMode,50,78,9,1,9,15,5,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Attr.RecoveryInfo.new Check.NestedCheckContext() {...},0,45,0,8,0,9,0,8,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.new Infer.AbstractIncorporationEngine() {...},0,71,0,6,0,12,0,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Analyzer,207,145,16,4,38,30,13,7,4,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.LeafSolver,5,16,1,1,1,3,1,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.new Infer.AbstractIncorporationEngine() {...},35,7,2,0,6,1,2,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.new Type.StructuralTypeMapping() {...},0,29,0,2,0,5,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.new Types.TypeMapping() {...},0,30,0,2,0,5,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.new DeferredAttr.DeferredStuckPolicy() {...},4,8,0,0,2,2,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,LambdaToMethod,135,2034,20,138,22,371,20,99,1,37
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.new DeferredAttr.DeferredAttrContext() {...},8,13,0,0,5,1,3,1,3,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.new TreeCopier() {...},0,102,0,6,0,16,0,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,DeferredAttr.DeferredTypeMap,3,66,1,6,2,10,1,6,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.MostSpecificCheck.MostSpecificCheckContext,75,381,19,61,12,67,13,33,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.IncorporationBinaryOpKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Flow.AliveAnalyzer,148,1297,47,147,25,285,40,98,2,38
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.IncorporationBinaryOpKind.new Infer.IncorporationBinaryOpKind() {...},0,11,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Resolve.BadVarargsMethod,17,19,0,0,2,6,2,3,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.comp,Infer.IncorporationBinaryOpKind.new Infer.IncorporationBinaryOpKind() {...},0,10,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Class,10,42,0,2,2,10,2,5,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.Subst,0,207,0,28,0,40,0,19,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.NamedImportScope,0,135,0,8,0,25,0,12,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ModuleType,29,5,0,0,7,2,7,1,7,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Enum,13,13,0,0,3,4,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.RetentionPolicy,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types,659,5139,177,756,140,984,146,499,14,148
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DescriptorFilter,0,47,0,8,0,7,0,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.AdaptFailure,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ImplementationCache.Entry,0,34,1,5,0,7,1,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MembersClosureCache,6,118,1,7,1,21,1,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ClassType,146,248,22,40,23,58,16,38,1,22
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.UniqueType,4,33,0,4,1,7,1,5,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotationPosition,421,502,35,18,96,80,55,48,27,44
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.JCNoType,10,11,0,0,2,5,2,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.FilterImportScope,26,117,1,5,9,22,3,10,2,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.OpensDirective,39,12,4,0,11,5,8,1,6,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.PackageType,17,12,0,0,4,4,4,3,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,ClassFinder,440,953,86,109,88,227,73,55,9,21
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Compound,133,181,28,22,28,38,25,17,4,13
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypePair,1,51,3,3,0,8,3,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.new DeferredCompletionFailureHandler.Handler() {...},2,10,0,0,1,5,1,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.new DeferredCompletionFailureHandler.Handler() {...},5,43,0,0,1,10,2,5,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.new DeferredCompletionFailureHandler.Handler() {...},40,11,0,0,9,2,7,1,7,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.Subst.new Type.ForAll() {...},2,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.Subst.new Type.ForAll() {...},2,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,MissingInfoHandler,22,30,5,1,7,9,5,3,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Kinds,15,92,4,26,3,25,4,20,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Constant,112,11,16,0,17,4,14,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Preview,139,168,17,14,30,40,18,16,8,10
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.DynamicVarSymbol,26,0,0,0,9,0,6,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab,152,1631,31,51,32,305,27,56,6,36
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotations,34,394,14,78,11,85,13,47,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ProjectionKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.FunctionDescriptorLookupError,0,14,0,0,0,6,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.CandidatesCache.Entry,0,49,1,5,0,7,1,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Kinds.KindSelector,8,233,2,16,0,33,2,13,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol,124,897,23,177,30,185,35,146,16,64
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ErasedClassType,0,9,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Kinds.KindName,2,144,0,0,1,24,1,4,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.CaptureScanner,0,93,0,8,0,16,0,13,0,9
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MembersClosureCache.MembersScope,8,41,1,5,1,7,2,7,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.FilterImportScope.new Scope.FilterImportScope.SymbolImporter() {...},0,22,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.FilterImportScope.new Scope.FilterImportScope.SymbolImporter() {...},0,27,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,ClassFinder.new Iterator() {...},4,76,1,13,1,17,1,9,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.RequiresDirective,27,14,0,0,7,5,6,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.SignatureGenerator.InvalidSignatureException,0,9,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.NamedImportScope.SingleEntryScope,12,42,5,7,2,8,6,5,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Source.Feature.DiagKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeMapping,0,25,0,0,0,4,0,5,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DescriptorCache.Entry,0,20,0,2,0,5,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Flags,178,97,32,12,26,15,18,11,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.Entry,0,43,0,8,0,11,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DefaultSymbolVisitor,15,23,0,0,3,5,3,5,3,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.BindingSymbol,0,38,0,2,0,7,0,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeRelation() {...},14,382,11,63,4,62,11,37,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeRelation() {...},54,360,14,77,6,58,12,44,1,9
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.SimpleVisitor() {...},10,144,1,17,3,28,3,10,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Predicate() {...},0,35,3,5,0,3,3,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeRelation() {...},4,173,4,26,2,30,4,16,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeMapping() {...},5,6,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeRelation() {...},0,97,0,18,0,14,0,14,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeRelation() {...},49,641,15,98,10,98,14,54,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},3,54,0,4,1,11,1,4,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeTag.NumericClasses,3,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,ClassFinder.BadClassFile,0,36,0,2,0,5,0,4,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.JCVoidType,12,11,0,0,3,5,3,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeMetadata.Entry.Kind,0,9,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.TypeSymbol() {...},5,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.ModuleSymbol() {...},2,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.ModuleSymbol() {...},0,39,0,0,0,10,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.ModuleSymbol() {...},8,39,0,0,1,10,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.Completer() {...},73,18,0,0,13,4,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.Completer() {...},18,15,0,0,4,4,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UnionClassType,14,43,0,0,3,12,3,6,3,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.RequiresFlag,16,66,0,2,1,13,1,4,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symtab.new Symbol.PackageSymbol() {...},8,8,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Source,73,248,36,8,33,47,36,8,1,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.Completer.new Symbol.Completer() {...},1,5,0,0,1,2,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ArrayType.new Type.ArrayType() {...},0,13,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ArrayType.new Type.ArrayType() {...},0,11,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ImportScope.new Scope.ScopeListener() {...},6,6,0,0,4,1,2,1,2,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotations.AnnotationType,0,27,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,ClassFinder.BadEnclosingMethodAttr,8,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ScopeListenerList,5,65,2,4,1,18,2,6,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,ModuleFinder.new Symbol.Completer() {...},2,17,0,0,1,3,1,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.CompletionFailure,11,37,2,2,3,12,4,4,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ErrorType.new Type.ErrorType() {...},4,9,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.HasSameArgs,13,67,1,11,2,10,3,8,2,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DefaultTypeVisitor,20,43,0,0,4,9,4,9,4,9
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.StructuralTypeMapping,0,147,1,15,0,27,1,13,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.IntersectionClassType,16,63,2,6,3,15,5,8,3,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Kinds.Kind.Category,0,27,0,0,0,2,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.OpensFlag,10,35,1,1,1,9,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.DeferredCompleter,5,9,0,0,2,3,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.FlipSymbolDescription,49,20,0,0,13,7,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ImplementationCache,0,157,1,21,0,28,1,13,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler.1.new DeferredCompletionFailureHandler.DeferredCompleter() {...},19,0,0,0,4,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.JCPrimitiveType,19,139,8,23,6,33,9,24,1,13
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.DelegatedType,28,33,0,0,7,10,7,6,7,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.UnaryVisitor,0,8,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.TypeVar,5,93,0,0,1,25,1,13,1,13
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ScopeImpl,158,587,37,75,32,117,29,52,3,22
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.TypeCompound,0,14,0,0,0,4,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute,12,6,0,0,4,3,4,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.MethodType,87,72,8,12,20,16,13,15,8,10
+JaCoCo Coverage Report,com.sun.tools.javac.code,Flags.Flag,0,460,0,0,0,69,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotationPosition.TypePathEntryKind,0,39,0,0,0,8,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.FilterImportScope.SymbolImporter,0,68,0,8,0,12,0,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.HashCodeVisitor,0,131,1,5,0,24,1,10,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.UsesDirective,35,6,4,0,7,3,8,1,6,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Printer,299,456,33,33,52,88,30,34,8,23
+JaCoCo Coverage Report,com.sun.tools.javac.code,Source.Feature,48,399,5,5,8,57,5,10,2,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.TypeSymbol,6,213,9,45,3,41,10,25,1,7
+JaCoCo Coverage Report,com.sun.tools.javac.code,Printer.new Printer() {...},22,0,0,0,3,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeProjection.TypeArgumentProjection,12,147,3,14,2,30,3,10,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.MethodSymbol,233,554,37,108,44,96,33,75,10,24
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ForAll,64,30,2,0,15,8,7,6,6,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MostSpecificReturnCheck,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.UndetVarListener,2,0,0,0,1,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.23.new Type.MethodType() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.23.new Type.ForAll() {...},14,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.CompoundScope,75,132,9,5,19,30,9,13,3,12
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeProjection.new Type.ClassType() {...},2,10,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeProjection.new Type.ArrayType() {...},11,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar,113,547,22,53,23,108,18,42,4,18
+JaCoCo Coverage Report,com.sun.tools.javac.code,SymbolMetadata,123,323,35,49,20,85,27,39,1,23
+JaCoCo Coverage Report,com.sun.tools.javac.code,BoundKind,0,35,0,0,0,8,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UnknownType,12,7,0,0,3,3,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.RecordComponent,26,38,0,4,8,7,4,5,4,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.DelegatedSymbol,131,0,0,0,28,0,26,0,26,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,Lint.AugmentVisitor,22,144,4,18,8,33,7,15,4,7
+JaCoCo Coverage Report,com.sun.tools.javac.code,AnnoConstruct,324,3,58,0,73,1,36,1,7,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.WildcardType.new Type.WildcardType() {...},4,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ErrorType,13,107,1,3,4,31,5,20,4,19
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.VarSymbol,36,179,2,24,6,41,6,23,4,12
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeMetadata,105,87,11,5,18,22,9,8,2,7
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.Rewriter,10,225,2,28,3,47,2,22,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeProjection,25,219,5,26,5,46,5,17,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ImportScope,0,67,0,10,0,14,0,8,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ArrayType,57,114,5,9,16,23,8,22,5,18
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.Kind,0,21,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.VarSymbol.new Symbol.VarSymbol() {...},0,24,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DescriptorCache.new Types.DescriptorCache.FunctionDescriptor() {...},0,29,0,0,0,3,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.OperatorSymbol.AccessCode,34,138,8,11,7,23,8,7,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.OperatorSymbol,5,32,1,3,1,8,2,3,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DescriptorCache.FunctionDescriptor,0,81,0,8,0,15,0,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.ExportsDirective,39,12,4,0,11,5,8,1,6,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Lint,28,227,7,17,5,49,9,13,2,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.SignatureGenerator,16,371,3,51,3,104,3,40,0,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.StarImportScope,0,53,2,6,0,11,2,5,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.Completer,0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.ModuleSymbol,106,83,15,1,26,23,19,6,11,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MapVisitor,0,11,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeMetadata.Annotations,5,28,1,1,1,9,2,5,1,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredLintHandler,0,109,0,10,0,29,0,12,0,7
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.MethodHandleSymbol,14,105,8,18,3,25,8,14,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.new Type.JCNoType() {...},2,3,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.new Type.JCNoType() {...},2,3,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.new Type.StructuralTypeMapping() {...},21,11,0,0,3,2,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.new Type.JCNoType() {...},2,3,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.ModuleResolutionFlags,20,39,2,0,4,8,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.TypeVariableSymbol,132,10,20,0,27,3,16,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Kinds.Kind,12,256,2,12,2,43,2,19,0,14
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.DynamicMethodSymbol,0,26,0,0,0,9,0,6,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeMapping() {...},0,17,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.SimpleVisitor() {...},2,127,1,21,1,25,1,16,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},0,51,0,8,0,13,0,9,0,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},0,120,1,19,0,23,1,15,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},1,84,1,13,0,19,1,10,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.SimpleVisitor() {...},11,80,2,10,2,16,4,8,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Type.StructuralTypeMapping() {...},2,91,1,7,1,18,1,9,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.MapVisitor() {...},6,29,0,0,1,3,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.MapVisitor() {...},20,19,0,0,2,2,2,2,2,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.TypeMapping() {...},0,15,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.MapVisitor() {...},6,29,0,0,1,3,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.HashCodeVisitor() {...},4,3,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Symbol.MethodSymbol() {...},0,16,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.UnresolvedClass,0,7,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},0,38,2,6,0,7,2,4,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.new Types.UnaryVisitor() {...},2,39,0,2,1,8,1,5,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.WriteableScope,5,14,0,0,1,4,1,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredCompletionFailureHandler,8,80,0,4,3,22,2,8,2,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.ParamSymbol,40,7,10,0,11,2,6,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,ModuleFinder.ModuleLocationIterator,12,93,2,10,3,20,2,7,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.StructuralTypeMapping.new Type.ArrayType() {...},2,9,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.StructuralTypeMapping.new Type.WildcardType() {...},2,11,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.StructuralTypeMapping.new Type.ClassType() {...},2,10,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.Adapter,4,251,6,28,1,54,7,19,1,8
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.StructuralTypeMapping.new Type.MethodType() {...},2,10,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.CapturedType,59,24,0,0,11,7,3,3,3,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ScopeImpl.new Iterator() {...},19,84,4,12,4,11,4,9,1,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ScopeImpl.new Iterator() {...},25,118,8,18,4,26,6,13,0,6
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotations.TypeAnnotationPositions.new Type.Visitor() {...},40,67,1,3,11,14,10,5,9,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Flags.Flag.new Flags.Flag() {...},2,6,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotations.TypeAnnotationPositions,169,2089,34,257,32,500,34,152,1,27
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MostSpecificReturnCheck.new Types.MostSpecificReturnCheck() {...},0,41,1,7,0,9,1,5,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MostSpecificReturnCheck.new Types.MostSpecificReturnCheck() {...},0,10,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.JCPrimitiveType.new Type.JCPrimitiveType() {...},0,13,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.JCPrimitiveType.new Type.JCPrimitiveType() {...},0,19,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.MethodFilter,0,58,0,10,0,8,0,7,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope,8,96,1,5,1,17,2,16,1,14
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.ErrorScope,42,4,2,0,8,2,5,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.DescriptorCache,0,355,1,29,0,53,1,24,0,10
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ClassType.new Type.ClassType() {...},0,20,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.ClassType.new Type.ClassType() {...},0,14,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.ProvidesDirective,40,21,6,0,7,5,9,2,6,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.PackageSymbol,54,76,11,5,13,18,11,13,5,11
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeAnnotationPosition.TypePathEntry,55,71,16,9,11,15,15,6,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,TypeTag,63,271,27,20,22,42,27,15,2,7
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.CandidatesCache,0,24,0,0,0,5,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeProjection.TypeArgumentProjection.new Type.WildcardType() {...},2,9,0,0,1,1,1,1,1,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.CapturedType.new Type.CapturedType() {...},25,0,0,0,4,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.code,DeferredLintHandler.new JCDiagnostic.DiagnosticPosition() {...},12,3,0,0,8,1,4,1,4,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Lint.LintCategory,0,248,0,0,0,40,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.ModuleFlags,10,42,1,1,1,10,1,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Array,64,27,6,0,14,8,6,4,3,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.ClassSymbol,169,518,32,64,42,126,31,54,11,26
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.InferenceBound.new Type.UndetVar.InferenceBound() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.InferenceBound.new Type.UndetVar.InferenceBound() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.InferenceBound.new Type.UndetVar.InferenceBound() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ClosureHolder,15,36,1,1,2,8,2,3,1,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.RootPackageSymbol,0,11,0,0,0,4,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,ModuleFinder,311,343,72,40,71,79,51,21,3,11
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.TypeVar.new Type.TypeVar() {...},0,23,0,0,0,4,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Directive.ExportsFlag,20,25,2,0,4,6,2,2,1,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.TypeRelation,0,3,0,0,0,1,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Scope.LookupKind,0,15,0,0,0,3,0,1,0,1
+JaCoCo Coverage Report,com.sun.tools.javac.code,Symbol.MethodSymbol.new Symbol.MethodSymbol() {...},0,24,0,0,0,3,0,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.InferenceBound,4,42,1,7,2,10,1,6,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Attribute.Error,11,8,0,0,3,3,3,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type,204,406,31,41,45,103,37,75,17,59
+JaCoCo Coverage Report,com.sun.tools.javac.code,TargetType,46,251,14,10,9,42,10,9,2,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.SimpleVisitor,0,20,0,0,0,4,0,4,0,4
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.BottomType,14,13,0,0,4,6,4,5,4,5
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.WildcardType,56,159,8,24,12,32,7,28,3,16
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ProjectionKind.new Types.ProjectionKind() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Types.ProjectionKind.new Types.ProjectionKind() {...},0,7,0,0,0,2,0,2,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.code,Type.UndetVar.new Type.StructuralTypeMapping() {...},0,15,0,2,0,2,0,3,0,2
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.new TreeScanner() {...},288,6,34,0,70,1,31,1,14,1
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.DiscoveredProcessors,5,30,2,2,1,8,2,3,0,3
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerWriter,39,0,2,0,12,0,3,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,AnnotationProcessingError,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,PrintingProcessor.PrintingElementVisitor.new SimpleAnnotationValueVisitor14() {...},37,0,4,0,8,0,4,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,PrintingProcessor.PrintingElementVisitor.new SimpleElementVisitor14() {...},9,0,0,0,2,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.ServiceIterator,125,28,2,0,36,9,6,3,5,3
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.DiscoveredProcessors.ProcessorStateIterator,105,31,15,3,20,7,12,2,3,2
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerOutputStream,52,0,2,0,15,0,4,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.NameServiceIterator,115,0,12,0,33,0,9,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerInputFileObject,19,0,0,0,6,0,4,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacRoundEnvironment,262,0,22,0,61,0,24,0,13,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacRoundEnvironment.AnnotationSetMultiScanner,54,0,4,0,13,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerOutputJavaFileObject,31,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.Tuple3,12,0,0,0,5,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerOutputFileObject,79,0,4,0,18,0,9,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,PrintingProcessor,46,0,2,0,12,0,5,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.ImplicitCompleter,18,0,0,0,5,0,2,0,2,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment,1143,460,165,23,255,95,122,17,31,14
+JaCoCo Coverage Report,com.sun.tools.javac.processing,ServiceProxy,189,0,26,0,48,0,18,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.ComputeAnnotationSet,66,0,2,0,15,0,7,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.NameProcessIterator,167,0,8,0,48,0,10,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,ServiceProxy.ServiceConfigurationError,4,0,0,0,2,0,1,0,1,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler,1009,128,161,0,225,33,109,3,28,3
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacMessager,156,16,12,0,42,6,19,1,12,1
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.Round,793,0,83,0,169,0,60,0,18,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacFiler.FilerInputJavaFileObject,29,0,0,0,8,0,5,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,PrintingProcessor.PrintingElementVisitor,1271,0,167,0,313,0,113,0,27,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacRoundEnvironment.AnnotationSetScanner,54,0,4,0,13,0,6,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,PrintingProcessor.PrintingElementVisitor.PrintDirective,118,0,6,0,34,0,11,0,8,0
+JaCoCo Coverage Report,com.sun.tools.javac.processing,JavacProcessingEnvironment.ProcessorState,205,0,28,0,51,0,19,0,5,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,JavacElements.new Attribute.Visitor() {...},125,0,14,0,26,0,14,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,AnnotationProxyMaker.ValueVisitor.new ExceptionProxy() {...},24,0,0,0,6,0,3,0,3,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,JavacElements.new TreeScanner() {...},52,0,10,0,13,0,9,0,4,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,JavacElements,1273,82,212,3,279,21,155,3,47,2
+JaCoCo Coverage Report,com.sun.tools.javac.model,FilteredMemberList,48,33,11,5,11,5,8,6,2,4
+JaCoCo Coverage Report,com.sun.tools.javac.model,AnnotationProxyMaker,141,0,12,0,30,0,12,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,AnnotationProxyMaker.MirroredTypesExceptionProxy,67,0,8,0,15,0,11,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,AnnotationProxyMaker.MirroredTypeExceptionProxy,55,0,8,0,13,0,10,0,6,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,JavacElements.new JCTree.Visitor() {...},43,0,0,0,14,0,7,0,7,0
+JaCoCo Coverage Report,com.sun.tools.javac.model,JavacTypes,583,35,81,1,117,11,68,3,23,3
+JaCoCo Coverage Report,com.sun.tools.javac.model,AnnotationProxyMaker.ValueVisitor,241,0,18,0,64,0,18,0,9,0
+JaCoCo Coverage Report,com.sun.tools.javac,Main,18,10,0,0,5,2,3,1,3,1
