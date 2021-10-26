@@ -33,7 +33,7 @@ run_kotlinc () {
 
 cd $PROGRAMS
 i=1
-for counter in $(seq 30 30 10999); do
+for counter in $(seq 30 30 4999); do
     echo $i $counter
     run_kotlinc $i $counter
     i=$counter

@@ -28,7 +28,7 @@ run_groovyc () {
 
 i=1
 cd $PROGRAMS
-for counter in $(seq 30 30 10998); do
+for counter in $(seq 30 30 4998); do
     echo $i $counter
     run_groovyc $i $counter
     i=$counter
