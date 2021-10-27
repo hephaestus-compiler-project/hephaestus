@@ -27,14 +27,15 @@ def check(pkg, cls, whitelist):
             return True
         if pkg == pattern:
             return True
+        return False
 
     for pattern in whitelist:
         if ',' not in pattern and check_pkg(pattern):
             return True
         elif ',' in pattern:
-            pkg = pattern.split(',')[0]
+            pkg2 = pattern.split(',')[0]
             cls2 = pattern.split(',')[1]
-            if cls.startswith(cls2):
+            if check_pkg(pkg2) and cls.startswith(cls2):
                 return True
     return False
 
@@ -54,7 +55,7 @@ def read_csv(name, whitelist):
 
         for row in csvreader:
             pkg = row[1]
-            cls = row[2]
+            cls = row[2].split('.')[0]
             if check(pkg, cls, whitelist):
                 branch_missed = row[3]
                 branch_covered = row[4]
@@ -208,8 +209,8 @@ def main():
     if args.increasepkg or args.increasecls:
         increase = compute_increase(testsuite, comb, args.increasecls)
         increase_view = [(
-            v['branch_perc'], 
-            (k[0] + "," + k[1] if isinstance(k, tuple) else k, 
+            v['branch_perc'],
+            (k[0] + "," + k[1] if isinstance(k, tuple) else k,
             v['branch_covered'],
             v['line_covered'],
             v['line_perc'],
