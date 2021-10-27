@@ -165,22 +165,33 @@ def print_res(lang, testsuite, generator, comb, latex, inf):
 
 
 def compute_increase(res1, res2, cls=False):
+    def get_increase(metric):
+        metric = metric + '_covered'
+        increase = res2[pkg][metric] - res1[pkg][metric]
+        perc_incr = 0
+        if res1[pkg][metric] > 0:
+            perc_incr =  (increase / res1[pkg][metric]) * 100
+        elif res2[pkg][metric] > 0:
+            perc_incr = 9999999
+        return perc_incr, increase
+
     res3 = defaultdict(lambda: defaultdict(lambda: 0))
     for pkg in res2.keys():
         if not cls and isinstance(pkg, tuple):
             continue
         if cls and not isinstance(pkg, tuple):
             continue
-        increase = res2[pkg]['branch_covered'] - res1[pkg]['branch_covered']
-        perc_incr = 0
-        if res1[pkg]['branch_covered'] > 0:
-            perc_incr =  (increase / res1[pkg]['branch_covered']) * 100
-        elif res2[pkg]['branch_covered'] > 0:
-            perc_incr = 9999999
-        if perc_incr <= 0:
+        branch_perc_incr, branch_incr = get_increase('branch')
+        if branch_perc_incr <= 0:
             continue
-        res3[pkg]['branch_covered'] = increase
-        res3[pkg]['branch_perc'] = perc_incr
+        line_perc_incr, line_incr = get_increase('line')
+        func_perc_incr, func_incr = get_increase('function')
+        res3[pkg]['branch_covered'] = branch_incr
+        res3[pkg]['branch_perc'] = branch_perc_incr
+        res3[pkg]['line_covered'] = line_incr
+        res3[pkg]['line_perc'] = line_perc_incr
+        res3[pkg]['function_covered'] = func_incr
+        res3[pkg]['function_perc'] = func_perc_incr
     return res3
 
 def main():
@@ -199,14 +210,22 @@ def main():
         increase_view = [(
             v['branch_perc'], 
             (k[0] + "," + k[1] if isinstance(k, tuple) else k, 
-            v['branch_covered']))
+            v['branch_covered'],
+            v['line_covered'],
+            v['line_perc'],
+            v['function_covered'],
+            v['function_perc']))
             for k,v in increase.items() ]
         increase_view.sort(reverse=True)
         for view in increase_view:
-            print("{name}: {absolute} ({percentage})".format(
+            print("{name}: Branch -- {ba} ({bp:.2f}), Line -- {la} ({lp:.2f}), Func -- {fa} ({fp:.2f})".format(
                 name=view[1][0],
-                absolute=view[1][1],
-                percentage=view[0]
+                ba=view[1][1],
+                bp=view[0],
+                la=view[1][2],
+                lp=view[1][3],
+                fa=view[1][4],
+                fp=view[1][5]
             ))
 
 
