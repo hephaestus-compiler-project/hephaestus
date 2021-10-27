@@ -1,3 +1,1 @@
-com.sun.tools.javac.comp*,Check
-com.sun.tools.javac.comp*,Infer
-com.sun.tools.javac.code*,Type
+com.sun.tools.javac.*
