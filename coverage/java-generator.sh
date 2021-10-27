@@ -8,6 +8,7 @@ JAVA_17=$HOME/.sdkman/candidates/java/17-open/bin/java
 JAVA_SRC=$HOME/coverage/jdk
 JACOCO=$HOME/coverage/jacoco
 PROGRAMS=$1
+MUTANTS=$2
 
 
 RES=java-generator
@@ -16,16 +17,26 @@ cd $RES
 RES=$(pwd)
 cd ..
 
+RES_INF=java-generator-inference
+if [ ! -z "$MUTANTS" ]; then
+    mkdir -p $RES_INF
+    cd $RES_INF
+    RES_INF=$(pwd)
+    cd ..
+fi
+
 run_javac () {
     first=$1
     last=$2
+    res=$3
+    p=$4
     #target=$(eval echo "iter_{$first..$last}/Main.java")
     #for t in $target; do
         #echo $t
     for iter in $(seq $first 1 $last); do
-        t=iter_$iter/Main.java
+        t=iter_$iter/$p/Main.java
         echo $t
-        $JAVA_17 -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$RES/jacoco-$iter.exec \
+        $JAVA_17 -javaagent:$JACOCO/lib/jacocoagent.jar=destfile=$res/jacoco-$iter.exec \
             -XX:+UseSerialGC -Xms32M -Xmx512M -XX:TieredStopAtLevel=1 \
             -XX:+UnlockDiagnosticVMOptions -XX:-VerifySharedSpaces -Xshare:auto \
             -XX:SharedArchiveFile=$JAVA_SRC/build/$JAVA_BUILD/configure-support/classes.jsa \
@@ -45,11 +56,26 @@ run_javac () {
 
 i=1
 cd $PROGRAMS
-for counter in $(seq 30 30 4998); do
+for counter in $(seq 30 30 499); do
     echo $i $counter
-    run_javac $i $counter
+    run_javac $i $counter $RES
     i=$counter
 done
+
+if [ ! -z "$MUTANTS" ]; then
+    cd $MUTANTS
+    for counter in $(seq 30 30 499); do
+        echo $i $counter
+        run_javac $i $counter $RES_INF 0
+        i=$counter
+    done
+    cd $RES_INF
+    $JAVA_17 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
+    $JAVA_17 -jar $JACOCO/lib/jacococli.jar report jacoco.exec \
+        --classfiles $JAVA_SRC/build/$JAVA_BUILD/buildtools/interim_langtools_modules/jdk.compiler.interim/com/sun/tools/javac/ \
+        --html javac-generator-inf
+fi
+
 cd $RES
 $JAVA_17 -jar $JACOCO/lib/jacococli.jar merge jacoco-*.exec --destfile jacoco.exec
 $JAVA_17 -jar $JACOCO/lib/jacococli.jar report jacoco.exec \
