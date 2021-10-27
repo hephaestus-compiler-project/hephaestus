@@ -16,6 +16,8 @@ def get_args():
                         help="Whitelist of packages we should include.")
     parser.add_argument("--latex", action="store_true")
     parser.add_argument("--inf", action="store_true")
+    parser.add_argument("--increasepkg", action="store_true")
+    parser.add_argument("--increasecls", action="store_true")
     return parser.parse_args()
 
 
@@ -54,7 +56,6 @@ def read_csv(name, whitelist):
             pkg = row[1]
             cls = row[2]
             if check(pkg, cls, whitelist):
-                print(pkg, cls)
                 branch_missed = row[3]
                 branch_covered = row[4]
                 line_missed = row[7]
@@ -67,6 +68,12 @@ def read_csv(name, whitelist):
                 res[pkg]['line_covered'] += int(line_covered)
                 res[pkg]['function_missed'] += int(function_missed)
                 res[pkg]['function_covered'] += int(function_covered)
+                res[(pkg, cls)]['branch_missed'] += int(branch_missed)
+                res[(pkg, cls)]['branch_covered'] += int(branch_covered)
+                res[(pkg, cls)]['line_missed'] += int(line_missed)
+                res[(pkg, cls)]['line_covered'] += int(line_covered)
+                res[(pkg, cls)]['function_missed'] += int(function_missed)
+                res[(pkg, cls)]['function_covered'] += int(function_covered)
                 res['total']['branch_missed'] += int(branch_missed)
                 res['total']['branch_covered'] += int(branch_covered)
                 res['total']['line_missed'] += int(line_missed)
@@ -157,6 +164,25 @@ def print_res(lang, testsuite, generator, comb, latex, inf):
             print_latex_command(lang, category, d, inf)
 
 
+def compute_increase(res1, res2, cls=False):
+    res3 = defaultdict(lambda: defaultdict(lambda: 0))
+    for pkg in res2.keys():
+        if not cls and isinstance(pkg, tuple):
+            continue
+        if cls and not isinstance(pkg, tuple):
+            continue
+        increase = res2[pkg]['branch_covered'] - res1[pkg]['branch_covered']
+        perc_incr = 0
+        if res1[pkg]['branch_covered'] > 0:
+            perc_incr =  (increase / res1[pkg]['branch_covered']) * 100
+        elif res2[pkg]['branch_covered'] > 0:
+            perc_incr = 9999999
+        if perc_incr <= 0:
+            continue
+        res3[pkg]['branch_covered'] = increase
+        res3[pkg]['branch_perc'] = perc_incr
+    return res3
+
 def main():
     args = get_args()
 
@@ -167,6 +193,21 @@ def main():
     generator = read_csv(args.generator, whitelist)
     comb = read_csv(args.combination, whitelist)
     print_res(args.lang, testsuite, generator, comb, args.latex, args.inf)
+
+    if args.increasepkg or args.increasecls:
+        increase = compute_increase(testsuite, comb, args.increasecls)
+        increase_view = [(
+            v['branch_perc'], 
+            (k[0] + "," + k[1] if isinstance(k, tuple) else k, 
+            v['branch_covered']))
+            for k,v in increase.items() ]
+        increase_view.sort(reverse=True)
+        for view in increase_view:
+            print("{name}: {absolute} ({percentage})".format(
+                name=view[1][0],
+                absolute=view[1][1],
+                percentage=view[0]
+            ))
 
 
 
