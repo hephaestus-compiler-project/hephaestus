@@ -158,10 +158,10 @@ JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,UnaryMinusExpression,33,6,0,
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,NotExpression,26,0,0,0,9,0,4,0,4,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,RangeExpression,110,0,8,0,23,0,14,0,10,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,GStringExpression,161,0,8,0,41,0,17,0,13,0
-JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,MethodCallExpression,76,239,11,13,9,67,11,28,1,26
+JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,MethodCallExpression,79,236,11,13,10,66,12,27,2,25
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,MapEntryExpression,67,0,0,0,17,0,8,0,8,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,TupleExpression,51,108,0,4,13,32,5,12,5,10
-JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,ConstantExpression,19,154,1,19,4,38,4,20,3,11
+JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,ConstantExpression,27,146,3,17,6,36,6,18,3,11
 JaCoCo Coverage Report,org.codehaus.groovy.ast.expr,AnnotationConstantExpression,49,0,2,0,11,0,4,0,3,0
 JaCoCo Coverage Report,groovyjarjarasm.asm.commons,LocalVariablesSorter,480,0,59,0,120,0,49,0,15,0
 JaCoCo Coverage Report,groovyjarjarasm.asm.commons,ClassRemapper,361,0,30,0,76,0,36,0,21,0
@@ -190,7 +190,7 @@ JaCoCo Coverage Report,groovyjarjarasm.asm.commons,AdviceAdapter,839,0,146,0,217
 JaCoCo Coverage Report,groovyjarjarasm.asm.commons,SignatureRemapper,184,0,2,0,49,0,19,0,18,0
 JaCoCo Coverage Report,groovyjarjarasm.asm.commons,ModuleRemapper,141,0,10,0,32,0,14,0,9,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeMain.VersionProvider,55,0,0,0,2,0,1,0,1,0
-JaCoCo Coverage Report,org.codehaus.groovy.tools,FileSystemCompiler,291,198,40,20,69,58,39,12,12,9
+JaCoCo Coverage Report,org.codehaus.groovy.tools,FileSystemCompiler,291,198,41,19,69,58,40,11,12,9
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeMain._main_closure2,23,0,0,0,1,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeMain._main_closure1,16,0,0,0,1,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeMain.Uninstall._run_closure2,30,0,0,0,1,0,2,0,2,0
@@ -216,7 +216,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.tools,GroovyClass,0,19,0,0,0,7,0,4,0,
 JaCoCo Coverage Report,org.codehaus.groovy.tools,Utilities,39,37,10,2,7,8,7,4,2,3
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeMain.ListCommand._run_closure1,50,0,0,0,1,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GroovyStarter,222,0,32,0,67,0,24,0,7,0
-JaCoCo Coverage Report,org.codehaus.groovy.tools,ErrorReporter,90,107,8,10,22,32,12,9,5,7
+JaCoCo Coverage Report,org.codehaus.groovy.tools,ErrorReporter,132,65,14,4,32,22,15,6,6,6
 JaCoCo Coverage Report,org.codehaus.groovy.tools,DgmConverter,656,0,46,0,138,0,30,0,7,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,GrapeUtil,107,0,20,0,17,0,12,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools,LoaderConfiguration,626,0,94,0,136,0,62,0,15,0
@@ -268,11 +268,11 @@ JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,BeanUtils,329,0,82,0,63,0,4
 JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,PropertyNodeUtils,3,5,0,0,1,1,1,1,1,1
 JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,GeneralUtils.new BytecodeExpression() {...},0,11,0,0,0,3,0,2,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,ClosureUtils,88,8,19,2,18,1,17,2,6,1
-JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,WideningCategories.LowestUpperBoundClassNode,60,259,8,26,9,47,10,17,3,7
-JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,GenericsUtils,1077,1103,196,194,193,252,146,102,27,26
+JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,WideningCategories.LowestUpperBoundClassNode,126,193,16,18,19,37,17,10,6,4
+JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,GenericsUtils,1083,1097,194,196,196,249,143,105,26,27
 JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,ParameterUtils,19,53,1,7,5,12,4,7,3,4
 JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,GeneralUtils,1616,393,224,30,314,82,224,49,106,40
-JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,WideningCategories,377,999,115,207,57,206,90,97,5,21
+JaCoCo Coverage Report,org.codehaus.groovy.ast.tools,WideningCategories,399,977,129,193,67,196,105,82,5,21
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.dfa,ArrayEdgeMap.EntrySet,14,0,0,0,2,0,2,0,2,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.dfa,ArrayEdgeMap.EntryIterator.new Map.Entry() {...},37,0,0,0,6,0,4,0,4,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.dfa,DFAState.PredPrediction,17,9,0,0,1,4,1,1,1,1
@@ -919,14 +919,14 @@ JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,VariableExp
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,ListExpressionTransformer,93,6,6,0,21,3,7,1,4,1
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,BooleanExpressionTransformer,61,20,10,2,14,7,7,2,1,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,StaticCompilationTransformer,28,255,5,19,6,56,6,16,1,9
-JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,BinaryExpressionTransformer,604,371,75,67,120,91,53,30,3,9
+JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,BinaryExpressionTransformer,612,363,78,64,122,89,56,27,3,9
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,ClosureExpressionTransformer,0,45,0,4,0,9,0,4,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,MethodCallExpressionTransformer,323,82,49,13,72,20,31,6,1,5
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,ConstructorCallTransformer.MapStyleConstructorCall,227,0,16,0,52,0,13,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,CompareToNullExpression,131,0,10,0,33,0,12,0,7,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,BooleanExpressionTransformer.OptimizingBooleanExpression,211,0,26,0,57,0,16,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,CastExpressionOptimizer,114,19,22,2,26,6,13,2,1,2
-JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,ConstructorCallTransformer,72,41,15,7,16,9,8,5,0,2
+JaCoCo Coverage Report,org.codehaus.groovy.transform.sc.transformers,ConstructorCallTransformer,74,39,16,6,16,9,9,4,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.tools.shell.util,Preferences.new PreferenceChangeListener() {...},29,0,4,0,10,0,4,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools.shell.util,Logger,210,0,36,0,48,0,33,0,15,0
 JaCoCo Coverage Report,org.codehaus.groovy.tools.shell.util,Preferences,73,0,0,0,23,0,12,0,12,0
@@ -1031,7 +1031,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.ast,VariableScope,34,204,5,17,8,49,7,
 JaCoCo Coverage Report,org.codehaus.groovy.ast,EnumConstantClassNode,14,0,0,0,4,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ASTNode,27,71,0,0,2,27,2,13,2,13
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassHelper.ClassHelperCache,3,6,0,0,1,1,1,1,1,1
-JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassNode,733,2043,150,296,156,474,128,250,28,127
+JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassNode,729,2047,148,298,157,473,128,250,28,127
 JaCoCo Coverage Report,org.codehaus.groovy.ast,CodeVisitorSupport,235,134,4,2,83,50,35,24,33,23
 JaCoCo Coverage Report,org.codehaus.groovy.ast,NodeMetaDataHandler,66,92,7,15,4,34,7,11,1,6
 JaCoCo Coverage Report,org.codehaus.groovy.ast,InterfaceHelperClassNode,6,24,1,1,1,6,2,2,1,2
@@ -1049,18 +1049,18 @@ JaCoCo Coverage Report,org.codehaus.groovy.ast,TransformingCodeVisitor,398,0,0,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast,PropertyNode,92,120,15,7,25,28,23,17,13,16
 JaCoCo Coverage Report,org.codehaus.groovy.ast,MixinNode,15,4,0,0,4,1,2,1,2,1
 JaCoCo Coverage Report,org.codehaus.groovy.ast,MethodInvocationTrap,90,0,8,0,21,0,8,0,4,0
-JaCoCo Coverage Report,org.codehaus.groovy.ast,Parameter,54,89,4,6,6,30,5,20,3,17
+JaCoCo Coverage Report,org.codehaus.groovy.ast,Parameter,54,89,5,5,6,30,6,19,3,17
 JaCoCo Coverage Report,org.codehaus.groovy.ast,GroovyCodeVisitor,14,11,4,2,6,2,6,3,4,2
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassNode.MapOfLists,7,38,0,2,2,5,1,5,1,4
 JaCoCo Coverage Report,org.codehaus.groovy.ast,MethodCallTransformation,215,0,58,0,47,0,31,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassCodeVisitorSupport,140,253,7,21,52,71,20,27,13,20
 JaCoCo Coverage Report,org.codehaus.groovy.ast,AnnotatedNode,30,87,5,9,7,25,7,13,3,10
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ImportNode,213,27,20,0,44,10,21,3,11,3
-JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassHelper,159,1224,57,139,31,182,48,100,5,45
+JaCoCo Coverage Report,org.codehaus.groovy.ast,ClassHelper,160,1223,58,138,31,182,49,99,5,45
 JaCoCo Coverage Report,org.codehaus.groovy.ast,ConstructorNode,3,39,0,4,1,10,1,5,1,3
 JaCoCo Coverage Report,org.codehaus.groovy.ast,MethodNode,99,296,8,32,9,84,11,48,5,34
 JaCoCo Coverage Report,org.codehaus.groovy.ast,RecordComponentNode,82,0,10,0,17,0,11,0,6,0
-JaCoCo Coverage Report,org.codehaus.groovy.ast,GenericsType,187,879,60,174,33,197,46,95,1,23
+JaCoCo Coverage Report,org.codehaus.groovy.ast,GenericsType,215,851,62,172,39,191,48,93,2,22
 JaCoCo Coverage Report,org.codehaus.groovy.runtime,ResourceGroovyMethods,1903,0,240,0,443,0,262,0,142,0
 JaCoCo Coverage Report,org.codehaus.groovy.runtime,DefaultGroovyStaticMethods,162,0,16,0,45,0,26,0,18,0
 JaCoCo Coverage Report,org.codehaus.groovy.runtime,dgm.new GeneratedMetaMethod() {...},43,0,4,0,0,0,6,0,4,0
@@ -2700,7 +2700,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.transform,SortableASTTransformation,6
 JaCoCo Coverage Report,org.codehaus.groovy.transform,TimedInterruptibleASTTransformation.TimedInterruptionVisitor._wrapBlock_closure1,39,0,0,0,2,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform,ASTTransformationCollectorCodeVisitor,733,29,84,1,140,11,58,3,14,3
 JaCoCo Coverage Report,org.codehaus.groovy.transform,CategoryASTTransformation,326,0,38,0,65,0,26,0,7,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform,AbstractASTTransformation,1035,4,198,0,200,1,131,1,32,1
+JaCoCo Coverage Report,org.codehaus.groovy.transform,AbstractASTTransformation,1039,0,198,0,201,0,132,0,33,0
 JaCoCo Coverage Report,groovyjarjarantlr4.runtime.misc,IntArray,93,0,6,0,23,0,10,0,7,0
 JaCoCo Coverage Report,groovyjarjarantlr4.runtime.misc,FastQueue,154,0,12,0,28,0,16,0,10,0
 JaCoCo Coverage Report,groovyjarjarantlr4.runtime.misc,Stats,315,0,44,0,80,0,33,0,11,0
@@ -2768,7 +2768,7 @@ JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,BlockEndState,0,5,0,0,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ConflictInfo,9,38,4,4,3,10,5,4,1,4
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,PredicateEvalInfo,19,0,0,0,5,0,1,0,1,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LoopEndState,0,5,0,0,0,2,0,2,0,2
-JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,PredictionContextCache.PredictionContextAndInt,6,63,6,8,2,12,6,4,0,3
+JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,PredictionContextCache.PredictionContextAndInt,5,64,5,9,2,12,5,5,0,3
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,WildcardTransition,3,15,2,2,1,3,3,3,1,3
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,PredictionContext,264,524,43,77,57,119,34,44,8,10
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ATNConfig.ActionSemanticContextATNConfig,32,0,0,0,10,0,4,0,4,0
@@ -2821,7 +2821,7 @@ JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,DecisionInfo,86,0,0,0,8
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LexerActionExecutor,84,133,18,14,18,27,14,9,2,5
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LookaheadEventInfo,12,0,0,0,3,0,1,0,1,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LexerMoreAction,28,5,2,0,9,1,7,1,6,1
-JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,SingletonPredictionContext,74,71,16,12,6,21,15,11,4,8
+JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,SingletonPredictionContext,73,72,15,13,6,21,14,12,4,8
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,EmptyPredictionContext,44,28,1,1,11,8,12,5,11,5
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LexerChannelAction,66,0,6,0,18,0,11,0,8,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LexerATNSimulator,173,820,34,91,40,196,36,59,7,23
@@ -2835,7 +2835,7 @@ JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ATNDeserializer.new ATN
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,BasicBlockStartState,0,5,0,0,0,2,0,2,0,2
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,LL1Analyzer,323,0,50,0,68,0,30,0,5,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ATNConfig,415,357,66,42,81,65,52,37,8,27
-JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ArrayPredictionContext,295,178,57,23,51,47,39,16,5,10
+JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,ArrayPredictionContext,293,180,56,24,50,48,38,17,5,10
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,RangeTransition,46,0,4,0,8,0,7,0,5,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,RuleStopState,0,7,0,0,0,3,0,3,0,3
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,AtomTransition,4,21,0,2,1,6,1,5,1,4
@@ -2843,8 +2843,8 @@ JaCoCo Coverage Report,groovyjarjarantlr4.v4.runtime.atn,Transition,7,65,1,1,2,7
 JaCoCo Coverage Report,org.codehaus.groovy.control,MultipleCompilationErrorsException,21,40,3,1,6,12,3,2,1,2
 JaCoCo Coverage Report,org.codehaus.groovy.control,ClassNodeResolver.LookupResult,18,29,7,5,1,9,7,4,1,4
 JaCoCo Coverage Report,org.codehaus.groovy.control,ResolveVisitor,1339,2282,268,326,246,516,198,162,15,48
-JaCoCo Coverage Report,org.codehaus.groovy.control,SourceUnit,151,209,13,13,35,45,21,13,10,11
-JaCoCo Coverage Report,org.codehaus.groovy.control,CompilerConfiguration,679,349,70,12,183,94,85,35,46,33
+JaCoCo Coverage Report,org.codehaus.groovy.control,SourceUnit,152,208,13,13,36,44,21,13,10,11
+JaCoCo Coverage Report,org.codehaus.groovy.control,CompilerConfiguration,682,346,70,12,184,93,86,34,47,32
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit,402,956,35,75,91,233,52,80,27,50
 JaCoCo Coverage Report,org.codehaus.groovy.control,SourceExtensionHandler,40,59,1,9,7,17,2,5,1,1
 JaCoCo Coverage Report,org.codehaus.groovy.control,AnnotationConstantsVisitor,192,21,35,1,48,7,23,3,5,3
@@ -2859,15 +2859,15 @@ JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.3.new Instanc
 JaCoCo Coverage Report,org.codehaus.groovy.control,StaticVerifier,106,87,21,9,25,24,14,9,2,6
 JaCoCo Coverage Report,org.codehaus.groovy.control,ClassNodeResolver.new ClassNode() {...},5,6,0,0,1,1,1,1,1,1
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationFailedException,22,18,0,0,5,4,2,1,2,1
-JaCoCo Coverage Report,org.codehaus.groovy.control,ErrorCollector,243,145,40,18,60,36,42,16,19,10
+JaCoCo Coverage Report,org.codehaus.groovy.control,ErrorCollector,260,128,42,16,64,32,44,14,21,8
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.SourceUnitOperation,3,0,0,0,1,0,1,0,1,0
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilerConfiguration.new CompilerConfiguration() {...},126,7,0,0,29,2,29,2,29,2
-JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.ISourceUnitOperation,19,41,2,6,7,10,2,3,0,1
+JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.ISourceUnitOperation,22,38,2,6,9,8,2,3,0,1
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.IGroovyClassOperation,38,24,5,3,9,7,3,2,0,1
 JaCoCo Coverage Report,org.codehaus.groovy.control,Janitor,1,35,0,2,1,11,0,4,0,3
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.GroovyClassOperation,3,0,0,0,1,0,1,0,1,0
 JaCoCo Coverage Report,org.codehaus.groovy.control,ResolveVisitor.LowerCaseClass,19,25,4,2,5,8,4,3,1,3
-JaCoCo Coverage Report,org.codehaus.groovy.control,OptimizerVisitor,43,230,10,30,9,52,10,18,2,6
+JaCoCo Coverage Report,org.codehaus.groovy.control,OptimizerVisitor,55,218,14,26,9,52,12,16,2,6
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.new Iterator() {...},33,0,0,0,6,0,4,0,4,0
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.new CompilationUnit.IPrimaryClassNodeOperation() {...},17,141,2,4,2,29,2,5,0,4
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilationUnit.new ClassCodeExpressionTransformer() {...},14,21,1,3,4,5,2,3,1,2
@@ -2882,7 +2882,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.control,StaticImportVisitor,629,768,1
 JaCoCo Coverage Report,org.codehaus.groovy.control,CompilePhase,24,157,4,0,4,15,3,3,1,3
 JaCoCo Coverage Report,org.codehaus.groovy.control,ResolveVisitor.ConstructedNestedClass,26,33,3,1,4,6,4,2,2,2
 JaCoCo Coverage Report,org.codehaus.groovy.control,ProcessingUnit,14,98,2,8,3,29,5,14,3,11
-JaCoCo Coverage Report,org.codehaus.groovy.runtime.memoize,CommonCache.new LinkedHashMap() {...},2,16,1,1,0,2,1,2,0,2
+JaCoCo Coverage Report,org.codehaus.groovy.runtime.memoize,CommonCache.new LinkedHashMap() {...},0,18,0,2,0,2,0,3,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.runtime.memoize,StampedCommonCache,229,133,13,9,43,30,37,11,28,9
 JaCoCo Coverage Report,org.codehaus.groovy.runtime.memoize,LRUProtectionStorage,41,0,4,0,11,0,7,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.runtime.memoize,NullProtectionStorage,4,0,0,0,2,0,2,0,2,0
@@ -2968,18 +2968,18 @@ JaCoCo Coverage Report,groovyjarjarasm.asm,ClassVisitor,233,44,54,8,51,18,42,6,1
 JaCoCo Coverage Report,groovyjarjarasm.asm,ConstantDynamic,138,0,16,0,29,0,19,0,11,0
 JaCoCo Coverage Report,groovyjarjarasm.asm,Handle,90,53,19,1,12,15,13,7,3,7
 JaCoCo Coverage Report,groovyjarjarasm.asm,Opcodes,22,0,0,0,7,0,1,0,1,0
-JaCoCo Coverage Report,groovyjarjarasm.asm,ByteVector,206,513,28,26,39,108,19,23,2,13
+JaCoCo Coverage Report,groovyjarjarasm.asm,ByteVector,292,427,29,25,54,93,20,22,3,12
 JaCoCo Coverage Report,groovyjarjarasm.asm,RecordComponentWriter,194,0,22,0,50,0,19,0,8,0
 JaCoCo Coverage Report,groovyjarjarasm.asm,FieldVisitor,76,24,23,3,14,10,16,3,3,3
 JaCoCo Coverage Report,groovyjarjarasm.asm,MethodVisitor,389,116,88,26,76,52,69,22,12,22
 JaCoCo Coverage Report,groovyjarjarasm.asm,FieldWriter,91,180,15,25,24,45,17,11,4,4
 JaCoCo Coverage Report,groovyjarjarasm.asm,AnnotationWriter,744,191,79,21,123,58,51,13,7,7
-JaCoCo Coverage Report,groovyjarjarasm.asm,MethodWriter,2637,2538,402,223,524,399,275,95,21,30
+JaCoCo Coverage Report,groovyjarjarasm.asm,MethodWriter,2629,2546,403,222,520,403,276,94,21,30
 JaCoCo Coverage Report,groovyjarjarasm.asm,ModuleVisitor,122,0,32,0,34,0,26,0,10,0
-JaCoCo Coverage Report,groovyjarjarasm.asm,Frame,759,1392,129,205,220,344,105,127,4,19
+JaCoCo Coverage Report,groovyjarjarasm.asm,Frame,750,1401,132,202,218,346,107,125,4,19
 JaCoCo Coverage Report,groovyjarjarasm.asm,Context,0,3,0,0,0,1,0,1,0,1
 JaCoCo Coverage Report,groovyjarjarasm.asm,Attribute.Set,94,0,10,0,21,0,10,0,5,0
-JaCoCo Coverage Report,groovyjarjarasm.asm,SymbolTable,746,1248,80,123,162,226,76,89,17,43
+JaCoCo Coverage Report,groovyjarjarasm.asm,SymbolTable,837,1157,86,117,178,210,85,80,22,38
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.analysis,LeftFactoringRuleTransformer.DecisionFactorMode,69,0,0,0,11,0,4,0,4,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.analysis,LeftRecursiveRuleAnalyzer,1132,0,130,0,215,0,83,0,18,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.analysis,LeftFactoringRuleTransformer,1765,0,274,0,332,0,151,0,9,0
@@ -2991,10 +2991,10 @@ JaCoCo Coverage Report,groovyjarjarantlr4.v4.analysis,LeftRecursiveRuleAltInfo,3
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.analysis,LeftRecursiveRuleAnalyzer.ASSOC,24,0,0,0,1,0,1,0,1,0
 JaCoCo Coverage Report,org.apache.groovy.parser.antlr4.internal,DescriptiveErrorStrategy,141,6,14,0,27,3,15,1,8,1
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,NAryOperationRewriter,175,0,22,0,44,0,18,0,7,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitASTTransformation,1399,19,174,0,294,2,112,1,25,1
+JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitASTTransformation,1418,0,174,0,296,0,113,0,26,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitHelpersTuple,27,0,0,0,10,0,5,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitReceiverTransformer,850,0,124,0,190,0,75,0,13,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,Traits,417,264,62,24,78,39,55,15,18,9
+JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,Traits,423,258,62,24,80,37,55,15,19,8
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitComposer,1547,33,181,5,306,9,107,3,15,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,TraitASTTransformation.DefaultArgsMethodsAdder,7,0,0,0,3,0,1,0,1,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.trait,SuperCallTraitTransformer,567,6,90,0,114,3,56,1,11,1
@@ -3445,8 +3445,8 @@ JaCoCo Coverage Report,org.codehaus.groovy.runtime.callsite,StaticMetaMethodSite
 JaCoCo Coverage Report,org.codehaus.groovy.runtime.callsite,ConstructorSite.NoParamSite,42,0,2,0,11,0,4,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,LambdaWriter,8,4,0,0,3,2,2,1,2,1
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MethodPointerExpressionWriter,27,11,0,0,7,4,1,2,1,2
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryLongExpressionHelper,56,82,0,0,21,11,9,5,9,5
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryDoubleExpressionHelper,48,42,4,0,17,5,13,2,11,2
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryLongExpressionHelper,60,78,0,0,23,9,11,3,11,3
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryDoubleExpressionHelper,44,46,4,0,15,7,11,4,9,4
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,ClosureWriter.CorrectAccessedVariableVisitor,3,27,1,5,1,10,1,4,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryBooleanExpressionHelper,71,15,12,0,17,4,18,2,12,2
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,ExpressionAsVariableSlot,81,0,4,0,22,0,7,0,5,0
@@ -3454,7 +3454,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,UnaryExpressionHelper,11
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MethodCallerMultiAdapter,28,209,9,15,3,32,7,9,0,4
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeHelper.StoreVarHandler,1,45,0,0,1,14,1,6,1,6
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeHelper.PrimitiveTypeHandler,0,60,0,18,0,20,0,11,0,2
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryExpressionHelper,1066,608,95,44,271,173,91,31,19,10
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryExpressionHelper,1075,599,94,45,273,171,91,31,19,10
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,StatementMetaTypeChooser,3,75,1,13,0,20,1,8,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.FastPathData,13,0,0,0,3,0,1,0,1,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeHelper.ReturnVarHandler,0,37,0,0,0,15,0,7,0,7
@@ -3465,7 +3465,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeHelper.LoadVarHa
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeDumper,45,0,2,0,9,0,4,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BytecodeHelper,551,841,73,106,138,170,58,83,17,32
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.OptimizeFlagsCollector.OptimizeFlagsEntry,0,8,0,0,0,2,0,1,0,1
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryExpressionMultiTypeDispatcher,643,269,68,18,152,42,46,14,11,6
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryExpressionMultiTypeDispatcher,641,271,67,19,152,42,45,15,11,6
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MopWriter,188,132,23,15,32,28,17,11,2,7
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,CompileStack.BlockRecorder,48,0,0,0,14,0,4,0,4,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryObjectExpressionHelper,42,19,5,1,16,5,16,3,13,3
@@ -3473,12 +3473,12 @@ JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MopWriter.MopKey,24,21,6
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MethodCaller,72,112,11,7,6,24,8,11,1,9
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryExpressionMultiTypeDispatcher.BinaryShortExpressionHelper,2,15,0,0,1,4,1,2,1,2
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.StatementMeta,55,30,4,4,9,6,3,4,1,2
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.OptimizeFlagsCollector,61,145,9,17,11,28,6,17,1,9
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.OptimizeFlagsCollector,61,145,8,18,11,28,5,18,1,9
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,MethodReferenceExpressionWriter,4,4,0,0,2,2,1,1,1,1
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.OptVisitor,379,531,89,75,89,137,68,43,11,16
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.OptVisitor,354,556,78,86,86,140,61,50,11,16
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryIntExpressionHelper,110,172,6,4,35,27,15,6,11,5
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,CompileStack,682,839,90,50,155,202,79,46,26,29
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OperandStack,586,769,103,107,146,197,76,66,9,28
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,CompileStack,682,839,89,51,155,202,78,47,26,29
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OperandStack,626,729,109,101,152,191,78,64,9,28
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,OptimizingStatementWriter.ClassNodeSkip,3,0,0,0,1,0,1,0,1,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,BinaryFloatExpressionHelper,54,42,4,0,20,5,14,2,12,2
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm,StatementWriter,1217,148,42,4,302,37,49,7,27,6
@@ -3562,15 +3562,15 @@ JaCoCo Coverage Report,groovy.lang.groovydoc,GroovydocTag,82,0,12,0,16,0,13,0,7,
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,TypeCheckingContext,95,249,9,13,21,60,19,30,13,25
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,EnumTypeCheckingExtension,59,4,16,0,13,2,9,1,1,1
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport.BooleanArrayStaticTypesHelper,19,0,4,0,5,0,5,0,3,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor,9218,6747,1825,1081,1755,1447,1218,509,106,165
+JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor,9196,6769,1847,1059,1750,1452,1232,495,106,165
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,SignatureCodecVersion1,502,0,56,0,128,0,37,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,Receiver,31,22,1,1,6,7,3,4,2,4
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,ExtensionMethodNode,14,18,0,0,3,5,2,2,2,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor.SignatureCodecFactory,12,0,2,0,4,0,3,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,AbstractExtensionMethodCache,70,219,15,15,13,46,11,14,1,9
-JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,SecondPassExpression,8,70,5,7,0,19,5,7,0,6
+JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,SecondPassExpression,35,43,10,2,6,13,6,6,1,5
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,SharedVariableCollector,3,37,0,4,1,12,1,5,1,3
-JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,TraitTypeCheckingExtension,208,60,28,8,38,19,20,6,2,6
+JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,TraitTypeCheckingExtension,260,8,36,0,53,4,23,3,5,3
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,AbstractTypeCheckingExtension.new MethodNode() {...},24,0,0,0,4,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport.IntArrayStaticTypesHelper,19,0,4,0,5,0,5,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,GroovyTypeCheckingExtensionSupport.new HashMap() {...},83,0,0,0,18,0,1,0,1,0
@@ -3588,11 +3588,11 @@ JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,GroovyTypeCheckingExten
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,DelegationMetadata,6,21,0,0,2,8,1,4,1,4
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport.CharArrayStaticTypesHelper,19,0,4,0,5,0,5,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport.ObjectArrayStaticTypesHelper,18,0,4,0,5,0,5,0,3,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport,1280,3725,409,749,214,782,309,392,18,94
+JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingSupport,1346,3659,430,728,231,765,322,379,19,93
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,AbstractTypeCheckingExtension,611,29,46,0,135,8,82,2,59,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor.VariableExpressionTypeMemoizer,10,47,1,7,3,12,3,5,2,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,PropertyLookupVisitor,26,0,0,0,10,0,5,0,5,0
-JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,DefaultTypeCheckingExtension,110,244,24,30,22,57,20,26,5,14
+JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,DefaultTypeCheckingExtension,128,226,24,30,25,54,20,26,5,14
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor.new ReturnAdder.ReturnStatementListener() {...},24,31,2,4,1,7,2,3,0,2
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor.new CodeVisitorSupport() {...},7,6,0,0,3,1,1,1,1,1
 JaCoCo Coverage Report,org.codehaus.groovy.transform.stc,StaticTypeCheckingVisitor.new CodeVisitorSupport() {...},12,10,2,0,3,2,2,2,1,2
@@ -3623,7 +3623,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,StaticCompilationMetadat
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,StaticCompilationVisitor.new ClassCodeVisitorSupport() {...},99,49,22,6,25,13,16,3,2,3
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,ListOfExpressionsExpression,45,0,2,0,13,0,6,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,StaticCompileTransformation,73,99,15,5,16,24,10,3,0,3
-JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,StaticCompilationVisitor,548,602,93,73,110,130,66,40,5,18
+JaCoCo Coverage Report,org.codehaus.groovy.transform.sc,StaticCompilationVisitor,556,594,95,71,111,129,67,39,5,18
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.parse,GrammarTreeVisitor.lexerElement_return,3,0,0,0,1,0,1,0,1,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.parse,ANTLRParser.actionScopeName_return,6,0,0,0,2,0,2,0,2,0
 JaCoCo Coverage Report,groovyjarjarantlr4.v4.parse,GrammarTreeVisitor.lexerBlock_return,3,0,0,0,1,0,1,0,1,0
@@ -3913,7 +3913,7 @@ JaCoCo Coverage Report,org.codehaus.groovy.reflection,CachedField,97,22,4,0,21,6
 JaCoCo Coverage Report,org.codehaus.groovy.reflection,GroovyClassValuePreJava7.GroovyClassValuePreJava7Segment,17,0,0,0,4,0,2,0,2,0
 JaCoCo Coverage Report,org.codehaus.groovy.control.messages,SyntaxErrorMessage,0,63,1,1,0,16,1,3,0,3
 JaCoCo Coverage Report,org.codehaus.groovy.control.messages,Message,24,3,0,0,5,1,4,1,4,1
-JaCoCo Coverage Report,org.codehaus.groovy.control.messages,SimpleMessage,7,44,1,1,2,12,2,3,1,3
+JaCoCo Coverage Report,org.codehaus.groovy.control.messages,SimpleMessage,51,0,2,0,14,0,5,0,4,0
 JaCoCo Coverage Report,org.codehaus.groovy.control.messages,WarningMessage,39,0,2,0,11,0,6,0,5,0
 JaCoCo Coverage Report,org.codehaus.groovy.control.messages,ExceptionMessage,65,0,2,0,14,0,4,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.control.messages,LocatedMessage,90,0,4,0,21,0,6,0,4,0
@@ -4064,10 +4064,10 @@ JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesWriterCont
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesClosureWriter,34,150,3,11,5,34,3,9,0,5
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticPropertyAccessHelper.PoppingListOfExpressionsExpression,46,0,2,0,10,0,4,0,3,0
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticPropertyAccessHelper,65,0,2,0,18,0,3,0,2,0
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticInvocationWriter,1415,533,207,75,286,99,126,37,9,13
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticInvocationWriter,1417,531,209,73,286,99,128,35,9,13
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticCompilationMopWriter,4,23,1,1,1,8,1,3,0,3
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesBinaryExpressionMultiTypeDispatcher,719,183,87,43,151,52,56,19,5,5
-JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesCallSiteWriter,1935,705,260,96,398,147,168,40,17,13
+JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesCallSiteWriter,1939,701,261,95,399,146,169,39,17,13
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesTypeChooser,0,60,2,14,0,17,2,9,0,3
 JaCoCo Coverage Report,org.codehaus.groovy.classgen.asm.sc,StaticTypesUnaryExpressionHelper,294,20,68,0,66,5,41,2,7,2
 JaCoCo Coverage Report,org.codehaus.groovy.control.customizers,SourceAwareCustomizer,146,0,32,0,26,0,27,0,11,0
