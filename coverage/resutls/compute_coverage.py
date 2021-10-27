@@ -19,12 +19,21 @@ def get_args():
     return parser.parse_args()
 
 
-def check_pkg(pkg, whitelist):
-    for pattern in whitelist:
+def check(pkg, cls, whitelist):
+    def check_pkg(pattern):
         if '*' in pattern and pkg.startswith(pattern[:-1]):
             return True
         if pkg == pattern:
             return True
+
+    for pattern in whitelist:
+        if ',' not in pattern and check_pkg(pattern):
+            return True
+        elif ',' in pattern:
+            pkg = pattern.split(',')[0]
+            cls2 = pattern.split(',')[1]
+            if cls.startswith(cls2):
+                return True
     return False
 
 
@@ -43,7 +52,9 @@ def read_csv(name, whitelist):
 
         for row in csvreader:
             pkg = row[1]
-            if check_pkg(pkg, whitelist):
+            cls = row[2]
+            if check(pkg, cls, whitelist):
+                print(pkg, cls)
                 branch_missed = row[3]
                 branch_covered = row[4]
                 line_missed = row[7]
