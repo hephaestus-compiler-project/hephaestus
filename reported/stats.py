@@ -40,7 +40,7 @@ def get_args():
     parser.add_argument("--latex", action='store_true', 
                         help='Print latex commands')
     parser.add_argument("--combinations", action='store_true', 
-                        help='Print latex commands')
+                        help='Print chars combinations')
     return parser.parse_args()
 
 
@@ -62,6 +62,16 @@ def print_chars(chars_view):
     print(80*"-")
     for count, char in chars_view:
         print("{:<29}{:<5}{:<50}".format(char, count, features_lookup[char]))
+    print(80*"=")
+
+
+def print_feature_chars(feature_chars_view):
+    print()
+    print(80*"=")
+    print("Feature Categories")
+    print(80*"-")
+    for count, char in feature_chars_view:
+        print("{:<50}{:<5}".format(char, count))
     print(80*"=")
 
 
@@ -116,7 +126,7 @@ def print_latex_commands(lang, stats, chars_view):
         ))
 
 
-def process(bug, res, chars, combinations):
+def process(bug, res, chars, feature_chars, combinations):
     d = {
         'status': {
             'Kotlin': {
@@ -178,14 +188,18 @@ def process(bug, res, chars, combinations):
     res['total']['symptom'][symptom] += 1
     res['total']['mutator'][bmutator] += 1
 
+    feature_categories = set()
     for char in bug['chars']['characteristics']:
         chars[char] += 1
+        feature_categories.add(features_lookup[char])
         categories = set()
         for comb in bug['chars']['characteristics']:
             if char != comb:
                 categories.add(features_lookup[comb])
         for cat in categories:
             combinations[char][cat] += 1
+    for char in feature_categories:
+        feature_chars[char] += 1
 
 
 def main():
@@ -193,6 +207,7 @@ def main():
     with open(args.input, 'r') as f:
         data = json.load(f)
     chars = defaultdict(lambda: 0)
+    feature_chars = defaultdict(lambda: 0)
     combinations = defaultdict(lambda: defaultdict(lambda: 0))
     res = defaultdict(lambda: {
         'status': {
@@ -215,7 +230,7 @@ def main():
         }
     })
     for bug in data:
-        process(bug, res, chars, combinations)
+        process(bug, res, chars, feature_chars, combinations)
     total = None
     for lang, values in res.items():
         if lang == "total":
@@ -227,6 +242,10 @@ def main():
     chars_view = [ (v,k) for k,v in chars.items() ]
     chars_view.sort(reverse=True)
     print_chars(chars_view)
+
+    feature_chars_view = [ (v,k) for k,v in feature_chars.items() ]
+    feature_chars_view.sort(reverse=True)
+    print_feature_chars(feature_chars_view)
 
     if args.latex:
         total = None
