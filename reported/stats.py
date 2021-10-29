@@ -75,7 +75,7 @@ def print_feature_chars(feature_chars_view):
     print(80*"=")
 
 
-def print_latex_commands(lang, stats, chars_view):
+def print_latex_commands(lang, stats, chars_view, feature_chars_view):
     template = "\\newcommand{{\\{lang}{category}}}{{\\nnum{{{num}}}}}"
     lookup = {
             'Java': 'j',
@@ -119,6 +119,14 @@ def print_latex_commands(lang, stats, chars_view):
         char = char.replace(' ', '').replace('-', '').lower()
         char = 'llambda' if char == 'lambda' else char
         char = 'aarray' if char == 'array' else char
+        print(template.format(
+            lang="",
+            category=char,
+            num=count
+        ))
+    print()
+    for count, char in feature_chars_view:
+        char = char.replace(' ', '').replace('-', '').lower()
         print(template.format(
             lang="",
             category=char,
@@ -253,8 +261,8 @@ def main():
             if lang == "total":
                 total = values
             else:
-                print_latex_commands(lang, values, [])
-        print_latex_commands("Total", total, chars_view)
+                print_latex_commands(lang, values, [], [])
+        print_latex_commands("Total", total, chars_view, feature_chars_view)
 
     if args.combinations:
         for char, combs in combinations.items():
