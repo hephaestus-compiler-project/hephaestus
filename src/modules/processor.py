@@ -7,7 +7,7 @@ from src.transformations.substitution import (
 from src.transformations.type_creation import (
     SupertypeCreation, SubtypeCreation)
 from src.transformations.parameterized import ParameterizedSubstitution
-from src.transformations.type_erasure import TypeArgumentErasureSubstitution
+from src.transformations.type_erasure import TypeErasure
 from src.utils import random, read_lines, load_program
 from src.modules.logging import Logger
 
@@ -16,12 +16,7 @@ class ProgramProcessor():
 
     # Correctness-preserving transformations
     CP_TRANSFORMATIONS = {
-        'SupertypeCreation': SupertypeCreation,
-        'SubtypeCreation': SubtypeCreation,
-        'ValueSubstitution': ValueSubstitution,
-        'TypeSubstitution': TypeSubstitution,
-        'ParameterizedSubstitution': ParameterizedSubstitution,
-        'TypeArgumentErasureSubstitution': TypeArgumentErasureSubstitution
+        'TypeErasure': TypeErasure,
     }
 
     # Non correctness-preserving transformations

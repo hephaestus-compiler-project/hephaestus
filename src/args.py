@@ -185,7 +185,7 @@ args.options = {
         "disable_params_type_widening": args.disable_params_type_widening,
         "timeout": args.timeout
     },
-    "ValueSubstitution": {
+    "TypeErasure": {
         "timeout": args.timeout
     },
     "SupertypeCreation": {
