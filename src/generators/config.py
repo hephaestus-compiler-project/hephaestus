@@ -89,7 +89,7 @@ class GenConfig(metaclass=Singleton):
         )
         self.prob=Probabilities(
                 function_expr=1.0,
-                bounded_type_parameters=0.0,
+                bounded_type_parameters=0.5,
                 func_ref_call=1.0,
                 func_ref=0.5,
                 sam_coercion=1.0,
