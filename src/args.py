@@ -205,6 +205,9 @@ args.options = {
     "IncorrectSubtypingSubstitution": {
         "timeout": args.timeout,
         "min_expr_depth": args.min_expr_depth
+    },
+    "TypeOverwriting": {
+        "timeout": args.timeout
     }
 }
 
