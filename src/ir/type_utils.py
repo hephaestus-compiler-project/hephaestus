@@ -724,7 +724,7 @@ def instantiate_parameterized_function(
 
 def choose_type(types: List[tp.Type], only_regular=True):
     # Randomly choose a type from the list of available types.
-    types = _get_available_types(types, only_regular)
+    types = _get_available_types(None, types, only_regular)
     c = utils.random.choice(types)
     if isinstance(c, ast.ClassDeclaration):
         cls_type = c.get_type()

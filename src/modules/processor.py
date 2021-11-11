@@ -2,12 +2,8 @@
 import sys
 
 from src.generators.generator import Generator
-from src.transformations.substitution import (
-    ValueSubstitution, TypeSubstitution, IncorrectSubtypingSubstitution)
-from src.transformations.type_creation import (
-    SupertypeCreation, SubtypeCreation)
-from src.transformations.parameterized import ParameterizedSubstitution
 from src.transformations.type_erasure import TypeErasure
+from src.transformations.type_overwriting import TypeOverwriting
 from src.utils import random, read_lines, load_program
 from src.modules.logging import Logger
 
@@ -21,7 +17,7 @@ class ProgramProcessor():
 
     # Non correctness-preserving transformations
     NCP_TRANSFORMATIONS = {
-        'IncorrectSubtypingSubstitution': IncorrectSubtypingSubstitution,
+        'TypeOverwriting': TypeOverwriting,
     }
 
     def __init__(self, proc_id, args):
