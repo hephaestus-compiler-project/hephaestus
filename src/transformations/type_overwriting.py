@@ -1,8 +1,7 @@
 from copy import deepcopy, copy
-import itertools
 
 from src import utils
-from src.ir import ast, type_utils as tu
+from src.ir import ast, type_utils as tu, types as tp
 from src.transformations.base import Transformation, change_namespace
 from src.analysis import type_dependency_analysis as tda
 
@@ -47,23 +46,46 @@ class TypeOverwriting(Transformation):
         candidate_nodes = [
             n
             for n in type_graph.keys()
-            if n.is_omittable and isinstance(n, tda.DeclarationNode)
+            if n.is_omittable and isinstance(n, tda.TypeConstructorInstantiationCallNode)
         ]
         if not candidate_nodes:
             return node
         n = utils.random.choice(candidate_nodes)
-        node_type = n.decl.get_type()
+        if isinstance(n, tda.TypeConstructorInstantiationCallNode):
+            type_params = [
+                n.target for n in type_graph[n]
+                if any(e.is_inferred() for e in type_graph[n.target])
+            ]
+            if not type_params:
+                return node
+            type_param = utils.random.choice(type_params)
+            node_type = n.t.get_type_variable_assignments()[type_param.t]
+            old_type = node_type
+        else:
+            node_type = n.decl.get_type()
+            old_type = node_type
         if node_type.name in ["Boolean", "String", "BigInteger"]:
             return node
         ir_type = tu.find_irrelevant_type(node_type, self.types,
                                           self.bt_factory)
-        if ir_type is not None and isinstance(n.decl, ast.VariableDeclaration):
-            if n.decl.name == tda.RET:
+        if ir_type is not None:
+            if isinstance(n, tda.DeclarationNode) and n.decl.name == tda.RET:
                 return node
-            old_type = n.decl.get_type()
-            # import pdb; pdb.set_trace()
-            n.decl.var_type = ir_type
-            n.decl.inferred_type = ir_type
+
+            if isinstance(n, tda.DeclarationNode):
+                n.decl.var_type = ir_type
+                n.decl.inferred_type = ir_type
+            type_parameters = (
+                n.t.t_constructor.type_parameters
+                if isinstance(n.t, tp.ParameterizedType)
+                else n.t.type_parameters
+            )
+            if isinstance(n, tda.TypeConstructorInstantiationCallNode):
+                indexes = {
+                    t_param: i
+                    for i, t_param in enumerate(type_parameters)
+                }
+                n.t.type_args[indexes[type_param.t]] = ir_type
             self.is_transformed = True
             self.error_injected = "{} expected but {} found in node {}".format(
                 str(old_type), str(ir_type), n.node_id)
