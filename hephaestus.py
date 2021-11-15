@@ -237,6 +237,15 @@ def process_ncp_transformations(pid, dirname, translator, proc,
     if res is None:
         return None
     program, injected_err = res
+    if cli_args.keep_all:
+        # Save every program resulted by the current transformation.
+        program_str = utils.translate_program(translator, program)
+        save_program(
+            program,
+            program_str,
+            os.path.join(get_generator_dir(pid),
+                         translator.get_incorrect_filename())
+        )
     dst_file = os.path.join(dirname, package_name,
                             translator.get_filename())
     dst_file2 = os.path.join(cli_args.test_directory, 'tmp', str(pid),
