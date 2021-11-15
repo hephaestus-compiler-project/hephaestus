@@ -33,7 +33,7 @@ class TypeErasure(Transformation):
         super().__init__(program, language, logger, options)
         self._namespace = ast.GLOBAL_NAMESPACE
         self.max_combinations = options.get(
-            'max_combinations', 2000
+            'max_combinations', 500000
         )
         self.global_type_graph = {}
 
@@ -63,13 +63,18 @@ class TypeErasure(Transformation):
         type_graph.update(self.global_type_graph)
         omittable_nodes = [n for n in type_graph.keys()
                            if n.is_omittable()]
+        omittable_nodes = [
+            n
+            for n in omittable_nodes
+            if tda.is_combination_feasible(type_graph, (n,))
+        ]
         # We compute the powerset of omittable nodes.
         combinations = itertools.chain.from_iterable(
             itertools.combinations(omittable_nodes, r)
             for r in range(len(omittable_nodes), 0, -1)
         )
         for i, combination in enumerate(combinations):
-            if i > self.max_combinations:
+            if self.max_combinations and i > self.max_combinations:
                 break
             c_type_graph = copy(type_graph)
             # We are trying to find the maximal combination that is feasible.
