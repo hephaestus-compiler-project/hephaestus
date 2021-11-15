@@ -1,5 +1,3 @@
-from copy import deepcopy, copy
-
 from src import utils
 from src.ir import ast, type_utils as tu, types as tp
 from src.transformations.base import Transformation, change_namespace
@@ -16,6 +14,17 @@ class TypeOverwriting(Transformation):
         self.types = program.get_types()
         self.bt_factory = program.bt_factory
         self.error_injected = None
+        self._method_selection = True
+        self._candidate_methods = []
+        self._selected_method = None
+
+    def visit_program(self, node):
+        super().visit_program(node)
+        self._method_selection = False
+        if not self._candidate_methods:
+            return node
+        self._selected_method = utils.random.choice(self._candidate_methods)
+        return super().visit_program(node)
 
     @change_namespace
     def visit_class_decl(self, node):
@@ -33,10 +42,7 @@ class TypeOverwriting(Transformation):
         self.global_type_graph.update(t_an.result())
         return node
 
-    @change_namespace
-    def visit_func_decl(self, node):
-        if self.is_transformed:
-            return node
+    def _add_candidate_method(self, node):
         t_an = tda.TypeDependencyAnalysis(self.program,
                                           namespace=self._namespace[:-1],
                                           type_graph=None)
@@ -46,10 +52,25 @@ class TypeOverwriting(Transformation):
         candidate_nodes = [
             n
             for n in type_graph.keys()
-            if n.is_omittable and isinstance(n, tda.TypeConstructorInstantiationCallNode)
+            if n.is_omittable() and not (
+                isinstance(n, tda.DeclarationNode) and n.decl.name == tda.RET
+            )
         ]
         if not candidate_nodes:
             return node
+        self._candidate_methods.append((self._namespace, candidate_nodes,
+                                        type_graph))
+        return node
+
+    @change_namespace
+    def visit_func_decl(self, node):
+        if self._method_selection:
+            return self._add_candidate_method(node)
+        namespace, candidate_nodes, type_graph = self._selected_method
+        if namespace != self._namespace:
+            return node
+
+        # Generate a type that is irrelevant
         n = utils.random.choice(candidate_nodes)
         if isinstance(n, tda.TypeConstructorInstantiationCallNode):
             type_params = [
@@ -68,25 +89,30 @@ class TypeOverwriting(Transformation):
             return node
         ir_type = tu.find_irrelevant_type(node_type, self.types,
                                           self.bt_factory)
-        if ir_type is not None:
-            if isinstance(n, tda.DeclarationNode) and n.decl.name == tda.RET:
-                return node
+        if ir_type is None:
+            return node
 
-            if isinstance(n, tda.DeclarationNode):
+        # Perform the mutation
+        if isinstance(n, tda.DeclarationNode):
+            if isinstance(n.decl, ast.VariableDeclaration):
                 n.decl.var_type = ir_type
-                n.decl.inferred_type = ir_type
+            else:
+                n.decl.ret_type = ir_type
+            n.decl.inferred_type = ir_type
+        t = getattr(n, 't', None)
+        if t is not None:
             type_parameters = (
-                n.t.t_constructor.type_parameters
-                if isinstance(n.t, tp.ParameterizedType)
-                else n.t.type_parameters
+                t.t_constructor.type_parameters
+                if isinstance(t, tp.ParameterizedType)
+                else t.type_parameters
             )
-            if isinstance(n, tda.TypeConstructorInstantiationCallNode):
-                indexes = {
-                    t_param: i
-                    for i, t_param in enumerate(type_parameters)
-                }
-                n.t.type_args[indexes[type_param.t]] = ir_type
-            self.is_transformed = True
-            self.error_injected = "{} expected but {} found in node {}".format(
-                str(old_type), str(ir_type), n.node_id)
+        if isinstance(n, tda.TypeConstructorInstantiationCallNode):
+            indexes = {
+                t_param: i
+                for i, t_param in enumerate(type_parameters)
+            }
+            n.t.type_args[indexes[type_param.t]] = ir_type
+        self.is_transformed = True
+        self.error_injected = "{} expected but {} found in node {}".format(
+            str(old_type), str(ir_type), n.node_id)
         return node
