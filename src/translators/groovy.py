@@ -226,7 +226,7 @@ class GroovyTranslator(BaseTranslator):
             )
         else:
             res = "{{\n{stmts}\n{old_ident}}}".format(
-                stmts="\n".join(children_res),
+                stmts=";\n".join(children_res),
                 old_ident=self.get_ident(extra=-2)
             )
         # When block is inside is then it is recognised as closure, thus
