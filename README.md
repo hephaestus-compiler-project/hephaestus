@@ -60,14 +60,14 @@ python setup.py test
 To get a help message about options run:
 
 ```
-python main.py -h
+python hephaestus.py -h
 ```
 
-To run `check-types` for 10 iterations and 20 transformations,
+To run `hephaestus` for 10 iterations and 20 transformations,
  with 4 cores, and to only compile the last program run:
 
 ```
-python main.py -i 10 -t 20 -w 4 -l
+python hephaestus.py -i 10 -t 20 -w 4 -l
 ```
 
 Command line linters
