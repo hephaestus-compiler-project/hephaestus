@@ -74,19 +74,16 @@ class PylintCommand(distutils.cmd.Command):
 
 
 setup(
-    name='checktypesystems',
+    name='hephaestus',
     version='0.0.1',
     description='Check Type Systems',
     python_requires='>=3.4, <4',
     setup_requires=['pytest-runner', 'pytest-pylint', 'pytest-flake8'],
     tests_require=['pytest', 'mock', 'pylint', 'flake8'],
-    packages=['src'],
-    packages_dir={'src': 'src'},
-    #  entry_points={
-    #      'console_scripts': [
-    #          'check-type-systems=main',
-    #      ],
-    #  },
+    packages=find_packages(include=['src*']),
+    package_data={'src': ['resources/*']},
+    include_package_data=True,
+    scripts=['hephaestus.py'],
     cmdclass={
         'clean': CleanCommand,
         'lint': PylintCommand,
