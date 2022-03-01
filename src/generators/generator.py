@@ -1230,6 +1230,19 @@ class Generator():
         # Note that this an approximation of the type of the whole conditional.
         # To properly estimate the type of conditional, we need to implememnt
         # the LUB algorithm.
+        # Note the type passed in conditional may be imprecise in the following
+        # scenario:
+        # class A
+        # class B extends A
+        # class C extends B
+        # class D extends B
+        #
+        # gen_conditional with type A
+        # true branch type C
+        # false branch type D
+        #
+        # The type will assign to the conditional will be A, but the correct
+        # one is B.
         if true_type.is_subtype(false_type):
             cond_type = false_type
         elif false_type.is_subtype(true_type):
