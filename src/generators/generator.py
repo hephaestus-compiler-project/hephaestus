@@ -2097,8 +2097,7 @@ class Generator():
             # or t == t_con: If etype is a parameterized type (i.e.,
             # getattr(etype, 't_constructor', None) != None), we need to
             # get the class corresponding to its type constructor.
-            if ((cls_type.is_assignable(etype) and cls_type.name == etype.name)
-                    or cls_type == t_con):
+            if cls_type.name == etype.name or cls_type == t_con:
                 if c.is_parameterized():
                     type_var_map = {
                         t_param: etype.type_args[i]

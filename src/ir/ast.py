@@ -587,9 +587,9 @@ class ClassDeclaration(Declaration):
         if self.type_parameters:
             return types.TypeConstructor(
                 self.name, self.type_parameters,
-                deepcopy(self.supertypes))
+                self.supertypes)
         return types.SimpleClassifier(
-            self.name, deepcopy(self.supertypes))
+            self.name, self.supertypes)
 
     def get_class_prefix(self):
         if self.class_type == self.REGULAR:
