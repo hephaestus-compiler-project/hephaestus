@@ -465,6 +465,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         receiver_t = tu.get_type_hint(node.receiver, self._context,
                                       self._namespace, self._bt_factory,
                                       self._types)
+        if receiver_t is None:
+            return
         type_var_map = {}
         # If the receiver type is parameterized, compute type variable
         # assignments
@@ -497,7 +499,8 @@ class TypeDependencyAnalysis(DefaultVisitor):
         if node.receiver is None:
             decl = get_decl(self._context,
                             self._namespace, node.name)
-            assert decl is not None
+            if not decl:
+                return node
             namespace, decl = decl
             node_id = "/".join(namespace)
             self._handle_declaration(node_id, decl, node.expr,
@@ -639,6 +642,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._stack.pop()
         self._func_non_void_block_type = func_non_void_block_type
 
+    @change_namespace
+    def visit_lambda(self, node):
+        return node
+
     def visit_field_access(self, node):
         parent_node_id, nu = self._get_node_id()
         node_id = parent_node_id + ("/" + nu if nu else "") + "/" + node.field
@@ -774,8 +781,12 @@ class TypeDependencyAnalysis(DefaultVisitor):
             namespace = fun_decl[1].name
             fun_decl = (namespace, fun_decl[0])
 
-        assert fun_decl is not None
+        if not fun_decl:
+            return
         namespace, fun_decl = fun_decl
+
+        if not isinstance(fun_decl, ast.FunctionDeclaration):
+            return
 
         if node.receiver is not None:
             prev = self._exp_type
