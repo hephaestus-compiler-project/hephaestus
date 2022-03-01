@@ -392,6 +392,7 @@ class Generator():
             class_type == ast.ClassDeclaration.INTERFACE)
         if super_cls_info:
             cls.superclasses = [super_cls_info.super_inst]
+            cls.supertypes = [c.class_type for c in cls.superclasses]
         if not cls.is_interface():
             self.gen_class_fields(cls, super_cls_info, field_type)
 
