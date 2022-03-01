@@ -1221,8 +1221,15 @@ class Generator():
                                         include_self=True, concrete_only=True)
             true_type = ut.random.choice(subtypes)
             false_type = ut.random.choice(subtypes)
+            tmp_t = ut.random.choice(subtypes)
+            # Find which of the given types is the supertype.
+            cond_type = functools.reduce(
+                lambda acc, x: acc if x.is_subtype(acc) else x,
+                [true_type, false_type],
+                tmp_t
+            )
         else:
-            true_type, false_type = etype, etype
+            true_type, false_type, cond_type = etype, etype, etype
         true_expr = self.generate_expr(true_type, only_leaves, subtype=False)
         false_expr = self.generate_expr(false_type, only_leaves, subtype=False)
         self.depth = initial_depth
@@ -1243,12 +1250,6 @@ class Generator():
         #
         # The type will assign to the conditional will be A, but the correct
         # one is B.
-        if true_type.is_subtype(false_type):
-            cond_type = false_type
-        elif false_type.is_subtype(true_type):
-            cond_type = true_type
-        else:
-            cond_type = etype
         return ast.Conditional(cond, true_expr, false_expr, cond_type)
 
     def gen_is_expr(self,
