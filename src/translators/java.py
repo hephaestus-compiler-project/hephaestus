@@ -295,7 +295,7 @@ class JavaTranslator(BaseTranslator):
                                (ast.VariableDeclaration,
                                 ast.FunctionCall,
                                 ast.Assignment)):
-                    sugar = "var x_{x} = ".format(x=self._x_counter)
+                    sugar = "Object x_{x} = ".format(x=self._x_counter)
                     self._x_counter += 1
                 return_stmt += "return null;"
             else:
@@ -343,7 +343,7 @@ class JavaTranslator(BaseTranslator):
                     sig = self.get_type_name(sig, True, True)
                     var_prefix = sig if sig else 'var'
                 else:
-                    var_prefix = 'var'
+                    var_prefix = 'Object'
                 sugar = "{p} x_{x} = ".format(p=var_prefix, x=self._x_counter)
                 return_stmt += ';' if is_lambda and not return_stmt.strip() \
                     else ''
