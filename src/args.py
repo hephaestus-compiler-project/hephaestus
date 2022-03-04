@@ -184,9 +184,6 @@ args.options = {
 }
 
 
-if args.language == "groovy":
-    args.options["TypeSubstitution"]["disable_inverted_smart_cast"] = True
-
 # Set configurations
 
 cfg.dis.use_site_variance = args.disable_use_site_variance
