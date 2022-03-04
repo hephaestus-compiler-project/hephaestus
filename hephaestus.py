@@ -292,7 +292,7 @@ def gen_program(pid, dirname, packages):
                 correct_program: True
             },
         }
-        if not cli_args.only_preserve_correctness_substitutions:
+        if not cli_args.only_correctness_preserving_transformations:
             incorrect_program = process_ncp_transformations(
                 pid, dirname, translator, proc, program, packages[1])
             if incorrect_program:
