@@ -56,6 +56,7 @@ class GenLimits:
 class Probabilities:
     function_expr: float # functions that their body are expressions
     bounded_type_parameters: float
+    parameterized_functions: float
     func_ref_call: float # use function reference call instead of function call
     func_ref: float # generate func_ref instead of lambda
     sam_coercion: float # perform sam coercion whenever possible
@@ -90,6 +91,7 @@ class GenConfig(metaclass=Singleton):
         self.prob=Probabilities(
                 function_expr=1.0,
                 bounded_type_parameters=0.5,
+                parameterized_functions=0.3,
                 func_ref_call=1.0,
                 func_ref=0.5,
                 sam_coercion=1.0,

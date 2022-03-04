@@ -257,7 +257,8 @@ class Generator():
                     with_variance=False,
                     blacklist=self._get_type_variable_names(),
                     for_function=True
-                ) if ut.random.bool(prob=0.3) else []
+                ) if ut.random.bool(prob=cfg.prob.parameterized_functions) \
+                  else []
 
         else:
             # Nested functions cannot be parameterized (

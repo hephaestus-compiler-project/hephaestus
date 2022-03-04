@@ -111,38 +111,22 @@ parser.add_argument(
     help="Select specific language"
 )
 parser.add_argument(
-    "--disable-params-type-widening",
-    action="store_true",
-    help="Option for TypeSubstitution"
-)
-parser.add_argument(
-    "--disable-inverted-smart-cast",
-    action="store_true",
-    help="Option for TypeSubstitution"
-)
-parser.add_argument(
-    "--find-classes-blacklist",
-    action="store_true",
-    default=True,
-    help="Option for ParameterizedSubstitution"
-)
-parser.add_argument(
     "--max-type-params",
     type=int,
     default=3,
-    help="Option for ParameterizedSubstitution"
+    help="Maximum number of type parameters to generate"
 )
 parser.add_argument(
-    "--min-expr-depth",
+    "--max-depth",
     type=int,
-    default=5,
-    help="Option for IncorrectSubtypingSubstitution"
+    default=6,
+    help="Generate programs up to the given depth"
 )
 parser.add_argument(
     "-P",
-    "--only-preserve-correctness-substitutions",
+    "--only-correctness-preserving-transformations",
     action="store_true",
-    help="Use only preserve correctness substitution"
+    help="Use only correctness-preserving transformations"
 )
 parser.add_argument(
     "--timeout",
@@ -167,6 +151,16 @@ parser.add_argument(
     action="store_true",
     help="Disable contravariance in use-site variance"
 )
+parser.add_argument(
+    "--disable-bounded-type-parameters",
+    action="store_true",
+    help="Disable bounded type parameters"
+)
+parser.add_argument(
+    "--disable-parameterized-functions",
+    action="store_true",
+    help="Disable parameterized functions"
+)
 
 
 args = parser.parse_args()
@@ -181,30 +175,8 @@ args.options = {
     'Translator': {
         'cast_numbers': args.cast_numbers,
     },
-    "TypeSubstitution": {
-        "disable_params_type_widening": args.disable_params_type_widening,
-        "timeout": args.timeout
-    },
     "TypeErasure": {
         "timeout": args.timeout
-    },
-    "SupertypeCreation": {
-        "timeout": args.timeout
-    },
-    "SubtypeCreation": {
-        "timeout": args.timeout
-    },
-    "ParameterizedSubstitution": {
-        "find_classes_blacklist": args.find_classes_blacklist,
-        "max_type_params": args.max_type_params,
-        "timeout": args.timeout
-    },
-    "TypeArgumentErasureSubstitution": {
-        "timeout": args.timeout
-    },
-    "IncorrectSubtypingSubstitution": {
-        "timeout": args.timeout,
-        "min_expr_depth": args.min_expr_depth
     },
     "TypeOverwriting": {
         "timeout": args.timeout
@@ -219,6 +191,11 @@ if args.language == "groovy":
 
 cfg.dis.use_site_variance = args.disable_use_site_variance
 cfg.dis.use_site_contravariance = args.disable_contravariance_use_site
+cfg.limits.max_depth = args.max_depth
+if args.disable_bounded_type_parameters:
+    cfg.prob.bounded_type_parameters = 0
+if args.disable_parameterized_functions:
+    cfg.prob.parameterized_functions = 0
 
 
 def validate_args(args):
