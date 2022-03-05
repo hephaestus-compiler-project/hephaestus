@@ -22,7 +22,7 @@ parser.add_argument(
 parser.add_argument(
     "-t", "--transformations",
     type=int,
-    default=None,
+    default=0,
     help="Number of transformations in each round"
 )
 parser.add_argument(
