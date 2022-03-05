@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # pylint: disable=too-few-public-methods
 from datetime import datetime
 import json
