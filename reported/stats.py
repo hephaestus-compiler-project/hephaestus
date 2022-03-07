@@ -8,7 +8,7 @@ features_lookup = {
     "Parameterized type": "Parametric polymorphism",
     "Parameterized function": "Parametric polymorphism",
     "Use-site variance": "Parametric polymorphism",
-    "Bounded type parameters": "Parametric polymorphism",
+    "Bounded type parameter": "Parametric polymorphism",
     "Declaration-site variance": "Parametric polymorphism",
     "Inheritance": "OOP features",
     "Overriding": "OOP features",
@@ -161,10 +161,12 @@ def process(bug, res, chars, feature_chars, combinations):
                 'Fixed': 'Fixed', 
                 'Obsolete': 'Confirmed', 
                 'As Designed': 'Wont fix',
+                'Answered': 'Confirmed',
                 'Duplicate': 'Duplicate'
             },
             'Groovy': {
                 'Duplicate': 'Duplicate', 
+                'Information Provided': 'Wont fix',
                 'Fixed': 'Fixed'
             },
             'Java': {
