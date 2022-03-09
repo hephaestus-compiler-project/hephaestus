@@ -1774,58 +1774,6 @@
         }
     },
     {
-        "date": "2021-11-18 13:21:06.160000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-49775",
-        "title": "Unexpected resolution of the scope function 'let' when combining conditional and a method with named arguments",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-49775",
-            "fix": ""
-        },
-        "oracle": "",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Closed",
-        "resolution": "Answered",
-        "resolutiondate": "2021-11-25 10:04:29.488000",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "6 days, 20:43:23.328000",
-        "test": [
-            "open class A",
-            "open class B: A() {",
-            "    open fun let(p: Long = 1, x: String = \"d\") = doubleArrayOf(1.0)",
-            "}",
-            "open class C(open val f: A) {",
-            "    fun main(): Unit {",
-            "        var temp = if (f is B) f else B()",
-            "        var z = temp.let(x = \"str\")",
-            "    }",
-            "}"
-        ],
-        "chars": {
-            "characteristics": [
-                "Named arguments",
-                "Conditionals"
-            ]
-        },
-        "errormsg": [
-            "test.kt:11:22: error: not enough information to infer type variable R",
-            "        var z = temp.let(x = \"str\")",
-            "                     ^",
-            "test.kt:11:26: error: cannot find a parameter with this name: x",
-            "        var z = temp.let(x = \"str\")",
-            "                         ^",
-            "test.kt:11:35: error: no value passed for parameter 'block'",
-            "        var z = temp.let(x = \"str\")",
-            "                                  ^"
-        ],
-        "comment": ""
-    },
-    {
         "date": "2021-09-28 09:22:25.441000",
         "language": "Kotlin",
         "compiler": "kotlinc",
