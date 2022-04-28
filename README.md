@@ -301,4 +301,8 @@ are not supported.
 
 * Stefanos Chaliasos, Thodoris Sotiropoulos, Diomidis Spinellis, Arthur Gervais, Benjamin Livshits, and Dimitris Mitropoulos. [Finding Typing Compiler Bugs](https://doi.org/10.1145/3519939.3523427). In Proceedings of the 43rd ACM SIGPLAN Conference on Programming Language Design and Implementation, PLDI '22. ACM, June 2022.
 * Stefanos Chaliasos, Thodoris Sotiropoulos, Georgios-Petros Drosos, Charalambos Mitropoulos, Dimitris Mitropoulos, and Diomidis Spinellis. [Well-typed programs can go wrong: A study of typing-related bugs in JVM compilers](https://doi.org/10.1145/3485500). In Proceedings of the ACM on Programming Languages, OOPSLA '21. ACM, October 2021.
-* [Replication Package for Article: "Well-Typed Programs Can Go Wrong: A Study of Typing-Related Bugs in JVM Compilers"](https://doi.org/10.5281/zenodo.5411667) October 2021 software 
+
+# Related Artifacts
+
+* [Replication Package for Article: Finding Typing Compiler Bugs](https://zenodo.org/record/6410434) March 2022 software.
+* [Replication Package for Article: "Well-Typed Programs Can Go Wrong: A Study of Typing-Related Bugs in JVM Compilers"](https://doi.org/10.5281/zenodo.5411667) October 2021 software.
