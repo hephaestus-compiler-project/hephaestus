@@ -242,7 +242,7 @@ def _is_recursive_call(func_name, func_body):
     if not func_body:
         return False
     if isinstance(func_body, ast.FunctionCall):
-        return func_name == func_body.func and func_body.receiver is None
+        return func_name == func_body.func
     return False
 
 
@@ -263,7 +263,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         self._context = self.program.context
         self._namespace = namespace or ast.GLOBAL_NAMESPACE
         self._types = self.program.get_types()
-        self._stack: list = ["global"]
+        self._stack: list = list(ast.GLOBAL_NAMESPACE)
         self._inferred_nodes: dict = defaultdict(list)
         self._exp_type: tp.Type = None
         self._exp_node_id = None
