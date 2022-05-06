@@ -339,7 +339,11 @@ class Generator():
             etype: Parameter type.
         """
         name = gu.gen_identifier('lower')
-        param_type = etype or self.select_type(exclude_covariants=True)
+        if etype and etype.is_wildcard():
+            bound = etype.get_bound_rec()
+            param_type = bound or self.select_type(exclude_covariants=True)
+        else:
+            param_type = etype or self.select_type(exclude_covariants=True)
         param = ast.ParameterDeclaration(name, param_type)
         return param
 
