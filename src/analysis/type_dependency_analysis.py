@@ -238,6 +238,14 @@ def is_combination_feasible(type_graph, combination):
     return True
 
 
+def _is_recursive_call(func_name, func_body):
+    if not func_body:
+        return False
+    if isinstance(func_body, ast.FunctionCall):
+        return func_name == func_body.func and func_body.receiver is None
+    return False
+
+
 class TypeDependencyAnalysis(DefaultVisitor):
     def __init__(self, program, namespace=None, type_graph=None):
         self._bt_factory = program.bt_factory
@@ -632,7 +640,10 @@ class TypeDependencyAnalysis(DefaultVisitor):
             if node.get_type() == self._bt_factory.get_void_type()
             else node.get_type()
         )
-        if isinstance(node.body, ast.Block):
+        if isinstance(node.body, ast.Block) or _is_recursive_call(
+                node.name, node.body):
+            # If the corresponding function contains a block or makes a
+            # recursive call, its type is not omittable.
             self.visit(node.body)
         else:
             # We create a "virtual" variable declaration representing the
