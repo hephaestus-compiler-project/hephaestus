@@ -1289,8 +1289,9 @@ class Generator():
             v
             for v in self.context.get_vars(self.namespace).values()
             if (
-                # We can smart cast variable that are final, have explicit
-                # types, and are not overridable.
+                # We can smart cast local variables that are final, have
+                # explicit types, and are not overridable.
+                isinstance(v, ast.VariableDeclaration) and
                 getattr(v, 'is_final', True) and
                 not v.is_type_inferred and
                 not getattr(v, 'can_override', True)
