@@ -1,246 +1,46 @@
 [
     {
-        "date": "2021-05-21 12:30:34.659000",
+        "date": "2022-05-06 13:32:03.068000",
         "language": "Kotlin",
         "compiler": "kotlinc",
         "version": "",
-        "bugid": "KT-46864",
-        "title": "JVM IR: \"IndexOutOfBoundsException: Cannot pop operand off an empty stack\" on compiling unused identity equality of Double literals",
+        "bugid": "KT-52307",
+        "title": "TYPE_MISMATCH when using a SAM type with star projection",
         "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46864",
-            "fix": ""
-        },
-        "oracle": "crash",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Closed",
-        "resolution": "Fixed",
-        "resolutiondate": "2021-05-31 18:29:14.949000",
-        "symptom": "crash",
-        "bugtype": "",
-        "resolvedin": "10 days, 5:58:40.290000",
-        "test": [
-            "fun m(): Unit",
-            "{",
-            "  (40.523 !== 62.562)",
-            "}"
-        ],
-        "errormsg": [
-            "stacktrace",
-            "exception: org.jetbrains.kotlin.codegen.CompilationException: Back-end (JVM) Internal error: Couldn't transform method node:",
-            "m ()V:",
-            "   L0",
-            "    LINENUMBER 3 L0",
-            "    NOP",
-            "    POP2",
-            "   L1",
-            "    LINENUMBER 4 L1",
-            "    RETURN",
-            "   L2",
-            "    MAXSTACK = 4",
-            "    MAXLOCALS = 0",
-            "File is unknown",
-            "The root cause org.jetbrains.org.objectweb.asm.tree.analysis.AnalyzerException was thrown at: org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:295)",
-            "        at org.jetbrains.kotlin.codegen.TransformationMethodVisitor.visitEnd(TransformationMethodVisitor.kt:92)",
-            "        at org.jetbrains.org.objectweb.asm.MethodVisitor.visitEnd(MethodVisitor.java:782)",
-            "        at org.jetbrains.org.objectweb.asm.tree.MethodNode.accept(MethodNode.java:772)",
-            "        at org.jetbrains.kotlin.backend.jvm.codegen.ClassCodegen.generateMethod(ClassCodegen.kt:392)",
-            "        at org.jetbrains.kotlin.backend.jvm.codegen.ClassCodegen.generate(ClassCodegen.kt:128)",
-            "        at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.doGenerateFilesInternal(JvmIrCodegenFactory.kt:206)",
-            "        at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.generateModule(JvmIrCodegenFactory.kt:62)",
-            "        at org.jetbrains.kotlin.codegen.KotlinCodegenFacade.compileCorrectFiles(KotlinCodegenFacade.java:35)",
-            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.generate(KotlinToJVMBytecodeCompiler.kt:592)",
-            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli(KotlinToJVMBytecodeCompiler.kt:212)",
-            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli$default(KotlinToJVMBytecodeCompiler.kt:155)",
-            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:169)",
-            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:52)",
-            "        at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:88)",
-            "        at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:44)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:98)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:76)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:45)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit(CLITool.kt:227)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit$default(CLITool.kt:222)",
-            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMain(CLITool.kt:214)",
-            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler$Companion.main(K2JVMCompiler.kt:271)",
-            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.main(K2JVMCompiler.kt)",
-            "        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
-            "        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)",
-            "        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
-            "        at java.base/java.lang.reflect.Method.invoke(Method.java:566)",
-            "        at org.jetbrains.kotlin.preloading.Preloader.run(Preloader.java:87)",
-            "        at org.jetbrains.kotlin.preloading.Preloader.main(Preloader.java:44)",
-            "Caused by: org.jetbrains.org.objectweb.asm.tree.analysis.AnalyzerException: Error at instruction 3: Cannot pop operand off an empty stack.",
-            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:295)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.analyzeMethodBody(PopBackwardPropagationTransformer.kt:80)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.access$analyzeMethodBody(PopBackwardPropagationTransformer.kt:41)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer$frames$2.invoke(PopBackwardPropagationTransformer.kt:67)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer$frames$2.invoke(PopBackwardPropagationTransformer.kt:67)",
-            "        at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:74)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.getFrames(PopBackwardPropagationTransformer.kt:67)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.computeTransformations(PopBackwardPropagationTransformer.kt:172)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.transform(PopBackwardPropagationTransformer.kt:72)",
-            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer.transform(PopBackwardPropagationTransformer.kt:38)",
-            "        at org.jetbrains.kotlin.codegen.optimization.transformer.CompositeMethodTransformer.transform(CompositeMethodTransformer.kt:25)",
-            "        at org.jetbrains.kotlin.codegen.optimization.OptimizationMethodVisitor.performTransformations(OptimizationMethodVisitor.kt:66)",
-            "        at org.jetbrains.kotlin.codegen.TransformationMethodVisitor.visitEnd(TransformationMethodVisitor.kt:70)",
-            "        ... 28 more",
-            "Caused by: java.lang.IndexOutOfBoundsException: Cannot pop operand off an empty stack.",
-            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Frame.pop(Frame.java:228)",
-            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Frame.execute(Frame.java:329)",
-            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:187)",
-            "        ... 40 more"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": []
-        },
-        "fix": {
-            "commits": [
-                "9091ca7b510"
-            ],
-            "files": [
-                "compiler/backend/src/org/jetbrains/kotlin/codegen/optimization/boxing/StackPeepholeOptimizationsTransformer.kt"
-            ],
-            "lines": 15
-        }
-    },
-    {
-        "date": "2021-11-06 09:21:17.625000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-49583",
-        "title": "NI: NullPointerException on compiling anonymous function returning a method reference",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-49583",
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-52307",
             "fix": ""
         },
         "oracle": "",
         "mutator": "generator",
         "severity": "",
         "reporter": "theosotr",
-        "status": "Open",
+        "status": "",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "crash",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
-            "class Foo(var pickaxe: Function0<Function1<Char, Any>>)",
-            "interface I {",
-            "  fun m(): Int",
-            "}",
-            "fun test() {",
-            "  val x = Foo({ -> fun (p: Char): Any {",
-            "      fun inner_m(): Any {",
-            "        val x: I = TODO()",
-            "        x::m",
-            "      }",
-            "      return inner_m()",
-            "     }}",
-            "  )",
+            "import java.util.function.Function;",
+            "class A(val x: Function<*, String>)",
+            "fun main() {",
+            "    A({ x: String -> x })",
             "}"
         ],
         "chars": {
             "characteristics": [
+                "Lambda",
                 "SAM type",
-                "Function type",
-                "Function reference",
-                "Lambda"
+                "Subtyping"
             ]
         },
         "errormsg": [
-            "stacktrace",
-            "exception: org.jetbrains.kotlin.backend.common.BackendException: Backend Internal error: Exception during psi2ir",
-            "File being compiled: (11,9) in program.kt",
-            "The root cause java.lang.NullPointerException was thrown at: org.jetbrains.kotlin.psi2ir.generators.ReflectionReferencesGenerator.generateCallableReference(ReflectionReferencesGenerator.kt:70)",
-            "null: KtCallableReferenceExpression:",
-            "x::m",
-            "  at org.jetbrains.kotlin.backend.common.CodegenUtil.reportBackendException(CodegenUtil.kt:239)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.DeclarationGenerator.generateMemberDeclaration(DeclarationGenerator.kt:75)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ModuleGenerator.generateSingleFile(ModuleGenerator.kt:83)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ModuleGenerator.generateModuleFragment(ModuleGenerator.kt:50)",
-            "  at org.jetbrains.kotlin.psi2ir.Psi2IrTranslator.generateModuleFragment(Psi2IrTranslator.kt:79)",
-            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.convertToIr(JvmIrCodegenFactory.kt:146)",
-            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.convertToIr$default(JvmIrCodegenFactory.kt:64)",
-            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.generateModule(JvmIrCodegenFactory.kt:59)",
-            "  at org.jetbrains.kotlin.codegen.KotlinCodegenFacade.compileCorrectFiles(KotlinCodegenFacade.java:35)",
-            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.generate(KotlinToJVMBytecodeCompiler.kt:321)",
-            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli(KotlinToJVMBytecodeCompiler.kt:113)",
-            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli$default(KotlinToJVMBytecodeCompiler.kt:56)",
-            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:169)",
-            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:52)",
-            "  at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:92)",
-            "  at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:44)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:98)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:76)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:45)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit(CLITool.kt:227)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit$default(CLITool.kt:222)",
-            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMain(CLITool.kt:214)",
-            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler$Companion.main(K2JVMCompiler.kt:271)",
-            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.main(K2JVMCompiler.kt)",
-            "  at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
-            "  at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
-            "  at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
-            "  at java.base/java.lang.reflect.Method.invoke(Method.java:568)",
-            "  at org.jetbrains.kotlin.preloading.Preloader.run(Preloader.java:87)",
-            "  at org.jetbrains.kotlin.preloading.Preloader.main(Preloader.java:44)",
-            "Caused by: java.lang.NullPointerException",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ReflectionReferencesGenerator.generateCallableReference(ReflectionReferencesGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallableReferenceExpression(StatementGenerator.kt:502)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallableReferenceExpression(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtCallableReferenceExpression.accept(KtCallableReferenceExpression.java:43)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunctionDeclaration(LocalFunctionGenerator.kt:57)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunction(LocalFunctionGenerator.kt:44)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:483)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtNamedFunction.accept(KtNamedFunction.java:51)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunctionDeclaration(LocalFunctionGenerator.kt:57)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunction(LocalFunctionGenerator.kt:44)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:483)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtNamedFunction.accept(KtNamedFunction.java:51)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateLambdaBody(BodyGenerator.kt:101)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateLambdaFunctionDeclaration(FunctionGenerator.kt:63)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateLambda(LocalFunctionGenerator.kt:33)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitLambdaExpression(StatementGenerator.kt:480)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitLambdaExpression(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtLambdaExpression.accept(KtLambdaExpression.java:40)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateExpression(StatementGenerator.kt:83)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt$pregenerateCall$1.invoke(ArgumentsGenerationUtils.kt:427)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt$pregenerateCall$1.invoke(ArgumentsGenerationUtils.kt:427)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.generateValueArgumentUsing(ArgumentsGenerationUtils.kt:296)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateValueArgumentsUsing(ArgumentsGenerationUtils.kt:665)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateCallUsing(ArgumentsGenerationUtils.kt:437)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateCall(ArgumentsGenerationUtils.kt:427)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallExpression(StatementGenerator.kt:365)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallExpression(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtCallExpression.accept(KtCallExpression.java:35)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateExpression(StatementGenerator.kt:83)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitProperty(StatementGenerator.kt:120)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitProperty(StatementGenerator.kt:54)",
-            "  at org.jetbrains.kotlin.psi.KtProperty.accept(KtProperty.java:58)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration$default(FunctionGenerator.kt:43)",
-            "  at org.jetbrains.kotlin.psi2ir.generators.DeclarationGenerator.generateMemberDeclaration(DeclarationGenerator.kt:49)",
-            "  ... 28 more"
+            "test.kt:6:7: error: type mismatch: inferred type is (String) -> String but (Any!) -> String was expected",
+            "    A({ x: String -> x })",
+            "      ^",
+            "test.kt:6:9: error: expected parameter of type Any!",
+            "    A({ x: String -> x })",
+            "        ^"
         ],
         "comment": ""
     },
@@ -531,6 +331,836 @@
         }
     },
     {
+        "date": "2021-11-06 09:21:17.625000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-49583",
+        "title": "NI: NullPointerException on compiling anonymous function returning a method reference",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-49583",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo(var pickaxe: Function0<Function1<Char, Any>>)",
+            "interface I {",
+            "  fun m(): Int",
+            "}",
+            "fun test() {",
+            "  val x = Foo({ -> fun (p: Char): Any {",
+            "      fun inner_m(): Any {",
+            "        val x: I = TODO()",
+            "        x::m",
+            "      }",
+            "      return inner_m()",
+            "     }}",
+            "  )",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "SAM type",
+                "Function type",
+                "Function reference",
+                "Lambda"
+            ]
+        },
+        "errormsg": [
+            "stacktrace",
+            "exception: org.jetbrains.kotlin.backend.common.BackendException: Backend Internal error: Exception during psi2ir",
+            "File being compiled: (11,9) in program.kt",
+            "The root cause java.lang.NullPointerException was thrown at: org.jetbrains.kotlin.psi2ir.generators.ReflectionReferencesGenerator.generateCallableReference(ReflectionReferencesGenerator.kt:70)",
+            "null: KtCallableReferenceExpression:",
+            "x::m",
+            "  at org.jetbrains.kotlin.backend.common.CodegenUtil.reportBackendException(CodegenUtil.kt:239)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.DeclarationGenerator.generateMemberDeclaration(DeclarationGenerator.kt:75)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ModuleGenerator.generateSingleFile(ModuleGenerator.kt:83)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ModuleGenerator.generateModuleFragment(ModuleGenerator.kt:50)",
+            "  at org.jetbrains.kotlin.psi2ir.Psi2IrTranslator.generateModuleFragment(Psi2IrTranslator.kt:79)",
+            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.convertToIr(JvmIrCodegenFactory.kt:146)",
+            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.convertToIr$default(JvmIrCodegenFactory.kt:64)",
+            "  at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.generateModule(JvmIrCodegenFactory.kt:59)",
+            "  at org.jetbrains.kotlin.codegen.KotlinCodegenFacade.compileCorrectFiles(KotlinCodegenFacade.java:35)",
+            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.generate(KotlinToJVMBytecodeCompiler.kt:321)",
+            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli(KotlinToJVMBytecodeCompiler.kt:113)",
+            "  at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli$default(KotlinToJVMBytecodeCompiler.kt:56)",
+            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:169)",
+            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:52)",
+            "  at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:92)",
+            "  at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:44)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:98)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:76)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:45)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit(CLITool.kt:227)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit$default(CLITool.kt:222)",
+            "  at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMain(CLITool.kt:214)",
+            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler$Companion.main(K2JVMCompiler.kt:271)",
+            "  at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.main(K2JVMCompiler.kt)",
+            "  at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "  at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)",
+            "  at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "  at java.base/java.lang.reflect.Method.invoke(Method.java:568)",
+            "  at org.jetbrains.kotlin.preloading.Preloader.run(Preloader.java:87)",
+            "  at org.jetbrains.kotlin.preloading.Preloader.main(Preloader.java:44)",
+            "Caused by: java.lang.NullPointerException",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ReflectionReferencesGenerator.generateCallableReference(ReflectionReferencesGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallableReferenceExpression(StatementGenerator.kt:502)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallableReferenceExpression(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtCallableReferenceExpression.accept(KtCallableReferenceExpression.java:43)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunctionDeclaration(LocalFunctionGenerator.kt:57)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunction(LocalFunctionGenerator.kt:44)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:483)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtNamedFunction.accept(KtNamedFunction.java:51)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunctionDeclaration(LocalFunctionGenerator.kt:57)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateFunction(LocalFunctionGenerator.kt:44)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:483)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitNamedFunction(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtNamedFunction.accept(KtNamedFunction.java:51)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateLambdaBody(BodyGenerator.kt:101)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateLambdaFunctionDeclaration(FunctionGenerator.kt:63)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.LocalFunctionGenerator.generateLambda(LocalFunctionGenerator.kt:33)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitLambdaExpression(StatementGenerator.kt:480)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitLambdaExpression(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtLambdaExpression.accept(KtLambdaExpression.java:40)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateExpression(StatementGenerator.kt:83)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt$pregenerateCall$1.invoke(ArgumentsGenerationUtils.kt:427)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt$pregenerateCall$1.invoke(ArgumentsGenerationUtils.kt:427)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.generateValueArgumentUsing(ArgumentsGenerationUtils.kt:296)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateValueArgumentsUsing(ArgumentsGenerationUtils.kt:665)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateCallUsing(ArgumentsGenerationUtils.kt:437)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.ArgumentsGenerationUtilsKt.pregenerateCall(ArgumentsGenerationUtils.kt:427)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallExpression(StatementGenerator.kt:365)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitCallExpression(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtCallExpression.accept(KtCallExpression.java:35)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateExpression(StatementGenerator.kt:83)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitProperty(StatementGenerator.kt:120)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.visitProperty(StatementGenerator.kt:54)",
+            "  at org.jetbrains.kotlin.psi.KtProperty.accept(KtProperty.java:58)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatement(StatementGenerator.kt:70)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.StatementGenerator.generateStatements(StatementGenerator.kt:80)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.BodyGenerator.generateFunctionBody(BodyGenerator.kt:59)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration(FunctionGenerator.kt:53)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.FunctionGenerator.generateFunctionDeclaration$default(FunctionGenerator.kt:43)",
+            "  at org.jetbrains.kotlin.psi2ir.generators.DeclarationGenerator.generateMemberDeclaration(DeclarationGenerator.kt:49)",
+            "  ... 28 more"
+        ],
+        "comment": ""
+    },
+    {
+        "date": "2021-09-15 07:55:39.756000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-48765",
+        "title": "NI: Inferred type does not respect the bound of type variable",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48765",
+            "fix": ""
+        },
+        "oracle": "compiled",
+        "mutator": "inference/soundness",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "2022-04-28 07:02:14.921000",
+        "symptom": "Unexpected Runtime Behavior",
+        "bugtype": "",
+        "resolvedin": "224 days, 23:06:35.165000",
+        "test": [
+            "open class A<T1, T2> {}",
+            "class B {",
+            "    fun <T1: Number, T2: A<Float, T1>> foo(x1: T2, x2: T1) {}",
+            "}",
+            "class C<T: D, T2>(val x: T, val y: T2) {",
+            "    fun test() {",
+            "        B().foo(x, foo())",
+            "    }",
+            "}",
+            "open class D: A<Float, Number>()",
+            "fun <T: String> foo(): T  {",
+            "    return \"\" as T // this cast is safe because String is final.",
+            "}",
+            "fun main() {",
+            "    C(D(), 10.5).test()",
+            "}"
+        ],
+        "errormsg": [
+            "Exception in thread \"main\" java.lang.ClassCastException: class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+            "        at C.test(kotlin6.kt:9)",
+            "        at Kotlin6Kt.main(kotlin6.kt:21)",
+            "        at Kotlin6Kt.main(kotlin6.kt)"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Parameterized function",
+                "Bounded type parameter",
+                "Type argument inference",
+                "Subtyping"
+            ]
+        }
+    },
+    {
+        "date": "2021-09-28 09:22:25.441000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-48958",
+        "title": "Inconsistency in overload resolution when calling a scope function",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48958",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Submitted",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "fun run(x: String): Unit  {}",
+            "inline fun <R> test(block: () -> R): R = block()",
+            "fun test(x: String): Unit {}",
+            "fun <T> ret(): T = TODO()",
+            "class A {",
+            "  fun d() {",
+            "    test(ret()) // Calls test(x: String): Unit",
+            "    run(ret()) // Calls <R> run(block: () -> R): R",
+            "  }",
+            "}",
+            "fun main() {",
+            "    test(ret()) // Calls test(x: String): Unit",
+            "    run(ret()) // Calls run(x: String): Unit",
+            "}"
+        ],
+        "errormsg": [
+            "test.kt:11:5: error: not enough information to infer type variable R",
+            "    run(ret()) // Calls <R> run(block: () -> R): R",
+            "    ^",
+            "test.kt:11:9: error: not enough information to infer type variable T",
+            "    run(ret()) // Calls <R> run(block: () -> R): R",
+            "        ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized function",
+                "Function type"
+            ]
+        }
+    },
+    {
+        "date": "2021-09-15 07:41:22.621000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-48764",
+        "title": "NI: Compile-time error when combining anonymous function and lambda in a conditional",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48764",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "fun test(x: Function<Any>): Unit {}",
+            "fun main() {",
+            "    val x: Function<Any> = (",
+            "        if (true) {x: String, y: String -> x + y}",
+            "        else fun(x: String) = x",
+            "    ) // this works",
+            "    test(",
+            "        if (true) { x: String, y: String -> x + y}",
+            "        else fun(x: String) = x",
+            "    ) // this does not work",
+            "}"
+        ],
+        "errormsg": [
+            "kotlin7.kt:11:14: error: type mismatch: inferred type is (String) -> String but (String, String) -> String was expected",
+            "        else fun(x: String) = x",
+            "             ^",
+            "kotlin7.kt:11:14: error: type mismatch: inferred type is (String) -> String but (String, String) -> TypeVariable(_R) was expected",
+            "        else fun(x: String) = x",
+            "             ^",
+            "kotlin7.kt:11:17: error: expected 2 parameters of types String, String",
+            "        else fun(x: String) = x",
+            "                ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Function type",
+                "Lambda",
+                "Return type inference",
+                "Subtyping"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-30 08:07:41.415000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47530",
+        "title": "NI: Unexpected TYPE_MISMATCH when combining nested conditional and contravariant type argument",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47530",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<T>",
+            "fun main() {",
+            "    val x: Foo<in Long> =",
+            "      if (true) Foo<Long>()",
+            "      else",
+            "        if (true) Foo<Long>()",
+            "        else Foo<Number>()",
+            "}"
+        ],
+        "errormsg": [
+            "test.kt:7:9: error: type mismatch: inferred type is Foo<out Number> but Foo<in Long> was expected",
+            "        if (true) Foo<Long>()",
+            "        ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Conditionals",
+                "Subtyping"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-28 17:01:07.446000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47508",
+        "title": "TYPE_MISMATCH when combining use-site variance with bounded polymorphism",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47508",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "stefanoshaliassos",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "open class A",
+            "open class B: A()",
+            "class C : B()",
+            "class Foo<T : A>(val x: T)",
+            "fun main() {",
+            "    val x: Foo<in C> = TODO()",
+            "    val y: A = x.x",
+            "}"
+        ],
+        "errormsg": [
+            "text",
+            "test.kt:10:16: error: type mismatch: inferred type is Any? but A was expected",
+            "    val y: A = x.x"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Inheritance",
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Bounded type parameter",
+                "Subtyping"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-25 11:26:41.359000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47458",
+        "title": "Superfluous TYPE_MISMATCH when instantiating type constructor with bounded type parameters",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47458",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "soundness",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Runtime Behavior",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<out Y, Z: Y>",
+            "open class A",
+            "class B : A()",
+            "fun main() {",
+            "    val x: Foo<A, in A> = Foo<B, B>()",
+            "}"
+        ],
+        "errormsg": [
+            "test.kt:7:27: error: type mismatch: inferred type is A but B was expected",
+            "    val x: Foo<A, in A> = Foo<B, B>()",
+            "test.kt:7:27: error: type mismatch: inferred type is Foo<B, B> but Foo<A, in A> was expected",
+            "    val x: Foo<A, in A> = Foo<B, B>()"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Declaration-site variance",
+                "Bounded type parameter",
+                "Use-site variance",
+                "Parameterized type",
+                "Inheritance"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-10 13:33:17.025000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47231",
+        "title": "NI: Wrong type is inferred on combining conditional and contravariant type argument",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47231",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<T>",
+            "class Bar(val x : Foo<in Float>)",
+            "fun main() {",
+            "    val x: Foo<in Float> = Foo<Float>()",
+            "    val y: Foo<in Float> = Foo<Float>()",
+            "    Bar(x) // works",
+            "    val z = if (true) x else y",
+            "    Bar(z) // works",
+            "    Bar(if (true) x else y) // fails",
+            "}"
+        ],
+        "errormsg": [
+            "test.kt:12:9: error: type mismatch: inferred type is Foo<out Any?> but Foo<in Float> was expected",
+            "    Bar(if (true) x else y) // fails",
+            "        ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-08 13:07:19.547000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47184",
+        "title": "NI: Can not infer type of an if expression when passed in a function call and used a type parameter variable",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47184",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "stefanoshaliassos",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Test<T: Byte> {",
+            "    fun test(z: T) {",
+            "        val y: Byte = if (true) z else 1 // works",
+            "        val x = bar(if (true) z else 1) // fails",
+            "    }",
+            "    fun bar(x: Byte) {}",
+            "}"
+        ],
+        "errormsg": [
+            "test.kt:4:21: error: type mismatch: inferred type is T but Int was expected",
+            "        val x = bar(if (true) z else 1) // fails",
+            "                    ^",
+            "test.kt:4:21: error: type mismatch: inferred type is Int but Byte was expected",
+            "        val x = bar(if (true) z else 1) // fails"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameter",
+                "Variable type inference"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-03 12:21:13.309000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-47117",
+        "title": "NI: Reporting misleading error message when initializing a type constructor with unresolved reference",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47117",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "soundness",
+        "severity": "",
+        "reporter": "stefanoshaliassos",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Runtime Behavior",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<J>() {}",
+            "class Bar<H, N>(val x: Foo<N>) {}",
+            "fun foo(): Unit",
+            "{",
+            "  val y = Bar<Any, Any>(Foo<N>())",
+            "}"
+        ],
+        "errormsg": [
+            "foo.kt:7:11: error: not enough information to infer type variable H",
+            "  val y = Bar<Any, Any>(Foo<N>())",
+            "          ^",
+            "foo.kt:7:29: error: unresolved reference: N",
+            "  val y = Bar<Any, Any>(Foo<N>())"
+        ],
+        "comment": "revisit -- should we removed it?",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type"
+            ]
+        }
+    },
+    {
+        "date": "2021-05-13 12:40:42.338000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-46662",
+        "title": "False positive \"NOTHING_TO_OVERRIDE\" when combining varargs with type parameters",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46662",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "open class A<T> {",
+            "    open fun foo(vararg x: T) {}",
+            "}",
+            "class B: A<Float>() {",
+            "    override fun foo(vararg x: Float) {} // NOTHING_TO_OVERRIDE",
+            "}"
+        ],
+        "errormsg": [
+            "console",
+            "test.kt:7:5: error: 'foo' overrides nothing",
+            "    override fun foo(vararg x: Float) {}",
+            "    ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Overriding",
+                "Variable arguments"
+            ]
+        }
+    },
+    {
+        "date": "2021-02-05 16:30:39.072000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-44742",
+        "title": "Wrong java.io.Serializable inferred",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44742",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "fun main() {",
+            "    val x = if (true) 1 as Number else false // inferred type is java.io.Serializable",
+            "    x == 1",
+            "}"
+        ],
+        "errormsg": [
+            "program.kt:3:7: error: no method 'equals(Any?): Boolean' available",
+            "    x == 1",
+            "      ^",
+            "program.kt:3:7: error: unresolved reference: ==",
+            "    x == 1",
+            "      ^"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Subtyping",
+                "Conditionals"
+            ]
+        }
+    },
+    {
+        "date": "2020-12-24 16:17:53.655000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-44082",
+        "title": "Can not infer type of overridden function",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44082",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "stefanoshaliassos",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "interface R<T>",
+            "interface W",
+            "interface J",
+            "open class A",
+            "open class B: A(), R<W>",
+            "open class E: A(), R<J>",
+            "open class C {",
+            "    open fun foo(): A = B()",
+            "}",
+            "class D: C() {",
+            "    override fun foo() = if (true) B() else E()",
+            "}",
+            "val x = if (true) B() else E() // Inferred type of x is Any"
+        ],
+        "errormsg": [
+            "return type of 'foo' is not a subtype of the return type of the overridden member 'public open fun foo(): A defined in C'"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Inheritance",
+                "Subtyping",
+                "Return type inference",
+                "Overriding",
+                "Conditionals"
+            ]
+        }
+    },
+    {
+        "date": "2021-05-21 12:30:34.659000",
+        "language": "Kotlin",
+        "compiler": "kotlinc",
+        "version": "",
+        "bugid": "KT-46864",
+        "title": "JVM IR: \"IndexOutOfBoundsException: Cannot pop operand off an empty stack\" on compiling unused identity equality of Double literals",
+        "links": {
+            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46864",
+            "fix": ""
+        },
+        "oracle": "crash",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosotr",
+        "status": "Closed",
+        "resolution": "Fixed",
+        "resolutiondate": "2021-05-31 18:29:14.949000",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "10 days, 5:58:40.290000",
+        "test": [
+            "fun m(): Unit",
+            "{",
+            "  (40.523 !== 62.562)",
+            "}"
+        ],
+        "errormsg": [
+            "stacktrace",
+            "exception: org.jetbrains.kotlin.codegen.CompilationException: Back-end (JVM) Internal error: Couldn't transform method node:",
+            "m ()V:",
+            "   L0",
+            "    LINENUMBER 3 L0",
+            "    NOP",
+            "    POP2",
+            "   L1",
+            "    LINENUMBER 4 L1",
+            "    RETURN",
+            "   L2",
+            "    MAXSTACK = 4",
+            "    MAXLOCALS = 0",
+            "File is unknown",
+            "The root cause org.jetbrains.org.objectweb.asm.tree.analysis.AnalyzerException was thrown at: org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:295)",
+            "        at org.jetbrains.kotlin.codegen.TransformationMethodVisitor.visitEnd(TransformationMethodVisitor.kt:92)",
+            "        at org.jetbrains.org.objectweb.asm.MethodVisitor.visitEnd(MethodVisitor.java:782)",
+            "        at org.jetbrains.org.objectweb.asm.tree.MethodNode.accept(MethodNode.java:772)",
+            "        at org.jetbrains.kotlin.backend.jvm.codegen.ClassCodegen.generateMethod(ClassCodegen.kt:392)",
+            "        at org.jetbrains.kotlin.backend.jvm.codegen.ClassCodegen.generate(ClassCodegen.kt:128)",
+            "        at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.doGenerateFilesInternal(JvmIrCodegenFactory.kt:206)",
+            "        at org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory.generateModule(JvmIrCodegenFactory.kt:62)",
+            "        at org.jetbrains.kotlin.codegen.KotlinCodegenFacade.compileCorrectFiles(KotlinCodegenFacade.java:35)",
+            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.generate(KotlinToJVMBytecodeCompiler.kt:592)",
+            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli(KotlinToJVMBytecodeCompiler.kt:212)",
+            "        at org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.compileModules$cli$default(KotlinToJVMBytecodeCompiler.kt:155)",
+            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:169)",
+            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.doExecute(K2JVMCompiler.kt:52)",
+            "        at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:88)",
+            "        at org.jetbrains.kotlin.cli.common.CLICompiler.execImpl(CLICompiler.kt:44)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:98)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:76)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool.exec(CLITool.kt:45)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit(CLITool.kt:227)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMainNoExit$default(CLITool.kt:222)",
+            "        at org.jetbrains.kotlin.cli.common.CLITool$Companion.doMain(CLITool.kt:214)",
+            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler$Companion.main(K2JVMCompiler.kt:271)",
+            "        at org.jetbrains.kotlin.cli.jvm.K2JVMCompiler.main(K2JVMCompiler.kt)",
+            "        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "        at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)",
+            "        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "        at java.base/java.lang.reflect.Method.invoke(Method.java:566)",
+            "        at org.jetbrains.kotlin.preloading.Preloader.run(Preloader.java:87)",
+            "        at org.jetbrains.kotlin.preloading.Preloader.main(Preloader.java:44)",
+            "Caused by: org.jetbrains.org.objectweb.asm.tree.analysis.AnalyzerException: Error at instruction 3: Cannot pop operand off an empty stack.",
+            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:295)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.analyzeMethodBody(PopBackwardPropagationTransformer.kt:80)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.access$analyzeMethodBody(PopBackwardPropagationTransformer.kt:41)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer$frames$2.invoke(PopBackwardPropagationTransformer.kt:67)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer$frames$2.invoke(PopBackwardPropagationTransformer.kt:67)",
+            "        at kotlin.SynchronizedLazyImpl.getValue(LazyJVM.kt:74)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.getFrames(PopBackwardPropagationTransformer.kt:67)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.computeTransformations(PopBackwardPropagationTransformer.kt:172)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer$Transformer.transform(PopBackwardPropagationTransformer.kt:72)",
+            "        at org.jetbrains.kotlin.codegen.optimization.boxing.PopBackwardPropagationTransformer.transform(PopBackwardPropagationTransformer.kt:38)",
+            "        at org.jetbrains.kotlin.codegen.optimization.transformer.CompositeMethodTransformer.transform(CompositeMethodTransformer.kt:25)",
+            "        at org.jetbrains.kotlin.codegen.optimization.OptimizationMethodVisitor.performTransformations(OptimizationMethodVisitor.kt:66)",
+            "        at org.jetbrains.kotlin.codegen.TransformationMethodVisitor.visitEnd(TransformationMethodVisitor.kt:70)",
+            "        ... 28 more",
+            "Caused by: java.lang.IndexOutOfBoundsException: Cannot pop operand off an empty stack.",
+            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Frame.pop(Frame.java:228)",
+            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Frame.execute(Frame.java:329)",
+            "        at org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:187)",
+            "        ... 40 more"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": []
+        },
+        "fix": {
+            "commits": [
+                "9091ca7b510"
+            ],
+            "files": [
+                "compiler/backend/src/org/jetbrains/kotlin/codegen/optimization/boxing/StackPeepholeOptimizationsTransformer.kt"
+            ],
+            "lines": 15
+        }
+    },
+    {
         "date": "2021-09-21 05:42:14.025000",
         "language": "Kotlin",
         "compiler": "kotlinc",
@@ -576,63 +1206,6 @@
                 "SAM type",
                 "Parameterized function",
                 "Lambda"
-            ]
-        }
-    },
-    {
-        "date": "2021-09-15 07:55:39.756000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-48765",
-        "title": "NI: Inferred type does not respect the bound of type variable",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48765",
-            "fix": ""
-        },
-        "oracle": "compiled",
-        "mutator": "inference/soundness",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Runtime Behavior",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "open class A<T1, T2> {}",
-            "class B {",
-            "    fun <T1: Number, T2: A<Float, T1>> foo(x1: T2, x2: T1) {}",
-            "}",
-            "class C<T: D, T2>(val x: T, val y: T2) {",
-            "    fun test() {",
-            "        B().foo(x, foo())",
-            "    }",
-            "}",
-            "open class D: A<Float, Number>()",
-            "fun <T: String> foo(): T  {",
-            "    return \"\" as T // this cast is safe because String is final.",
-            "}",
-            "fun main() {",
-            "    C(D(), 10.5).test()",
-            "}"
-        ],
-        "errormsg": [
-            "Exception in thread \"main\" java.lang.ClassCastException: class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
-            "        at C.test(kotlin6.kt:9)",
-            "        at Kotlin6Kt.main(kotlin6.kt:21)",
-            "        at Kotlin6Kt.main(kotlin6.kt)"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Parameterized function",
-                "Bounded type parameter",
-                "Type argument inference",
-                "Subtyping"
             ]
         }
     },
@@ -1512,96 +2085,6 @@
         }
     },
     {
-        "date": "2021-06-03 12:21:13.309000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47117",
-        "title": "NI: Reporting misleading error message when initializing a type constructor with unresolved reference",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47117",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "soundness",
-        "severity": "",
-        "reporter": "stefanoshaliassos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Runtime Behavior",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "class Foo<J>() {}",
-            "class Bar<H, N>(val x: Foo<N>) {}",
-            "fun foo(): Unit",
-            "{",
-            "  val y = Bar<Any, Any>(Foo<N>())",
-            "}"
-        ],
-        "errormsg": [
-            "foo.kt:7:11: error: not enough information to infer type variable H",
-            "  val y = Bar<Any, Any>(Foo<N>())",
-            "          ^",
-            "foo.kt:7:29: error: unresolved reference: N",
-            "  val y = Bar<Any, Any>(Foo<N>())"
-        ],
-        "comment": "revisit -- should we removed it?",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-08 13:07:19.547000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47184",
-        "title": "NI: Can not infer type of an if expression when passed in a function call and used a type parameter variable",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47184",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "stefanoshaliassos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "class Test<T: Byte> {",
-            "    fun test(z: T) {",
-            "        val y: Byte = if (true) z else 1 // works",
-            "        val x = bar(if (true) z else 1) // fails",
-            "    }",
-            "    fun bar(x: Byte) {}",
-            "}"
-        ],
-        "errormsg": [
-            "test.kt:4:21: error: type mismatch: inferred type is T but Int was expected",
-            "        val x = bar(if (true) z else 1) // fails",
-            "                    ^",
-            "test.kt:4:21: error: type mismatch: inferred type is Int but Byte was expected",
-            "        val x = bar(if (true) z else 1) // fails"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Bounded type parameter",
-                "Variable type inference"
-            ]
-        }
-    },
-    {
         "date": "2021-09-21 05:51:35.299000",
         "language": "Kotlin",
         "compiler": "kotlinc",
@@ -1715,114 +2198,6 @@
                 "SAM type",
                 "Parameterized class",
                 "Lambda"
-            ]
-        }
-    },
-    {
-        "date": "2021-09-15 07:41:22.621000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-48764",
-        "title": "NI: Compile-time error when combining anonymous function and lambda in a conditional",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48764",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "fun test(x: Function<Any>): Unit {}",
-            "fun main() {",
-            "    val x: Function<Any> = (",
-            "        if (true) {x: String, y: String -> x + y}",
-            "        else fun(x: String) = x",
-            "    ) // this works",
-            "    test(",
-            "        if (true) { x: String, y: String -> x + y}",
-            "        else fun(x: String) = x",
-            "    ) // this does not work",
-            "}"
-        ],
-        "errormsg": [
-            "kotlin7.kt:11:14: error: type mismatch: inferred type is (String) -> String but (String, String) -> String was expected",
-            "        else fun(x: String) = x",
-            "             ^",
-            "kotlin7.kt:11:14: error: type mismatch: inferred type is (String) -> String but (String, String) -> TypeVariable(_R) was expected",
-            "        else fun(x: String) = x",
-            "             ^",
-            "kotlin7.kt:11:17: error: expected 2 parameters of types String, String",
-            "        else fun(x: String) = x",
-            "                ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Function type",
-                "Lambda",
-                "Return type inference",
-                "Subtyping"
-            ]
-        }
-    },
-    {
-        "date": "2021-09-28 09:22:25.441000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-48958",
-        "title": "Inconsistency in overload resolution when calling a scope function",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-48958",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Submitted",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "fun run(x: String): Unit  {}",
-            "inline fun <R> test(block: () -> R): R = block()",
-            "fun test(x: String): Unit {}",
-            "fun <T> ret(): T = TODO()",
-            "class A {",
-            "  fun d() {",
-            "    test(ret()) // Calls test(x: String): Unit",
-            "    run(ret()) // Calls <R> run(block: () -> R): R",
-            "  }",
-            "}",
-            "fun main() {",
-            "    test(ret()) // Calls test(x: String): Unit",
-            "    run(ret()) // Calls run(x: String): Unit",
-            "}"
-        ],
-        "errormsg": [
-            "test.kt:11:5: error: not enough information to infer type variable R",
-            "    run(ret()) // Calls <R> run(block: () -> R): R",
-            "    ^",
-            "test.kt:11:9: error: not enough information to infer type variable T",
-            "    run(ret()) // Calls <R> run(block: () -> R): R",
-            "        ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized function",
-                "Function type"
             ]
         }
     },
@@ -1989,148 +2364,6 @@
         }
     },
     {
-        "date": "2020-12-24 16:17:53.655000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-44082",
-        "title": "Can not infer type of overridden function",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44082",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "stefanoshaliassos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "interface R<T>",
-            "interface W",
-            "interface J",
-            "open class A",
-            "open class B: A(), R<W>",
-            "open class E: A(), R<J>",
-            "open class C {",
-            "    open fun foo(): A = B()",
-            "}",
-            "class D: C() {",
-            "    override fun foo() = if (true) B() else E()",
-            "}",
-            "val x = if (true) B() else E() // Inferred type of x is Any"
-        ],
-        "errormsg": [
-            "return type of 'foo' is not a subtype of the return type of the overridden member 'public open fun foo(): A defined in C'"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Inheritance",
-                "Subtyping",
-                "Return type inference",
-                "Overriding",
-                "Conditionals"
-            ]
-        }
-    },
-    {
-        "date": "2021-02-05 16:30:39.072000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-44742",
-        "title": "Wrong java.io.Serializable inferred",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-44742",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "fun main() {",
-            "    val x = if (true) 1 as Number else false // inferred type is java.io.Serializable",
-            "    x == 1",
-            "}"
-        ],
-        "errormsg": [
-            "program.kt:3:7: error: no method 'equals(Any?): Boolean' available",
-            "    x == 1",
-            "      ^",
-            "program.kt:3:7: error: unresolved reference: ==",
-            "    x == 1",
-            "      ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Subtyping",
-                "Conditionals"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-30 08:07:41.415000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47530",
-        "title": "NI: Unexpected TYPE_MISMATCH when combining nested conditional and contravariant type argument",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47530",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "class Foo<T>",
-            "fun main() {",
-            "    val x: Foo<in Long> =",
-            "      if (true) Foo<Long>()",
-            "      else",
-            "        if (true) Foo<Long>()",
-            "        else Foo<Number>()",
-            "}"
-        ],
-        "errormsg": [
-            "test.kt:7:9: error: type mismatch: inferred type is Foo<out Number> but Foo<in Long> was expected",
-            "        if (true) Foo<Long>()",
-            "        ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Use-site variance",
-                "Conditionals",
-                "Subtyping"
-            ]
-        }
-    },
-    {
         "date": "2021-01-28 14:10:00.384000",
         "language": "Kotlin",
         "compiler": "kotlinc",
@@ -2176,194 +2409,6 @@
                 "Overriding",
                 "Type argument inference",
                 "Return type inference"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-28 17:01:07.446000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47508",
-        "title": "TYPE_MISMATCH when combining use-site variance with bounded polymorphism",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47508",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "stefanoshaliassos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "open class A",
-            "open class B: A()",
-            "class C : B()",
-            "class Foo<T : A>(val x: T)",
-            "fun main() {",
-            "    val x: Foo<in C> = TODO()",
-            "    val y: A = x.x",
-            "}"
-        ],
-        "errormsg": [
-            "text",
-            "test.kt:10:16: error: type mismatch: inferred type is Any? but A was expected",
-            "    val y: A = x.x"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Inheritance",
-                "Parameterized class",
-                "Parameterized type",
-                "Use-site variance",
-                "Bounded type parameter",
-                "Subtyping"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-25 11:26:41.359000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47458",
-        "title": "Superfluous TYPE_MISMATCH when instantiating type constructor with bounded type parameters",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47458",
-            "fix": ""
-        },
-        "oracle": "",
-        "mutator": "soundness",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Runtime Behavior",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "class Foo<out Y, Z: Y>",
-            "open class A",
-            "class B : A()",
-            "fun main() {",
-            "    val x: Foo<A, in A> = Foo<B, B>()",
-            "}"
-        ],
-        "errormsg": [
-            "test.kt:7:27: error: type mismatch: inferred type is A but B was expected",
-            "    val x: Foo<A, in A> = Foo<B, B>()",
-            "test.kt:7:27: error: type mismatch: inferred type is Foo<B, B> but Foo<A, in A> was expected",
-            "    val x: Foo<A, in A> = Foo<B, B>()"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Declaration-site variance",
-                "Bounded type parameter",
-                "Use-site variance",
-                "Parameterized type",
-                "Inheritance"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-10 13:33:17.025000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-47231",
-        "title": "NI: Wrong type is inferred on combining conditional and contravariant type argument",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-47231",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "class Foo<T>",
-            "class Bar(val x : Foo<in Float>)",
-            "fun main() {",
-            "    val x: Foo<in Float> = Foo<Float>()",
-            "    val y: Foo<in Float> = Foo<Float>()",
-            "    Bar(x) // works",
-            "    val z = if (true) x else y",
-            "    Bar(z) // works",
-            "    Bar(if (true) x else y) // fails",
-            "}"
-        ],
-        "errormsg": [
-            "test.kt:12:9: error: type mismatch: inferred type is Foo<out Any?> but Foo<in Float> was expected",
-            "    Bar(if (true) x else y) // fails",
-            "        ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Use-site variance"
-            ]
-        }
-    },
-    {
-        "date": "2021-05-13 12:40:42.338000",
-        "language": "Kotlin",
-        "compiler": "kotlinc",
-        "version": "",
-        "bugid": "KT-46662",
-        "title": "False positive \"NOTHING_TO_OVERRIDE\" when combining varargs with type parameters",
-        "links": {
-            "issuetracker": "https://youtrack.jetbrains.com/issue/KT-46662",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "theosotr",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "None",
-        "test": [
-            "open class A<T> {",
-            "    open fun foo(vararg x: T) {}",
-            "}",
-            "class B: A<Float>() {",
-            "    override fun foo(vararg x: Float) {} // NOTHING_TO_OVERRIDE",
-            "}"
-        ],
-        "errormsg": [
-            "console",
-            "test.kt:7:5: error: 'foo' overrides nothing",
-            "    override fun foo(vararg x: Float) {}",
-            "    ^"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Inheritance",
-                "Overriding",
-                "Variable arguments"
             ]
         }
     },
@@ -2840,421 +2885,68 @@
         }
     },
     {
-        "date": "2021-09-22 09:42:10+00:00",
-        "language": "Java",
-        "compiler": "javac",
+        "date": "2022-05-20 11:21:39+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
         "version": "",
-        "bugid": "JDK-8274183",
-        "title": "StackOverflowError on computing the GLB",
+        "bugid": "GROOVY-10633",
+        "title": "Invalid type substitution when encountering bounded type parameter and the diamond operator",
         "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8274183",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10633",
             "fix": ""
         },
-        "oracle": "crash",
-        "mutator": "generator",
+        "oracle": "",
+        "mutator": "inference",
         "severity": "",
-        "reporter": "webbuggrp",
+        "reporter": "theosot",
         "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
-        "symptom": "crash",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
         "resolvedin": "None",
         "test": [
-            "class Main {",
-            "  static public final C<? super A<Double>> test() {",
-            "    final C<? super A<Double>> x = null;",
-            "    x.f = null;",
-            "    return x;",
-            "  }",
-            "}",
-            "class A<T> {}",
-            "abstract class B<F, B extends F> {}",
-            "abstract class C<N extends A<Number>> {",
-            "  public B<? extends N, ? extends N> f;",
-            "}"
-        ],
-        "errormsg": [],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Bounded type parameter",
-                "Use-site variance"
-            ]
-        }
-    },
-    {
-        "date": "2021-07-28 10:43:17+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8272077",
-        "title": "Cannot assign method reference to Generic Function Interface",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8272077",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Closed",
-        "resolution": "Not an Issue",
-        "resolutiondate": "2021-08-06 07:07:30+00:00",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "8 days, 20:24:13",
-        "test": [
-            "class Test {",
-            "  public static Short foo(Short x) {",
-            "      return x;",
-            "  }",
-            "  public static Short bar() {",
-            "      Short x = 1;",
-            "      return x;",
-            "  }",
-            "  public static void main(String[] args) {",
-            "    Function0<? extends Number> f = Test::bar;",
-            "    Function1<? extends Number, ? extends Number> f1 = (Short x) -> x; // works",
-            "    Function1<? extends Number, ? extends Number> f2 = Test::foo; // does not work",
-            "  }",
-            "}",
-            "interface Function0<R> {",
-            "  public R apply();",
-            "}",
-            "interface Function1<P, R> {",
-            "  public R apply(P x);",
-            "}",
-            "  public static Short bar() {",
-            "      Short x = 1;",
-            "      return x;",
-            "  }",
-            "  public static void main(String[] args) {",
-            "    Function0<? extends Number> f = Test::bar;",
-            "    Function1<? extends Number, ? extends Number> f1 = (Short x) -> x; // works",
-            "    Function1<? extends Short, ? extends Number> f2 = Test::foo; // does not work",
-            "  }",
-            "}",
-            "interface Function0<R> {",
-            "  public R apply();",
-            "}",
-            "interface Function1<P, R> {",
-            "  public R apply(P x);",
-            "}"
-        ],
-        "errormsg": [
-            "Test.java:15: error: incompatible types: invalid method reference ",
-            "    Function1<? extends Number, ? extends Number> f2 = Test::foo; // does not work",
-            "                                                       ^ ",
-            "    incompatible types: Number cannot be converted to Short "
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "SAM type",
-                "Function type",
-                "Use-site variance",
-                "Lambda",
-                "Subtyping",
-                "Function reference"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-30 12:20:10+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8269738",
-        "title": "AssertionError when combining pattern matching and function closure",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269738",
-            "fix": ""
-        },
-        "oracle": "crash",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Resolved",
-        "resolution": "Fixed",
-        "resolutiondate": "2021-07-08 14:15:55+00:00",
-        "symptom": "crash",
-        "bugtype": "",
-        "resolvedin": "8 days, 1:55:45",
-        "test": [
-            "import java.util.function.Supplier;",
-            "class Test {",
-            "    static A x = null;",
-            "    static char tmp = (",
-            "        (Test.x instanceof B b) ? ((Supplier<B>) () -> b).get() : null",
-            "     ).field;",
-            "}",
-            "class A {}",
-            "class B extends A {",
-            "    char field = 'd';",
-            "}"
-        ],
-        "errormsg": [],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Function type",
-                "Flow typing",
-                "Lambda"
-            ]
-        },
-        "fix": {
-            "commits": [
-                "9e75f922b17"
-            ],
-            "files": [
-                "src/jdk.compiler/share/classes/com/sun/tools/javac/comp/TransPatterns.java"
-            ],
-            "lines": 1
-        }
-    },
-    {
-        "date": "2021-06-28 16:52:53+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8269737",
-        "title": "Wrong Type-Argument inference in presence of bounds and use-site variance",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269737",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Closed",
-        "resolution": "Not an Issue",
-        "resolutiondate": "2021-07-01 08:22:02+00:00",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "2 days, 15:29:09",
-        "test": [
-            "abstract class Cls<T1> {",
-            "  public Cls() {}",
-            "}",
-            "abstract class Cls2<T2> extends Cls<T2> {",
-            "  public Cls2() {}",
-            "}",
-            "abstract class Cls3<T3 extends Float> extends Cls2<T3> {",
-            "  public Cls3() {}",
-            "}",
-            "abstract class Cls4<T4 extends Cls3<? super Float>> {",
-            "  public Cls4() {}",
-            "}",
-            "final class Cls5 {",
-            "  public Cls5() {}",
-            "  public final Cls4<? extends Cls3<Float>> foo() {",
-            "    Cls4<? extends Cls3<Float>> y = (Cls4<? extends Cls3<Float>>) null;",
-            "    var x = y;",
-            "    // Cls4<? extends Cls3<Float>> x = y; // This works",
-            "    return x;",
-            "  }",
-            "}"
-        ],
-        "errormsg": [
-            "Cls.java:23: error: incompatible types: Cls4<CAP#1> cannot be converted to Cls4<? extends Cls3<Float>> ",
-            "   return x; ",
-            "          ^ ",
-            " where CAP#1 is a fresh type-variable: ",
-            "    CAP#1 extends Cls3<? super Float> from capture of ? ",
-            "1 error"
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Bounded type parameter",
-                "Use-site variance",
-                "Inheritance",
-                "Variable type inference"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-24 14:11:17+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8269586",
-        "title": "Compile-time error when using wildcard as type argument",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269586",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "generator",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Resolved",
-        "resolution": "Not an Issue",
-        "resolutiondate": "2021-09-16 20:05:37+00:00",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "84 days, 5:54:20",
-        "test": [
-            "abstract class ClsA<M> {",
-            "  public ClsA() {}",
-            "}",
-            "class ClsB<X, Y extends ClsA<? super X>> {",
-            "  public ClsB() {",
-            "    super();",
-            "  }",
-            "}",
-            "class ClsC {",
-            "  public ClsC() {",
-            "    super();",
-            "  }",
-            "  public final void foo(ClsB<? extends Integer, ? extends ClsA<Integer>> bar) {}",
-            "}"
-        ],
-        "errormsg": [
-            "ClsA.java:15: error: type argument ? extends ClsA<Integer> is not within bounds of type-variable Y ",
-            " public final void foo(ClsB<? extends Integer, ? extends ClsA<Integer>> bar) {} ",
-            "                                                ^ ",
-            "  where Y,X are type-variables: ",
-            "   Y extends ClsA<? super X> declared in class ClsB ",
-            "  X extends Object declared in class ClsB ",
-            "1 error "
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
-                "Parameterized type",
-                "Bounded type parameter",
-                "Use-site variance"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-24 14:36:46+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8269386",
-        "title": "Imprecise type inference in the presence of ternary operator and wildcard",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269386",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Closed",
-        "resolution": "Not an Issue",
-        "resolutiondate": "2021-06-28 19:30:49+00:00",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "4 days, 4:54:03",
-        "test": [
-            "class A<T> {",
-            "  public A() {}",
-            "  public B<? super T> foo() {",
-            "    var x = (true) ? new B<T>() : (B<? super T>) null;",
-            "    return x;",
-            "    //return (true) ? new B<T>() : (B<? super T>) null;  // This works",
-            "  }",
+            "class A<T, Y> {",
+            "  B<Y> f;",
+            "  A(B<Y> x, T y) {}",
             "}",
             "class B<T> {",
-            "  public B() {}",
+            "  void m(T x) {}",
+            "}",
+            "class Test {",
+            "  <T extends Number> void test() {",
+            "    def x = new B<T>();",
+            "    new A<>(x, \"\").f.m((T) null);",
+            "  }",
             "}"
         ],
-        "errormsg": [
-            "A.java:5: error: incompatible types: B<CAP#1> cannot be converted to B<? super T>",
-            "    return x; ",
-            "           ^ ",
-            "  where T is a type-variable: ",
-            "    T extends Object declared in class A ",
-            "  where CAP#1 is a fresh type-variable: ",
-            "    CAP#1 extends Object from capture of ? extends Object ",
-            "1 error "
-        ],
-        "comment": "",
         "chars": {
             "characteristics": [
                 "Parameterized class",
                 "Parameterized type",
-                "Use-site variance",
-                "Conditionals",
-                "Variable type inference"
-            ]
-        }
-    },
-    {
-        "date": "2021-06-23 14:02:54+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8269348",
-        "title": "Wrong type inference in presence of a generic with bound to Double",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269348",
-            "fix": ""
-        },
-        "oracle": "error",
-        "mutator": "inference",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Resolved",
-        "resolution": "Not an Issue",
-        "resolutiondate": "2021-06-30 15:12:56+00:00",
-        "symptom": "Unexpected Compile-Time Error",
-        "bugtype": "",
-        "resolvedin": "7 days, 1:10:02",
-        "test": [
-            "class Test<T extends Double, K extends T> {",
-            "  public T test() {",
-            "    T foo = (T) null;",
-            "    final var v = ((true) ?",
-            "      foo :",
-            "       (K) null);",
-            "    return v;",
-            "  }",
-            "}"
-        ],
-        "errormsg": [
-            "Test.java:7: error: incompatible types: double cannot be converted to T ",
-            "    return v; ",
-            "           ^ ",
-            "  where T is a type-variable: ",
-            "    T extends Double declared in class Test ",
-            "1 error "
-        ],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Parameterized class",
+                "Parameterized function",
                 "Bounded type parameter",
-                "Conditionals",
-                "Variable type inference"
+                "Type argument inference"
             ]
-        }
+        },
+        "errormsg": [],
+        "comment": ""
     },
     {
-        "date": "2021-06-02 13:44:00+00:00",
-        "language": "Java",
-        "compiler": "javac",
+        "date": "2022-05-20 10:47:40+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
         "version": "",
-        "bugid": "JDK-8268159",
-        "title": "Misleading report with type variables when extending one of the type arguments",
+        "bugid": "GROOVY-10632",
+        "title": "Unable to infer type parameter of recursive method",
         "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8268159",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10632",
             "fix": ""
         },
         "oracle": "",
         "mutator": "generator",
         "severity": "",
-        "reporter": "webbuggrp",
+        "reporter": "theosot",
         "status": "Open",
         "resolution": "",
         "resolutiondate": "None",
@@ -3262,112 +2954,512 @@
         "bugtype": "",
         "resolvedin": "None",
         "test": [
-            "class Foo<T1, T2 extends Number> {}",
-            "class Bar<T1, T2> {",
-            "    Foo<T1, T1> x;",
+            "class A<T> {}",
+            "class B<T extends A<String>> {",
+            "  B(T x) {}",
+            "}",
+            "class Test {",
+            "  <T extends A<String>> T test() {",
+            "    new B<T>(test());",
+            "    return null;",
+            "  }",
             "}"
         ],
-        "errormsg": [],
-        "comment": "",
         "chars": {
             "characteristics": [
                 "Parameterized class",
                 "Parameterized type",
+                "Parameterized function",
                 "Bounded type parameter"
             ]
-        }
-    },
-    {
-        "date": "2021-05-20 11:27:23+00:00",
-        "language": "Java",
-        "compiler": "javac",
-        "version": "",
-        "bugid": "JDK-8267610",
-        "title": "NPE at at jdk.compiler/com.sun.tools.javac.jvm.Code.emitop",
-        "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8267610",
-            "fix": ""
         },
-        "oracle": "crash",
-        "mutator": "soundness",
-        "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Resolved",
-        "resolution": "Fixed",
-        "resolutiondate": "2021-06-24 23:08:30+00:00",
-        "symptom": "crash",
-        "bugtype": "",
-        "resolvedin": "35 days, 11:41:07",
-        "test": [
-            "import java.util.function.Supplier;",
-            "class Main {",
-            "  public Integer foo(Object x) {",
-            "    Integer bar = 1;",
-            "    return ((x instanceof Number y) ?",
-            "        ((Supplier<Integer>) (() -> {",
-            "          return ((y instanceof Integer z) ? z : bar);",
-            "        })).get() : bar);",
-            "  }",
-            "}"
-        ],
         "errormsg": [],
-        "comment": "",
-        "chars": {
-            "characteristics": [
-                "Function type",
-                "Flow typing",
-                "Lambda",
-                "Conditionals"
-            ]
-        },
-        "fix": {
-            "commits": [
-                "7ab12856c4b"
-            ],
-            "files": [
-                "src/jdk.compiler/share/classes/com/sun/tools/javac/comp/TransPatterns.java"
-            ],
-            "lines": 3
-        }
+        "comment": ""
     },
     {
-        "date": "2021-05-14 12:18:50+00:00",
-        "language": "Java",
-        "compiler": "javac",
+        "date": "2022-05-20 09:03:35+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
         "version": "",
-        "bugid": "JDK-8267220",
-        "title": "javac crashes at com.sun.tools.javac.code.Types$7.visitType with AssertionError",
+        "bugid": "GROOVY-10631",
+        "title": "Unable to instantiate type parameter of method with a valid type",
         "links": {
-            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8267220",
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10631",
             "fix": ""
         },
-        "oracle": "crash",
+        "oracle": "",
         "mutator": "generator",
         "severity": "",
-        "reporter": "webbuggrp",
-        "status": "Closed",
-        "resolution": "Duplicate",
-        "resolutiondate": "2021-05-17 06:06:17+00:00",
-        "symptom": "crash",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "2 days, 17:47:27",
+        "resolvedin": "None",
         "test": [
-            "public class Test",
-            "{",
-            "  static final Double foo() {",
-            "    Double bar = 1.1;",
-            "    return ((true) ? bar : (Double) (() -> 10.0));",
+            "class A<T> {}",
+            "class Test {",
+            "    static <T> T m(T x, T y) { return null; }",
+            "    static void test() {",
+            "        A<? extends Object> x = m(new A<Boolean>(), new A<String>());",
+            "    }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized function",
+                "Parameterized type",
+                "Use-site variance",
+                "Subtyping"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-05-20 08:46:23+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10630",
+        "title": "Subtyping does not work properly when having bounded type parameter and closure",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10630",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class B<X, Y extends X> {",
+            "  void test() {",
+            "    Closure<String> clos = { X x -> x.toString() }",
+            "    clos((Y) null);",
             "  }",
             "}"
         ],
+        "chars": {
+            "characteristics": [
+                "Lambda",
+                "Bounded type parameter",
+                "Parameterized class"
+            ]
+        },
         "errormsg": [],
-        "comment": "",
+        "comment": ""
+    },
+    {
+        "date": "2022-05-20 08:29:54+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10629",
+        "title": "Subtyping does not work properly when having two bounded type parameters",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10629",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class A<T> {",
+            "  void m(T x) {}",
+            "}",
+            "class B<X extends Number, Y extends X> {",
+            "  void test() {",
+            "    A<X> x = new A<X>();",
+            "    x.m((Y) null);",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Bounded type parameter",
+                "Parameterized class",
+                "Parameterized type"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-05-13 14:44:05+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10625",
+        "title": "Issue in subtyping leads to unsound results",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10625",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "soundness",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Runtime Behavior",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class A<T> {",
+            "  T x;",
+            "  A(T x) {this.x = x;}",
+            "  A() {}",
+            "}",
+            "class B<T extends Object> extends A<T> {",
+            "  B(T x) {",
+            "    super(x);",
+            "  }",
+            "  B() {}",
+            "  T m() {",
+            "    A<T> x = new B<Object>(\"fd\"); // Misses type error: B<Object> is not a subtype of A<T>",
+            "    return x.x;",
+            "  }",
+            "}",
+            "class Test {",
+            "  public static void main(String[] args) {",
+            "    Integer x = new B<Integer>().m();",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameter",
+                "Inheritance",
+                "Subtyping"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-05-13 14:12:48+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10624",
+        "title": "Nested diamond operators do not work correctly although the expected type argument is known",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10624",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-17 18:58:52+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "4 days, 4:46:04",
+        "test": [
+            "class C<T> {",
+            "  C(D<T> x) {}",
+            "}",
+            "class D<T> {}",
+            "class Test {",
+            "  void test() {",
+            "    C<Float> x = new C<>(new D<>()); // type variables are instantiated with type Float because of the left-hand side.",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Type argument inference"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-05-13 13:37:55+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10623",
+        "title": "Type mismatch when encountering unconditional flow typing and null",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10623",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-15 18:45:09+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "2 days, 5:07:14",
+        "test": [
+            "class A {}",
+            "class Test {",
+            "  void test() {",
+            "    def x = new A() // type of x is A",
+            "    x = null; // type of x becomes Object",
+            "    A y = x",
+            "  }",
+            "  void test2() {",
+            "    def x = new A()",
+            "    if (true) {",
+            "      x = null",
+            "    }",
+            "    A y = x // compiles as expected",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Flow typing"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-05-13 13:17:26+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10622",
+        "title": "Wrong type is inferred when involving a bounded type parameter in a parameterized method call",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10622",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-15 16:30:10+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "2 days, 3:12:44",
+        "test": [
+            "class A<T> {",
+            "  T m() {",
+            "    return null;",
+            "  }",
+            "}",
+            "class B {",
+            "  B(byte x) {}",
+            "}",
+            "class C<T> {",
+            "  T x;",
+            "  C(T x) {",
+            "    this.x = x;",
+            "  }",
+            "}",
+            "class Test {",
+            "  <T extends A<Byte>> void test() {",
+            "    C<T> a = new C<T>(null);",
+            "    T x = a.x;",
+            "    new B(x.m()); // should type check",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized function",
+                "Parameterized type",
+                "Primitive type"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-04-30 20:07:56+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10614",
+        "title": "Fail to infer the correct type argument when having conditionals and diamond operator",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10614",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<T> {}",
+            "class Test {",
+            "  public static void test() {",
+            "    foo((true) ? new Foo<Boolean>() : new Foo<>());",
+            "  }",
+            "  public static void foo(Foo<Boolean> x) {}",
+            "}"
+        ],
         "chars": {
             "characteristics": [
                 "Conditionals",
-                "Lambda"
+                "Type argument inference",
+                "Parameterized class",
+                "Parameterized type"
             ]
-        }
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-04-28 11:49:07+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10603",
+        "title": "LUB operation returns incorrect result",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10603",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-17 16:23:58+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "19 days, 4:34:51",
+        "test": [
+            "interface Foo {}",
+            "class Bar implements Foo {}",
+            "interface Baz extends Foo {}",
+            "class Qux implements Baz {}",
+            "class Test {",
+            "  public static Foo test() {",
+            "    Qux  x = new Qux();",
+            "    return (true) ? x : (Bar) null;",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Inheritance",
+                "Conditionals",
+                "Subtyping"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-04-28 11:16:58+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10602",
+        "title": "Compiler crash in class generation when combining lambdas and default args",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10602",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "import java.util.function.Supplier;",
+            "class Test {",
+            "  public static void test(Closure<Byte> x = {Byte v -> { Closure<Byte> y = { Supplier<Byte> d = { -> v } -> d.get() }; y() }}) {",
+            "    null",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Lambda",
+                "SAM type",
+                "Named arguments"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
+    },
+    {
+        "date": "2022-04-28 10:55:09+00:00",
+        "language": "Groovy",
+        "compiler": "groovyc",
+        "version": "",
+        "bugid": "GROOVY-10601",
+        "title": "Incompatible generic argument type when combining conditionals and bounded type parameters",
+        "links": {
+            "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10601",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "theosot",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-18 14:58:38+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "20 days, 4:03:29",
+        "test": [
+            "class Foo<X> {}",
+            "class Test {",
+            "  public static <T extends Foo<Number>> T test() {",
+            "    T x = (T) null;",
+            "    T y = (true) ? x : (T) null;",
+            "    y",
+            "  }",
+            "}"
+        ],
+        "chars": {
+            "characteristics": [
+                "Conditionals",
+                "Bounded type parameter",
+                "Parameterized class",
+                "Parameterized type"
+            ]
+        },
+        "errormsg": [],
+        "comment": ""
     },
     {
         "date": "2022-02-17 01:59:17+00:00",
@@ -3384,7 +3476,7 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-13 16:51:38+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -3434,7 +3526,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-12 20:12:48+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -3529,12 +3621,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-16 14:37:51+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "180 days, 3:39:28",
         "test": [
             "@groovy.transform.CompileStatic",
             "class Main<I extends B<Character>> {",
@@ -3704,7 +3796,7 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 15:08:13+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -3749,7 +3841,7 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 17:36:45+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -3792,12 +3884,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-17 14:46:56+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "186 days, 2:37:45",
         "test": [
             "interface I {",
             "  double m(Integer x);",
@@ -3843,12 +3935,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-17 00:08:20+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "185 days, 12:19:19",
         "test": [
             "class A<T> {",
             "  void m(B<T> x, T y) {}",
@@ -3888,12 +3980,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-16 15:00:52+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "185 days, 5:27:53",
         "test": [
             "import java.util.function.Supplier;",
             "class A {",
@@ -4061,7 +4153,7 @@
         "compiler": "groovyc",
         "version": "",
         "bugid": "GROOVY-10358",
-        "title": "Unable to resole method after LUB operator",
+        "title": "Unable to resolve method after LUB operator",
         "links": {
             "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-10358",
             "fix": ""
@@ -4070,7 +4162,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 11:32:07+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -4130,7 +4222,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 16:31:15+00:00",
         "symptom": "crash",
@@ -4167,12 +4259,12 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-15 18:45:00+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "186 days, 11:26:10",
         "test": [
             "interface A {",
             "  void a();",
@@ -4364,12 +4456,12 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-16 17:17:24+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "194 days, 1:18:16",
         "test": [
             "class A<T1, T2 extends T1> {",
             "  T1 f;",
@@ -4415,12 +4507,12 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-19 15:55:22+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "197 days, 0:26:56",
         "test": [
             "class A<T> {",
             "  T f;",
@@ -4880,12 +4972,12 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-17 18:40:58+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "211 days, 4:16:15",
         "test": [
             "class A<T> {",
             "  T f;",
@@ -5424,12 +5516,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-19 17:49:33+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "232 days, 9:15:04",
         "test": [
             "import java.util.function.Function;",
             "@groovy.transform.TypeChecked",
@@ -5479,12 +5571,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-19 17:49:23+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "232 days, 9:25:34",
         "test": [
             "import java.util.function.Supplier;",
             "@groovy.transform.TypeChecked",
@@ -5710,12 +5802,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-01 15:00:44+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "216 days, 1:08:11",
         "test": [
             "class A<T> {}",
             "class B {",
@@ -5757,12 +5849,12 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-18 15:44:43+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "233 days, 2:27:22",
         "test": [
             "class A<T> {",
             "  void foo() {",
@@ -6209,12 +6301,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-18 16:07:43+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "247 days, 6:12:22",
         "test": [
             "class A {",
             "  void foo(I x) {}",
@@ -6262,7 +6354,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 11:29:19+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -6467,7 +6559,7 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 11:32:43+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -6571,7 +6663,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 11:29:05+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -6619,12 +6711,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Information Provided",
+        "resolutiondate": "2022-05-18 16:29:02+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "323 days, 23:07:38",
         "test": [
             "@groovy.transform.TypeChecked",
             "class Test {",
@@ -6673,7 +6765,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 19:34:18+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -6931,7 +7023,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 19:33:44+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -6980,7 +7072,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 19:33:29+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -7026,7 +7118,7 @@
         "mutator": "inference",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-15 20:59:20+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -7350,7 +7442,7 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "theosot",
-        "status": "Resolved",
+        "status": "Closed",
         "resolution": "Fixed",
         "resolutiondate": "2022-03-14 11:32:52+00:00",
         "symptom": "Unexpected Compile-Time Error",
@@ -7634,12 +7726,12 @@
         "mutator": "soundness",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2022-05-18 21:51:54+00:00",
         "symptom": "crash",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "366 days, 5:06:53",
         "test": [
             "@groovy.transform.CompileStatic",
             "class Main {",
@@ -8981,7 +9073,7 @@
         "compiler": "groovyc",
         "version": "",
         "bugid": "GROOVY-9963",
-        "title": "Generic type of field is not istantiated",
+        "title": "Generic type of field is not instantiated",
         "links": {
             "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9963",
             "fix": ""
@@ -9272,7 +9364,7 @@
         "compiler": "groovyc",
         "version": "",
         "bugid": "GROOVY-9948",
-        "title": "Cannot infer the right type in the presence of diamond operator",
+        "title": "Cannot infer the correct type in the presence of diamond operator",
         "links": {
             "issuetracker": "https://issues.apache.org/jira/browse/GROOVY-9948",
             "fix": ""
@@ -9631,12 +9723,12 @@
         "mutator": "generator",
         "severity": "",
         "reporter": "schaliasos",
-        "status": "Open",
-        "resolution": "",
-        "resolutiondate": "None",
+        "status": "Closed",
+        "resolution": "Duplicate",
+        "resolutiondate": "2022-05-18 16:46:08+00:00",
         "symptom": "Unexpected Compile-Time Error",
         "bugtype": "",
-        "resolvedin": "None",
+        "resolvedin": "464 days, 7:28:54",
         "test": [
             "@groovy.transform.CompileStatic",
             "class Main {",
@@ -9723,6 +9815,536 @@
                 "src/main/java/org/codehaus/groovy/transform/stc/StaticTypeCheckingVisitor.java"
             ],
             "lines": 14
+        }
+    },
+    {
+        "date": "2021-09-22 09:42:10+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8274183",
+        "title": "StackOverflowError on computing the GLB",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8274183",
+            "fix": ""
+        },
+        "oracle": "crash",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Main {",
+            "  static public final C<? super A<Double>> test() {",
+            "    final C<? super A<Double>> x = null;",
+            "    x.f = null;",
+            "    return x;",
+            "  }",
+            "}",
+            "class A<T> {}",
+            "abstract class B<F, B extends F> {}",
+            "abstract class C<N extends A<Number>> {",
+            "  public B<? extends N, ? extends N> f;",
+            "}"
+        ],
+        "errormsg": [],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameter",
+                "Use-site variance"
+            ]
+        }
+    },
+    {
+        "date": "2021-07-28 10:43:17+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8272077",
+        "title": "Cannot assign method reference to Generic Function Interface",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8272077",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Closed",
+        "resolution": "Not an Issue",
+        "resolutiondate": "2021-08-06 07:07:30+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "8 days, 20:24:13",
+        "test": [
+            "class Test {",
+            "  public static Short foo(Short x) {",
+            "      return x;",
+            "  }",
+            "  public static Short bar() {",
+            "      Short x = 1;",
+            "      return x;",
+            "  }",
+            "  public static void main(String[] args) {",
+            "    Function0<? extends Number> f = Test::bar;",
+            "    Function1<? extends Number, ? extends Number> f1 = (Short x) -> x; // works",
+            "    Function1<? extends Number, ? extends Number> f2 = Test::foo; // does not work",
+            "  }",
+            "}",
+            "interface Function0<R> {",
+            "  public R apply();",
+            "}",
+            "interface Function1<P, R> {",
+            "  public R apply(P x);",
+            "}",
+            "  public static Short bar() {",
+            "      Short x = 1;",
+            "      return x;",
+            "  }",
+            "  public static void main(String[] args) {",
+            "    Function0<? extends Number> f = Test::bar;",
+            "    Function1<? extends Number, ? extends Number> f1 = (Short x) -> x; // works",
+            "    Function1<? extends Short, ? extends Number> f2 = Test::foo; // does not work",
+            "  }",
+            "}",
+            "interface Function0<R> {",
+            "  public R apply();",
+            "}",
+            "interface Function1<P, R> {",
+            "  public R apply(P x);",
+            "}"
+        ],
+        "errormsg": [
+            "Test.java:15: error: incompatible types: invalid method reference ",
+            "    Function1<? extends Number, ? extends Number> f2 = Test::foo; // does not work",
+            "                                                       ^ ",
+            "    incompatible types: Number cannot be converted to Short "
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "SAM type",
+                "Function type",
+                "Use-site variance",
+                "Lambda",
+                "Subtyping",
+                "Function reference"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-30 12:20:10+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8269738",
+        "title": "AssertionError when combining pattern matching and function closure",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269738",
+            "fix": ""
+        },
+        "oracle": "crash",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2021-07-08 14:15:55+00:00",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "8 days, 1:55:45",
+        "test": [
+            "import java.util.function.Supplier;",
+            "class Test {",
+            "    static A x = null;",
+            "    static char tmp = (",
+            "        (Test.x instanceof B b) ? ((Supplier<B>) () -> b).get() : null",
+            "     ).field;",
+            "}",
+            "class A {}",
+            "class B extends A {",
+            "    char field = 'd';",
+            "}"
+        ],
+        "errormsg": [],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Function type",
+                "Flow typing",
+                "Lambda"
+            ]
+        },
+        "fix": {
+            "commits": [
+                "9e75f922b17"
+            ],
+            "files": [
+                "src/jdk.compiler/share/classes/com/sun/tools/javac/comp/TransPatterns.java"
+            ],
+            "lines": 1
+        }
+    },
+    {
+        "date": "2021-06-28 16:52:53+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8269737",
+        "title": "Wrong Type-Argument inference in presence of bounds and use-site variance",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269737",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Closed",
+        "resolution": "Not an Issue",
+        "resolutiondate": "2021-07-01 08:22:02+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "2 days, 15:29:09",
+        "test": [
+            "abstract class Cls<T1> {",
+            "  public Cls() {}",
+            "}",
+            "abstract class Cls2<T2> extends Cls<T2> {",
+            "  public Cls2() {}",
+            "}",
+            "abstract class Cls3<T3 extends Float> extends Cls2<T3> {",
+            "  public Cls3() {}",
+            "}",
+            "abstract class Cls4<T4 extends Cls3<? super Float>> {",
+            "  public Cls4() {}",
+            "}",
+            "final class Cls5 {",
+            "  public Cls5() {}",
+            "  public final Cls4<? extends Cls3<Float>> foo() {",
+            "    Cls4<? extends Cls3<Float>> y = (Cls4<? extends Cls3<Float>>) null;",
+            "    var x = y;",
+            "    // Cls4<? extends Cls3<Float>> x = y; // This works",
+            "    return x;",
+            "  }",
+            "}"
+        ],
+        "errormsg": [
+            "Cls.java:23: error: incompatible types: Cls4<CAP#1> cannot be converted to Cls4<? extends Cls3<Float>> ",
+            "   return x; ",
+            "          ^ ",
+            " where CAP#1 is a fresh type-variable: ",
+            "    CAP#1 extends Cls3<? super Float> from capture of ? ",
+            "1 error"
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameter",
+                "Use-site variance",
+                "Inheritance",
+                "Variable type inference"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-24 14:11:17+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8269586",
+        "title": "Compile-time error when using wildcard as type argument",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269586",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Resolved",
+        "resolution": "Not an Issue",
+        "resolutiondate": "2021-09-16 20:05:37+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "84 days, 5:54:20",
+        "test": [
+            "abstract class ClsA<M> {",
+            "  public ClsA() {}",
+            "}",
+            "class ClsB<X, Y extends ClsA<? super X>> {",
+            "  public ClsB() {",
+            "    super();",
+            "  }",
+            "}",
+            "class ClsC {",
+            "  public ClsC() {",
+            "    super();",
+            "  }",
+            "  public final void foo(ClsB<? extends Integer, ? extends ClsA<Integer>> bar) {}",
+            "}"
+        ],
+        "errormsg": [
+            "ClsA.java:15: error: type argument ? extends ClsA<Integer> is not within bounds of type-variable Y ",
+            " public final void foo(ClsB<? extends Integer, ? extends ClsA<Integer>> bar) {} ",
+            "                                                ^ ",
+            "  where Y,X are type-variables: ",
+            "   Y extends ClsA<? super X> declared in class ClsB ",
+            "  X extends Object declared in class ClsB ",
+            "1 error "
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameter",
+                "Use-site variance"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-24 14:36:46+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8269386",
+        "title": "Imprecise type inference in the presence of ternary operator and wildcard",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269386",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Closed",
+        "resolution": "Not an Issue",
+        "resolutiondate": "2021-06-28 19:30:49+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "4 days, 4:54:03",
+        "test": [
+            "class A<T> {",
+            "  public A() {}",
+            "  public B<? super T> foo() {",
+            "    var x = (true) ? new B<T>() : (B<? super T>) null;",
+            "    return x;",
+            "    //return (true) ? new B<T>() : (B<? super T>) null;  // This works",
+            "  }",
+            "}",
+            "class B<T> {",
+            "  public B() {}",
+            "}"
+        ],
+        "errormsg": [
+            "A.java:5: error: incompatible types: B<CAP#1> cannot be converted to B<? super T>",
+            "    return x; ",
+            "           ^ ",
+            "  where T is a type-variable: ",
+            "    T extends Object declared in class A ",
+            "  where CAP#1 is a fresh type-variable: ",
+            "    CAP#1 extends Object from capture of ? extends Object ",
+            "1 error "
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Use-site variance",
+                "Conditionals",
+                "Variable type inference"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-23 14:02:54+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8269348",
+        "title": "Wrong type inference in presence of a generic with bound to Double",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8269348",
+            "fix": ""
+        },
+        "oracle": "error",
+        "mutator": "inference",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Resolved",
+        "resolution": "Not an Issue",
+        "resolutiondate": "2021-06-30 15:12:56+00:00",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "7 days, 1:10:02",
+        "test": [
+            "class Test<T extends Double, K extends T> {",
+            "  public T test() {",
+            "    T foo = (T) null;",
+            "    final var v = ((true) ?",
+            "      foo :",
+            "       (K) null);",
+            "    return v;",
+            "  }",
+            "}"
+        ],
+        "errormsg": [
+            "Test.java:7: error: incompatible types: double cannot be converted to T ",
+            "    return v; ",
+            "           ^ ",
+            "  where T is a type-variable: ",
+            "    T extends Double declared in class Test ",
+            "1 error "
+        ],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Bounded type parameter",
+                "Conditionals",
+                "Variable type inference"
+            ]
+        }
+    },
+    {
+        "date": "2021-06-02 13:44:00+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8268159",
+        "title": "Misleading report with type variables when extending one of the type arguments",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8268159",
+            "fix": ""
+        },
+        "oracle": "",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Open",
+        "resolution": "",
+        "resolutiondate": "None",
+        "symptom": "Unexpected Compile-Time Error",
+        "bugtype": "",
+        "resolvedin": "None",
+        "test": [
+            "class Foo<T1, T2 extends Number> {}",
+            "class Bar<T1, T2> {",
+            "    Foo<T1, T1> x;",
+            "}"
+        ],
+        "errormsg": [],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Parameterized class",
+                "Parameterized type",
+                "Bounded type parameter"
+            ]
+        }
+    },
+    {
+        "date": "2021-05-20 11:27:23+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8267610",
+        "title": "NPE at at jdk.compiler/com.sun.tools.javac.jvm.Code.emitop",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8267610",
+            "fix": ""
+        },
+        "oracle": "crash",
+        "mutator": "soundness",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Resolved",
+        "resolution": "Fixed",
+        "resolutiondate": "2021-06-24 23:08:30+00:00",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "35 days, 11:41:07",
+        "test": [
+            "import java.util.function.Supplier;",
+            "class Main {",
+            "  public Integer foo(Object x) {",
+            "    Integer bar = 1;",
+            "    return ((x instanceof Number y) ?",
+            "        ((Supplier<Integer>) (() -> {",
+            "          return ((y instanceof Integer z) ? z : bar);",
+            "        })).get() : bar);",
+            "  }",
+            "}"
+        ],
+        "errormsg": [],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Function type",
+                "Flow typing",
+                "Lambda",
+                "Conditionals"
+            ]
+        },
+        "fix": {
+            "commits": [
+                "7ab12856c4b"
+            ],
+            "files": [
+                "src/jdk.compiler/share/classes/com/sun/tools/javac/comp/TransPatterns.java"
+            ],
+            "lines": 3
+        }
+    },
+    {
+        "date": "2021-05-14 12:18:50+00:00",
+        "language": "Java",
+        "compiler": "javac",
+        "version": "",
+        "bugid": "JDK-8267220",
+        "title": "javac crashes at com.sun.tools.javac.code.Types$7.visitType with AssertionError",
+        "links": {
+            "issuetracker": "https://bugs.openjdk.java.net/browse/JDK-8267220",
+            "fix": ""
+        },
+        "oracle": "crash",
+        "mutator": "generator",
+        "severity": "",
+        "reporter": "webbuggrp",
+        "status": "Closed",
+        "resolution": "Duplicate",
+        "resolutiondate": "2021-05-17 06:06:17+00:00",
+        "symptom": "crash",
+        "bugtype": "",
+        "resolvedin": "2 days, 17:47:27",
+        "test": [
+            "public class Test",
+            "{",
+            "  static final Double foo() {",
+            "    Double bar = 1.1;",
+            "    return ((true) ? bar : (Double) (() -> 10.0));",
+            "  }",
+            "}"
+        ],
+        "errormsg": [],
+        "comment": "",
+        "chars": {
+            "characteristics": [
+                "Conditionals",
+                "Lambda"
+            ]
         }
     },
     {
