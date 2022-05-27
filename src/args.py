@@ -107,7 +107,7 @@ parser.add_argument(
 parser.add_argument(
     "--language",
     default="kotlin",
-    choices=['kotlin', 'groovy', 'java'],
+    choices=['kotlin', 'groovy', 'java', 'typescript'],
     help="Select specific language"
 )
 parser.add_argument(

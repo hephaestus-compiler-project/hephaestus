@@ -1076,6 +1076,10 @@ class LogicalExpr(BinaryOp):
         "java": [
             Operator('&&'),
             Operator('||')
+        ],
+        "typescript": [
+            Operator('&&'),
+            Operator('||')
         ]
     }
 
@@ -1102,6 +1106,11 @@ class EqualityExpr(BinaryOp):
         ],
         "java": [
             Operator('=='),
+            Operator('=', is_not=True)
+        ],
+        "typescript": [
+            Operator('==='),
+            Operator('==', is_not=True),
             Operator('=', is_not=True)
         ]
     }
@@ -1132,6 +1141,12 @@ class ComparisonExpr(BinaryOp):
             Operator('>='),
             Operator('<'),
             Operator('<=')
+        ],
+        "typescript": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
         ]
     }
 
@@ -1157,6 +1172,12 @@ class ArithExpr(BinaryOp):
             Operator('*')
         ],
         "java": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ],
+        "typescript": [
             Operator('+'),
             Operator('-'),
             Operator('/'),
