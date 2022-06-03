@@ -169,10 +169,6 @@ class KotlinTranslator(BaseTranslator):
                           not is_sam) else "",
             p=class_prefix,
             n=node.name,
-            tps="<" + type_parameters_res + ">" if type_parameters_res else "",
-            fields="(" + ", ".join(field_res) + ")" if field_res else "",
-            s=": " + ", ".join(superclasses_res) if superclasses_res else "",
-            body=body
         )
 
         if type_parameters_res:
