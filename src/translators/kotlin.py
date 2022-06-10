@@ -154,12 +154,6 @@ class KotlinTranslator(BaseTranslator):
 
         is_sam = tu.is_sam(self.context, cls_decl=node)
         class_prefix = "interface" if is_sam else node.get_class_prefix()
-        body = ""
-        if function_res:
-            body = " {{\n{function_res}\n{old_ident}}}".format(
-                function_res="\n\n".join(function_res),
-                old_ident=" " * old_ident
-            )
 
         res = "{ident}{f}{o}{p} {n}".format(
             ident=" " * old_ident,
