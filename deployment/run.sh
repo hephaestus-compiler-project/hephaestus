@@ -15,7 +15,7 @@ simple_run_groovy() {
     cd $CHECK_TYPE_SYSTEMS
     git pull
     python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
-        --language groovy
+        --language groovy --cast-numbers
 }
 
 simple_run() {
@@ -44,7 +44,7 @@ run_groovy_from_source() {
     cd $CHECK_TYPE_SYSTEMS
     git pull
     python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
-        --language groovy
+        --language groovy --cast-numbers
 }
 
 run_multiple_versions() {
