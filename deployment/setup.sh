@@ -69,7 +69,7 @@ install_groovy_from_source() {
     ./gradlew --write-verification-metadata pgp,sha512 --dry-run
     ./gradlew clean dist --continue
     echo "#!/bin/bash" >> $HOME/bin/groovyc
-    echo "java -cp $HOME/groovy/build/libs/groovy-4.0.0-SNAPSHOT.jar org.codehaus.groovy.tools.FileSystemCompiler $@" >> $HOME/bin/groovyc
+    echo "java -cp $HOME/groovy/build/libs/groovy-5.0.0-SNAPSHOT.jar org.codehaus.groovy.tools.FileSystemCompiler $@" >> $HOME/bin/groovyc
     chmod +x $HOME/bin/groovyc
     echo "PATH=$HOME/bin/:$PATH" >> .bash_profile
     echo "GROOVY_INSTALLATION=$HOME/groovy" >> $HOME/.bash_profile
