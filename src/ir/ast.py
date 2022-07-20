@@ -1110,8 +1110,7 @@ class EqualityExpr(BinaryOp):
         ],
         "typescript": [
             Operator('==='),
-            Operator('==', is_not=True),
-            Operator('=', is_not=True)
+            Operator('==', is_not= True)
         ]
     }
 
