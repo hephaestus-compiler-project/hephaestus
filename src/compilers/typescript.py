@@ -18,7 +18,7 @@ class TypeScriptCompiler(BaseCompiler):
         return ['tsc', '-v']
 
     def get_compiler_cmd(self):
-        return ['tsc', self.input_name]
+        return ['tsc --target es2020', self.input_name]
 
     def analyze_compiler_output(self, output):
         return defaultdict(list)

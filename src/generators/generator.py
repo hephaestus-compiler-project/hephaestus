@@ -273,7 +273,8 @@ class Generator():
                 if (
                     ut.random.bool(prob=0.25) or
                     self.language == 'java' or
-                    self.language == 'groovy' and is_interface
+                    self.language == 'groovy' and is_interface or
+                    self.language == 'typescript' and is_interface
                 )
                 else self._gen_func_params_with_default()
             )
@@ -1533,10 +1534,10 @@ class Generator():
             if not param.vararg:
                 arg = self.generate_expr(expr_type, only_leaves,
                                          gen_bottom=gen_bottom)
-                if param.default:
+                if param.default and self.language != 'typescript':
                     if self.language == 'kotlin' and ut.random.bool():
                         # Randomly skip some default arguments.
-                        args.append(ast.CallArgument(arg, name=param.name))
+                        args.append(ast.CallArgument(arg, name=param.name))               
                 else:
                     args.append(ast.CallArgument(arg))
 

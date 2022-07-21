@@ -124,7 +124,7 @@ class BigIntegerType(TypeScriptBuiltin):
         self.supertypes.append(ObjectType())
     
     def is_assignable(self, other):
-        assignable_types= (NumberType, BigIntegerType)
+        assignable_types= [BigIntegerType]
         return self.is_subtype(other) or type(other) in assignable_types
     
     def box_type(self):
