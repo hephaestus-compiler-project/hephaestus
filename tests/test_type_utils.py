@@ -1200,6 +1200,23 @@ def test_unify_types_function_type():
     }
 
 
+def test_unify_types_same_parameterized_type():
+    factory = kt.KotlinBuiltinFactory()
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3")
+    type_param4 = tp.TypeParameter("T4")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    foo_type = foo.new([type_param3, type_param4])
+
+    params = tutils.unify_types(foo_type, foo_type, factory)
+
+    assert params == {
+        type_param3: type_param3,
+        type_param4: type_param4
+    }
+
+
 def test_unify_types_with_simple_and_parameterized_types():
     factory = kt.KotlinBuiltinFactory()
     type_param1 = tp.TypeParameter("T1")
@@ -1222,7 +1239,6 @@ def test_unify_types_with_simple_and_parameterized_types():
                              [foo.new([kt.String, type_param2])])
     bar_d = bar.new([kt.Long])
     params = tutils.unify_types(bar_d, foo_d, factory, same_type=False)
-    print('ddd', params)
     assert params == {type_param1: kt.Long}
 
 
