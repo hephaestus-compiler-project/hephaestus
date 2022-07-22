@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from src.ir import types as tp, kotlin_types as kt
 from src.ir import ast, type_utils as tutils, context as ctx
 
@@ -1301,3 +1303,55 @@ def test_build_type_variable_dependencies():
         baz.name: ["Baz.T1"],
         "Foo.T1": ["Bar.T3"]
     }
+
+
+def test_update_type_var_bound_rec():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    type_param3 = tp.TypeParameter("T3", bound=type_param2)
+    type_param4 = tp.TypeParameter("T4")
+    type_var_map = {
+        type_param1: kt.String
+    }
+    indexes = {
+        type_param1: 0,
+        type_param2: 1,
+        type_param3: 2,
+        type_param4: 3,
+    }
+    targs = [kt.String]
+    old_type_var_map = deepcopy(type_var_map)
+    old_targs = deepcopy(targs)
+    tutils.update_type_var_bound_rec(tp.Classifier("Foo"), kt.String,
+                                     targs, indexes, type_var_map)
+    assert old_targs == targs
+    assert old_type_var_map == type_var_map
+
+    tutils.update_type_var_bound_rec(type_param4, kt.Integer,
+                                     targs, indexes, type_var_map)
+    assert old_targs == targs
+    assert old_type_var_map == type_var_map
+
+
+    tutils.update_type_var_bound_rec(type_param2, kt.Integer,
+                                     targs, indexes, type_var_map)
+    assert type_var_map == {type_param1: kt.Integer}
+    assert targs == [kt.Integer]
+
+    type_var_map = deepcopy(old_type_var_map)
+    type_var_map[type_param2] = kt.Boolean
+    targs = deepcopy(old_targs)
+    targs.append(kt.Boolean)
+
+    tutils.update_type_var_bound_rec(type_param3, kt.Integer,
+                                     targs, indexes, type_var_map)
+    assert type_var_map == {type_param1: kt.Integer, type_param2: kt.Integer}
+    assert targs == [kt.Integer, kt.Integer]
+
+    type_var_map[type_param1] = kt.Number
+    type_var_map[type_param2] = kt.Number
+    targs = [kt.Number, kt.Number]
+    tutils.update_type_var_bound_rec(type_param3, kt.Integer,
+                                     targs, indexes, type_var_map)
+    assert type_var_map == {type_param1: kt.Number, type_param2: kt.Number}
+    assert targs == [kt.Number, kt.Number]

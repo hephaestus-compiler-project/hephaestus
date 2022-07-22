@@ -494,7 +494,9 @@ def _get_type_arg_variance(t_param, variance_choices):
     return utils.random.choice(variances)
 
 
-def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
+def update_type_var_bound_rec(t_param: tp.TypeParameter,
+                              t: tp.Type, t_args: list, indexes: list,
+                              type_var_map: dict):
     """
     This method recursively updates the type assignment associated with the
     bound of a type variable.
@@ -510,11 +512,19 @@ def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
     the type assignment related to the bound of bounds.
     """
     if not (t_param.is_type_var() and t_param.bound is not None):
+        # Nothing to update. We don't encounter a type variable with an
+        # upper bound.
         return
     bound = t_param.bound
     if not bound.is_type_var():
         return
     try:
+        current_t = type_var_map[bound]
+        if t.is_subtype(current_t):
+            # The current assignment for the type variable corresponding to
+            # the upper bound of 't_param' is supertype of 't'. So we don't
+            # have to update anything.
+            return
         t_args[indexes[bound]] = t
         type_var_map[bound] = t
     except KeyError:
@@ -523,7 +533,7 @@ def _update_type_var_bound_rec(t_param, t, t_args, indexes, type_var_map):
         # case the type variable of the type constructor should be already
         # instantiated with a type that cannot be changed.
         assert bound in type_var_map
-    _update_type_var_bound_rec(bound, t, t_args, indexes, type_var_map)
+    update_type_var_bound_rec(bound, t, t_args, indexes, type_var_map)
 
 
 def _compute_type_variable_assignments(
@@ -561,8 +571,8 @@ def _compute_type_variable_assignments(
 
                 if is_covariant and not for_type_constructor:
                     t = tp.Nothing
-                _update_type_var_bound_rec(t_param, t, t_args, indexes,
-                                           type_var_map)
+                update_type_var_bound_rec(t_param, t, t_args, indexes,
+                                          type_var_map)
         else:
             a_types = []
             for k, v in type_var_map.items():
