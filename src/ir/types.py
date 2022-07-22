@@ -472,7 +472,31 @@ class TypeConstructor(AbstractType):
         return True
 
     def is_subtype(self, other: Type):
-        return other in self.get_supertypes()
+        supertypes = self.get_supertypes()
+        matched_supertype = None
+        for supertype in supertypes:
+            if other == supertype:
+                matched_supertype = supertype
+                break
+        if matched_supertype is None:
+            # This type constructor is not subtype of other
+            return False
+        if not other.is_parameterized():
+            return True
+
+        # The rationale here is the following: there might be collision
+        # in the type variables introduced by the type constructor and
+        # the type variables that appear in the type arguments of the given
+        # parameterized type. See the following example:
+        #
+        # class Bar<T> extends Foo<Float, T> {}
+        # fun <T> foo(Foo<Float, T> x) {
+        #    In this context, the type constructor Bar<T> is not a subtype
+        #    of Foo<Float, T>.
+        # }
+        type_vars = set(
+            matched_supertype.get_type_variable_assignments().values())
+        return not bool(type_vars.intersection(self.type_parameters))
 
     def new(self, type_args: List[Type]):
         type_map = {tp: type_args[i]

@@ -142,6 +142,29 @@ def test_parameterized_with_bound_abstract():
         [type_param, tp.TypeParameter("K", bound=type_param)]
 
 
+def test_subtype_type_constructor_regular():
+    type_param = tp.TypeParameter("T1")
+    bar = tp.Classifier("Bar")
+    foo = tp.TypeConstructor("Foo", [type_param], [bar])
+    assert foo.is_subtype(bar)
+
+
+def test_subtype_type_constructor_paramerized():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    bar = tp.TypeConstructor("Bar", [type_param1],
+                             [foo.new([kt.String, type_param1])])
+
+    foo_type = foo.new([kt.String, type_param1])
+    assert not bar.is_subtype(foo_type)
+
+    bar = tp.TypeConstructor("Bar", [type_param1],
+                             [foo.new([kt.String, kt.Integer])])
+    foo_type = foo.new([kt.String, kt.Integer])
+    assert bar.is_subtype(foo_type)
+
+
 def test_subtype_covariant_parameterized():
     type_param = tp.TypeParameter("T", tp.Covariant)
     type_param2 = tp.TypeParameter("K", tp.Covariant)
