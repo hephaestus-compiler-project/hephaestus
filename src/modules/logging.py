@@ -32,3 +32,8 @@ class Logger():
             with open(self.filename, 'a') as out:
                 out.write(str(msg))
                 out.write('\n')
+
+
+def log(logger: Logger, msg: str):
+    if logger is not None:
+        logger.log(msg)

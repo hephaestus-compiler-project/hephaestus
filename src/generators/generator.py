@@ -29,10 +29,10 @@ from src.generators import generators as gens
 from src.generators import utils as gu
 from src.generators.config import cfg
 from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
-from src.ir.context import Context, get_decl
+from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
-from src.modules.logging import Logger
+from src.modules.logging import Logger, log
 
 
 class Generator():
@@ -857,7 +857,10 @@ class Generator():
         if find_subtype:
             subtypes = tu.find_subtypes(expr_type, self.get_types(),
                                         include_self=True, concrete_only=True)
+            old_type = expr_type
             expr_type = ut.random.choice(subtypes)
+            msg = "Found subtype of {}: {}".format(old_type, expr_type)
+            log(self.logger, msg)
         generators = self.get_generators(expr_type, only_leaves, subtype,
                                          exclude_var, sam_coercion=sam_coercion)
         expr = ut.random.choice(generators)(expr_type)
@@ -1022,7 +1025,8 @@ class Generator():
         self.depth += 1
         objs = self._get_matching_objects(etype, subtype, 'fields')
         if not objs:
-            type_f = self._get_matching_class(etype, subtype, 'fields')
+            type_f = self._get_matching_class(etype, subtype=subtype,
+                                              attr_name='fields')
             if type_f is None:
                 type_f = self._gen_matching_class(
                     etype, 'fields', not_void=True,
@@ -1477,10 +1481,16 @@ class Generator():
             only_leaves: do not generate new leaves except from `expr`.
             subtype: The returned type could be a subtype of `etype`.
         """
+        log(self.logger, "Generating function call of type {}".format(etype))
         funcs = self._get_matching_function_declarations(etype, subtype)
         if not funcs:
-            type_fun = self._get_matching_class(etype, subtype, 'functions')
+            msg = "No compatible functions in the current scope for type {}"
+            log(self.logger, msg.format(etype))
+            type_fun = self._get_matching_class(etype, subtype=subtype,
+                                                attr_name='functions')
             if type_fun is None:
+                msg = "No compatible classes for type {}"
+                log(self.logger, msg.format(etype))
                 # Here, we generate a function or a class containing a function
                 # whose return type is 'etype'.
                 type_fun = self._gen_matching_func(etype, not_void=True)
@@ -1489,7 +1499,7 @@ class Generator():
                 else self.generate_expr(type_fun.receiver_t, only_leaves)
             )
             funcs.append(gu.AttrReceiverInfo(receiver, type_fun.receiver_inst,
-                          type_fun.attr_decl, type_fun.attr_inst))
+                         type_fun.attr_decl, type_fun.attr_inst))
 
         rand_func = ut.random.choice(funcs)
         receiver = rand_func.receiver_expr
@@ -1498,6 +1508,10 @@ class Generator():
         func_type_map = rand_func.attr_inst
 
         params_map.update(func_type_map or {})
+
+        msg = ("Selected callee method {}: type {}; receiver {}; "
+               "TypeVarMap {}".format(func.name, etype, receiver, params_map))
+        log(self.logger, msg)
         args = []
         initial_depth = self.depth
         self.depth += 1
@@ -1796,7 +1810,7 @@ class Generator():
         # Get function references from methods of classes.
         # ie create receiver
         type_fun = self._get_matching_class(
-            etype, False, 'functions', signature=True)
+            etype, subtype=False, attr_name='functions', signature=True)
 
         # Generate a matching function.
         if not type_fun:
@@ -2007,6 +2021,8 @@ class Generator():
                 disable_variance_functions=self.disable_variance_functions,
                 variance_choices={}
             )
+            msg = "Instantiating type constructor {}".format(stype)
+            log(self.logger, msg)
         return stype
 
     def gen_type_params(self,
@@ -2439,6 +2455,9 @@ class Generator():
         )
         # First find all top-level functions or methods included
         # in the current class.
+        msg = ("Searching for function declarations that match type {};"
+               " checking signature {}")
+        log(self.logger, msg.format(etype, signature))
         for func in self.context.get_funcs(self.namespace).values():
             # The receiver object for this kind of functions is None.
             if func.get_type() == self.bt_factory.get_void_type():
@@ -2524,14 +2543,16 @@ class Generator():
                 func_type_var_map = tu.instantiate_parameterized_function(
                     func.type_parameters, self.get_types(),
                     only_regular=True, type_var_map={})
+            msg = "Generating a method {} of type {}; TypeVarMap {}".format(
+                func.name, etype, func_type_var_map)
+            log(self.logger, msg)
             return gu.AttrAccessInfo(None, {}, func, func_type_var_map)
         # Generate a class containing the requested function
         return self._gen_matching_class(etype, 'functions',
                                         signature=signature)
 
-
     def _get_matching_class(self,
-                            etype:tp.Type,
+                            etype: tp.Type,
                             subtype: bool,
                             attr_name: str,
                             signature=False) -> gu.AttrAccessInfo:
@@ -2552,8 +2573,10 @@ class Generator():
             An AttrAccessInfo with a matched class type and attribute
             declaration (field or function).
         """
+        msg = "Searching for class that contains {} of type {}"
+        log(self.logger, msg.format(attr_name, etype))
         class_decls = self._get_matching_class_decls(
-            etype, subtype, attr_name, signature)
+            etype, subtype=subtype, attr_name=attr_name, signature=signature)
         if not class_decls:
             return None
         cls, type_var_map, attr = ut.random.choice(class_decls)
@@ -2575,6 +2598,9 @@ class Generator():
                 disable_variance_functions=self.disable_variance_functions,
                 variance_choices=variance_choices
             )
+            msg = ("Found parameterized class {} with TypeVarMap {} and "
+                   "incomplete TypeVarMap {}")
+            log(self.logger, msg.format(cls.name, params_map, type_var_map))
             if is_parameterized_func:
                 # Here we have found a parameterized function in a
                 # parameterized class. So wee need to both instantiate
@@ -2611,6 +2637,12 @@ class Generator():
                     attr.type_parameters, self.get_types(),
                     only_regular=True, type_var_map=type_var_map)
             cls_type, params_map = cls.get_type(), {}
+
+        attr_msg = "Attribute {}; type: {}, TypeVarMap{}".format(
+            attr_name, etype, func_type_var_map)
+        msg = "Selected class {} with TypeVarMap {};" " matches {}".format(
+            cls.name, params_map, attr_msg)
+        log(self.logger, msg)
         return gu.AttrAccessInfo(cls_type, params_map, attr, func_type_var_map)
 
     def _is_sigtype_compatible(self, attr, etype, type_var_map,
@@ -2807,6 +2839,8 @@ class Generator():
                     attr.type_parameters, self.get_types(), only_regular=True,
                     type_var_map=params_map)
 
+            msg = "Generated a class {} with an attribute {} of type {}"
+            log(self.logger, msg.format(cls.name, attr_name, etype))
             return gu.AttrAccessInfo(cls_type, params_map, attr,
                                      func_type_var_map)
         return None
