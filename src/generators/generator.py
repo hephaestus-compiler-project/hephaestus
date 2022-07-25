@@ -505,11 +505,13 @@ class Generator():
                 for f in chosen_fields:
                     field_type = tp.substitute_type(
                         f.get_type(), super_cls_info.type_var_map)
-                    new_f = self.gen_field_decl(field_type, curr_cls.is_final)
+                    new_f = self.gen_field_decl(field_type, curr_cls.is_final,
+                                                add_to_parent=False)
                     new_f.name = f.name
                     new_f.override = True
                     new_f.is_final = f.is_final
                     fields.append(new_f)
+                    self._add_node_to_parent(self.namespace, new_f)
                 max_fields = max_fields - len(chosen_fields)
             if max_fields < 0:
                 return fields
@@ -763,7 +765,8 @@ class Generator():
         return new_type_params, substituted_type_params
 
     def gen_field_decl(self, etype=None,
-                       class_is_final=True) -> ast.FieldDeclaration:
+                       class_is_final=True,
+                       add_to_parent=True) -> ast.FieldDeclaration:
         """Generate a class Field Declaration.
 
         Args:
@@ -777,7 +780,8 @@ class Generator():
                                                exclude_covariants=not is_final)
         field = ast.FieldDeclaration(name, field_type, is_final=is_final,
                                      can_override=can_override)
-        self._add_node_to_parent(self.namespace, field)
+        if add_to_parent:
+            self._add_node_to_parent(self.namespace, field)
         return field
 
     def gen_variable_decl(self,
