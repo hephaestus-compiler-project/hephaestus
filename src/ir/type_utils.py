@@ -53,11 +53,7 @@ def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
             base_targ.t_constructor, types, only_regular=True,
             type_var_map=type_var_map, variance_choices=None
         )
-        type_var_map = {
-            t_param: base_targ.type_args[i]
-            for i, t_param in enumerate(
-                base_targ.t_constructor.type_parameters)
-        }
+        type_var_map = new_targ.get_type_variable_assignments()
         return base_targ.to_variance_free(type_var_map)
 
     # Here, we have a case like the following.
@@ -101,7 +97,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
         bound = tp.substitute_type(t_param.bound, type_var_map)
 
     if bound and bound.is_parameterized():
-        # If bound is `paramterized`, we seek another type argument that
+        # If bound is `parameterized`, we seek for another type argument that
         # is subtype of the the `new` bound.
         base_targ = _replace_type_argument(base_targ, bound, types,
                                            t_param.bound.has_type_variables())
