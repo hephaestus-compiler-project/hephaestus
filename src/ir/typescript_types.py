@@ -24,7 +24,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return BooleanType(primitive=False)
 
     def get_char_type(self):
-        return SymbolType(primitive=False)
+        return StringType(primitive=False)
 
     def get_string_type(self):
         return StringType(primitive=False)
