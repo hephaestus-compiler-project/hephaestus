@@ -740,15 +740,12 @@ class JavaTranslator(BaseTranslator):
                 body = "{{{body};}}{semicolon}".format(
                     body=body_res,
                     semicolon=";" if self._parent_is_block() else ""
-                    #ident=self.get_ident(old_ident=old_ident)
                 )
             else:
                 body = body_res
 
-        params = list(map(lambda x: x.split()[-1], param_res))
         res = "({params}) -> {body}".format(
-            #ident=self.get_ident(old_ident=old_ident),
-            params=", ".join(params),
+            params=", ".join(param_res),
             body=body
         )
 
