@@ -49,12 +49,11 @@ def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
         type_var_map = unify_types(bound, template_t, None)
         if not type_var_map:
             return None
-        new_targ, _ = instantiate_type_constructor(
+        new_targ, type_var_map = instantiate_type_constructor(
             base_targ.t_constructor, types, only_regular=True,
-            type_var_map=type_var_map, variance_choices=None
+            type_var_map=type_var_map, disable_variance=True
         )
-        type_var_map = new_targ.get_type_variable_assignments()
-        return base_targ.to_variance_free(type_var_map)
+        return new_targ.to_variance_free()
 
     # Here, we have a case like the following.
     # bound: A<Number, X>
@@ -87,7 +86,8 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
                               base_targ: tp.Type,
                               types,
                               get_subtypes,
-                              type_var_map={}):
+                              type_var_map={},
+                              ignore_use_variance=False):
 
     bound = None
     if t_param.bound:
@@ -118,7 +118,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
             base_targ, types,
             not get_subtypes, True, bound, concrete_only=True)
 
-    if not base_targ.is_wildcard():
+    if not base_targ.is_wildcard() or ignore_use_variance:
         return t_args
     if base_targ.is_covariant():
         new_types = _find_types(
@@ -137,7 +137,8 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
     return t_args
 
 
-def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
+def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
+                             ignore_use_variance=False):
     type_var_map = OrderedDict()
     if etype.name == 'Array':
         types = [t for t in types
@@ -199,7 +200,8 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes):
         else:
             t_args = _find_candidate_type_args(t_param, etype.type_args[i],
                                                types, get_subtypes,
-                                               type_var_map)
+                                               type_var_map,
+                                               ignore_use_variance)
             if not t_args:
                 # We were not able to construct a subtype of the given
                 # parameterized type. Therefore, we give back the given
@@ -219,7 +221,7 @@ def to_type(stype, types):
 
 
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
-                concrete_only=False):
+                concrete_only=False, ignore_use_variance=False):
 
     # Otherwise, if we want to find the supertypes of a given type, `bound`
     # is interpreted a greatest bound.
@@ -238,7 +240,9 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
                 continue
 
     if isinstance(etype, tp.ParameterizedType):
-        t_set.add(_construct_related_types(etype, types, get_subtypes))
+        t_set.add(_construct_related_types(
+            etype, types, get_subtypes,
+            ignore_use_variance=ignore_use_variance))
     if include_self:
         t_set.add(etype)
     else:
@@ -250,9 +254,11 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
 
 
 def find_subtypes(etype, types, include_self=False, bound=None,
-                  concrete_only=False):
+                  concrete_only=False,
+                  ignore_use_variance=False):
     return _find_types(etype, types, get_subtypes=True,
-                       include_self=include_self, concrete_only=concrete_only)
+                       include_self=include_self, concrete_only=concrete_only,
+                       ignore_use_variance=ignore_use_variance)
 
 
 def find_supertypes(etype, types, include_self=False, bound=None,
@@ -584,7 +590,13 @@ def _compute_type_variable_assignments(
                             bound = t_param.bound
                         # If the type parameter has a bound, then find types
                         # that are subtypes to this bound.
-                        a_types = find_subtypes(bound, types, True)
+                        # Note that at this point we ignore use variance
+                        # to prevent creating invalid types, e.g.,
+                        #  * bound: Foo<X, X>
+                        #  * X is assigned to out Number
+                        #  * Prevent creating Foo<Long, Number>
+                        a_types = find_subtypes(bound, types, True,
+                                                ignore_use_variance=True)
                         for i, t in enumerate(a_types):
                             if isinstance(t, tp.ParameterizedType):
                                 a_types[i] = t.to_variance_free()
