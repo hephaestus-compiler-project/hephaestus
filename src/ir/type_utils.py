@@ -611,7 +611,7 @@ def _compute_type_variable_assignments(
                                     t_bound = v
                             assert t_bound is not None, (
                                 "Cannot find assignment for the bound of "
-                                "type parameter " + t_param
+                                "type parameter " + str(t_param)
                             )
 
                         if t_bound.is_wildcard() and t_bound.is_contravariant():
