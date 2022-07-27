@@ -2394,9 +2394,12 @@ class Generator():
                             if bound is None:
                                 continue
                             if bound.has_type_variables():
-                                bound = tp.substitute_type(
-                                    bound, type_map_var)
-                                if func_type_var_map.get(
+                                # Substitute the bound of the function type
+                                # parameter with type assignment map of the
+                                # receiver class.
+                                bound = tp.substitute_type(bound, type_map_var)
+                                is_wildcard = bound.is_wildcard()
+                                if is_wildcard or func_type_var_map.get(
                                         t_param, bound) != bound:
                                     continue
                                 if not bound.has_type_variables():
