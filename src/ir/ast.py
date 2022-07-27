@@ -659,8 +659,16 @@ class ClassDeclaration(Declaration):
                 new_p.param_type = types.substitute_type(p.get_type(),
                                                          type_var_map)
                 params.append(new_p)
+            type_params = []
+            for t_param in f.type_parameters:
+                new_tparam = deepcopy(t_param)
+                if new_tparam.bound:
+                    new_tparam.bound = types.substitute_type(t_param.bound,
+                                                             type_var_map)
+                type_params.append(new_tparam)
             ret_type = types.substitute_type(f.get_type(),
                                              type_var_map)
+            new_f.type_parameters = type_params
             new_f.params = params
             new_f.inferred_type = ret_type
             new_f.ret_type = ret_type
