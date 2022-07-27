@@ -823,6 +823,12 @@ class Generator():
 
     ##### Expressions #####
 
+    def _get_class_attributes(self, class_decl, attr_name):
+        class_decls = self.context.get_classes(self.namespace).values()
+        if attr_name == 'functions':
+            return class_decl.get_callable_functions(class_decls)
+        return class_decl.get_all_fields(class_decls)
+
     def generate_expr(self,
                       expr_type: tp.Type=None,
                       only_leaves=False,
@@ -2354,9 +2360,7 @@ class Generator():
                           self.function_type):
                 continue
             cls, type_map_var = self._get_class(var_type)
-            # TODO for functions we should also consider
-            # get_callable_functions(class_decls.values())
-            for attr in getattr(cls, attr_name):  # function or field
+            for attr in self._get_class_attributes(cls, attr_name):
                 attr_type = tp.substitute_type(
                     attr.get_type(), type_map_var)
                 if attr_type == self.bt_factory.get_void_type():
@@ -2398,12 +2402,16 @@ class Generator():
                                 # parameter with type assignment map of the
                                 # receiver class.
                                 bound = tp.substitute_type(bound, type_map_var)
-                                is_wildcard = bound.is_wildcard()
-                                if is_wildcard or func_type_var_map.get(
+                                if func_type_var_map.get(
                                         t_param, bound) != bound:
                                     continue
+                                if bound.is_wildcard():
+                                    type_var_bounds = None
+                                    break
                                 if not bound.has_type_variables():
                                     type_var_bounds[t_param] = bound
+                        if type_var_bounds is None:
+                            continue
                         type_var_bounds.update(type_map_var)
                         type_var_bounds.update(fun_type_var_map)
                         fun_type_var_map = tu.instantiate_parameterized_function(
@@ -2744,7 +2752,7 @@ class Generator():
 
         class_decls = []
         for c in self.context.get_classes(self.namespace).values():
-            for attr in getattr(c, attr_name):  # field or function
+            for attr in self._get_class_attributes(c, attr_name):
                 attr_type = attr.get_type()
                 if not attr_type:
                     continue
