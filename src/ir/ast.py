@@ -1,5 +1,5 @@
 # pylint: disable=dangerous-default-value
-from typing import List
+from typing import List, Set, Union
 from copy import deepcopy
 
 import src.ir.type_utils as tu
@@ -630,7 +630,7 @@ class ClassDeclaration(Declaration):
             if f.can_override
         ]
 
-    def get_callable_functions(self, class_decls) -> List[FunctionDeclaration]:
+    def get_callable_functions(self, class_decls) -> Set[FunctionDeclaration]:
         """All functions that can be called in instantiations of this class
         """
         # Get functions that are implemented in the current class
@@ -667,6 +667,48 @@ class ClassDeclaration(Declaration):
             functions.add(new_f)
 
         return functions
+
+    def get_all_fields(self, class_decls) -> Set[FieldDeclaration]:
+        """
+        All fields (including the inheritted ones) that can be accessed by
+        instantiations of this class.
+        """
+        fields = set(self.fields)
+        field_names = {f.name for f in fields}
+
+        if not self.superclasses:
+            return fields
+
+        # Retrieve fields from the inheritance chain.
+        super_cls = self.superclasses[0]
+        class_decl = tu.get_superclass_decl(super_cls, class_decls)
+
+        if not class_decl:
+            return fields
+
+        type_var_map = tu.get_superclass_type_var_map(super_cls, class_decl)
+
+        parent_fields = class_decl.get_all_fields(class_decls)
+
+        # substitute type variables in parent's functions
+        for f in parent_fields:
+            if f.name in field_names:
+                # We override this field in the current class
+                continue
+            new_f = deepcopy(f)
+            new_f.field_type = types.substitute_type(f.get_type(),
+                                                     type_var_map)
+            fields.add(new_f)
+
+        return fields
+
+    def get_all_attributes(self, class_decls) -> Set[Union[FunctionDeclaration, FieldDeclaration]]:
+        """
+        Get all attributes (fields + functions) from the inheritance chain
+        """
+        attributes = self.get_callable_functions(class_decls)
+        attributes.update(self.get_all_fields(class_decls))
+        return attributes
 
     def get_abstract_functions(self, class_decls) -> List[FunctionDeclaration]:
         # Get the abstract functions that are declared in the current class.

@@ -7,7 +7,7 @@ from src.ir.types import *
 from src.ir.kotlin_types import *
 
 
-def assert_abstract_funcs(actual, expected):
+def assert_declarations(actual, expected):
     assert len(actual) == len(expected)
     table = {f.name: f for f in expected}
     for f in actual:
@@ -183,8 +183,8 @@ def test_get_abstract_functions():
                             functions=[func2])
 
     assert cls1.get_abstract_functions([cls1, cls2]) == {func1}
-    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2]),
-                          {func1, func2})
+    assert_declarations(cls2.get_abstract_functions([cls1, cls2]),
+                        {func1, func2})
 
 
 def test_get_abstract_functions_chain():
@@ -199,18 +199,17 @@ def test_get_abstract_functions_chain():
                             functions=[func2])
 
     assert cls1.get_abstract_functions([cls1, cls2, cls3]) == {func1}
-    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
-                          {func1})
-    assert_abstract_funcs(cls3.get_abstract_functions([cls1, cls2, cls3]),
-                          {func1, func2})
+    assert_declarations(cls2.get_abstract_functions([cls1, cls2, cls3]),
+                        {func1})
+    assert_declarations(cls3.get_abstract_functions([cls1, cls2, cls3]),
+                        {func1, func2})
 
     override_func = deepcopy(func1)
     func1.body = IntegerConstant(1, Integer)
     cls2.functions = [func1]
-    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
-                          [])
-    assert_abstract_funcs(cls3.get_abstract_functions([cls1, cls2, cls3]),
-                          {func2})
+    assert_declarations(cls2.get_abstract_functions([cls1, cls2, cls3]), [])
+    assert_declarations(cls3.get_abstract_functions([cls1, cls2, cls3]),
+                        {func2})
 
 
 def test_get_abstract_functions_parameterized():
@@ -232,8 +231,8 @@ def test_get_abstract_functions_parameterized():
     exp_func1.params[0].param_type = String
     exp_func1.ret_type = String
     exp_func1.inferred_type = String
-    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2]),
-                          [exp_func1])
+    assert_declarations(cls2.get_abstract_functions([cls1, cls2]),
+                        [exp_func1])
 
 
 def test_get_abstract_functions_parameterized_chain():
@@ -262,5 +261,79 @@ def test_get_abstract_functions_parameterized_chain():
     exp_func1.params[0].param_type = actual_t
     exp_func1.ret_type = actual_t
     exp_func1.inferred_type = actual_t
-    assert_abstract_funcs(cls2.get_abstract_functions([cls1, cls2, cls3]),
-                          [exp_func1])
+    assert_declarations(cls2.get_abstract_functions([cls1, cls2, cls3]),
+                        [exp_func1])
+
+
+def test_get_fields():
+    field1 = FieldDeclaration("foo", String)
+    field2 = FieldDeclaration("bar", Any)
+    cls1 = ClassDeclaration("A", [], 0, fields=[field1])
+    cls2 = ClassDeclaration("B",
+                            [SuperClassInstantiation(cls1.get_type(), [])],
+                            fields=[field2])
+
+    assert cls1.get_all_fields([cls1, cls2]) == {field1}
+    assert_declarations(cls2.get_all_fields([cls1, cls2]),
+                        {field1, field2})
+
+    cls1 = ClassDeclaration("A", [], fields=[field1])
+    cls2 = ClassDeclaration("B",
+                            [SuperClassInstantiation(cls1.get_type(), [])],
+                            fields=[])
+    cls3 = ClassDeclaration("C",
+                            [SuperClassInstantiation(cls2.get_type(), [])],
+                            fields=[field2])
+
+    assert cls1.get_all_fields([cls1, cls2, cls3]) == {field1}
+    assert_declarations(cls2.get_all_fields([cls1, cls2, cls3]),
+                        {field1})
+    assert_declarations(cls3.get_all_fields([cls1, cls2, cls3]),
+                        {field1, field2})
+
+
+def test_get_fields_parameterized():
+    type_param1 = TypeParameter("T")
+    field1 = FieldDeclaration("foo", type_param1)
+    field2 = FieldDeclaration("bar", type_param1)
+    cls1 = ClassDeclaration("A", [],
+                            type_parameters=[type_param1],
+                            fields=[field1, field2])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([String]), [])],
+        fields=[]
+    )
+
+    assert cls1.get_all_fields([cls1, cls2]) == {field1, field2}
+    exp_field1 = deepcopy(field1)
+    exp_field2 = deepcopy(field2)
+    exp_field1.field_type = String
+    exp_field2.field_type = String
+    assert_declarations(cls2.get_all_fields([cls1, cls2]),
+                        [field1, field2])
+
+
+    cls1 = ClassDeclaration("A", [],
+                            type_parameters=[type_param1],
+                            fields=[field1])
+
+    t_con = TypeConstructor("Foo", [TypeParameter("T")])
+    type_param2 = TypeParameter("T")
+    field2 = FieldDeclaration("bar", type_param2)
+    t = t_con.new([type_param2])
+    cls2 = ClassDeclaration(
+        "B", [SuperClassInstantiation(cls1.get_type().new([t]), [])],
+        type_parameters=[type_param2],
+        fields=[field2]
+    )
+    field3 = FieldDeclaration("bar", String)
+    cls3 = ClassDeclaration(
+        "C", [SuperClassInstantiation(cls2.get_type().new([String]), [])],
+        fields=[field3]
+    )
+    actual_t = t_con.new([String])
+    exp_field = deepcopy(field1)
+    exp_field.field_type = actual_t
+    assert_declarations(cls2.get_all_fields([cls1, cls2, cls3]),
+                        [exp_field, field3])
+
