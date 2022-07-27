@@ -1004,7 +1004,8 @@ class Generator():
                     t, self.get_types(exclude_arrays=True),
                     variance_choices=variance_choices,
                     disable_variance_functions=self.disable_variance_functions,
-                    enable_pecs=self.enable_pecs)
+                    enable_pecs=self.enable_pecs
+                )
                 # Ok here we create a new field whose type corresponds
                 # to the type argument with which the class 'c' is
                 # instantiated.
@@ -2611,7 +2612,8 @@ class Generator():
                 only_regular=True, type_var_map=type_var_map,
                 enable_pecs=self.enable_pecs,
                 disable_variance_functions=self.disable_variance_functions,
-                variance_choices=variance_choices
+                variance_choices=variance_choices,
+                disable_variance=variance_choices is None
             )
             msg = ("Found parameterized class {} with TypeVarMap {} and "
                    "incomplete TypeVarMap {}")
@@ -2642,7 +2644,8 @@ class Generator():
                     cls.get_type(), self.get_types(),
                     only_regular=True, type_var_map=cls_type_var_map,
                     enable_pecs=self.enable_pecs,
-                    variance_choices=variance_choices
+                    variance_choices=variance_choices,
+                    disable_variance=variance_choices is None
                 )
         else:
             if is_parameterized_func:
@@ -2836,7 +2839,8 @@ class Generator():
                 type_var_map=type_map,
                 enable_pecs=self.enable_pecs,
                 disable_variance_functions=self.disable_variance_functions,
-                variance_choices=variance_choices
+                variance_choices=variance_choices,
+                disable_variance=variance_choices is None
             )
         else:
             cls_type, params_map = cls.get_type(), {}
@@ -2854,8 +2858,10 @@ class Generator():
                     attr.type_parameters, self.get_types(), only_regular=True,
                     type_var_map=params_map)
 
-            msg = "Generated a class {} with an attribute {} of type {}"
-            log(self.logger, msg.format(cls.name, attr_name, etype))
+            msg = ("Generated a class {} with an attribute {} of type {}; "
+                   "ClassTypeVarMap {}, FuncTypeVarMap {}")
+            log(self.logger, msg.format(cls.name, attr_name, etype,
+                                        params_map, func_type_var_map))
             return gu.AttrAccessInfo(cls_type, params_map, attr,
                                      func_type_var_map)
         return None
