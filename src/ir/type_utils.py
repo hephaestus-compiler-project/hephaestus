@@ -87,7 +87,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
                               types,
                               get_subtypes,
                               type_var_map={},
-                              ignore_use_variance=False):
+                              ignore_variance=False):
 
     bound = None
     if t_param.bound:
@@ -107,7 +107,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
     if not base_targ:
         return None
 
-    if t_param.is_invariant():
+    if t_param.is_invariant() or ignore_variance:
         t_args = [base_targ]
     elif t_param.is_covariant():
         t_args = _find_types(
@@ -118,7 +118,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
             base_targ, types,
             not get_subtypes, True, bound, concrete_only=True)
 
-    if not base_targ.is_wildcard() or ignore_use_variance:
+    if not base_targ.is_wildcard() or ignore_variance:
         return t_args
     if base_targ.is_covariant():
         new_types = _find_types(
@@ -138,7 +138,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
 
 
 def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
-                             ignore_use_variance=False):
+                             ignore_variance=False):
     type_var_map = OrderedDict()
     if etype.name == 'Array':
         types = [t for t in types
@@ -201,7 +201,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
             t_args = _find_candidate_type_args(t_param, etype.type_args[i],
                                                types, get_subtypes,
                                                type_var_map,
-                                               ignore_use_variance)
+                                               ignore_variance)
             if not t_args:
                 # We were not able to construct a subtype of the given
                 # parameterized type. Therefore, we give back the given
@@ -221,7 +221,7 @@ def to_type(stype, types):
 
 
 def _find_types(etype, types, get_subtypes, include_self, bound=None,
-                concrete_only=False, ignore_use_variance=False):
+                concrete_only=False, ignore_variance=False):
 
     # Otherwise, if we want to find the supertypes of a given type, `bound`
     # is interpreted a greatest bound.
@@ -242,7 +242,7 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
     if isinstance(etype, tp.ParameterizedType):
         t_set.add(_construct_related_types(
             etype, types, get_subtypes,
-            ignore_use_variance=ignore_use_variance))
+            ignore_variance=ignore_variance))
     if include_self:
         t_set.add(etype)
     else:
@@ -255,10 +255,10 @@ def _find_types(etype, types, get_subtypes, include_self, bound=None,
 
 def find_subtypes(etype, types, include_self=False, bound=None,
                   concrete_only=False,
-                  ignore_use_variance=False):
+                  ignore_variance=False):
     return _find_types(etype, types, get_subtypes=True,
                        include_self=include_self, concrete_only=concrete_only,
-                       ignore_use_variance=ignore_use_variance)
+                       ignore_variance=ignore_variance)
 
 
 def find_supertypes(etype, types, include_self=False, bound=None,
@@ -594,9 +594,10 @@ def _compute_type_variable_assignments(
                         # to prevent creating invalid types, e.g.,
                         #  * bound: Foo<X, X>
                         #  * X is assigned to out Number
-                        #  * Prevent creating Foo<Long, Number>
+                        #  * class Bar<X, T extends Foo<X, X>>
+                        #  * Prevent creating Bar<out Number, Foo<Long, Number>>
                         a_types = find_subtypes(bound, types, True,
-                                                ignore_use_variance=True)
+                                                ignore_variance=True)
                         for i, t in enumerate(a_types):
                             if isinstance(t, tp.ParameterizedType):
                                 a_types[i] = t.to_variance_free()
@@ -657,7 +658,7 @@ def _compute_type_variable_assignments(
             types = [t for t in types if t != c]
             cls_type, _ = instantiate_type_constructor(
                 cls_type, types, True, type_var_map,
-                None if variance_choices is None else {}
+                None if variance_choices is None else {},
             )
         variance = _get_type_arg_variance(t_param, variance_choices)
         t_arg = cls_type
@@ -736,7 +737,8 @@ def instantiate_parameterized_function(
     types = _get_available_types(None, types, only_regular, primitives=False)
     _, type_var_map = _compute_type_variable_assignments(
         type_parameters, types, type_var_map=type_var_map,
-        variance_choices=None, for_type_constructor=False)
+        variance_choices=None, for_type_constructor=False,
+    )
     return type_var_map
 
 
