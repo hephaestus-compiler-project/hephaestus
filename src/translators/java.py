@@ -408,7 +408,11 @@ class JavaTranslator(BaseTranslator):
     def visit_bottom_constant(self, node):
         return self.get_ident() + "{}{}null{}{}".format(
             '(' if self._parent_is_func_ref() else '',
-            '(' + self.get_type_name(node.t) + ') ' if node.t else '',
+            (
+                '(' + self.get_type_name(node.t) + ') '
+                if node.t and node.t != tp.Nothing
+                else ''
+            ),
             ')' if self._parent_is_func_ref() else '',
             ';' if self._parent_is_block() else ''
         )
