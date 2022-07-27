@@ -9,7 +9,7 @@ class TypeScriptCompiler(BaseCompiler):
     ERROR_REGEX = re.compile(
         r'[.\/]+(/[A-Za-z0-9_\-\/]+\.ts).*error.*(TS\d+): (.+)')
 
-    CRASH_REGEX = re.compile("123")
+    CRASH_REGEX = re.compile(r'(.+)(\n(\s+at .+))+')
 
     def __init__(self, input_name):
         super().__init__(input_name)
@@ -20,7 +20,7 @@ class TypeScriptCompiler(BaseCompiler):
         return ['tsc', '-v']
 
     def get_compiler_cmd(self):
-        return ['tsc --target es2020', os.path.join(
+        return ['tsc --target es2020 --pretty false', os.path.join(
             self.input_name, '**', '*.ts')]
 
     def analyze_compiler_output(self, output):
