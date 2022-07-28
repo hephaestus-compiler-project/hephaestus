@@ -371,7 +371,8 @@ def check_oracle(dirname, oracles):
     produce the expected results (and the reason why).
     """
     filename = os.path.join(dirname, 'src')
-    compiler = COMPILERS[cli_args.language](filename)
+    filter_patterns = utils.path2set(cli_args.error_filter_patterns)
+    compiler = COMPILERS[cli_args.language](filename, filter_patterns)
     command_args = compiler.get_compiler_cmd()
     # At this point, we run the compiler
     _, err = run_command(command_args)
@@ -382,7 +383,7 @@ def check_oracle(dirname, oracles):
 
     # Analyze the compiler output and check whether there are programs
     # that the compiler did not manage to compile.
-    failed = compiler.analyze_compiler_output(err)
+    failed, _ = compiler.analyze_compiler_output(err)
     if compiler.crash_msg:
         # We just found a compiler crash.
         shutil.rmtree(dirname)

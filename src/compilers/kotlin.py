@@ -1,4 +1,3 @@
-from collections import defaultdict
 import re
 
 from src.compilers.base import BaseCompiler
@@ -12,9 +11,8 @@ class KotlinCompiler(BaseCompiler):
         re.MULTILINE
     )
 
-    def __init__(self, input_name):
-        super().__init__(input_name)
-        self.crash_msg = None
+    def __init__(self, input_name, filter_patterns=None):
+        super().__init__(input_name, filter_patterns)
 
     @classmethod
     def get_compiler_version(cls):
@@ -24,17 +22,8 @@ class KotlinCompiler(BaseCompiler):
         return ['kotlinc', self.input_name, '-include-runtime', '-d',
                 'program.jar']
 
-    def analyze_compiler_output(self, output):
-        self.crashed = None
-        failed = defaultdict(list)
-        matches = re.findall(self.ERROR_REGEX, output)
-        for match in matches:
-            filename = match[0]
-            error_msg = match[1]
-            failed[filename].append(error_msg)
+    def get_filename(self, match):
+        return match[0]
 
-        match = re.search(self.CRASH_REGEX, output)
-        if match and not matches:
-            self.crash_msg = ':'.join(match.groups())
-            return None
-        return failed
+    def get_error_msg(self, match):
+        return match[1]

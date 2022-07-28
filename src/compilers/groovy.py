@@ -1,4 +1,3 @@
-from collections import defaultdict
 import re
 import os
 
@@ -13,10 +12,9 @@ class GroovyCompiler(BaseCompiler):
 
     STACKOVERFLOW_REGEX = re.compile(r'(.*java.lang.StackOverflowError)(.*)')
 
-    def __init__(self, input_name):
+    def __init__(self, input_name, filter_patterns=None):
         input_name = os.path.join(input_name, '*', '*.groovy')
-        super().__init__(input_name)
-        self.crash_msg = None
+        super().__init__(input_name, filter_patterns)
 
     @classmethod
     def get_compiler_version(cls):
@@ -25,23 +23,17 @@ class GroovyCompiler(BaseCompiler):
     def get_compiler_cmd(self):
         return ['groovyc', '--compile-static', self.input_name]
 
+    def get_filename(self, match):
+        return match[0]
+
+    def get_error_msg(self, match):
+        return match[1]
+
     def analyze_compiler_output(self, output):
-        self.crashed = None
-        failed = defaultdict(list)
-        matches = re.findall(self.ERROR_REGEX, output)
-        for match in matches:
-            filename = match[0]
-            error_msg = match[1]
-            failed[filename].append(error_msg)
-
-        crash_match = re.search(self.CRASH_REGEX, output)
-        if crash_match and not matches:
-            self.crash_msg = output
-            return None
-
+        failed, matches = super().analyze_compiler_output(output)
         stack_overflow = re.search(self.STACKOVERFLOW_REGEX, output)
         if stack_overflow and not matches:
             self.crash_msg = output
-            return None
+            return None, matches
 
-        return failed
+        return failed, matches

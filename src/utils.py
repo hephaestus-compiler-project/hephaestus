@@ -94,9 +94,7 @@ def save_text(path, text):
         out.write(text)
 
 
-def get_reserved_words(resource_path, language):
-    filename = "{}_keywords".format(language)
-    path = os.path.join(resource_path, filename)
+def path2set(path):
     if os.path.isfile(path):
         with open(path, 'r') as f:
             return {
@@ -105,6 +103,12 @@ def get_reserved_words(resource_path, language):
             }
     else:
         return set()
+
+
+def get_reserved_words(resource_path, language):
+    filename = "{}_keywords".format(language)
+    path = os.path.join(resource_path, filename)
+    return path2set(path)
 
 
 class RandomUtils():

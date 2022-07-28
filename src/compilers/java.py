@@ -1,4 +1,3 @@
-from collections import defaultdict
 import re
 import os
 
@@ -12,10 +11,9 @@ class JavaCompiler(BaseCompiler):
 
     CRASH_REGEX = re.compile(r'(java\.lang.*)\n(.*)')
 
-    def __init__(self, input_name):
+    def __init__(self, input_name, filter_patterns=None):
         input_name = os.path.join(input_name, '*', '*.java')
-        super().__init__(input_name)
-        self.crash_msg = None
+        super().__init__(input_name, filter_patterns)
 
     @classmethod
     def get_compiler_version(cls):
@@ -24,17 +22,8 @@ class JavaCompiler(BaseCompiler):
     def get_compiler_cmd(self):
         return ['javac', '-nowarn', self.input_name]
 
-    def analyze_compiler_output(self, output):
-        self.crashed = None
-        failed = defaultdict(list)
-        matches = re.findall(self.ERROR_REGEX, output)
-        for match in matches:
-            filename = match[0]
-            error_msg = match[1]
-            failed[filename].append(error_msg)
+    def get_filename(self, match):
+        return match[0]
 
-        crash_match = re.search(self.CRASH_REGEX, output)
-        if crash_match and not matches:
-            self.crash_msg = output
-            return None
-        return failed
+    def get_error_msg(self, match):
+        return match[1]

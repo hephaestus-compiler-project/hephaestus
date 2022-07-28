@@ -161,6 +161,13 @@ parser.add_argument(
     action="store_true",
     help="Disable parameterized functions"
 )
+parser.add_argument(
+    "--error-filter-patterns",
+    default=None,
+    type=str,
+    help=("A file containing regular expressions for filtering compiler error "
+          "messages")
+)
 
 
 args = parser.parse_args()
