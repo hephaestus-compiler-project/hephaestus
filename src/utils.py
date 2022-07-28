@@ -8,9 +8,11 @@ import sys
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(Singleton, cls).__call__(
+                *args, **kwargs)
         return cls._instances[cls]
 
 
@@ -92,6 +94,19 @@ def save_text(path, text):
         out.write(text)
 
 
+def get_reserved_words(resource_path, language):
+    filename = "{}_keywords".format(language)
+    path = os.path.join(resource_path, filename)
+    if os.path.isfile(path):
+        with open(path, 'r') as f:
+            return {
+                line.strip()
+                for line in f.readlines()
+            }
+    else:
+        return set()
+
+
 class RandomUtils():
 
     resource_path = os.path.join(os.path.split(__file__)[0], "resources")
@@ -115,6 +130,11 @@ class RandomUtils():
         word = self.r.choice(tuple(self.WORDS))
         self.WORDS.remove(word)
         return word
+
+    def remove_reserved_words(self, language):
+        reserved_words = get_reserved_words(self.resource_path, language)
+        self.INITIAL_WORDS = self.INITIAL_WORDS - reserved_words
+        self.WORDS = self.WORDS - reserved_words
 
     def integer(self, min_int=0, max_int=10):
         return self.r.randint(min_int, max_int)

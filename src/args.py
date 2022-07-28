@@ -182,6 +182,7 @@ args.options = {
         "timeout": args.timeout
     }
 }
+random.remove_reserved_words(args.language)
 
 
 # Set configurations
