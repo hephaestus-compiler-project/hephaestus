@@ -70,7 +70,9 @@ class TypeScriptTranslator(BaseTranslator):
 
     def type_arg2str(self, t_arg):
         # TypeScript does not have a Wildcard type
-        return self.get_type_name(t_arg)
+        if not t_arg.is_wildcard():
+            return self.get_type_name(t_arg)
+        return "unknown"
 
     def get_type_name(self, t):
         t_constructor = getattr(t, 't_constructor', None)

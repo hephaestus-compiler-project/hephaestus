@@ -11,9 +11,8 @@ class TypeScriptCompiler(BaseCompiler):
 
     CRASH_REGEX = re.compile(r'(.+)(\n(\s+at .+))+')
 
-    def __init__(self, input_name):
-        super().__init__(input_name)
-        self.crash_msg = None
+    def __init__(self, input_name, filter_patterns=None):
+        super().__init__(input_name, filter_patterns)
 
     @classmethod
     def get_compiler_version(cls):
@@ -23,17 +22,8 @@ class TypeScriptCompiler(BaseCompiler):
         return ['tsc --target es2020 --pretty false', os.path.join(
             self.input_name, '**', '*.ts')]
 
-    def analyze_compiler_output(self, output):
-        self.crashed = None
-        failed = defaultdict(list)
-        matches = re.findall(self.ERROR_REGEX, output)
-        for match in matches:
-            filename = match[0]
-            error_msg = match[2]
-            failed[filename].append(error_msg)
+    def get_filename(self, match):
+        return match[0]
 
-        crash_match = re.search(self.CRASH_REGEX, output)
-        if crash_match and not matches:
-            self.crash_msg = output
-            return None
-        return failed
+    def get_error_msg(self, match):
+        return f"{match[1]}{match[2]}"

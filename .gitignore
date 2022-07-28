@@ -144,4 +144,5 @@ dmypy.json
 
 # Local Folder to Store Possible Bugs
 possible_bugs/
+patterns.txt
 
