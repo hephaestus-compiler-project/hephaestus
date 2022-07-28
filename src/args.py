@@ -237,7 +237,7 @@ def validate_args(args):
         sys.exit("You cannot use --examine option without the --replay option")
 
     if args.language == "typescript" and not args.disable_use_site_variance:
-        sys.exit("\nTypeScript does not have use-site variance.\nRun Hephaestus again with the flag --disable-use-site-variance.")
+        sys.exit("\nTypeScript does not support use-site variance.\nRun Hephaestus again with the flag --disable-use-site-variance.")
 
 
 def pre_process_args(args):

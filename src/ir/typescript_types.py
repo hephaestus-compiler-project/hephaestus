@@ -7,7 +7,7 @@ import src.ir.types as tp
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_language(self):
         return "typescript"
-    
+
     def get_builtin(self):
         return TypeScriptBuiltin
 
@@ -19,7 +19,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_number_type(self):
         return NumberType(primitive=False)
-    
+
     def get_boolean_type(self):
         return BooleanType(primitive=False)
 
@@ -28,7 +28,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_string_type(self):
         return StringType(primitive=False)
-    
+
     def get_big_integer_type(self):
         return BigIntegerType(primitive=False)
 
@@ -37,10 +37,10 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_function_type(self, nr_parameters=0):
         return FunctionType(nr_parameters)
-    
+
     def get_object_type(self):
         return ObjectLowercaseType()
-    
+
     def get_primitive_types(self):
         return [
             NumberType(primitive=True),
@@ -76,12 +76,12 @@ class TypeScriptBuiltin(Builtin):
     def __init__(self, name, primitive):
         super().__init__(name)
         self.primitive = primitive
-    
+
     def __str__(self):
         if not self.is_primitive():
             return str(self.name) + "(typescript-builtin)"
         return str(self.name).lower() + "(typescript-primitive)"
-    
+
     def is_primitive(self):
         return self.primitive
 
@@ -106,30 +106,31 @@ class NumberType(TypeScriptBuiltin):
     def __init__(self, name="Number", primitive=False):
         super().__init__(name, primitive)
         self.supertypes.append(ObjectType())
-    
+
     def is_assignable(self, other):
-        return type(other) is NumberType
+        return isinstance(other, NumberType)
 
     def box_type(self):
         return NumberType(self.name, primitive=False)
-    
+
     def get_name(self):
         if self.is_primitive:
             return "number"
         return super().get_name()
 
+
 class BigIntegerType(TypeScriptBuiltin):
     def __init__(self, name="BigInt", primitive=False):
         super().__init__(name, primitive)
         self.supertypes.append(ObjectType())
-    
+
     def is_assignable(self, other):
         assignable_types= [BigIntegerType]
         return self.is_subtype(other) or type(other) in assignable_types
-    
+
     def box_type(self):
         return BigIntegerType(self.name, primitive=False)
-    
+
     def get_name(self):
         if self.is_primitive:
             return "bigint"
@@ -140,10 +141,10 @@ class BooleanType(TypeScriptBuiltin):
     def __init__(self, name="Boolean", primitive=False):
         super().__init__(name, primitive)
         self.supertypes.append(ObjectType())
-    
+
     def box_type(self):
         return BooleanType(self.name, primitive=False)
-    
+
     def get_name(self):
         if self.is_primitive:
             return "boolean"
@@ -152,12 +153,12 @@ class BooleanType(TypeScriptBuiltin):
 
 class StringType(TypeScriptBuiltin):
     def __init__(self, name="String", primitive=False):
-        super().__init__(name ,primitive)
+        super().__init__(name , primitive)
         self.supertypes.append(ObjectType())
-    
+
     def box_type(self):
         return StringType(self.name, primitive=False)
-    
+
     def get_name(self):
         if self.is_primitive:
             return "string"

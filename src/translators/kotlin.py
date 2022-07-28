@@ -1,13 +1,6 @@
 from src.ir import ast, kotlin_types as kt, types as tp, type_utils as tu
 from src.translators.base import BaseTranslator
-
-
-def append_to(visit):
-    def inner(self, node):
-        self._nodes_stack.append(node)
-        res = visit(self, node)
-        self._nodes_stack.pop()
-    return inner
+from src.translators.utils import append_to
 
 
 class KotlinTranslator(BaseTranslator):

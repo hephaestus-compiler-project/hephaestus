@@ -1,20 +1,8 @@
-from ast import literal_eval
-from cgitb import reset
-import enum
-from gc import is_finalized
-from json.encoder import py_encode_basestring
-from shutil import register_archive_format
-from src.ir import ast, typescript_types as tst, types as tp, type_utils as tu
+from src.ir import ast, typescript_types as tst
 from src.transformations.base import change_namespace
 from src.ir.context import get_decl
 from src.translators.base import BaseTranslator
-
-def append_to(visit):
-    def inner(self, node):
-        self._nodes_stack.append(node)
-        res = visit(self, node)
-        self._nodes_stack.pop()
-    return inner
+from src.translators.utils import append_to
 
 
 class TypeScriptTranslator(BaseTranslator):
@@ -35,7 +23,7 @@ class TypeScriptTranslator(BaseTranslator):
         self.context = None
         self._namespace: tuple = ast.GLOBAL_NAMESPACE
         self._nodes_stack = [None]
-    
+
     def _reset_state(self):
         self._children_res = []
         self.ident = 0
@@ -43,42 +31,55 @@ class TypeScriptTranslator(BaseTranslator):
         self.is_void = False
         self.is_lambda = False
         self.current_class = None
-        self.current_function
+        self.current_function = None
         self.context = None
         self._namespace = ast.GLOBAL_NAMESPACE
         self._nodes_stack = [None]
-    
+
+    def needs_this_prefix(self, node, decl):
+        func_name = tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]
+        if node.receiver is not None:
+            return False
+
+        if decl is None:
+            return True # Function is an inherited method
+
+        if isinstance(decl, ast.FunctionDeclaration) and decl.is_class_method():
+            return True # Function is method of current class
+
+        if (isinstance(decl, ast.FieldDeclaration) and
+            decl.get_type().name[:-1] == func_name):
+
+            return True # Function is callable field
+        return False
     @staticmethod
     def get_filename():
         return TypeScriptTranslator.filename
-    
+
     @staticmethod
     def get_incorrect_filename():
         return TypeScriptTranslator.incorrect_filename
-    
+
     def type_arg2str(self, t_arg):
         # TypeScript does not have a Wildcard type
-        a = self.get_type_name(t_arg)
         return self.get_type_name(t_arg)
-    
+
     def get_type_name(self, t):
         t_constructor = getattr(t, 't_constructor', None)
         if not t_constructor:
             return t.get_name()
 
-        if t_constructor.name.startswith("Function"):
-            param = ['p', 1]
-            res = "("
-
-            if len(t.type_args) == 1:
-                res += ") => " + self.type_arg2str(t.type_args[-1])
-                return res
-            
-            for ta in t.type_args[:-1]:
-                res += param[0] + str(param[1]) + ": " + self.type_arg2str(ta) + ", "
-                param[1] += 1
-            res = res[:-2] # removes , from end of string
-            res += ") => " + self.type_arg2str(t.type_args[-1])
+        func_name = tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]
+        if t_constructor.name.startswith(func_name):
+            param_types = t.type_args[:-1]
+            ret_type = t.type_args[-1]
+            res = "({}) => {}".format(
+                ",".join([
+                    "p" + str(i) + ": " + str(self.type_arg2str(pt))
+                    for i, pt in enumerate(param_types)
+                ]),
+                self.type_arg2str(ret_type)
+            )
             return res
 
         return "{}<{}>".format(t.name, ", ".join([self.type_arg2str(ta)
@@ -91,7 +92,7 @@ class TypeScriptTranslator(BaseTranslator):
         res = self._children_res[-len_c:]
         self._children_res = self._children_res[:-len_c]
         return res
-    
+
     def visit_program(self, node):
         self.context = node.context
         self.class_decls = [decl for decl in node.declarations
@@ -102,9 +103,10 @@ class TypeScriptTranslator(BaseTranslator):
         res = '\n\n'.join(self.pop_children_res(children))
         self.program = (
             res if self.package is None
-            else "module {} {{\n{}\n}}".format(self.package, res)
+            else f"module {self.package} {{\n{res}\n}}"
         )
-    
+        self._reset_state()
+
     @append_to
     def visit_block(self, node):
         children = node.children()
@@ -117,7 +119,7 @@ class TypeScriptTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        
+
         if is_interface:
             self.is_interface = is_interface
             self.is_lambda = is_lambda
@@ -142,7 +144,6 @@ class TypeScriptTranslator(BaseTranslator):
         self.is_lambda = is_lambda
         self._children_res.append(res)
 
-
     @append_to
     def visit_super_instantiation(self, node):
         old_ident = self.ident
@@ -156,7 +157,7 @@ class TypeScriptTranslator(BaseTranslator):
         if node.args is not None:
             children_res = [c.strip() for c in children_res]
             super_call = "super(" + ", ".join(children_res) + ")"
-        
+
         res = (class_type, super_call)
 
         self.ident = old_ident
@@ -175,18 +176,13 @@ class TypeScriptTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        
-        
-
         field_res = [children_res[i]
                      for i, _ in enumerate(node.fields)]
         len_fields = len(field_res)
-
         field_names = [field.name  for field in node.fields]
-        
+
         superclasses_res = [children_res[i + len_fields]
                             for i, _ in enumerate(node.superclasses)]
-        
         len_supercls = len(superclasses_res)
 
         supertype, supercall = None, None
@@ -194,7 +190,7 @@ class TypeScriptTranslator(BaseTranslator):
             supertype, supercall = superclasses_res[0]
 
         function_res = [children_res[i + len_fields + len_supercls]
-                        for i, _ in enumerate(node.functions)]      
+                        for i, _ in enumerate(node.functions)]
         len_functions = len(function_res)
 
         if node.is_abstract() and supertype is not None and node.superclasses[0].args is None:
@@ -208,15 +204,11 @@ class TypeScriptTranslator(BaseTranslator):
             abstract_funcs = [f for f in node.get_abstract_functions(self.class_decls)
                               if f.name not in [f.name for f in node.functions]]
 
-            #implemented_funcs = [f.name for f in node.functions]
-            #supertype_funcs = [f for f in abstract_funcs if f.name not in implemented_funcs]
-
             for func in abstract_funcs:
                 func.accept(self)
             supertype_func_res = self.pop_children_res(abstract_funcs)
 
             function_res += supertype_func_res
-
 
         type_parameters_res = ", ".join(
             children_res[len_fields + len_supercls + len_functions:])
@@ -232,7 +224,7 @@ class TypeScriptTranslator(BaseTranslator):
             res = "{}<{}>".format(res, type_parameters_res)
         if supertype is not None:
             inheritance = (
-                " extends " 
+                " extends "
                 if node.is_interface() or node.superclasses[0].args is not None
                 else " implements "
             )
@@ -251,7 +243,7 @@ class TypeScriptTranslator(BaseTranslator):
             stripped_fields = [field.strip() for field in field_res]
             for var_name in field_names:
                 prefix = "\n" + self.ident * " "
-                body += prefix + "this." + var_name + " = " + var_name 
+                body += prefix + "this." + var_name + " = " + var_name
             body += "\n" + class_ident*" " + "}\n"
             res += " "*class_ident + "constructor({f}) {b}".format(
                 f = ", ".join(stripped_fields),
@@ -260,12 +252,10 @@ class TypeScriptTranslator(BaseTranslator):
             self.ident = class_ident
 
         if field_res:
-            res += "\n\n".join(
-                field_res) + "\n"
+            res += "\n\n".join(field_res) + "\n"
         if function_res:
-            res += "\n\n".join(
-                function_res) + "\n"
-        
+            res += "\n\n".join(function_res) + "\n"
+
         res += old_ident*" " + "\n}"
 
         self.ident = old_ident
@@ -291,10 +281,10 @@ class TypeScriptTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
         var_type = "const " if node.is_final else "let "
         res = prefix + var_type + node.name
-        
+
         if node.var_type is not None:
             res += ": " + self.get_type_name(node.var_type)
-        
+
         res += " = " + children_res[0]
         self.ident = old_ident
         self._children_res.append(res)
@@ -343,7 +333,6 @@ class TypeScriptTranslator(BaseTranslator):
     def visit_func_decl(self, node):
         old_ident = self.ident
         self.ident += 2
-        current_function = self.current_function
         prev_function = self.current_function
         self.current_function = node
         is_in_class = node.func_type == ast.FunctionDeclaration.CLASS_METHOD
@@ -369,7 +358,7 @@ class TypeScriptTranslator(BaseTranslator):
         len_type_params = len(node.type_parameters)
         type_parameters_res = ", ".join(
             children_res[len_params:len_type_params + len_params])
-        
+
         body_res = children_res[-1] if node.body else ''
 
         prefix = " " * old_ident
@@ -381,14 +370,12 @@ class TypeScriptTranslator(BaseTranslator):
 
         type_params = (
             "<" + type_parameters_res + ">" if type_parameters_res else "")
-        
-        res = ""
 
         res = prefix + node.name + type_params + "(" + ", ".join(
             param_res) + ")"
         if node.ret_type:
             res += ": " + self.get_type_name(node.ret_type)
-        if body_res and isinstance(node.body, ast.Block):                
+        if body_res and isinstance(node.body, ast.Block):
             res += " \n" + body_res
         elif body_res:
             body_res = "return " + body_res.strip() \
@@ -430,9 +417,9 @@ class TypeScriptTranslator(BaseTranslator):
         if not is_expression:
             body_res = "{" + body_res + " "*old_ident + "}\n"
 
-
-        res = "({params}) => {body}".format(
+        res = "({params}): {ret} => {body}".format(
             params=", ".join(param_res),
+            ret=self.get_type_name(node.ret_type),
             body=body_res,
         )
 
@@ -445,7 +432,7 @@ class TypeScriptTranslator(BaseTranslator):
         bottom = "(undefined as unknown)"
 
         if node.t:
-            bottom =  "(" + bottom + " as {})".format(
+            bottom = "(" + bottom + " as {})".format(
                 self.get_type_name(node.t)
             )
         else:
@@ -469,8 +456,7 @@ class TypeScriptTranslator(BaseTranslator):
     @append_to
     def visit_char_constant(self, node):
         # Symbol type in TypeScript
-        self._children_res.append("Symbol(\'{}\')".format(
-            node.literal))
+        self._children_res.append(f"'{node.literal}'")
 
     @append_to
     def visit_string_constant(self, node):
@@ -483,8 +469,7 @@ class TypeScriptTranslator(BaseTranslator):
     @append_to
     def visit_array_expr(self, node):
         if not node.length:
-            self._children_res.append("[]")
-            return
+            return self._children_res.append("[]")
         old_ident = self.ident
         self.ident = 0
         children = node.children()
@@ -495,20 +480,14 @@ class TypeScriptTranslator(BaseTranslator):
         return self._children_res.append("[{}]".format(
             ", ".join(children_res)))
 
-
     @append_to
     def visit_variable(self, node):
         res = node.name
-        
         decl = get_decl(self.context, self._namespace, node.name)
-
         assert decl is not None
-
         _, decl = decl
-
         if isinstance(decl, ast.FieldDeclaration):
             res = "this." + res
-        
         self._children_res.append(" " * self.ident + res)
 
     @append_to
@@ -544,23 +523,19 @@ class TypeScriptTranslator(BaseTranslator):
         prev_namespace = self._namespace
         children = node.children()
 
-
         cond = children[0]
         cond.accept(self)
-
         true_branch = children[1]
         false_branch = children[2]
 
-
         if isinstance(cond, ast.Is):
             self._namespace = prev_namespace + ('true_block',)
-            true_branch.accept(self) 
+            true_branch.accept(self)
             self._namespace = prev_namespace + ('false_block',)
             false_branch.accept(self)
         else:
             true_branch.accept(self)
             false_branch.accept(self)
-
         self._namespace = prev_namespace
 
         children_res = self.pop_children_res(children)
@@ -568,7 +543,7 @@ class TypeScriptTranslator(BaseTranslator):
             " "*old_ident, children_res[0].strip(),
             children_res[1].strip(),
             children_res[2].strip())
-        
+
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -621,17 +596,6 @@ class TypeScriptTranslator(BaseTranslator):
 
     @append_to
     def visit_func_ref(self, node):
-        def needs_this_prefix(node, decl):
-            if node.receiver is not None:
-                return False
-            elif decl is None:
-                return True # Function is an inherited method
-            elif isinstance(decl, ast.FunctionDeclaration) and decl.is_class_method():
-                return True # Function is method of current class
-            elif isinstance(decl, ast.FieldDeclaration) and decl.get_type().name[:-1] == tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]:
-                return True # Function is callable field
-            return False
-
         old_ident = self.ident
 
         self.ident = 0
@@ -649,30 +613,21 @@ class TypeScriptTranslator(BaseTranslator):
         if decl is not None:
             _, decl = decl
 
-        if needs_this_prefix(node, decl):
+        if self.needs_this_prefix(node, decl):
             this_prefix += "this"
-            # FIXME Must check signatures and not names
+            # TODO Must check signatures and not names
             # (for overwritten + overloaded functions)
 
-        res = "{}{}{}".format(" "*self.ident, "({}).".format(this_prefix) if this_prefix else "", node.func)
+        res = "{}{}{}".format(
+                " "*self.ident,
+                "({}).".format(this_prefix) if this_prefix else "",
+                node.func
+            )
 
         self._children_res.append(res)
 
     @append_to
     def visit_func_call(self, node):
-        def needs_this_prefix(node, decl):
-            if node.receiver is not None:
-                return False
-
-            elif decl is None: # Function is an inherited method
-                return True
-            elif isinstance(decl, ast.FunctionDeclaration) and decl.is_class_method(): # Function is method of current class
-                return True
-            elif isinstance(decl, ast.FieldDeclaration) and decl.get_type().name[:-1] == tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]: # Function is callable field
-                return True
-            
-            return False
-
         old_ident = self.ident
         self.ident = 0
         children = node.children()
@@ -687,7 +642,7 @@ class TypeScriptTranslator(BaseTranslator):
                 [self.get_type_name(t) for t in node.type_args]) \
                 + ">"
             )
-        
+
         this_prefix = ""
 
         decl = get_decl(self.context, self._namespace, node.name)
@@ -695,10 +650,10 @@ class TypeScriptTranslator(BaseTranslator):
         if decl is not None:
             _, decl = decl
 
-        if needs_this_prefix(node, decl):
-                this_prefix += "this."
-                # FIXME Must check signatures and not names
-                # (for overwritten + overloaded functions)
+        if self.needs_this_prefix(node, decl):
+            this_prefix += "this."
+            # FIXME Must check signatures and not names
+            # (for overwritten + overloaded functions)
 
         if node.receiver:
             receiver_expr = children_res[0]
@@ -708,7 +663,7 @@ class TypeScriptTranslator(BaseTranslator):
                 ", ".join(children_res[1:]))
         else:
             res = "{}{}{}{}({})".format(
-                " " * self.ident, 
+                " " * self.ident,
                 this_prefix, node.func, type_args,
                 ", ".join(children_res))
         self._children_res.append(res)
