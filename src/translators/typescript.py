@@ -42,16 +42,17 @@ class TypeScriptTranslator(BaseTranslator):
             return False
 
         if decl is None:
-            return True # Function is an inherited method
+            return True  # Function is an inherited method
 
         if isinstance(decl, ast.FunctionDeclaration) and decl.is_class_method():
-            return True # Function is method of current class
+            return True  # Function is method of current class
 
         if (isinstance(decl, ast.FieldDeclaration) and
             decl.get_type().name[:-1] == func_name):
 
-            return True # Function is callable field
+            return True  # Function is callable field
         return False
+
     @staticmethod
     def get_filename():
         return TypeScriptTranslator.filename
@@ -193,7 +194,8 @@ class TypeScriptTranslator(BaseTranslator):
                         for i, _ in enumerate(node.functions)]
         len_functions = len(function_res)
 
-        if node.is_abstract() and supertype is not None and node.superclasses[0].args is None:
+        if node.is_abstract() and supertype is not None and (
+                node.superclasses[0].args is None):
             # TypeScript requires abstract classes that implement interfaces
             # to either implement all methods
             # or to re-write the signatures with "abstract" in front.
@@ -201,8 +203,10 @@ class TypeScriptTranslator(BaseTranslator):
             # interface supertype that the abstract class (node)
             # implements and re-visits its FunctionDeclaration children
             # in order to add them to its function_res
-            abstract_funcs = [f for f in node.get_abstract_functions(self.class_decls)
-                              if f.name not in [f.name for f in node.functions]]
+            abstract_funcs = [
+                f for f in node.get_abstract_functions(self.class_decls)
+                if f.name not in [f.name for f in node.functions]
+            ]
 
             for func in abstract_funcs:
                 func.accept(self)
@@ -246,8 +250,8 @@ class TypeScriptTranslator(BaseTranslator):
                 body += prefix + "this." + var_name + " = " + var_name
             body += "\n" + class_ident*" " + "}\n"
             res += " "*class_ident + "constructor({f}) {b}".format(
-                f = ", ".join(stripped_fields),
-                b = body,
+                f=", ".join(stripped_fields),
+                b=body,
             )
             self.ident = class_ident
 
@@ -323,8 +327,10 @@ class TypeScriptTranslator(BaseTranslator):
 
         if len(children):
             children_res = self.pop_children_res(children)
-            res += ("" if self.current_function.body is None
-                     else " = " + children_res[0])
+            res += (
+                "" if self.current_function.body is None
+                else " = " + children_res[0]
+            )
 
         self._children_res.append(res)
 
@@ -378,12 +384,11 @@ class TypeScriptTranslator(BaseTranslator):
         if body_res and isinstance(node.body, ast.Block):
             res += " \n" + body_res
         elif body_res:
-            body_res = "return " + body_res.strip() \
-                        if not self.is_void \
-                        else body_res.strip()
-            res += "{\n" + " "*self.ident + \
-                    body_res + "\n" + " "*old_ident + \
-                    "}"
+            body_res = ("return " + body_res.strip()
+                        if not self.is_void
+                        else body_res.strip())
+            res += "{\n" + " " * self.ident + \
+                body_res + "\n" + " " * old_ident + "}"
 
         self.ident = old_ident
         self.current_function = prev_function
@@ -411,7 +416,7 @@ class TypeScriptTranslator(BaseTranslator):
         self.is_lambda = True
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        param_res = [children_res[i] for i, _ in enumerate (node.params)]
+        param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1] if node.body else ''
 
         if not is_expression:
@@ -590,7 +595,7 @@ class TypeScriptTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
         self.ident = old_ident
         receiver_expr = (children_res[0] if children_res[0]
-                        else "this")
+                         else "this")
         res = "{}.{}".format(receiver_expr, node.field)
         self._children_res.append(res)
 
@@ -637,10 +642,9 @@ class TypeScriptTranslator(BaseTranslator):
         children_res = self.pop_children_res(children)
         type_args = ""
         if not node.can_infer_type_args and node.type_args:
-            type_args +=  (
+            type_args += (
                 "<" + ",".join(
-                [self.get_type_name(t) for t in node.type_args]) \
-                + ">"
+                    [self.get_type_name(t) for t in node.type_args]) + ">"
             )
 
         this_prefix = ""
@@ -683,7 +687,8 @@ class TypeScriptTranslator(BaseTranslator):
         if decl is not None:
             _, decl = decl
 
-        if node.receiver or decl is None or isinstance(decl, ast.FieldDeclaration):
+        if node.receiver or decl is None or isinstance(
+                decl, ast.FieldDeclaration):
             receiver_expr = (children_res[0] if node.receiver else "this")
             expr = children_res[1] if node.receiver else children_res[0]
             res = "{}{}.{} = {}".format(

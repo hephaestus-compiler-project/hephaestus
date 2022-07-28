@@ -4,6 +4,7 @@ from src.ir.types import Builtin
 import src.ir.builtins as bt
 import src.ir.types as tp
 
+
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_language(self):
         return "typescript"
@@ -90,6 +91,7 @@ class ObjectType(TypeScriptBuiltin):
     def __init__(self, name="Object"):
         super().__init__(name, False)
 
+
 class ObjectLowercaseType(TypeScriptBuiltin):
     def __init__(self, name="object"):
         super().__init__(name, False)
@@ -153,7 +155,7 @@ class BooleanType(TypeScriptBuiltin):
 
 class StringType(TypeScriptBuiltin):
     def __init__(self, name="String", primitive=False):
-        super().__init__(name , primitive)
+        super().__init__(name, primitive)
         self.supertypes.append(ObjectType())
 
     def box_type(self):
