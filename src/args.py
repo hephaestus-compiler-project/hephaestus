@@ -163,7 +163,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--error-filter-patterns",
-    default=None,
+    default='',
     type=str,
     help=("A file containing regular expressions for filtering compiler error "
           "messages")
