@@ -137,3 +137,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VSCode / pylint
+.vscode/
+./pylintrc
+
+# Local Folder to Store Possible Bugs
+possible_bugs/
+

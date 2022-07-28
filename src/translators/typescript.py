@@ -53,6 +53,13 @@ class TypeScriptTranslator(BaseTranslator):
             return True  # Function is callable field
         return False
 
+    def is_in_class(self, namespace):
+        # Checks if node is any nth descendant of a class
+        for i in range(1, len(namespace)-1):
+            if namespace[i][0].isupper():
+                return True
+        return False
+
     @staticmethod
     def get_filename():
         return TypeScriptTranslator.filename
@@ -341,7 +348,7 @@ class TypeScriptTranslator(BaseTranslator):
         self.ident += 2
         prev_function = self.current_function
         self.current_function = node
-        is_in_class = node.func_type == ast.FunctionDeclaration.CLASS_METHOD
+        is_method = node.func_type == ast.FunctionDeclaration.CLASS_METHOD
         is_interface = self.is_interface
         self.is_interface = False
         prev_is_void = self.is_void
@@ -368,20 +375,27 @@ class TypeScriptTranslator(BaseTranslator):
         body_res = children_res[-1] if node.body else ''
 
         prefix = " " * old_ident
+        arrow_func = ""
 
-        if not is_in_class:
+        if not is_method and not self.is_in_class(self._namespace):
             prefix += "function "
-        elif is_in_class and not node.body and not is_interface:
+        elif not is_method:
+            prefix += f"let "
+            arrow_func = " = "
+        elif is_method and not node.body and not is_interface:
             prefix += "abstract "
 
         type_params = (
             "<" + type_parameters_res + ">" if type_parameters_res else "")
 
-        res = prefix + node.name + type_params + "(" + ", ".join(
-            param_res) + ")"
+        res = prefix + node.name + arrow_func + type_params + \
+              "(" + ", ".join(param_res) + ")"
+
         if node.ret_type:
             res += ": " + self.get_type_name(node.ret_type)
-        if body_res and isinstance(node.body, ast.Block):
+        if body_res and arrow_func:
+            res += " => \n" + body_res
+        elif body_res and isinstance(node.body, ast.Block):
             res += " \n" + body_res
         elif body_res:
             body_res = ("return " + body_res.strip()
