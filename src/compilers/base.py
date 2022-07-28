@@ -35,7 +35,7 @@ class BaseCompiler():
             error_msg = self.get_error_msg(match)
             failed[filename].append(error_msg)
 
-        crash_match = re.search(self.CRASH_REGEX, filtered_output)
+        crash_match = re.search(self.CRASH_REGEX, output)
         if crash_match and not matches:
             self.crash_msg = output
             return None, matches

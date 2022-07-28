@@ -456,6 +456,14 @@ def check_oracle_mul(dirname, oracles):
     except KeyboardInterrupt:
         STOP_COND = True
         return {}
+    except Exception as exc:
+        if cli_args.print_stacktrace:
+            err = str(traceback.format_exc())
+        else:
+            err = str(exc)
+        print('Internal error while checking the oracle')
+        print(err)
+        return {}
 
 
 def _run(process_program, process_res):
