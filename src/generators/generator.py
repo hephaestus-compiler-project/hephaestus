@@ -711,7 +711,7 @@ class Generator():
     def _gen_type_params_from_existing(self,
                                        func: ast.FunctionDeclaration,
                                        type_var_map
-                                      ) -> (List[tp.TypeParameter], tu.TypeVarMap):
+                                      ) -> Tuple[List[tp.TypeParameter], tu.TypeVarMap]:
         """Gen type parameters for a function that overrides a parameterized
             function.
 
@@ -1891,6 +1891,7 @@ class Generator():
             self.bt_factory.get_array_type().name: (
                 lambda x: self.gen_array_expr(x, only_leaves, subtype=subtype)
             ),
+            self.bt_factory.get_null_type().name: lambda x: ast.Null 
         }
         binary_ops = {
             self.bt_factory.get_boolean_type(): [

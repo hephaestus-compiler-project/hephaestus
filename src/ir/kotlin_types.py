@@ -63,6 +63,9 @@ class KotlinBuiltinFactory(bt.BuiltinFactory):
     def get_nothing(self):
         return NothingType()
 
+    def get_null_type(self):
+        return NullType()
+
     def get_non_nothing_types(self):
         types = super().get_non_nothing_types()
         types.extend([
@@ -121,6 +124,17 @@ class NumberType(AnyType):
 
     def get_builtin_type(self):
         return bt.Number
+
+
+class NullType(KotlinBuiltin):
+    def __init__(self, name="null", primitive=False):
+        super().__init__(name, primitive)
+
+    def box_type(self):
+        return NullType(self.name)
+
+    def get_name(self):
+        return 'null'
 
 
 class IntegerType(NumberType):

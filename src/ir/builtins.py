@@ -77,6 +77,10 @@ class BuiltinFactory(ABC):
     def get_function_type(self, nr_parameters=0):
         pass
 
+    @abstractmethod
+    def get_null_type(self):
+        pass
+
     def get_non_nothing_types(self):
         return [
             self.get_any_type(),
@@ -92,7 +96,7 @@ class BuiltinFactory(ABC):
             self.get_boolean_type(),
             self.get_char_type(),
             self.get_string_type(),
-            self.get_array_type()
+            self.get_array_type(),
         ]
 
     def get_number_types(self):

@@ -284,6 +284,10 @@ class TypeScriptTranslator(BaseTranslator):
         self._children_res.append(res)
 
     @append_to
+    def visit_null_constant(self, node):
+        self._children_res.append(node.literal)
+
+    @append_to
     def visit_var_decl(self, node):
         old_ident = self.ident
         prefix = " " * self.ident

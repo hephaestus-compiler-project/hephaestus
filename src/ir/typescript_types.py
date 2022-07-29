@@ -72,6 +72,17 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_big_decimal_type(self):
         return NumberType(primitive=False)
 
+    def get_null_type(self):
+        return NullType()
+
+    def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
+        types = super().get_non_nothing_types()
+        types.extend([
+            self.get_null_type(),
+            UndefinedType(),
+        ])
+        return types
+
 
 class TypeScriptBuiltin(Builtin):
     def __init__(self, name, primitive):
@@ -179,6 +190,28 @@ class SymbolType(TypeScriptBuiltin):
         if self.is_primitive():
             return "symbol"
         return super().get_name()
+
+
+class NullType(TypeScriptBuiltin):
+    def __init__(self, name="null", primitive=False):
+        super().__init__(name, primitive)
+
+    def box_type(self):
+        return NullType(self.name)
+
+    def get_name(self):
+        return 'null'
+
+
+class UndefinedType(TypeScriptBuiltin):
+    def __init__(self, name="undefined", primitive=False):
+        super().__init__(name, primitive)
+
+    def box_type(self):
+        return UndefinedType(self.name)
+
+    def get_name(self):
+        return 'undefined'
 
 
 class ArrayType(tp.TypeConstructor, ObjectType):

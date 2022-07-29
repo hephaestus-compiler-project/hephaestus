@@ -860,6 +860,15 @@ class BottomConstant(Constant):
         return True
 
 
+class NullConstant(Constant):
+    def __init__(self):
+        super().__init__("null")
+
+    def is_equal(self, other):
+        return isinstance(other, NullConstant)
+
+Null = NullConstant()
+
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
     def __init__(self, literal: int, integer_type):

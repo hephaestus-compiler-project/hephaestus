@@ -62,6 +62,10 @@ class JavaBuiltinFactory(bt.BuiltinFactory):
     def get_function_type(self, nr_parameters=0):
         return FunctionType(nr_parameters)
 
+    def get_null_type(self):
+        # FIXME
+        raise Exception("Java does not support null types")
+
     def get_primitive_types(self):
         return [
             ByteType(primitive=True),
