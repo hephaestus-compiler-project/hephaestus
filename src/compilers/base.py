@@ -28,7 +28,7 @@ class BaseCompiler():
         failed = defaultdict(list)
         filtered_output = output
         for p in self.filter_patterns:
-            filtered_output = re.sub(p, '', output)
+            filtered_output = re.sub(p, '', filtered_output)
         matches = re.findall(self.ERROR_REGEX, filtered_output)
         for match in matches:
             filename = self.get_filename(match)
