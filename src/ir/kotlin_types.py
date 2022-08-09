@@ -126,9 +126,9 @@ class NumberType(AnyType):
         return bt.Number
 
 
-class NullType(KotlinBuiltin):
-    def __init__(self, name="null", primitive=False):
-        super().__init__(name, primitive)
+class NullType(AnyType):
+    def __init__(self, name="null"):
+        super().__init__(name)
 
     def box_type(self):
         return NullType(self.name)

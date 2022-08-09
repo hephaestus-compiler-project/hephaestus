@@ -192,9 +192,9 @@ class SymbolType(TypeScriptBuiltin):
         return super().get_name()
 
 
-class NullType(TypeScriptBuiltin):
+class NullType(ObjectType):
     def __init__(self, name="null", primitive=False):
-        super().__init__(name, primitive)
+        super().__init__(name)
 
     def box_type(self):
         return NullType(self.name)
@@ -203,9 +203,9 @@ class NullType(TypeScriptBuiltin):
         return 'null'
 
 
-class UndefinedType(TypeScriptBuiltin):
+class UndefinedType(ObjectType):
     def __init__(self, name="undefined", primitive=False):
-        super().__init__(name, primitive)
+        super().__init__(name)
 
     def box_type(self):
         return UndefinedType(self.name)

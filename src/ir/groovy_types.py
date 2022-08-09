@@ -73,7 +73,6 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
         ]
 
     def get_null_type(self):
-        # FIXME
         raise Exception("Groovy does not support null types")
 
     def get_non_nothing_types(self):
