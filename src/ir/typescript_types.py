@@ -48,7 +48,9 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             StringType(primitive=True),
             SymbolType(primitive=True),
             BooleanType(primitive=True),
-            BigIntegerType(primitive=True)
+            BigIntegerType(primitive=True),
+            NullType(primitive=True),
+            UndefinedType(primitive=True)
         ]
 
     def get_integer_type(self):
@@ -73,13 +75,13 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return NumberType(primitive=True)
 
     def get_null_type(self):
-        return NullType()
+        return NullType(primitive=True)
 
     def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
         types = super().get_non_nothing_types()
         types.extend([
             self.get_null_type(),
-            UndefinedType(),
+            UndefinedType(primitive=True),
         ])
         return types
 
