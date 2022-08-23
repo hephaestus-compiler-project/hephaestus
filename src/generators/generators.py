@@ -8,7 +8,6 @@ even if they don't need it, for API compatibility reasons.
 """
 from src import utils
 from src.ir import ast
-import src.ir.typescript_types as tst
 from src.generators import utils as gu
 
 

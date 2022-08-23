@@ -1,9 +1,8 @@
 from src.ir.types import Builtin
-
-
 import src.ir.builtins as bt
 import src.ir.types as tp
-
+import src.utils as ut
+import random
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_language(self):
@@ -19,19 +18,19 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return ObjectType()
 
     def get_number_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_boolean_type(self):
-        return BooleanType(primitive=True)
+        return BooleanType(primitive=False)
 
     def get_char_type(self):
         return StringType(primitive=False)
 
     def get_string_type(self):
-        return StringType(primitive=True)
+        return StringType(primitive=False)
 
     def get_big_integer_type(self):
-        return BigIntegerType(primitive=True)
+        return BigIntegerType(primitive=False)
 
     def get_array_type(self):
         return ArrayType()
@@ -54,25 +53,25 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         ]
 
     def get_integer_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_byte_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_short_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_long_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_float_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_double_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_big_decimal_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_null_type(self):
         return NullType(primitive=False)
@@ -82,8 +81,17 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         types.extend([
             self.get_null_type(),
             UndefinedType(primitive=False),
+            literal_types.get_literal(),
         ])
         return types
+
+    def constant_candidates(self, gen_object):
+        #from src.ir.ast import IntegerConstant, StringConstant
+        from src.ir import ast
+        return {
+            "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.name),
+            "StringLiteralType": lambda etype: ast.StringConstant(etype.name),
+        }
 
 
 class TypeScriptBuiltin(Builtin):
@@ -216,6 +224,84 @@ class UndefinedType(ObjectType):
         return 'undefined'
 
 
+class NumberLiteralType(ObjectType):
+    def __init__(self, name, primitive=False):
+        super().__init__(str(name))
+
+    def get_name(self):
+        return self.name;
+
+    def is_string_literal(self):
+        return False
+
+
+class StringLiteralType(ObjectType):
+    def __init__(self, name, primitive=False):
+        super().__init__(name)
+
+    def get_name(self):
+        return '"' + self.name + '"'
+
+    def is_string_literal(self):
+        return True
+
+
+class LiteralTypes:
+    def __init__(self, str_limit, num_limit):
+        self.literals = []
+        self.str_literals = []
+        self.num_literals = []
+        # Define max number for generated literals
+        self.str_limit = str_limit
+        self.num_limit = num_limit
+
+    def get_literal(self):
+        if ut.random.bool():
+            return self.get_string_literal()
+        return self.get_number_literal()
+
+    def get_string_literal(self):
+        lit = None
+        if (len(self.str_literals) == 0 or
+                (len(self.str_literals) < self.str_limit and
+                ut.random.bool())):
+            # If the limit for generated literals 
+            # has not been surpassed, we can randomly
+            # generate a new one.
+            lit = StringLiteralType(ut.random.word().lower())
+            self.literals.append(lit)
+            self.str_literals.append(lit)
+        else:
+            lit = random.choice(self.str_literals)
+        return lit
+
+    def get_number_literal(self):
+        lit = None
+        if (len(self.num_literals) == 0 or
+                (len(self.num_literals) < self.num_limit and
+                ut.random.bool())):
+            # If the limit for generated literals 
+            # has not been surpassed, we can randomly
+            # generate a new one.
+            lit = NumberLiteralType(ut.random.integer(-100, 100))
+            self.literals.append(lit)
+            self.num_literals.append(lit)
+        else:
+            lit = random.choice(self.num_literals)
+        return lit
+
+    def get_generated_literals(self):
+        return self.literals
+
+    def get_string_literals(self): # Returns all GENERATED string literals
+        return [l for l in self.literals
+                if l.is_string_literal()]
+
+    def get_number_literals(self): # Returns all GENERATED number literals
+        return [l for l in self.literals
+                if not l.is_string_literal()]
+
+
 class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
         # In TypeScript, arrays are covariant.
@@ -237,3 +323,8 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
         self.supertypes.append(ObjectType())
+
+
+# Literal Types
+
+literal_types = LiteralTypes(10, 10)

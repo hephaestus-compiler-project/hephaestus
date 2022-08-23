@@ -1893,6 +1893,8 @@ class Generator():
             ),
             self.bt_factory.get_null_type().name: lambda x: ast.Null 
         }
+        if self.language == 'typescript':
+            constant_candidates.update(self.bt_factory.constant_candidates(self))
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
