@@ -18,19 +18,19 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return ObjectType()
 
     def get_number_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_boolean_type(self):
-        return BooleanType(primitive=True)
+        return BooleanType(primitive=False)
 
     def get_char_type(self):
         return StringType(primitive=False)
 
     def get_string_type(self):
-        return StringType(primitive=True)
+        return StringType(primitive=False)
 
     def get_big_integer_type(self):
-        return BigIntegerType(primitive=True)
+        return BigIntegerType(primitive=False)
 
     def get_array_type(self):
         return ArrayType()
@@ -53,25 +53,25 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         ]
 
     def get_integer_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_byte_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_short_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_long_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_float_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_double_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_big_decimal_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_null_type(self):
         return NullType(primitive=False)
