@@ -19,19 +19,19 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return ObjectType()
 
     def get_number_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_boolean_type(self):
-        return BooleanType(primitive=True)
+        return BooleanType(primitive=False)
 
     def get_char_type(self):
         return StringType(primitive=False)
 
     def get_string_type(self):
-        return StringType(primitive=True)
+        return StringType(primitive=False)
 
     def get_big_integer_type(self):
-        return BigIntegerType(primitive=True)
+        return BigIntegerType(primitive=False)
 
     def get_array_type(self):
         return ArrayType()
@@ -44,44 +44,44 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_primitive_types(self):
         return [
-            NumberType(primitive=True),
-            StringType(primitive=True),
-            SymbolType(primitive=True),
-            BooleanType(primitive=True),
-            BigIntegerType(primitive=True),
-            NullType(primitive=True),
-            UndefinedType(primitive=True)
+            NumberType(primitive=False),
+            StringType(primitive=False),
+            SymbolType(primitive=False),
+            BooleanType(primitive=False),
+            BigIntegerType(primitive=False),
+            NullType(primitive=False),
+            UndefinedType(primitive=False)
         ]
 
     def get_integer_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_byte_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_short_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_long_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_float_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_double_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_big_decimal_type(self):
-        return NumberType(primitive=True)
+        return NumberType(primitive=False)
 
     def get_null_type(self):
-        return NullType(primitive=True)
+        return NullType(primitive=False)
 
     def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
         types = super().get_non_nothing_types()
         types.extend([
             self.get_null_type(),
-            UndefinedType(primitive=True),
+            UndefinedType(primitive=False),
         ])
         return types
 
