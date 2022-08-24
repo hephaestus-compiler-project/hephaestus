@@ -86,7 +86,6 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         return types
 
     def constant_candidates(self, gen_object):
-        #from src.ir.ast import IntegerConstant, StringConstant
         from src.ir import ast
         return {
             "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.name),
