@@ -113,6 +113,7 @@ class Generator():
             self.gen_variable_decl,
             self.gen_class_decl,
             self.gen_func_decl,
+            self.gen_type_alias_decl,
         ]
         gen_func = ut.random.choice(candidates)
         gen_func()
@@ -542,6 +543,7 @@ class Generator():
             ast.VariableDeclaration: self.context.add_var,
             ast.FieldDeclaration: self.context.add_var,
             ast.ParameterDeclaration: self.context.add_var,
+            ast.TypeAliasDeclaration: self.context.add_var,
             ast.Lambda: self.context.add_lambda,
         }
         if parent_namespace == ast.GLOBAL_NAMESPACE:
@@ -821,6 +823,34 @@ class Generator():
             inferred_type=var_type)
         self._add_node_to_parent(self.namespace, var_decl)
         return var_decl
+
+    def gen_type_alias_decl(self,
+                            etype=None,
+                            expr=None) -> ast.TypeAliasDeclaration:
+        """Generate a Type Declaration (Type Alias)
+
+        Args:
+            etype: the type(s) that the type alias describes
+            expr: an expression to assign to the type alias
+        """
+        alias = etype if etype else self.select_type()
+        initial_depth = self.depth
+        self.depth += 1
+
+        # Below, 'True' is passed to self.generate_expr
+        # in place of the only_leaves parameter
+        # in order for no leaves other
+        # than expr to be generated.
+        expr = expr or self.generate_expr(alias, True, sam_coercion=True)
+
+        self.depth = initial_depth
+        type_alias_decl = ast.TypeAliasDeclaration(
+            name=gu.gen_identifier('lower'),
+            type_descr=alias,
+            expr=expr)
+        self._add_node_to_parent(self.namespace, type_alias_decl)
+        return type_alias_decl
+
 
     ##### Expressions #####
 
