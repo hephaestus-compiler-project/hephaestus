@@ -5,7 +5,6 @@ from copy import deepcopy
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
-from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
@@ -32,10 +31,10 @@ class Expr(Node):
 
 class Program(Node):
     # Set default value to kotlin for backward compatibility
-    def __init__(self, context, language):
+    def __init__(self, context, language, bt_factory):
         self.context = context
         self.language = language
-        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
+        self.bt_factory: BuiltinFactory = bt_factory
 
     def children(self):
         return self.context.get_declarations(GLOBAL_NAMESPACE,
@@ -261,25 +260,6 @@ class ObjectDecleration(Declaration):
         if isinstance(other, ObjectDecleration):
             return self.name == other.name
         return False
-
-
-class TypeAliasDeclaration(Declaration):
-    def __init__(self, name: str,
-                 type_descr: types.Type,
-                 expr: Expr,):
-        self.name = name
-        self.type_descr = type_descr
-        self.expr = expr
-
-    def children(self):
-        return [self.expr]
-
-    def get_type(self):
-        return self.type_descr
-
-    def update_children(self, children):
-        super().update_children(children)
-        self.expr = children[0]
 
 
 class SuperClassInstantiation(Node):
