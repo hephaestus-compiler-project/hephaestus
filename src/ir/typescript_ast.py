@@ -1,20 +1,18 @@
-from src.ir import ast
+import src.ir.ast as ast
 import src.ir.types as types
 
 class TypeAliasDeclaration(ast.Declaration):
     def __init__(self, name: str,
-                type_descr: types.Type,
-                expr: ast.Expr,):
+                 alias: types.Type):
         self.name = name
-        self.type_descr = type_descr
-        self.expr = expr
+        self.alias = alias
 
     def children(self):
-        return [self.expr]
+        return [self.alias]
 
     def get_type(self):
-        return self.type_descr
+        return self.alias
 
     def update_children(self, children):
         super().update_children(children)
-        self.expr = children[0]
+        self.alias = children[0]

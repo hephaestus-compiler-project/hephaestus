@@ -1,8 +1,9 @@
 from src.ir.types import Builtin
 
-
+import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
 import src.ir.types as tp
+import src.generators.utils as gu
 
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
@@ -84,6 +85,14 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             UndefinedType(primitive=False),
         ])
         return types
+
+    def get_decl_candidates(self, gen_object):
+        return [gen_type_alias_decl,]
+
+    def update_add_node_to_parent(self):
+        return {
+            TypeAlias: add_type_alias,
+        }
 
 
 class TypeScriptBuiltin(Builtin):
@@ -216,6 +225,28 @@ class UndefinedType(ObjectType):
         return 'undefined'
 
 
+class TypeAlias(ObjectType):
+    def __init__(self, alias, name="TypeAlias", primitive=False):
+        super().__init__(name)
+        self.alias = alias
+        self.name = name
+        self.primitive = primitive
+
+    def get_type(self):
+        return self.alias
+
+    def is_subtype(self, other):
+        import pdb
+        pdb.set_trace()
+        return isinstance(other, self.alias.get_type())
+
+    def box_type(self):
+        return TypeAlias(self.name)
+
+    def get_name(self):
+        return self.name
+
+
 class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
         # In TypeScript, arrays are covariant.
@@ -237,3 +268,37 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
         self.supertypes.append(ObjectType())
+
+
+# Generator Extension
+
+""" The below functions are all passed as candidate
+generation functions to the Hephaestus generator
+in order for it to be able to work with language-specific
+features of typescript.
+"""
+
+def gen_type_alias_decl(gen_object,
+                        etype=None) -> ts_ast.TypeAliasDeclaration:
+    """ Generate a Type Declaration (Type Alias)
+
+    Args:
+       etype: the type(s) that the type alias describes
+
+    Returns:
+        An AST node that describes a type alias declaration
+        as defined in src.ir.typescript_ast.py
+    """
+    alias_type = etype if etype else gen_object.select_type()
+    initial_depth = gen_object.depth
+    gen_object.depth += 1
+
+    gen_object.depth = initial_depth
+    type_alias_decl = ts_ast.TypeAliasDeclaration(
+        name=gu.gen_identifier('lower'),
+        alias=alias_type)
+    gen_object._add_node_to_parent(gen_object.namespace, TypeAlias(alias_type, type_alias_decl.name))
+    return type_alias_decl
+
+def add_type_alias(context, namespace, type_name, t):
+        context._add_entity(namespace, 'types', type_name, t)

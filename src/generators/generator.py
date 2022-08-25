@@ -94,7 +94,7 @@ class Generator():
                                  cfg.limits.max_top_level):
             self.gen_top_level_declaration()
         self.generate_main_func()
-        return ast.Program(self.context, self.language)
+        return ast.Program(self.context, self.language, self.bt_factory)
 
     def gen_top_level_declaration(self):
         """Generate a top-level declaration and add it in the context.
@@ -113,10 +113,21 @@ class Generator():
             self.gen_variable_decl,
             self.gen_class_decl,
             self.gen_func_decl,
-            self.gen_type_alias_decl,
         ]
+        lang_specific_decls = self.bt_factory.get_decl_candidates(self)
+        candidates.extend(lang_specific_decls)
         gen_func = ut.random.choice(candidates)
-        gen_func()
+        if gen_func in lang_specific_decls:
+        # If the randomly chosen decl generator is
+        # provided by the builtin factory then it
+        # generates a decl for a language-specific
+        # feature. Hence, we must provide the generator's
+        # instance (self) as an argumet manually so the
+        # function has access to the generator's attributes
+        # and methods.
+            gen_func(self)
+        else:
+            gen_func()
 
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
@@ -543,17 +554,31 @@ class Generator():
             ast.VariableDeclaration: self.context.add_var,
             ast.FieldDeclaration: self.context.add_var,
             ast.ParameterDeclaration: self.context.add_var,
-            ast.TypeAliasDeclaration: self.context.add_var,
             ast.Lambda: self.context.add_lambda,
         }
-        if parent_namespace == ast.GLOBAL_NAMESPACE:
+        lang_specific_pairs = self.bt_factory.update_add_node_to_parent()
+        node_type.update(lang_specific_pairs)
+        lang_specific = type(node) in lang_specific_pairs
+        # If the node is a language-specific AST node
+        # then we must provide the self.context
+        # as well so the method provided by the language
+        # builtin factory has access to the context's
+        # other attributes and methods
+
+        if parent_namespace == ast.GLOBAL_NAMESPACE and not lang_specific:
             node_type[type(node)](parent_namespace, node.name, node)
+            return
+        elif parent_namespace == ast.GLOBAL_NAMESPACE:
+            node_type[type(node)](self.context, parent_namespace, node.name, node)
             return
         parent = self.context.get_decl(parent_namespace[:-1],
                                        parent_namespace[-1])
         if parent and isinstance(parent, ast.ClassDeclaration):
             self._add_node_to_class(parent, node)
 
+        if lang_specific:
+            node_type[type(node)](self.context, parent_namespace, node.name, node)
+            return
         node_type[type(node)](parent_namespace, node.name, node)
 
 
@@ -823,33 +848,6 @@ class Generator():
             inferred_type=var_type)
         self._add_node_to_parent(self.namespace, var_decl)
         return var_decl
-
-    def gen_type_alias_decl(self,
-                            etype=None,
-                            expr=None) -> ast.TypeAliasDeclaration:
-        """Generate a Type Declaration (Type Alias)
-
-        Args:
-            etype: the type(s) that the type alias describes
-            expr: an expression to assign to the type alias
-        """
-        alias = etype if etype else self.select_type()
-        initial_depth = self.depth
-        self.depth += 1
-
-        # Below, 'True' is passed to self.generate_expr
-        # in place of the only_leaves parameter
-        # in order for no leaves other
-        # than expr to be generated.
-        expr = expr or self.generate_expr(alias, True, sam_coercion=True)
-
-        self.depth = initial_depth
-        type_alias_decl = ast.TypeAliasDeclaration(
-            name=gu.gen_identifier('lower'),
-            type_descr=alias,
-            expr=expr)
-        self._add_node_to_parent(self.namespace, type_alias_decl)
-        return type_alias_decl
 
 
     ##### Expressions #####

@@ -1,9 +1,9 @@
-from src.ir import ast, typescript_types as tst
+from src.ir import ast, typescript_types as tst, types
 from src.transformations.base import change_namespace
 from src.ir.context import get_decl
 from src.translators.base import BaseTranslator
 from src.translators.utils import append_to
-
+import src.ir.typescript_ast as ts_ast
 
 class TypeScriptTranslator(BaseTranslator):
     filename = "Main.ts"
@@ -35,6 +35,51 @@ class TypeScriptTranslator(BaseTranslator):
         self.context = None
         self._namespace = ast.GLOBAL_NAMESPACE
         self._nodes_stack = [None]
+
+    def visit(self, node):
+        # Overwriting method of ASTVisitor class
+        # to add typescript-specific visitors
+        visitors = {
+            ast.SuperClassInstantiation: self.visit_super_instantiation,
+            ast.ClassDeclaration: self.visit_class_decl,
+            types.TypeParameter: self.visit_type_param,
+            ast.CallArgument: self.visit_call_argument,
+            ast.FieldDeclaration: self.visit_field_decl,
+            ast.VariableDeclaration: self.visit_var_decl,
+            ast.ParameterDeclaration: self.visit_param_decl,
+            ast.FunctionDeclaration: self.visit_func_decl,
+            ast.Lambda: self.visit_lambda,
+            ast.FunctionReference: self.visit_func_ref,
+            ast.BottomConstant: self.visit_bottom_constant,
+            ast.IntegerConstant: self.visit_integer_constant,
+            ast.NullConstant: self.visit_null_constant,
+            ast.RealConstant: self.visit_real_constant,
+            ast.CharConstant: self.visit_char_constant,
+            ast.StringConstant: self.visit_string_constant,
+            ast.ArrayExpr: self.visit_array_expr,
+            ast.BooleanConstant: self.visit_boolean_constant,
+            ast.Variable: self.visit_variable,
+            ast.LogicalExpr: self.visit_logical_expr,
+            ast.EqualityExpr: self.visit_equality_expr,
+            ast.ComparisonExpr: self.visit_comparison_expr,
+            ast.ArithExpr: self.visit_arith_expr,
+            ast.Conditional: self.visit_conditional,
+            ast.Is: self.visit_is,
+            ast.New: self.visit_new,
+            ast.FieldAccess: self.visit_field_access,
+            ast.FunctionCall: self.visit_func_call,
+            ast.Assignment: self.visit_assign,
+            ast.Program: self.visit_program,
+            ast.Block: self.visit_block,
+        }
+        visitors.update({
+            ts_ast.TypeAliasDeclaration: self.visit_type_alias_decl,
+        })
+        visitor = visitors.get(node.__class__)
+        if visitor is None:
+            raise Exception(
+                "Cannot find visitor for instance node " + str(node.__class__))
+        return visitor(node)
 
     def needs_this_prefix(self, node, decl):
         func_name = tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]
@@ -726,3 +771,7 @@ class TypeScriptTranslator(BaseTranslator):
 
         self.ident = old_ident
         self._children_res.append(res)
+
+    @append_to
+    def visit_type_alias_decl(self, node):
+        raise NotImplementedError('Must Implement Type Alias Visitor!')
