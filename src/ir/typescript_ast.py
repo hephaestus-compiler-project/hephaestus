@@ -1,5 +1,6 @@
 import src.ir.ast as ast
 import src.ir.types as types
+import src.ir.typescript_types as tst
 
 class TypeAliasDeclaration(ast.Declaration):
     def __init__(self, name: str,
@@ -11,7 +12,7 @@ class TypeAliasDeclaration(ast.Declaration):
         return [self.alias]
 
     def get_type(self):
-        return self.alias
+        return tst.TypeAlias(self.alias, self.name)
 
     def update_children(self, children):
         super().update_children(children)

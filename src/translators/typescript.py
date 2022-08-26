@@ -36,7 +36,7 @@ class TypeScriptTranslator(BaseTranslator):
         self._namespace = ast.GLOBAL_NAMESPACE
         self._nodes_stack = [None]
 
-    def visit(self, node):
+    def get_visitors(self):
         # Overwriting method of ASTVisitor class
         # to add typescript-specific visitors
         visitors = {
@@ -75,11 +75,7 @@ class TypeScriptTranslator(BaseTranslator):
         visitors.update({
             ts_ast.TypeAliasDeclaration: self.visit_type_alias_decl,
         })
-        visitor = visitors.get(node.__class__)
-        if visitor is None:
-            raise Exception(
-                "Cannot find visitor for instance node " + str(node.__class__))
-        return visitor(node)
+        return visitors
 
     def needs_this_prefix(self, node, decl):
         func_name = tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]
@@ -774,4 +770,10 @@ class TypeScriptTranslator(BaseTranslator):
 
     @append_to
     def visit_type_alias_decl(self, node):
-        raise NotImplementedError('Must Implement Type Alias Visitor!')
+        old_ident = self.ident
+        prefix = " " * self.ident
+        self.ident = 0
+        res = prefix + "type " + node.name
+        res += " = " + self.get_type_name(node.alias)
+        self.ident = old_ident
+        self._children_res.append(res)

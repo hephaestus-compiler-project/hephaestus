@@ -91,7 +91,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def update_add_node_to_parent(self):
         return {
-            TypeAlias: add_type_alias,
+            ts_ast.TypeAliasDeclaration: add_type_alias,
         }
 
 
@@ -226,7 +226,7 @@ class UndefinedType(ObjectType):
 
 
 class TypeAlias(ObjectType):
-    def __init__(self, alias, name="TypeAlias", primitive=False):
+    def __init__(self, alias, name, primitive=False):
         super().__init__(name)
         self.alias = alias
         self.name = name
@@ -236,12 +236,10 @@ class TypeAlias(ObjectType):
         return self.alias
 
     def is_subtype(self, other):
-        import pdb
-        pdb.set_trace()
-        return isinstance(other, self.alias.get_type())
+        return self.alias.is_subtype(other)
 
     def box_type(self):
-        return TypeAlias(self.name)
+        return TypeAlias(self.alias, self.name)
 
     def get_name(self):
         return self.name
@@ -297,8 +295,9 @@ def gen_type_alias_decl(gen_object,
     type_alias_decl = ts_ast.TypeAliasDeclaration(
         name=gu.gen_identifier('lower'),
         alias=alias_type)
-    gen_object._add_node_to_parent(gen_object.namespace, TypeAlias(alias_type, type_alias_decl.name))
+    gen_object._add_node_to_parent(gen_object.namespace, type_alias_decl)
     return type_alias_decl
 
-def add_type_alias(context, namespace, type_name, t):
-        context._add_entity(namespace, 'types', type_name, t)
+def add_type_alias(context, namespace, type_name, ta_decl):
+        context._add_entity(namespace, 'types', type_name, ta_decl.get_type())
+        context._add_entity(namespace, 'decls', type_name, ta_decl)
