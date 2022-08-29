@@ -5,7 +5,6 @@ from copy import deepcopy
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
-from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
@@ -32,10 +31,10 @@ class Expr(Node):
 
 class Program(Node):
     # Set default value to kotlin for backward compatibility
-    def __init__(self, context, language):
+    def __init__(self, context, language, bt_factory):
         self.context = context
         self.language = language
-        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
+        self.bt_factory: BuiltinFactory = bt_factory
 
     def children(self):
         return self.context.get_declarations(GLOBAL_NAMESPACE,

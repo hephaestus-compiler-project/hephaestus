@@ -117,6 +117,12 @@ class BuiltinFactory(ABC):
     def get_nothing(self):
         raise NotImplementedError
 
+    def get_constant_candidates(self):
+        """ Overwrite this function to update the generator
+        constants with language-specific.
+        """
+        return {}
+
 
 class AnyType(Builtin):
     def __init__(self, name="Any"):

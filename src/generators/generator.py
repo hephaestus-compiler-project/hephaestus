@@ -28,7 +28,7 @@ from src import utils as ut
 from src.generators import generators as gens
 from src.generators import utils as gu
 from src.generators.config import cfg
-from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
+from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt, typescript_types as tst
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
@@ -94,7 +94,7 @@ class Generator():
                                  cfg.limits.max_top_level):
             self.gen_top_level_declaration()
         self.generate_main_func()
-        return ast.Program(self.context, self.language)
+        return ast.Program(self.context, self.language, self.bt_factory)
 
     def gen_top_level_declaration(self):
         """Generate a top-level declaration and add it in the context.
@@ -1893,8 +1893,7 @@ class Generator():
             ),
             self.bt_factory.get_null_type().name: lambda x: ast.Null 
         }
-        if self.language == 'typescript':
-            constant_candidates.update(self.bt_factory.constant_candidates(self))
+        constant_candidates.update(self.bt_factory.get_constant_candidates(self))
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),

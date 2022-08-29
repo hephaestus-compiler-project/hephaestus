@@ -1,6 +1,7 @@
 from src.ir.types import Builtin
 import src.ir.builtins as bt
 import src.ir.types as tp
+import src.ir.ast as ast
 import src.utils as ut
 import random
 
@@ -85,13 +86,12 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         ])
         return types
 
-    def constant_candidates(self, gen_object):
-        from src.ir import ast
+    def get_constant_candidates(self, gen_object):
         return {
-            "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.name),
-            "StringLiteralType": lambda etype: ast.StringConstant(etype.name),
+            "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.literal, NumberLiteralType),
+            "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
         }
-
+    
 
 class TypeScriptBuiltin(Builtin):
     def __init__(self, name, primitive):
@@ -130,6 +130,8 @@ class NumberType(TypeScriptBuiltin):
         self.supertypes.append(ObjectType())
 
     def is_assignable(self, other):
+        if isinstance(other, NumberLiteralType):
+            return False
         return isinstance(other, NumberType)
 
     def box_type(self):
@@ -181,6 +183,11 @@ class StringType(TypeScriptBuiltin):
     def box_type(self):
         return StringType(self.name, primitive=False)
 
+    def is_assignable(self, other):
+        if isinstance(other, StringLiteralType):
+            return False
+        return isinstance(other, StringType)
+
     def get_name(self):
         if self.is_primitive:
             return "string"
@@ -204,6 +211,7 @@ class SymbolType(TypeScriptBuiltin):
 class NullType(ObjectType):
     def __init__(self, name="null", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
 
     def box_type(self):
         return NullType(self.name)
@@ -215,6 +223,7 @@ class NullType(ObjectType):
 class UndefinedType(ObjectType):
     def __init__(self, name="undefined", primitive=False):
         super().__init__(name)
+        self.primitive = primitive
 
     def box_type(self):
         return UndefinedType(self.name)
@@ -223,31 +232,44 @@ class UndefinedType(ObjectType):
         return 'undefined'
 
 
-class NumberLiteralType(ObjectType):
-    def __init__(self, name, primitive=False):
-        super().__init__(str(name))
+class NumberLiteralType(TypeScriptBuiltin):
+    def __init__(self, literal, name="NumberLiteralType", primitive=False):
+        super().__init__(name, primitive)
+        self.literal = literal
+        self.supertypes.extend([ObjectType(), NumberType()])
+
+    def get_literal(self):
+        return self.literal
+
+    def is_assignable(self, other):
+        return ((isinstance(other, NumberLiteralType) and
+                  other.get_literal() == self.get_literal()) or
+                    isinstance(other, NumberType))
 
     def get_name(self):
-        return self.name;
-
-    def is_string_literal(self):
-        return False
+        return self.name
 
 
-class StringLiteralType(ObjectType):
-    def __init__(self, name, primitive=False):
-        super().__init__(name)
+class StringLiteralType(TypeScriptBuiltin):
+    def __init__(self, literal, name="StringLiteralType", primitive=False):
+        super().__init__(name, primitive)
+        self.literal = literal
+        self.supertypes.extend([ObjectType(), StringType()])
+
+    def get_literal(self):
+        return '"' + self.literal + '"'
+
+    def is_assignable(self, other):
+        return ((isinstance(other, StringLiteralType) and
+                  other.get_literal() == self.get_literal()) or
+                    isinstance(other, StringType))
 
     def get_name(self):
-        return '"' + self.name + '"'
-
-    def is_string_literal(self):
-        return True
+        return self.name
 
 
 class LiteralTypes:
     def __init__(self, str_limit, num_limit):
-        self.literals = []
         self.str_literals = []
         self.num_literals = []
         # Define max number for generated literals
@@ -255,11 +277,13 @@ class LiteralTypes:
         self.num_limit = num_limit
 
     def get_literal(self):
+        sl = self.gen_string_literal()
+        nl = self.gen_number_literal()
         if ut.random.bool():
-            return self.get_string_literal()
-        return self.get_number_literal()
+            return sl
+        return nl
 
-    def get_string_literal(self):
+    def gen_string_literal(self):
         lit = None
         if (len(self.str_literals) == 0 or
                 (len(self.str_literals) < self.str_limit and
@@ -268,13 +292,12 @@ class LiteralTypes:
             # has not been surpassed, we can randomly
             # generate a new one.
             lit = StringLiteralType(ut.random.word().lower())
-            self.literals.append(lit)
             self.str_literals.append(lit)
         else:
             lit = random.choice(self.str_literals)
         return lit
 
-    def get_number_literal(self):
+    def gen_number_literal(self):
         lit = None
         if (len(self.num_literals) == 0 or
                 (len(self.num_literals) < self.num_limit and
@@ -283,22 +306,10 @@ class LiteralTypes:
             # has not been surpassed, we can randomly
             # generate a new one.
             lit = NumberLiteralType(ut.random.integer(-100, 100))
-            self.literals.append(lit)
             self.num_literals.append(lit)
         else:
             lit = random.choice(self.num_literals)
         return lit
-
-    def get_generated_literals(self):
-        return self.literals
-
-    def get_string_literals(self): # Returns all GENERATED string literals
-        return [l for l in self.literals
-                if l.is_string_literal()]
-
-    def get_number_literals(self): # Returns all GENERATED number literals
-        return [l for l in self.literals
-                if not l.is_string_literal()]
 
 
 class ArrayType(tp.TypeConstructor, ObjectType):
@@ -326,4 +337,7 @@ class FunctionType(tp.TypeConstructor, ObjectType):
 
 # Literal Types
 
-literal_types = LiteralTypes(10, 10)
+# TODO make these limits user-configurable
+MAX_STRING_LITERAL_TYPES = 10
+MAX_NUM_LITERAL_TYPES = 10
+literal_types = LiteralTypes(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYPES)
