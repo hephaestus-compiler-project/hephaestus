@@ -2,6 +2,7 @@ import src.ir.ast as ast
 import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
 import src.ir.types as tp
+import src.ir.ast as ast
 import src.utils as ut
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
