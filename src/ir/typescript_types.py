@@ -82,7 +82,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         types.extend([
             self.get_null_type(),
             UndefinedType(primitive=False)
-            ]+literal_types.get_literal())
+            ] + literal_types.get_literal_types())
         return types
 
     def get_constant_candidates(self, gen_object):
@@ -307,7 +307,7 @@ class LiteralTypeFactory:
         self.str_limit = str_limit
         self.num_limit = num_limit
 
-    def get_literal(self):
+    def get_literal_types(self):
         sl = self.gen_string_literal()
         nl = self.gen_number_literal()
         return [sl, nl]
