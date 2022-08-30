@@ -81,9 +81,8 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
         types = super().get_non_nothing_types()
         types.extend([
             self.get_null_type(),
-            UndefinedType(primitive=False),
-            literal_types.get_literal(),
-        ])
+            UndefinedType(primitive=False)
+            ]+literal_types.get_literal())
         return types
 
     def get_constant_candidates(self, gen_object):
@@ -236,14 +235,30 @@ class NumberLiteralType(TypeScriptBuiltin):
     def __init__(self, literal, name="NumberLiteralType", primitive=False):
         super().__init__(name, primitive)
         self.literal = literal
-        self.supertypes.extend([ObjectType(), NumberType()])
+        self.supertypes.append(NumberType())
 
     def get_literal(self):
         return self.literal
 
     def is_assignable(self, other):
+        """ A number literal type is assignable to any
+            supertype of type 'number'.
+
+            It is also assignable to other number literal types,
+            as long as the other type's literal is the same.
+
+            eg. let num: number
+                let litA: 23 = 23
+                let litB: 23
+                num = litA (correct)
+                litB = litA (correct)
+
+            litA is assignable to litB because their literal
+            is the same, 23.
+
+        """
         return ((isinstance(other, NumberLiteralType) and
-                  other.get_literal() == self.get_literal()) or
+                 other.get_literal() == self.get_literal()) or
                     isinstance(other, NumberType))
 
     def get_name(self):
@@ -254,21 +269,37 @@ class StringLiteralType(TypeScriptBuiltin):
     def __init__(self, literal, name="StringLiteralType", primitive=False):
         super().__init__(name, primitive)
         self.literal = literal
-        self.supertypes.extend([ObjectType(), StringType()])
+        self.supertypes.append(StringType())
 
     def get_literal(self):
         return '"' + self.literal + '"'
 
     def is_assignable(self, other):
+        """ A string literal type is assignable to any
+            supertype of type 'string'.
+
+            It is also assignablde to other string literal types,
+            as long as the other type's literal is the same.
+
+            eg. let str: string
+                let litA: "PULL" = "PULL"
+                let litB: "PULL"
+                str = litA (correct)
+                litB = litA (correct)
+
+            litA is assignable to litB because their literal
+            is the same, "PULL".
+
+        """
         return ((isinstance(other, StringLiteralType) and
-                  other.get_literal() == self.get_literal()) or
+                 other.get_literal() == self.get_literal()) or
                     isinstance(other, StringType))
 
     def get_name(self):
         return self.name
 
 
-class LiteralTypes:
+class LiteralTypeFactory:
     def __init__(self, str_limit, num_limit):
         self.str_literals = []
         self.num_literals = []
@@ -279,9 +310,7 @@ class LiteralTypes:
     def get_literal(self):
         sl = self.gen_string_literal()
         nl = self.gen_number_literal()
-        if ut.random.bool():
-            return sl
-        return nl
+        return [sl, nl]
 
     def gen_string_literal(self):
         lit = None
@@ -340,4 +369,4 @@ class FunctionType(tp.TypeConstructor, ObjectType):
 # TODO make these limits user-configurable
 MAX_STRING_LITERAL_TYPES = 10
 MAX_NUM_LITERAL_TYPES = 10
-literal_types = LiteralTypes(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYPES)
+literal_types = LiteralTypeFactory(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYPES)
