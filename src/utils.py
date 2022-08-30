@@ -167,6 +167,7 @@ class RandomUtils():
     def range(self, from_value, to_value):
         return range(0, self.integer(from_value, to_value))
 
+<<<<<<< HEAD
     def identifier(self, ident_type:str=None) -> str:
         """Generate an identifier name.
 
@@ -185,6 +186,10 @@ class RandomUtils():
         if ident_type == 'capitalize':
             return word.capitalize()
         raise AssertionError("ident_type should be 'capitalize' or 'lower'")
+=======
+    def shuffle(self, ll):
+        return self.r.shuffle(ll)
+>>>>>>> d566664 (Add UnionType class and UnionTypeFactory)
 
 
 random = RandomUtils()

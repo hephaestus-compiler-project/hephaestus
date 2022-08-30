@@ -99,6 +99,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
         }
 
+
 class TypeScriptBuiltin(tp.Builtin):
     def __init__(self, name, primitive):
         super().__init__(name)
@@ -403,6 +404,73 @@ class LiteralTypeFactory:
         return lit
 
 
+class UnionType(TypeScriptBuiltin):
+    def __init__(self, types, name="UnionType", primitive=False):
+        super().__init__(name, primitive)
+        self.types = types
+
+    def get_types(self):
+        return self.types
+
+    def get_name(self):
+        return self.name
+
+
+class UnionTypeFactory:
+    def __init__(self, max_ut):
+        self.max_ut = max_ut
+        self.unions = []
+        self.candidates = [
+            ObjectType(),
+            NumberType(),
+            BooleanType(),
+            StringType(),
+            ArrayType(),
+            NullType(),
+            UndefinedType(primitive=False),
+            literal_types.get_literal_types(),
+        ]
+
+    def get_number_of_types(self):
+        # TODO Perhaps make this user configurable
+        return ut.random.integer(2, 4)
+
+    def gen_union_type(self):
+        """ Generates a union type that consists of
+            N types (where N is num_of_types).
+
+            Args:
+                num_of_types - Number of types to be unionized
+        """
+        # TODO | generate union types with previously
+        # TODO | generated types (ie. classes, type aliases)
+        num_of_types = self.get_number_of_types()
+        assert num_of_types < len(self.candidates)
+        types = self.candidates.copy()
+        ut.random.shuffle(types)
+        types = types[0:num_of_types]
+        gen_union = UnionType(types)
+        self.unions.append(gen_union)
+        return gen_union
+
+    def get_union_type(self):
+        """ Returns a previously created union type
+            or a newly generated at random.
+
+            If there are previously generated union types
+            and they have not exceeded the limit, we make a
+            probabilistic choice on whether to pick one of
+            the already generated types or create a new one.
+
+        """
+        generated = len(self.unions)
+        if generated == 0:
+            return self.gen_union_type()
+        if generated >= self.max_ut or ut.random.bool():
+            return ut.random.choice(self.unions)
+        return self.gen_union_type()
+
+
 class ArrayType(tp.TypeConstructor, ObjectType):
     def __init__(self, name="Array"):
         # In TypeScript, arrays are covariant.
@@ -470,3 +538,8 @@ def add_type_alias(gen, namespace, type_name, ta_decl):
 MAX_STRING_LITERAL_TYPES = 10
 MAX_NUM_LITERAL_TYPES = 10
 literal_types = LiteralTypeFactory(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYPES)
+
+# Union Types
+
+MAX_UNION_TYPES = 10
+union_types = UnionTypeFactory(MAX_UNION_TYPES)
