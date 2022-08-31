@@ -77,11 +77,12 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_null_type(self):
         return NullType(primitive=False)
 
-    def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
-        types = super().get_non_nothing_types()
+    def get_non_nothing_types(self, gen_object): # Overwriting Parent method to add TS-specific types
+        types = super().get_non_nothing_types(gen_object)
         types.extend([
             self.get_null_type(),
-            UndefinedType(primitive=False)
+            UndefinedType(primitive=False),
+            union_types.get_union_type(gen_object),
             ] + literal_types.get_literal_types())
         return types
 
@@ -455,7 +456,7 @@ class UnionTypeFactory:
         self.unions.append(gen_union)
         return gen_union
 
-    def get_union_type(self):
+    def get_union_type(self, gen_object):
         """ Returns a previously created union type
             or a newly generated at random.
 

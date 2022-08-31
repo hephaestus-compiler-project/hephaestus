@@ -61,7 +61,7 @@ class Generator():
         self.function_types = self.bt_factory.get_function_types(
             cfg.limits.max_functional_params)
 
-        self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
+        self.ret_builtin_types = self.bt_factory.get_non_nothing_types(self)
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
 

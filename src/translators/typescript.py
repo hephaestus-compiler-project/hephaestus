@@ -77,11 +77,12 @@ class TypeScriptTranslator(BaseTranslator):
     def get_incorrect_filename():
         return TypeScriptTranslator.incorrect_filename
 
+    def get_union(self, utype):
+        union = " | ".join([self.type_arg2str(t) for t in utype.types])
+        return union
+
     def type_arg2str(self, t_arg):
         # TypeScript does not have a Wildcard type
-        if (isinstance(t_arg, tst.StringLiteralType) or
-            isinstance(t_arg, tst.NumberLiteralType)):
-            return str(t_arg.get_literal())
         if not t_arg.is_wildcard():
             return self.get_type_name(t_arg)
         return "unknown"
@@ -91,6 +92,8 @@ class TypeScriptTranslator(BaseTranslator):
         if (isinstance(t, tst.NumberLiteralType) or
             isinstance(t, tst.StringLiteralType)):
             return str(t.get_literal())
+        if t.name == 'UnionType':
+            return self.get_union(t)
         if not t_constructor:
             return t.get_name()
 

@@ -81,7 +81,7 @@ class BuiltinFactory(ABC):
     def get_null_type(self):
         pass
 
-    def get_non_nothing_types(self):
+    def get_non_nothing_types(self, gen_object):
         return [
             self.get_any_type(),
             self.get_number_type(),
