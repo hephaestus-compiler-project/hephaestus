@@ -426,11 +426,9 @@ class UnionTypeFactory:
             NumberType(),
             BooleanType(),
             StringType(),
-            ArrayType(),
             NullType(),
             UndefinedType(primitive=False),
-            literal_types.get_literal_types(),
-        ]
+        ] + literal_types.get_literal_types()
         self.max_in_union = (max_in_union if max_in_union <= len(self.candidates)
                                 else len(self.candidates))
 
