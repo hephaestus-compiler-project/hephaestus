@@ -94,10 +94,29 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ts_ast.TypeAliasDeclaration: add_type_alias,
         }
 
-    def get_constant_candidates(self):
+    def get_constant_candidates(self, gen_object, constants):
+        """ Updates the constant candidates of the generator
+        with the type-constant pairs for language-specific features.
+
+        Args:
+            gen_object: The generator instance
+            constants: The dictionary of constant candidates
+                       at the time of the method call
+        Returns:
+            A dictionary where the keys are strings of type names and
+            values are functions that return the appropriate constant
+            node for the type.
+
+            The constants dictionary is updated at the generator-side
+            with the method's returned key-value pairs.
+
+            This method is called at src.ir.generator.get_generators()
+
+        """
         return {
             "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.literal, NumberLiteralType),
             "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
+            "UnionType": lambda etype: union_types.get_union_constant(etype, constants),
         }
 
 
@@ -470,6 +489,21 @@ class UnionTypeFactory:
         if generated >= self.max_ut or ut.random.bool():
             return ut.random.choice(self.unions)
         return self.gen_union_type()
+
+    def get_union_constant(self, utype, constants):
+        type_candidates = [t for t in utype.types if t.name in constants]
+        """ A union type can have types like 'Object' or 'undefined'
+        as part of its union, which however do not have a respective
+        constant equivalent.
+
+        Hence, we only consider types that we can generate a constant
+        from. If there is none, we revert to a bottom constant.
+
+        """
+        if len(type_candidates) == 0:
+            return ast.BottomConstant(utype.types[0])
+        t = ut.random.choice(type_candidates)
+        return constants[t.name](t)
 
 
 class ArrayType(tp.TypeConstructor, ObjectType):

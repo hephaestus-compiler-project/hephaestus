@@ -1895,7 +1895,7 @@ class Generator():
             ),
             self.bt_factory.get_null_type().name: lambda x: ast.Null
         }
-        constant_candidates.update(self.bt_factory.get_constant_candidates())
+        constant_candidates.update(self.bt_factory.get_constant_candidates(self, constant_candidates))
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
