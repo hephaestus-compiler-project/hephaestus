@@ -417,7 +417,7 @@ class UnionType(TypeScriptBuiltin):
 
 
 class UnionTypeFactory:
-    def __init__(self, max_ut):
+    def __init__(self, max_ut, max_in_union):
         self.max_ut = max_ut
         self.unions = []
         self.candidates = [
@@ -430,10 +430,12 @@ class UnionTypeFactory:
             UndefinedType(primitive=False),
             literal_types.get_literal_types(),
         ]
+        self.max_in_union = (max_in_union if max_in_union <= len(self.candidates)
+                                else len(self.candidates))
 
     def get_number_of_types(self):
         # TODO Perhaps make this user configurable
-        return ut.random.integer(2, 4)
+        return ut.random.integer(2, self.max_in_union)
 
     def gen_union_type(self):
         """ Generates a union type that consists of
@@ -541,5 +543,7 @@ literal_types = LiteralTypeFactory(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYP
 
 # Union Types
 
+# TODO make these limits user-configurable
 MAX_UNION_TYPES = 10
-union_types = UnionTypeFactory(MAX_UNION_TYPES)
+MAX_TYPES_IN_UNION = 4
+union_types = UnionTypeFactory(MAX_UNION_TYPES, MAX_TYPES_IN_UNION)
