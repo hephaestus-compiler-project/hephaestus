@@ -81,7 +81,7 @@ class BuiltinFactory(ABC):
     def get_null_type(self):
         pass
 
-    def get_non_nothing_types(self, gen_object):
+    def get_non_nothing_types(self):
         return [
             self.get_any_type(),
             self.get_number_type(),
@@ -138,9 +138,19 @@ class BuiltinFactory(ABC):
     def get_nothing(self):
         raise NotImplementedError
 
-    def get_constant_candidates(self):
+    def get_dynamic_types(self, gen_object):
+        """ A type is considered dynamic if it can utilize
+        both a builtin type and a user-defined type.
+
+        Eg. A TypeScript Union Type: string | myClass
+
+        """
+        return []
+
+    def get_constant_candidates(self, constants):
         """ Overwrite this function to update the generator
         constants with language-specific.
+
         """
         return {}
 

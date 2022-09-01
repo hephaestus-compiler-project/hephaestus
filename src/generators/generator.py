@@ -61,7 +61,7 @@ class Generator():
         self.function_types = self.bt_factory.get_function_types(
             cfg.limits.max_functional_params)
 
-        self.ret_builtin_types = self.bt_factory.get_non_nothing_types(self)
+        self.ret_builtin_types = self.bt_factory.get_non_nothing_types()
         self.builtin_types = self.ret_builtin_types + \
             [self.bt_factory.get_void_type()]
 
@@ -1895,7 +1895,7 @@ class Generator():
             ),
             self.bt_factory.get_null_type().name: lambda x: ast.Null
         }
-        constant_candidates.update(self.bt_factory.get_constant_candidates(self, constant_candidates))
+        constant_candidates.update(self.bt_factory.get_constant_candidates(constant_candidates))
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
@@ -1981,7 +1981,6 @@ class Generator():
                 if exclude_contravariants and variance == tp.Contravariant:
                     continue
                 type_params.append(t_param)
-
         if type_params and ut.random.bool():
             return type_params
 
@@ -1993,9 +1992,11 @@ class Generator():
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
+
+        dynamic = self.bt_factory.get_dynamic_types(self)
         if exclude_function_types:
-            return usr_types + builtins
-        return usr_types + builtins + self.function_types
+            return usr_types + builtins + dynamic
+        return usr_types + builtins + dynamic + self.function_types
 
     def select_type(self,
                     ret_types=True,

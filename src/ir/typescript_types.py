@@ -77,12 +77,11 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_null_type(self):
         return NullType(primitive=False)
 
-    def get_non_nothing_types(self, gen_object): # Overwriting Parent method to add TS-specific types
-        types = super().get_non_nothing_types(gen_object)
+    def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
+        types = super().get_non_nothing_types()
         types.extend([
             self.get_null_type(),
             UndefinedType(primitive=False),
-            union_types.get_union_type(gen_object),
             ] + literal_types.get_literal_types())
         return types
 
@@ -94,7 +93,12 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ts_ast.TypeAliasDeclaration: add_type_alias,
         }
 
-    def get_constant_candidates(self, gen_object, constants):
+    def get_dynamic_types(self, gen_object):
+        return [
+            union_types.get_union_type(gen_object),
+        ]
+
+    def get_constant_candidates(self, constants):
         """ Updates the constant candidates of the generator
         with the type-constant pairs for language-specific features.
 
@@ -432,6 +436,11 @@ class UnionType(TypeScriptBuiltin):
     def get_types(self):
         return self.types
 
+    def is_assignable(self, other):
+        # TODO revisit this after implementing structural types
+        return (isinstance(other, UnionType) and
+                    set(other.types) == set(self.types))
+
     def get_name(self):
         return self.name
 
@@ -452,21 +461,24 @@ class UnionTypeFactory:
                                 else len(self.candidates))
 
     def get_number_of_types(self):
-        # TODO Perhaps make this user configurable
         return ut.random.integer(2, self.max_in_union)
 
-    def gen_union_type(self):
+    def gen_union_type(self, gen):
         """ Generates a union type that consists of
             N types (where N is num_of_types).
 
             Args:
                 num_of_types - Number of types to be unionized
+                gen - Instance of Hephaestus' generator
         """
-        # TODO | generate union types with previously
-        # TODO | generated types (ie. classes, type aliases)
         num_of_types = self.get_number_of_types()
         assert num_of_types < len(self.candidates)
         types = self.candidates.copy()
+        usr_types = [
+            c.get_type()
+            for c in gen.context.get_classes(gen.namespace).values()
+        ]
+        types.extend(usr_types)
         ut.random.shuffle(types)
         types = types[0:num_of_types]
         gen_union = UnionType(types)
@@ -485,21 +497,27 @@ class UnionTypeFactory:
         """
         generated = len(self.unions)
         if generated == 0:
-            return self.gen_union_type()
+            return self.gen_union_type(gen_object)
         if generated >= self.max_ut or ut.random.bool():
             return ut.random.choice(self.unions)
-        return self.gen_union_type()
+        return self.gen_union_type(gen_object)
 
     def get_union_constant(self, utype, constants):
-        type_candidates = [t for t in utype.types if t.name in constants]
-        """ A union type can have types like 'Object' or 'undefined'
+        """ This method randomly chooses one of the types in a type's
+        union and then assigns the union a constant value that matches
+        the randomly selected type.
+
+        A union type can have types like 'Object' or 'undefined'
         as part of its union, which however do not have a respective
         constant equivalent.
 
         Hence, we only consider types that we can generate a constant
         from. If there is none, we revert to a bottom constant.
 
+        TODO revisit this after implementing structural types.
+
         """
+        type_candidates = [t for t in utype.types if t.name in constants]
         if len(type_candidates) == 0:
             return ast.BottomConstant(utype.types[0])
         t = ut.random.choice(type_candidates)
