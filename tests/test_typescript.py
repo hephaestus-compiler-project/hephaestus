@@ -1,5 +1,6 @@
 import src.ir.typescript_types as tst
 import src.ir.typescript_ast as ts_ast
+import src.ir.types as tp
 
 def test_type_alias_with_literals():
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringType()).get_type()
@@ -24,3 +25,17 @@ def test_type_alias_with_literals2():
     assert number_lit.is_subtype(number_alias)
     assert string_alias.is_subtype(string_lit)
     assert number_alias.is_subtype(number_lit)
+
+def test_union_types_simple():
+    print('click click click... I\'m in.')
+    union_1 = tst.UnionType([tst.NumberType(), tst.BooleanType()])
+
+    bar_lit = tst.StringLiteralType("bar")
+    union_2 = tst.UnionType([tst.BooleanType(), bar_lit])
+
+    union_3 = tst.UnionType([tst.BooleanType(), tst.NumberType()])
+
+    assert not union_1.is_assignable(union_2)
+    assert not union_2.is_assignable(union_1)
+    assert union_3.is_assignable(union_1)
+    assert union_1.is_assignable(union_3)
