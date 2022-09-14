@@ -160,11 +160,6 @@ class NumberType(TypeScriptBuiltin):
         super().__init__(name, primitive)
         self.supertypes.append(ObjectType())
 
-    def is_assignable(self, other):
-        if isinstance(other, NumberLiteralType):
-            return False
-        return isinstance(other, NumberType)
-
     def box_type(self):
         return NumberType(self.name, primitive=False)
 
@@ -213,11 +208,6 @@ class StringType(TypeScriptBuiltin):
 
     def box_type(self):
         return StringType(self.name, primitive=False)
-
-    def is_assignable(self, other):
-        if isinstance(other, StringLiteralType):
-            return False
-        return isinstance(other, StringType)
 
     def get_name(self):
         if self.is_primitive:
@@ -436,13 +426,21 @@ class UnionType(TypeScriptBuiltin):
     def get_types(self):
         return self.types
 
-    def is_assignable(self, other):
-        # TODO revisit this after implementing structural types
-        return (isinstance(other, UnionType) and
-                    set(other.types) == set(self.types))
+    def is_subtype(self, other):
+        if isinstance(other, UnionType):
+            return set(self.types).issubset(other.types)
+        return other.name == 'Object'
 
     def get_name(self):
         return self.name
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                self.name == other.name and
+                set(self.types) == set(other.types))
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.types))
 
 
 class UnionTypeFactory:
@@ -470,15 +468,11 @@ class UnionTypeFactory:
             Args:
                 num_of_types - Number of types to be unionized
                 gen - Instance of Hephaestus' generator
+
         """
         num_of_types = self.get_number_of_types()
         assert num_of_types < len(self.candidates)
         types = self.candidates.copy()
-        usr_types = [
-            c.get_type()
-            for c in gen.context.get_classes(gen.namespace).values()
-        ]
-        types.extend(usr_types)
         ut.random.shuffle(types)
         types = types[0:num_of_types]
         gen_union = UnionType(types)

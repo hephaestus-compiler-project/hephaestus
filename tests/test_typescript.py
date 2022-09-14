@@ -34,10 +34,10 @@ def test_union_types_simple():
 
     union_3 = tst.UnionType([tst.BooleanType(), tst.NumberType()])
 
-    assert not union_1.is_assignable(union_2)
-    assert not union_2.is_assignable(union_1)
-    assert union_3.is_assignable(union_1)
-    assert union_1.is_assignable(union_3)
+    assert not union_1.is_subtype(union_2)
+    assert not union_2.is_subtype(union_1)
+    assert union_3.is_subtype(union_1)
+    assert union_1.is_subtype(union_3)
 
 
 def test_union_type_assign():
@@ -45,8 +45,8 @@ def test_union_type_assign():
     foo = tst.StringType()
 
     assert len(union.types) == 4
-    assert not union.is_assignable(foo)
-    assert foo.is_assignable(union)
+    assert not union.is_subtype(foo)
+    assert foo.is_subtype(union)
 
 
 def test_union_type_param():
