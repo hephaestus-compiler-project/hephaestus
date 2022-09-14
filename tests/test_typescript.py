@@ -27,7 +27,6 @@ def test_type_alias_with_literals2():
     assert number_alias.is_subtype(number_lit)
 
 def test_union_types_simple():
-    print('click click click... I\'m in.')
     union_1 = tst.UnionType([tst.NumberType(), tst.BooleanType()])
 
     bar_lit = tst.StringLiteralType("bar")
@@ -39,3 +38,22 @@ def test_union_types_simple():
     assert not union_2.is_assignable(union_1)
     assert union_3.is_assignable(union_1)
     assert union_1.is_assignable(union_3)
+
+
+def test_union_type_assign():
+    union = tst.UnionType([tst.StringType(), tst.NumberType(), tst.BooleanType(), tst.ObjectType()])
+    foo = tst.StringType()
+
+    assert len(union.types) == 4
+    assert not union.is_assignable(foo)
+    assert foo.is_assignable(union)
+
+
+def test_union_type_param():
+    union1 = tst.UnionType([tst.NumberType(), tst.NullType()])
+    union2 = tst.UnionType([tst.StringLiteralType("foo"), tst.NumberType()])
+    t_param = tp.TypeParameter("T", bound=union2)
+
+    assert not union2.is_subtype(union1)
+    assert not union1.is_subtype(t_param)
+    assert not t_param.is_subtype(union1)
