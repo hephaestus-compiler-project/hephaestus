@@ -4,6 +4,7 @@ import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
 import src.ir.types as tp
 import src.generators.utils as gu
+import src.utils as ut
 
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
@@ -226,8 +227,8 @@ class UndefinedType(ObjectType):
 
 
 class TypeAlias(ObjectType):
-    def __init__(self, alias, name, primitive=False):
-        super().__init__(name)
+    def __init__(self, alias, name="TypeAlias", primitive=False):
+        super().__init__()
         self.alias = alias
         self.name = name
         self.primitive = primitive
@@ -236,6 +237,8 @@ class TypeAlias(ObjectType):
         return self.alias
 
     def is_subtype(self, other):
+        if isinstance(other, TypeAlias):
+            return self.alias.is_subtype(other.alias)
         return self.alias.is_subtype(other)
 
     def box_type(self):
@@ -243,6 +246,13 @@ class TypeAlias(ObjectType):
 
     def get_name(self):
         return self.name
+
+    def __eq__(self, other):
+        return (isinstance(other, TypeAlias) and
+                 self.alias == other.alias)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.alias))
 
 
 class ArrayType(tp.TypeConstructor, ObjectType):
@@ -287,14 +297,24 @@ def gen_type_alias_decl(gen_object,
         An AST node that describes a type alias declaration
         as defined in src.ir.typescript_ast.py
     """
-    alias_type = etype if etype else gen_object.select_type()
+    candidates = [
+            NumberType(),
+            BooleanType(),
+            StringType(),
+            NullType(),
+            UndefinedType(primitive=False),
+        ]
+    alias_type = (etype if etype else
+                  ut.random.choice(candidates)
+    )
     initial_depth = gen_object.depth
     gen_object.depth += 1
 
     gen_object.depth = initial_depth
     type_alias_decl = ts_ast.TypeAliasDeclaration(
         name=gu.gen_identifier('lower'),
-        alias=alias_type)
+        alias=alias_type
+    )
     gen_object._add_node_to_parent(gen_object.namespace, type_alias_decl)
     return type_alias_decl
 

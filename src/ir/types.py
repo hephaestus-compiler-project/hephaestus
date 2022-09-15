@@ -276,7 +276,7 @@ class TypeParameter(AbstractType):
     def is_subtype(self, other):
         if not self.bound:
             return False
-        return self.bound == other
+        return self.bound.is_subtype(other)
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
