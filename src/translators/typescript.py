@@ -39,39 +39,7 @@ class TypeScriptTranslator(BaseTranslator):
     def get_visitors(self):
         # Overwriting method of ASTVisitor class
         # to add typescript-specific visitors
-        visitors = {
-            ast.SuperClassInstantiation: self.visit_super_instantiation,
-            ast.ClassDeclaration: self.visit_class_decl,
-            types.TypeParameter: self.visit_type_param,
-            ast.CallArgument: self.visit_call_argument,
-            ast.FieldDeclaration: self.visit_field_decl,
-            ast.VariableDeclaration: self.visit_var_decl,
-            ast.ParameterDeclaration: self.visit_param_decl,
-            ast.FunctionDeclaration: self.visit_func_decl,
-            ast.Lambda: self.visit_lambda,
-            ast.FunctionReference: self.visit_func_ref,
-            ast.BottomConstant: self.visit_bottom_constant,
-            ast.IntegerConstant: self.visit_integer_constant,
-            ast.NullConstant: self.visit_null_constant,
-            ast.RealConstant: self.visit_real_constant,
-            ast.CharConstant: self.visit_char_constant,
-            ast.StringConstant: self.visit_string_constant,
-            ast.ArrayExpr: self.visit_array_expr,
-            ast.BooleanConstant: self.visit_boolean_constant,
-            ast.Variable: self.visit_variable,
-            ast.LogicalExpr: self.visit_logical_expr,
-            ast.EqualityExpr: self.visit_equality_expr,
-            ast.ComparisonExpr: self.visit_comparison_expr,
-            ast.ArithExpr: self.visit_arith_expr,
-            ast.Conditional: self.visit_conditional,
-            ast.Is: self.visit_is,
-            ast.New: self.visit_new,
-            ast.FieldAccess: self.visit_field_access,
-            ast.FunctionCall: self.visit_func_call,
-            ast.Assignment: self.visit_assign,
-            ast.Program: self.visit_program,
-            ast.Block: self.visit_block,
-        }
+        visitors = super().get_visitors()
         visitors.update({
             ts_ast.TypeAliasDeclaration: self.visit_type_alias_decl,
         })

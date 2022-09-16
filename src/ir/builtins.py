@@ -111,7 +111,7 @@ class BuiltinFactory(ABC):
             self.get_big_integer_type(),
         ]
 
-    def get_decl_candidates(self, gen_object):
+    def get_decl_candidates(self):
         """ Overwrite this method to return a list
         with language-specific AST declaration nodes.
 
@@ -121,7 +121,7 @@ class BuiltinFactory(ABC):
         """
         return []
 
-    def update_add_node_to_parent(self, gen_object):
+    def update_add_node_to_parent(self):
         """ Overwrite this to update the dict 'node_type'
         on src.generators.generator._add_node_to_parent
         with the respective <ast.Node, src.ir.context>

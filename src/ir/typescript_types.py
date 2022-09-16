@@ -85,7 +85,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ] + literal_types.get_literal_types())
         return types
 
-    def get_decl_candidates(self, gen_object):
+    def get_decl_candidates(self):
         return [gen_type_alias_decl,]
 
     def update_add_node_to_parent(self):
@@ -93,7 +93,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ts_ast.TypeAliasDeclaration: add_type_alias,
         }
 
-    def get_constant_candidates(self, gen_object):
+    def get_constant_candidates(self):
         return {
             "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.literal, NumberLiteralType),
             "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
@@ -387,8 +387,8 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         self.supertypes.append(ObjectType())
 
 
-class TypeAlias(ObjectType):
-    def __init__(self, alias, name="TypeAlias", primitive=False):
+class AliasType(ObjectType):
+    def __init__(self, alias, name="AliasType", primitive=False):
         super().__init__()
         self.alias = alias
         self.name = name
@@ -398,18 +398,18 @@ class TypeAlias(ObjectType):
         return self.alias
 
     def is_subtype(self, other):
-        if isinstance(other, TypeAlias):
+        if isinstance(other, AliasType):
             return self.alias.is_subtype(other.alias)
         return self.alias.is_subtype(other)
 
     def box_type(self):
-        return TypeAlias(self.alias, self.name)
+        return AliasType(self.alias, self.name)
 
     def get_name(self):
         return self.name
 
     def __eq__(self, other):
-        return (isinstance(other, TypeAlias) and
+        return (isinstance(other, AliasType) and
                  self.alias == other.alias)
 
     def __hash__(self):
@@ -424,7 +424,7 @@ in order for it to be able to work with language-specific
 features of typescript.
 """
 
-def gen_type_alias_decl(gen_object,
+def gen_type_alias_decl(gen,
                         etype=None) -> ts_ast.TypeAliasDeclaration:
     """ Generate a Type Declaration (Type Alias)
 
@@ -434,31 +434,24 @@ def gen_type_alias_decl(gen_object,
     Returns:
         An AST node that describes a type alias declaration
         as defined in src.ir.typescript_ast.py
-    """
-    candidates = [
-            NumberType(),
-            BooleanType(),
-            StringType(),
-            NullType(),
-            UndefinedType(primitive=False),
-        ] + literal_types.get_literal_types()
-    alias_type = (etype if etype else
-                  ut.random.choice(candidates)
-    )
-    initial_depth = gen_object.depth
-    gen_object.depth += 1
 
-    gen_object.depth = initial_depth
+    """
+    alias_type = (etype if etype else
+                  gen.select_type()
+    )
+    initial_depth = gen.depth
+    gen.depth += 1
+    gen.depth = initial_depth
     type_alias_decl = ts_ast.TypeAliasDeclaration(
-        name=gu.gen_identifier('lower'),
+        name=gu.gen_identifier('capitalize'),
         alias=alias_type
     )
-    gen_object._add_node_to_parent(gen_object.namespace, type_alias_decl)
+    gen._add_node_to_parent(gen.namespace, type_alias_decl)
     return type_alias_decl
 
-def add_type_alias(context, namespace, type_name, ta_decl):
-        context._add_entity(namespace, 'types', type_name, ta_decl.get_type())
-        context._add_entity(namespace, 'decls', type_name, ta_decl)
+def add_type_alias(gen, namespace, type_name, ta_decl):
+    gen.context._add_entity(namespace, 'types', type_name, ta_decl.get_type())
+    gen.context._add_entity(namespace, 'decls', type_name, ta_decl)
 
 
 # Literal Types

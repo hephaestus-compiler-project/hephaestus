@@ -12,8 +12,16 @@ class TypeAliasDeclaration(ast.Declaration):
         return [self.alias]
 
     def get_type(self):
-        return tst.TypeAlias(self.alias, self.name)
+        return tst.AliasType(self.alias, self.name)
 
     def update_children(self, children):
         super().update_children(children)
         self.alias = children[0]
+
+    def is_equal(self, other):
+        if isinstance(other, TypeAliasDeclaration):
+            return (self.name == other.name and
+                     self.alias == other.alias)
+
+    def __str__(self):
+        return f'{self.name} (TypeAliasDecl<{str(self.alias)}>)'
