@@ -1,9 +1,9 @@
-from src.ir import ast, typescript_types as tst
+from src.ir import ast, typescript_types as tst, types
 from src.transformations.base import change_namespace
 from src.ir.context import get_decl
 from src.translators.base import BaseTranslator
 from src.translators.utils import append_to
-
+import src.ir.typescript_ast as ts_ast
 
 class TypeScriptTranslator(BaseTranslator):
     filename = "Main.ts"
@@ -35,6 +35,15 @@ class TypeScriptTranslator(BaseTranslator):
         self.context = None
         self._namespace = ast.GLOBAL_NAMESPACE
         self._nodes_stack = [None]
+
+    def get_visitors(self):
+        # Overwriting method of ASTVisitor class
+        # to add typescript-specific visitors
+        visitors = super().get_visitors()
+        visitors.update({
+            ts_ast.TypeAliasDeclaration: self.visit_type_alias_decl,
+        })
+        return visitors
 
     def needs_this_prefix(self, node, decl):
         func_name = tst.TypeScriptBuiltinFactory().get_function_type().name[:-1]
@@ -730,5 +739,15 @@ class TypeScriptTranslator(BaseTranslator):
                 children_res[0]
             )
 
+        self.ident = old_ident
+        self._children_res.append(res)
+
+    @append_to
+    def visit_type_alias_decl(self, node):
+        old_ident = self.ident
+        prefix = " " * self.ident
+        self.ident = 0
+        res = prefix + "type " + node.name
+        res += " = " + self.get_type_name(node.alias)
         self.ident = old_ident
         self._children_res.append(res)

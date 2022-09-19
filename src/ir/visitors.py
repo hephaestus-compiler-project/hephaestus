@@ -8,7 +8,15 @@ class ASTVisitor():
         raise NotImplementedError('result() must be implemented')
 
     def visit(self, node):
-        visitors = {
+        visitors = self.get_visitors()
+        visitor = visitors.get(node.__class__)
+        if visitor is None:
+            raise Exception(
+                "Cannot find visitor for instance node " + str(node.__class__))
+        return visitor(node)
+
+    def get_visitors(self):
+        return {
             ast.SuperClassInstantiation: self.visit_super_instantiation,
             ast.ClassDeclaration: self.visit_class_decl,
             types.TypeParameter: self.visit_type_param,
@@ -41,11 +49,6 @@ class ASTVisitor():
             ast.Program: self.visit_program,
             ast.Block: self.visit_block,
         }
-        visitor = visitors.get(node.__class__)
-        if visitor is None:
-            raise Exception(
-                "Cannot find visitor for instance node " + str(node.__class__))
-        return visitor(node)
 
     def visit_program(self, node):
         raise NotImplementedError('visit_program() must be implemented')

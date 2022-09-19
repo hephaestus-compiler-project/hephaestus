@@ -1,9 +1,8 @@
-from src.ir.types import Builtin
+import src.ir.ast as ast
+import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
 import src.ir.types as tp
-import src.ir.ast as ast
 import src.utils as ut
-import random
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_language(self):
@@ -85,14 +84,21 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ] + literal_types.get_literal_types())
         return types
 
-    def get_constant_candidates(self, gen_object):
+    def get_decl_candidates(self):
+        return [gen_type_alias_decl,]
+
+    def update_add_node_to_parent(self):
+        return {
+            ts_ast.TypeAliasDeclaration: add_type_alias,
+        }
+
+    def get_constant_candidates(self):
         return {
             "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.literal, NumberLiteralType),
             "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
         }
-    
 
-class TypeScriptBuiltin(Builtin):
+class TypeScriptBuiltin(tp.Builtin):
     def __init__(self, name, primitive):
         super().__init__(name)
         self.primitive = primitive
@@ -231,6 +237,35 @@ class UndefinedType(ObjectType):
         return 'undefined'
 
 
+class AliasType(ObjectType):
+    def __init__(self, alias, name="AliasType", primitive=False):
+        super().__init__()
+        self.alias = alias
+        self.name = name
+        self.primitive = primitive
+
+    def get_type(self):
+        return self.alias
+
+    def is_subtype(self, other):
+        if isinstance(other, AliasType):
+            return self.alias.is_subtype(other.alias)
+        return self.alias.is_subtype(other)
+
+    def box_type(self):
+        return AliasType(self.alias, self.name)
+
+    def get_name(self):
+        return self.name
+
+    def __eq__(self, other):
+        return (isinstance(other, AliasType) and
+                 self.alias == other.alias)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.alias))
+
+
 class NumberLiteralType(TypeScriptBuiltin):
     def __init__(self, literal, name="NumberLiteralType", primitive=False):
         super().__init__(name, primitive)
@@ -240,7 +275,7 @@ class NumberLiteralType(TypeScriptBuiltin):
     def get_literal(self):
         return self.literal
 
-    def is_assignable(self, other):
+    def is_subtype(self, other):
         """ A number literal type is assignable to any
             supertype of type 'number'.
 
@@ -257,12 +292,25 @@ class NumberLiteralType(TypeScriptBuiltin):
             is the same, 23.
 
         """
+        if (isinstance(other, AliasType) and isinstance(other.alias, NumberLiteralType)):
+            other = other.alias
+        elif isinstance(other, AliasType):
+            return isinstance(other.alias, NumberType)
+
         return ((isinstance(other, NumberLiteralType) and
-                 other.get_literal() == self.get_literal()) or
-                    isinstance(other, NumberType))
+                  other.get_literal() == self.get_literal()) or
+                  isinstance(other, NumberType))
 
     def get_name(self):
         return self.name
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                 self.name == other.name and
+                 self.literal == other.literal)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.literal))
 
 
 class StringLiteralType(TypeScriptBuiltin):
@@ -274,7 +322,7 @@ class StringLiteralType(TypeScriptBuiltin):
     def get_literal(self):
         return '"' + self.literal + '"'
 
-    def is_assignable(self, other):
+    def is_subtype(self, other):
         """ A string literal type is assignable to any
             supertype of type 'string'.
 
@@ -291,12 +339,25 @@ class StringLiteralType(TypeScriptBuiltin):
             is the same, "PULL".
 
         """
+        if (isinstance(other, AliasType) and isinstance(other.alias, StringLiteralType)):
+            other = other.alias
+        elif isinstance(other, AliasType):
+            return isinstance(other.alias, StringType)
+
         return ((isinstance(other, StringLiteralType) and
-                 other.get_literal() == self.get_literal()) or
-                    isinstance(other, StringType))
+                  other.get_literal() == self.get_literal()) or
+                  isinstance(other, StringType))
 
     def get_name(self):
         return self.name
+
+    def __eq__(self, other):
+        return (self.__class__ == other.__class__ and
+                 self.name == other.name and
+                 self.literal == other.literal)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.literal))
 
 
 class LiteralTypeFactory:
@@ -317,13 +378,13 @@ class LiteralTypeFactory:
         if (len(self.str_literals) == 0 or
                 (len(self.str_literals) < self.str_limit and
                 ut.random.bool())):
-            # If the limit for generated literals 
+            # If the limit for generated literals
             # has not been surpassed, we can randomly
             # generate a new one.
             lit = StringLiteralType(ut.random.word().lower())
             self.str_literals.append(lit)
         else:
-            lit = random.choice(self.str_literals)
+            lit = ut.random.choice(self.str_literals)
         return lit
 
     def gen_number_literal(self):
@@ -331,13 +392,13 @@ class LiteralTypeFactory:
         if (len(self.num_literals) == 0 or
                 (len(self.num_literals) < self.num_limit and
                 ut.random.bool())):
-            # If the limit for generated literals 
+            # If the limit for generated literals
             # has not been surpassed, we can randomly
             # generate a new one.
             lit = NumberLiteralType(ut.random.integer(-100, 100))
             self.num_literals.append(lit)
         else:
-            lit = random.choice(self.num_literals)
+            lit = ut.random.choice(self.num_literals)
         return lit
 
 
@@ -362,6 +423,44 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
         self.supertypes.append(ObjectType())
+
+
+# Generator Extension
+
+""" The below functions are all passed as candidate
+generation functions to the Hephaestus generator
+in order for it to be able to work with language-specific
+features of typescript.
+"""
+
+def gen_type_alias_decl(gen,
+                        etype=None) -> ts_ast.TypeAliasDeclaration:
+    """ Generate a Type Declaration (Type Alias)
+
+    Args:
+       etype: the type(s) that the type alias describes
+
+    Returns:
+        An AST node that describes a type alias declaration
+        as defined in src.ir.typescript_ast.py
+
+    """
+    alias_type = (etype if etype else
+                  gen.select_type()
+    )
+    initial_depth = gen.depth
+    gen.depth += 1
+    gen.depth = initial_depth
+    type_alias_decl = ts_ast.TypeAliasDeclaration(
+        name=ut.random.identifier('capitalize'),
+        alias=alias_type
+    )
+    gen._add_node_to_parent(gen.namespace, type_alias_decl)
+    return type_alias_decl
+
+def add_type_alias(gen, namespace, type_name, ta_decl):
+    gen.context._add_entity(namespace, 'types', type_name, ta_decl.get_type())
+    gen.context._add_entity(namespace, 'decls', type_name, ta_decl)
 
 
 # Literal Types

@@ -82,4 +82,4 @@ ctx.add_var(ast.GLOBAL_NAMESPACE + ("A", "bar"), bar_y.name, bar_y)
 ctx.add_var(ast.GLOBAL_NAMESPACE + ("A", "bar"), bar_z.name, bar_z)
 
 ctx.add_var(ast.GLOBAL_NAMESPACE + ("A", "quz"), quz_y.name, quz_y)
-program = ast.Program(ctx, language="kotlin")
+program = ast.Program(ctx, "kotlin", kt.KotlinBuiltinFactory())

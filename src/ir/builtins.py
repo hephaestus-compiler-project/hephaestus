@@ -111,6 +111,27 @@ class BuiltinFactory(ABC):
             self.get_big_integer_type(),
         ]
 
+    def get_decl_candidates(self):
+        """ Overwrite this method to return a list
+        with language-specific AST declaration nodes.
+
+        See implementation in typescript_types.py and
+        TS-specific AST nodes in typescript_ast.py
+
+        """
+        return []
+
+    def update_add_node_to_parent(self):
+        """ Overwrite this to update the dict 'node_type'
+        on src.generators.generator._add_node_to_parent
+        with the respective <ast.Node, src.ir.context>
+        key-value pair for the language-specific AST nodes.
+
+        See implementation in typescript_types.py
+
+        """
+        return {}
+
     def get_function_types(self, max_parameters):
         return [self.get_function_type(i) for i in range(0, max_parameters+1)]
 

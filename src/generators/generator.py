@@ -110,12 +110,13 @@ class Generator():
         declarations.
         """
         candidates = [
-            self.gen_variable_decl,
-            self.gen_class_decl,
-            self.gen_func_decl,
+            lambda gen: gen.gen_variable_decl(),
+            lambda gen: gen.gen_class_decl(),
+            lambda gen: gen.gen_func_decl(),
         ]
+        candidates.extend(self.bt_factory.get_decl_candidates())
         gen_func = ut.random.choice(candidates)
-        gen_func()
+        gen_func(self)
 
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
@@ -215,7 +216,7 @@ class Generator():
         Returns:
             A function declaration node.
         """
-        func_name = func_name or gu.gen_identifier('lower')
+        func_name = func_name or ut.random.identifier('lower')
 
         initial_namespace = self.namespace
         if namespace:
@@ -339,7 +340,7 @@ class Generator():
         Args:
             etype: Parameter type.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         if etype and etype.is_wildcard():
             bound = etype.get_bound_rec()
             param_type = bound or self.select_type(exclude_covariants=True)
@@ -372,7 +373,7 @@ class Generator():
         Returns:
             A class declaration node.
         """
-        class_name = class_name or gu.gen_identifier('capitalize')
+        class_name = class_name or ut.random.identifier('capitalize')
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
@@ -537,22 +538,22 @@ class Generator():
 
     def _add_node_to_parent(self, parent_namespace, node):
         node_type = {
-            ast.FunctionDeclaration: self.context.add_func,
-            ast.ClassDeclaration: self.context.add_class,
-            ast.VariableDeclaration: self.context.add_var,
-            ast.FieldDeclaration: self.context.add_var,
-            ast.ParameterDeclaration: self.context.add_var,
-            ast.Lambda: self.context.add_lambda,
+            ast.FunctionDeclaration: lambda gen, p, n, nd: gen.context.add_func(p, n, nd),
+            ast.ClassDeclaration: lambda gen, p, n, nd: gen.context.add_class(p, n, nd),
+            ast.VariableDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.FieldDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.ParameterDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.Lambda: lambda gen, p, n, nd: gen.context.add_lambda(p, n, nd),
         }
+        node_type.update(self.bt_factory.update_add_node_to_parent())
         if parent_namespace == ast.GLOBAL_NAMESPACE:
-            node_type[type(node)](parent_namespace, node.name, node)
+            node_type[type(node)](self, parent_namespace, node.name, node)
             return
         parent = self.context.get_decl(parent_namespace[:-1],
                                        parent_namespace[-1])
         if parent and isinstance(parent, ast.ClassDeclaration):
             self._add_node_to_class(parent, node)
-
-        node_type[type(node)](parent_namespace, node.name, node)
+        node_type[type(node)](self, parent_namespace, node.name, node)
 
 
     # And
@@ -774,7 +775,7 @@ class Generator():
             etype: Field type.
             class_is_final: Is the class final.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         can_override = not class_is_final and ut.random.bool()
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
@@ -814,13 +815,14 @@ class Generator():
         vtype = var_type.get_bound_rec() if var_type.is_wildcard() else \
             var_type
         var_decl = ast.VariableDeclaration(
-            gu.gen_identifier('lower'),
+            ut.random.identifier('lower'),
             expr=expr,
             is_final=is_final,
             var_type=vtype,
             inferred_type=var_type)
         self._add_node_to_parent(self.namespace, var_decl)
         return var_decl
+
 
     ##### Expressions #####
 
@@ -1537,7 +1539,7 @@ class Generator():
                 if param.default and self.language != 'typescript':
                     if self.language == 'kotlin' and ut.random.bool():
                         # Randomly skip some default arguments.
-                        args.append(ast.CallArgument(arg, name=param.name))               
+                        args.append(ast.CallArgument(arg, name=param.name))
                 else:
                     args.append(ast.CallArgument(arg))
 
@@ -1891,9 +1893,9 @@ class Generator():
             self.bt_factory.get_array_type().name: (
                 lambda x: self.gen_array_expr(x, only_leaves, subtype=subtype)
             ),
-            self.bt_factory.get_null_type().name: lambda x: ast.Null 
+            self.bt_factory.get_null_type().name: lambda x: ast.Null
         }
-        constant_candidates.update(self.bt_factory.get_constant_candidates(self))
+        constant_candidates.update(self.bt_factory.get_constant_candidates())
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
@@ -2796,7 +2798,7 @@ class Generator():
             declaration (field or function).
         """
         initial_namespace = self.namespace
-        class_name = gu.gen_identifier('capitalize')
+        class_name = ut.random.identifier('capitalize')
         type_params = None
 
         # Get return type, type_var_map, and flag for wildcards
