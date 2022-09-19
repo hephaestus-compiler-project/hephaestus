@@ -2,7 +2,6 @@ import src.ir.ast as ast
 import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
 import src.ir.types as tp
-import src.generators.utils as gu
 import src.utils as ut
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
@@ -443,7 +442,7 @@ def gen_type_alias_decl(gen,
     gen.depth += 1
     gen.depth = initial_depth
     type_alias_decl = ts_ast.TypeAliasDeclaration(
-        name=gu.gen_identifier('capitalize'),
+        name=ut.random.identifier('capitalize'),
         alias=alias_type
     )
     gen._add_node_to_parent(gen.namespace, type_alias_decl)

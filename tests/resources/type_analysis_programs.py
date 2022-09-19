@@ -12,7 +12,7 @@ var_decl = ast.VariableDeclaration("x", new, var_type=t)
 context = ctx.Context()
 context.add_var(ast.GLOBAL_NAMESPACE, var_decl.name, var_decl)
 context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
-program1 = ast.Program(context, "kotlin")
+program1 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program2
@@ -28,7 +28,7 @@ context = ctx.Context()
 context.add_var(ast.GLOBAL_NAMESPACE, var_x.name, var_x)
 context.add_var(ast.GLOBAL_NAMESPACE, var_y.name, var_y)
 context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
-program2 = ast.Program(context, "kotlin")
+program2 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program3
@@ -41,7 +41,7 @@ context.add_var(ast.GLOBAL_NAMESPACE, var_x.name, var_x)
 context.add_var(ast.GLOBAL_NAMESPACE, var_y.name, var_y2)
 context.add_class(ast.GLOBAL_NAMESPACE, cls.name, cls)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
-program3 = ast.Program(context, "kotlin")
+program3 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program4
@@ -62,7 +62,7 @@ context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
-program4 = ast.Program(context, "kotlin")
+program4 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program5
@@ -85,7 +85,7 @@ context.add_func(ast.GLOBAL_NAMESPACE, func_decl.name, func_decl)
 context.add_var(ast.GLOBAL_NAMESPACE, var2.name, var2)
 context.add_var(FUNC_NAMESPACE, param1.name, param1)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
-program5 = ast.Program(context, "kotlin")
+program5 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program6
@@ -105,7 +105,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
 context.add_func(ast.GLOBAL_NAMESPACE + (cls1.name,), func.name, func)
 context.add_var(FUNC_NAMESPACE, param1.name, param1)
-program6 = ast.Program(context, "kotlin")
+program6 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program7
@@ -119,7 +119,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
 context.add_var(ast.GLOBAL_NAMESPACE, var2.name, var2)
-program7 = ast.Program(context, "kotlin")
+program7 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 8
@@ -135,7 +135,7 @@ context = ctx.Context()
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
-program8 = ast.Program(context, "kotlin")
+program8 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program9
@@ -158,7 +158,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
-program9 = ast.Program(context, "kotlin")
+program9 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program10
@@ -176,7 +176,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
-program10 = ast.Program(context, "kotlin")
+program10 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 11
@@ -191,7 +191,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
-program11 = ast.Program(context, "kotlin")
+program11 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 12
@@ -217,7 +217,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
-program12 = ast.Program(context, "kotlin")
+program12 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 13
@@ -251,7 +251,7 @@ context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
 context.add_var(FUNC_NAMESPACE, var2.name, var2)
 context.add_var(FUNC_NAMESPACE, var3.name, var3)
-program13 = ast.Program(context, "kotlin")
+program13 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 14
@@ -265,7 +265,7 @@ FUNC_NAMESPACE = ast.GLOBAL_NAMESPACE + (func.name,)
 context = ctx.Context()
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(FUNC_NAMESPACE, var1.name, var1)
-program14 = ast.Program(context, "kotlin")
+program14 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program15
@@ -280,7 +280,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls1.name,), f.name, f)
 context.add_var(ast.GLOBAL_NAMESPACE, var.name, var)
-program15 = ast.Program(context, "kotlin")
+program15 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program16
@@ -298,7 +298,7 @@ context = ctx.Context()
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_func(ast.GLOBAL_NAMESPACE, func2.name, func2)
 context.add_var(ast.GLOBAL_NAMESPACE + (func.name,), param1.name, param1)
-program16 = ast.Program(context, "kotlin")
+program16 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 17
@@ -315,7 +315,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_func(ast.GLOBAL_NAMESPACE, func2.name, func2)
 context.add_var(ast.GLOBAL_NAMESPACE + (func.name,), param1.name, param1)
-program17 = ast.Program(context, "kotlin")
+program17 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 18
@@ -336,7 +336,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_func(ast.GLOBAL_NAMESPACE, func2.name, func2)
 context.add_var(ast.GLOBAL_NAMESPACE + (func.name,), param1.name, param1)
-program18 = ast.Program(context, "kotlin")
+program18 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 19
@@ -359,7 +359,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls3.name,), f.name, f)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program19 = ast.Program(context, "kotlin")
+program19 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 20
@@ -377,7 +377,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program20 = ast.Program(context, "kotlin")
+program20 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 21
@@ -396,7 +396,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls3.name,), cls3.name, cls3)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program21 = ast.Program(context, "kotlin")
+program21 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 22
@@ -415,7 +415,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program22 = ast.Program(context, "kotlin")
+program22 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 23
@@ -429,7 +429,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program23 = ast.Program(context, "kotlin")
+program23 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 24
@@ -444,7 +444,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program24 = ast.Program(context, "kotlin")
+program24 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 25
@@ -459,7 +459,7 @@ context = ctx.Context()
 context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program25 = ast.Program(context, "kotlin")
+program25 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 26
@@ -481,7 +481,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program26 = ast.Program(context, "kotlin")
+program26 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 27
@@ -505,7 +505,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_func(ast.GLOBAL_NAMESPACE, func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program27 = ast.Program(context, "kotlin")
+program27 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 28
@@ -531,7 +531,7 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls3.name, cls3)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
 context.add_func(ast.GLOBAL_NAMESPACE + (cls3.name,), func.name, func)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls3.name, func.name), var1.name, var1)
-program28 = ast.Program(context, "kotlin")
+program28 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
 
 
 # program 29
@@ -549,4 +549,4 @@ context.add_class(ast.GLOBAL_NAMESPACE, cls1.name, cls1)
 context.add_class(ast.GLOBAL_NAMESPACE, cls2.name, cls2)
 context.add_var(ast.GLOBAL_NAMESPACE + (cls2.name,), f.name, f)
 context.add_var(ast.GLOBAL_NAMESPACE, var1.name, var1)
-program29 = ast.Program(context, "kotlin")
+program29 = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())

@@ -842,7 +842,7 @@ def test_type_hint_field_access_inheritance():
 
     expr = ast.FieldAccess(cond3, "f")
 
-    program = ast.Program(context, language="kotlin")
+    program = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
     types = program.get_types()
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,
                                 KT_FACTORY, types) == kt.Integer
@@ -875,7 +875,7 @@ def test_type_hint_smart_cast():
     cond2 = ast.Conditional(ast.Is(expr2, cls.get_type()), expr2, expr3, cls.get_type())
 
     smart_casts = [(expr, cls.get_type())]
-    program = ast.Program(context, language="kotlin")
+    program = ast.Program(context, "kotlin", kt.KotlinBuiltinFactory())
     types = program.get_types()
 
     assert tutils.get_type_hint(expr, context, ast.GLOBAL_NAMESPACE,

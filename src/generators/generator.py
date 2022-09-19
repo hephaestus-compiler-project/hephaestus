@@ -216,7 +216,7 @@ class Generator():
         Returns:
             A function declaration node.
         """
-        func_name = func_name or gu.gen_identifier('lower')
+        func_name = func_name or ut.random.identifier('lower')
 
         initial_namespace = self.namespace
         if namespace:
@@ -340,7 +340,7 @@ class Generator():
         Args:
             etype: Parameter type.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         if etype and etype.is_wildcard():
             bound = etype.get_bound_rec()
             param_type = bound or self.select_type(exclude_covariants=True)
@@ -373,7 +373,7 @@ class Generator():
         Returns:
             A class declaration node.
         """
-        class_name = class_name or gu.gen_identifier('capitalize')
+        class_name = class_name or ut.random.identifier('capitalize')
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
@@ -775,7 +775,7 @@ class Generator():
             etype: Field type.
             class_is_final: Is the class final.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         can_override = not class_is_final and ut.random.bool()
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
@@ -815,7 +815,7 @@ class Generator():
         vtype = var_type.get_bound_rec() if var_type.is_wildcard() else \
             var_type
         var_decl = ast.VariableDeclaration(
-            gu.gen_identifier('lower'),
+            ut.random.identifier('lower'),
             expr=expr,
             is_final=is_final,
             var_type=vtype,
@@ -2798,7 +2798,7 @@ class Generator():
             declaration (field or function).
         """
         initial_namespace = self.namespace
-        class_name = gu.gen_identifier('capitalize')
+        class_name = ut.random.identifier('capitalize')
         type_params = None
 
         # Get return type, type_var_map, and flag for wildcards

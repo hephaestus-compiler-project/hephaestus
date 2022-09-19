@@ -15,7 +15,7 @@ from src.generators import utils as gu
 def gen_string_constant(expr_type=None) -> ast.StringConstant:
     """Generate a string constant.
     """
-    return ast.StringConstant(gu.gen_identifier())
+    return ast.StringConstant(utils.random.identifier())
 
 
 # pylint: disable=unused-argument
