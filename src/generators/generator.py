@@ -110,9 +110,9 @@ class Generator():
         declarations.
         """
         candidates = [
-            lambda gen: self.gen_variable_decl(),
-            lambda gen: self.gen_class_decl(),
-            lambda gen: self.gen_func_decl(),
+            lambda gen: gen.gen_variable_decl(),
+            lambda gen: gen.gen_class_decl(),
+            lambda gen: gen.gen_func_decl(),
         ]
         candidates.extend(self.bt_factory.get_decl_candidates())
         gen_func = ut.random.choice(candidates)
@@ -538,12 +538,12 @@ class Generator():
 
     def _add_node_to_parent(self, parent_namespace, node):
         node_type = {
-            ast.FunctionDeclaration: lambda gen, p, n, nd: self.context.add_func(p, n, nd),
-            ast.ClassDeclaration: lambda gen, p, n, nd: self.context.add_class(p, n, nd),
-            ast.VariableDeclaration: lambda gen, p, n, nd: self.context.add_var(p, n, nd),
-            ast.FieldDeclaration: lambda gen, p, n, nd: self.context.add_var(p, n, nd),
-            ast.ParameterDeclaration: lambda gen, p, n, nd: self.context.add_var(p, n, nd),
-            ast.Lambda: lambda gen, p, n, nd: self.context.add_lambda(p, n, nd),
+            ast.FunctionDeclaration: lambda gen, p, n, nd: gen.context.add_func(p, n, nd),
+            ast.ClassDeclaration: lambda gen, p, n, nd: gen.context.add_class(p, n, nd),
+            ast.VariableDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.FieldDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.ParameterDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.Lambda: lambda gen, p, n, nd: gen.context.add_lambda(p, n, nd),
         }
         node_type.update(self.bt_factory.update_add_node_to_parent())
         if parent_namespace == ast.GLOBAL_NAMESPACE:
