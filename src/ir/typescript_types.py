@@ -237,6 +237,35 @@ class UndefinedType(ObjectType):
         return 'undefined'
 
 
+class AliasType(ObjectType):
+    def __init__(self, alias, name="AliasType", primitive=False):
+        super().__init__()
+        self.alias = alias
+        self.name = name
+        self.primitive = primitive
+
+    def get_type(self):
+        return self.alias
+
+    def is_subtype(self, other):
+        if isinstance(other, AliasType):
+            return self.alias.is_subtype(other.alias)
+        return self.alias.is_subtype(other)
+
+    def box_type(self):
+        return AliasType(self.alias, self.name)
+
+    def get_name(self):
+        return self.name
+
+    def __eq__(self, other):
+        return (isinstance(other, AliasType) and
+                 self.alias == other.alias)
+
+    def __hash__(self):
+        return hash(str(self.name) + str(self.alias))
+
+
 class NumberLiteralType(TypeScriptBuiltin):
     def __init__(self, literal, name="NumberLiteralType", primitive=False):
         super().__init__(name, primitive)
@@ -263,9 +292,14 @@ class NumberLiteralType(TypeScriptBuiltin):
             is the same, 23.
 
         """
+        if (isinstance(other, AliasType) and isinstance(other.alias, NumberLiteralType)):
+            other = other.alias
+        elif isinstance(other, AliasType):
+            return isinstance(other.alias, NumberType)
+
         return ((isinstance(other, NumberLiteralType) and
-                 other.get_literal() == self.get_literal()) or
-                    isinstance(other, NumberType))
+                  other.get_literal() == self.get_literal()) or
+                  isinstance(other, NumberType))
 
     def get_name(self):
         return self.name
@@ -305,9 +339,14 @@ class StringLiteralType(TypeScriptBuiltin):
             is the same, "PULL".
 
         """
+        if (isinstance(other, AliasType) and isinstance(other.alias, StringLiteralType)):
+            other = other.alias
+        elif isinstance(other, AliasType):
+            return isinstance(other.alias, StringType)
+
         return ((isinstance(other, StringLiteralType) and
-                 other.get_literal() == self.get_literal()) or
-                    isinstance(other, StringType))
+                  other.get_literal() == self.get_literal()) or
+                  isinstance(other, StringType))
 
     def get_name(self):
         return self.name
@@ -384,35 +423,6 @@ class FunctionType(tp.TypeConstructor, ObjectType):
         self.nr_type_parameters = nr_type_parameters
         super().__init__(name, type_parameters)
         self.supertypes.append(ObjectType())
-
-
-class AliasType(ObjectType):
-    def __init__(self, alias, name="AliasType", primitive=False):
-        super().__init__()
-        self.alias = alias
-        self.name = name
-        self.primitive = primitive
-
-    def get_type(self):
-        return self.alias
-
-    def is_subtype(self, other):
-        if isinstance(other, AliasType):
-            return self.alias.is_subtype(other.alias)
-        return self.alias.is_subtype(other)
-
-    def box_type(self):
-        return AliasType(self.alias, self.name)
-
-    def get_name(self):
-        return self.name
-
-    def __eq__(self, other):
-        return (isinstance(other, AliasType) and
-                 self.alias == other.alias)
-
-    def __hash__(self):
-        return hash(str(self.name) + str(self.alias))
 
 
 # Generator Extension
