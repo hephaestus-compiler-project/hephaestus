@@ -1950,7 +1950,8 @@ class Generator():
                   exclude_covariants=False,
                   exclude_contravariants=False,
                   exclude_type_vars=False,
-                  exclude_function_types=False) -> List[tp.Type]:
+                  exclude_function_types=False,
+                  exclude_dynamic_types=False) -> List[tp.Type]:
         """Get all available types.
 
         Including user-defined types, built-ins, and function types.
@@ -1964,6 +1965,7 @@ class Generator():
             exclude_contravariants: exclude contravariant type parameters.
             exclude_type_vars: exclude type variables.
             exclude_function_types: exclude function types.
+            exclude_dynamic_types: exclude dynamic types.
 
         Returns:
             A list of available types.
@@ -1993,7 +1995,9 @@ class Generator():
                 if t.name != self.bt_factory.get_array_type().name
             ]
 
-        dynamic = self.bt_factory.get_dynamic_types(self)
+        dynamic = (self.bt_factory.get_dynamic_types(self)
+                   if not exclude_dynamic_types
+                   else [])
         if exclude_function_types:
             return usr_types + builtins + dynamic
         return usr_types + builtins + dynamic + self.function_types
@@ -2003,7 +2007,8 @@ class Generator():
                     exclude_arrays=False,
                     exclude_covariants=False,
                     exclude_contravariants=False,
-                    exclude_function_types=False) -> tp.Type:
+                    exclude_function_types=False,
+                    exclude_dynamic_types=False) -> tp.Type:
         """Select a type from the all available types.
 
         It will always instantiating type constructors to parameterized types.
@@ -2014,8 +2019,8 @@ class Generator():
             exclude_arrays: exclude array types.
             exclude_covariants: exclude covariant type parameters.
             exclude_contravariants: exclude contravariant type parameters.
-            exclude_type_vars: exclude type variables.
             exclude_function_types: exclude function types.
+            eclude_dynamic_types: exclude dynamic types.
 
         Returns:
             Returns a type.
@@ -2024,7 +2029,8 @@ class Generator():
                                exclude_arrays=exclude_arrays,
                                exclude_covariants=exclude_covariants,
                                exclude_contravariants=exclude_contravariants,
-                               exclude_function_types=exclude_function_types)
+                               exclude_function_types=exclude_function_types,
+                               exclude_dynamic_types=exclude_dynamic_types)
         stype = ut.random.choice(types)
         if stype.is_type_constructor():
             exclude_type_vars = stype.name == self.bt_factory.get_array_type().name
@@ -2033,7 +2039,8 @@ class Generator():
                                       exclude_covariants=True,
                                       exclude_contravariants=True,
                                       exclude_type_vars=exclude_type_vars,
-                                      exclude_function_types=exclude_function_types),
+                                      exclude_function_types=exclude_function_types,
+                                      exclude_dynamic_types=exclude_dynamic_types),
                 enable_pecs=self.enable_pecs,
                 disable_variance_functions=self.disable_variance_functions,
                 variance_choices={}

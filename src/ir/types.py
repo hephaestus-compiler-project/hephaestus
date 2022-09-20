@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import List, Dict, Set
 
 from src.ir.node import Node
+from src.ir.decorators import two_way_subtyping
 
 
 class Variance(object):
@@ -65,6 +66,19 @@ class Type(Node):
 
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
+
+    def dynamic_subtyping(self, other: Type):
+        """
+        Overwritten when a certain type needs
+        two-way subtyping checks.
+
+        Eg. when checking if a string type is a subtype
+        of union type 'Foo | string' we call this method
+        as `union-type.dynamic_subtyping(string_type)`
+        to check from the union's side.
+
+        """
+        return False
 
     def is_assignable(self, other: Type):
         """
@@ -153,6 +167,7 @@ class Builtin(Type):
         """Hash based on the Type"""
         return hash(str(self.__class__))
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         return other == self or other in self.get_supertypes()
 
@@ -219,6 +234,7 @@ class SimpleClassifier(Classifier):
                     str(t_class[0].t_constructor) + " " + \
                     "do not have the same types"
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         supertypes = self.get_supertypes()
         # Since the subtyping relation is transitive, we must also check
@@ -273,6 +289,7 @@ class TypeParameter(AbstractType):
         # are out of scope in the context where we use this bound.
         return t.to_type_variable_free(factory)
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if not self.bound:
             return False
@@ -302,6 +319,7 @@ class WildCardType(Type):
         self.bound = bound
         self.variance = variance
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, WildCardType):
             if other.bound is not None:
@@ -471,6 +489,7 @@ class TypeConstructor(AbstractType):
     def is_type_constructor(self):
         return True
 
+    @two_way_subtyping
     def is_subtype(self, other: Type):
         supertypes = self.get_supertypes()
         matched_supertype = None
@@ -695,6 +714,7 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         if super().is_subtype(other):
             return True

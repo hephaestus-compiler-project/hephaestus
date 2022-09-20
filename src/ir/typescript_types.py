@@ -4,6 +4,7 @@ import src.ir.builtins as bt
 import src.ir.types as tp
 import src.ir.ast as ast
 import src.utils as ut
+from src.ir.decorators import two_way_subtyping
 
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_language(self):
@@ -263,6 +264,7 @@ class AliasType(ObjectType):
     def get_type(self):
         return self.alias
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, AliasType):
             return self.alias.is_subtype(other.alias)
@@ -291,6 +293,7 @@ class NumberLiteralType(TypeScriptBuiltin):
     def get_literal(self):
         return self.literal
 
+    @two_way_subtyping
     def is_subtype(self, other):
         """ A number literal type is assignable to any
             supertype of type 'number'.
@@ -338,6 +341,7 @@ class StringLiteralType(TypeScriptBuiltin):
     def get_literal(self):
         return '"' + self.literal + '"'
 
+    @two_way_subtyping
     def is_subtype(self, other):
         """ A string literal type is assignable to any
             supertype of type 'string'.
@@ -426,10 +430,14 @@ class UnionType(TypeScriptBuiltin):
     def get_types(self):
         return self.types
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, UnionType):
             return set(self.types).issubset(other.types)
         return other.name == 'Object'
+
+    def dynamic_subtyping(self, other):
+        return other in set(self.types)
 
     def get_name(self):
         return self.name
@@ -448,7 +456,6 @@ class UnionTypeFactory:
         self.max_ut = max_ut
         self.unions = []
         self.candidates = [
-            ObjectType(),
             NumberType(),
             BooleanType(),
             StringType(),
@@ -462,11 +469,10 @@ class UnionTypeFactory:
         return ut.random.integer(2, self.max_in_union)
 
     def gen_union_type(self, gen):
-        """ Generates a union type that consists of
-            N types (where N is num_of_types).
+        """ Generates a union type that consists of N types
+            where N is a number in [2, self.max_in_union].
 
             Args:
-                num_of_types - Number of types to be unionized
                 gen - Instance of Hephaestus' generator
 
         """
