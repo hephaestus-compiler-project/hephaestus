@@ -96,7 +96,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_dynamic_types(self, gen_object):
         return [
-            union_types.get_union_type(gen_object),
+            #union_types.get_union_type(gen_object),
         ]
 
     def get_constant_candidates(self, constants):
@@ -439,6 +439,9 @@ class UnionType(TypeScriptBuiltin):
     def dynamic_subtyping(self, other):
         return other in set(self.types)
 
+    def has_type_variables(self):
+        return any(t.has_type_variables() for t in self.types)
+
     def get_name(self):
         return self.name
 
@@ -455,18 +458,18 @@ class UnionTypeFactory:
     def __init__(self, max_ut, max_in_union):
         self.max_ut = max_ut
         self.unions = []
-        self.candidates = [
-            NumberType(),
-            BooleanType(),
-            StringType(),
-            NullType(),
-            UndefinedType(primitive=False),
-        ] + literal_types.get_literal_types()
-        self.max_in_union = (max_in_union if max_in_union <= len(self.candidates)
-                                else len(self.candidates))
+        self.max_in_union = max_in_union
 
     def get_number_of_types(self):
         return ut.random.integer(2, self.max_in_union)
+
+    def get_types_for_union(self, gen):
+        num_of_types = self.get_number_of_types()
+        types = set()
+        while len(types) < num_of_types:
+            t = gen.select_type(exclude_dynamic_types=True)
+            types.add(t)
+        return list(types)
 
     def gen_union_type(self, gen):
         """ Generates a union type that consists of N types
@@ -476,11 +479,7 @@ class UnionTypeFactory:
                 gen - Instance of Hephaestus' generator
 
         """
-        num_of_types = self.get_number_of_types()
-        assert num_of_types < len(self.candidates)
-        types = self.candidates.copy()
-        ut.random.shuffle(types)
-        types = types[0:num_of_types]
+        types = self.get_types_for_union(gen)
         gen_union = UnionType(types)
         self.unions.append(gen_union)
         return gen_union
@@ -495,6 +494,7 @@ class UnionTypeFactory:
             the already generated types or create a new one.
 
         """
+        return self.gen_union_type(gen_object)
         generated = len(self.unions)
         if generated == 0:
             return self.gen_union_type(gen_object)
@@ -574,7 +574,7 @@ def gen_type_alias_decl(gen,
     gen.depth += 1
     gen.depth = initial_depth
     type_alias_decl = ts_ast.TypeAliasDeclaration(
-        name=ut.random.identifier('capitalize'),
+        name=ut.random.identifier('lower'),
         alias=alias_type
     )
     gen._add_node_to_parent(gen.namespace, type_alias_decl)
