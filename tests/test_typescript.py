@@ -73,3 +73,48 @@ def test_union_type_substitution():
 
     assert ptype.types[1].type_args[0] == tst.NumberType()
     assert ptype.types[1].type_args[1] == type_param4
+
+
+def test_union_type_substitution_type_var_bound():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    type_map = {type_param1: tst.StringType()}
+
+    union = tst.UnionType([tst.NumberType(), type_param2])
+    ptype_union = tp.substitute_type(union, type_map)
+    ptype = ptype_union.types[1]
+
+
+    assert ptype.name == type_param2.name
+    assert ptype.variance == type_param2.variance
+    assert ptype.bound == tst.StringType()
+
+
+def test_union_to_type_variable_free():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    foo = tp.TypeConstructor("Foo", [type_param1])
+    foo_t = foo.new([type_param2])
+    union = tst.UnionType([foo_t, tst.StringLiteralType("bar")])
+
+    union_n = union.to_type_variable_free(tst.TypeScriptBuiltinFactory())
+    foo_n = union_n.types[0]
+    assert foo_n.type_args[0] == tp.WildCardType(tst.ObjectType(), variance=tp.Covariant)
+
+    type_param2.bound = tst.NumberType()
+    foo_t = foo.new([type_param2])
+    union = tst.UnionType([foo_t, tst.NumberLiteralType(43)])
+
+    union_n = union.to_type_variable_free(tst.TypeScriptBuiltinFactory())
+    foo_n = union_n.types[0]
+    assert foo_n.type_args[0] == tp.WildCardType(tst.NumberType(), variance=tp.Covariant)
+
+    bar = tp.TypeConstructor("Bar", [tp.TypeParameter("T")])
+    bar_p = bar.new([type_param2])
+    foo_t = foo.new([bar_p])
+    union = tst.UnionType([foo_t, tst.NumberType(), tst.StringType(), tst.AliasType(tst.StringLiteralType("foobar"))])
+
+    union_n = union.to_type_variable_free(tst.TypeScriptBuiltinFactory())
+    foo_n = union_n.types[0]
+    assert foo_n.type_args[0] == bar.new(
+        [tp.WildCardType(tst.NumberType(), variance=tp.Covariant)])
