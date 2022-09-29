@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import src.ir.ast as ast
 import src.ir.typescript_ast as ts_ast
 import src.ir.builtins as bt
@@ -96,7 +98,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_dynamic_types(self, gen_object):
         return [
-            #union_types.get_union_type(gen_object),
+            union_types.get_union_type(gen_object),
         ]
 
     def get_constant_candidates(self, constants):
@@ -430,6 +432,9 @@ class UnionType(TypeScriptBuiltin):
     def get_types(self):
         return self.types
 
+    def is_combound(self):
+        return True
+
     @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, UnionType):
@@ -439,8 +444,52 @@ class UnionType(TypeScriptBuiltin):
     def dynamic_subtyping(self, other):
         return other in set(self.types)
 
+    def substitute_type_args(self, type_map,
+                             cond=lambda t: t.has_type_variables()):
+        new_types = []
+        for t in self.types:
+            new_t = (t.substitute_type_args(type_map, cond)
+                     if t.has_type_variables()
+                     else t)
+            new_types.append(new_t)
+        return UnionType(new_types)
+
     def has_type_variables(self):
         return any(t.has_type_variables() for t in self.types)
+
+    def get_type_variables(self, factory):
+        # This function actually returns a dict of the enclosing type variables
+        # along with the set of their bounds.
+        type_vars = defaultdict(set)
+        for t in self.types:
+            if t.is_type_var():
+                type_vars[t].add(
+                    t.get_bound_rec(factory))
+            elif t.is_combound() or t.is_wildcard():
+                for k, v in t.get_type_variables(factory).items():
+                    type_vars[k].update(v)
+            else:
+                continue
+        return type_vars
+
+    def to_variance_free(self, type_var_map=None):
+        new_types = []
+        for t in self.types:
+            new_types.append(t.to_variance_free(type_var_map)
+                             if t.is_combound()
+                             else t)
+        return UnionType(new_types)
+
+    def to_type_variable_free(self, factory):
+        # We translate a union type that contains
+        # type variables into a parameterized type that is
+        # type variable free.
+        new_types = []
+        for t in self.types:
+            new_types.append(t.to_type_variable_free(factory)
+                             if t.is_combound()
+                             else t)
+        return UnionType(new_types)
 
     def get_name(self):
         return self.name

@@ -57,3 +57,19 @@ def test_union_type_param():
     assert not union2.is_subtype(union1)
     assert not union1.is_subtype(t_param)
     assert not t_param.is_subtype(union1)
+
+
+def test_union_type_substitution():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3")
+    type_param4 = tp.TypeParameter("T4")
+
+    foo = tp.TypeConstructor("Foo", [type_param1, type_param2])
+    foo_p = foo.new([tst.NumberType(), type_param3])
+
+    union = tst.UnionType([tst.StringLiteralType("bar"), foo_p])
+    ptype = tp.substitute_type(union, {type_param3: type_param4})
+
+    assert ptype.types[1].type_args[0] == tst.NumberType()
+    assert ptype.types[1].type_args[1] == type_param4

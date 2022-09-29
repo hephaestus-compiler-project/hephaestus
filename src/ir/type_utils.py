@@ -1101,10 +1101,8 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
                     if not _update_type_var_map(type_var_map, t_var, t_arg1):
                         return {}
                     continue
-                is_parameterized = isinstance(t_var.bound,
-                                              tp.ParameterizedType)
-                is_parameterized2 = isinstance(t_arg1,
-                                               tp.ParameterizedType)
+                is_parameterized = t_var.bound.is_combound()
+                is_parameterized2 = t_arg1.is_combound()
                 if is_parameterized and is_parameterized2:
                     res = unify_types(t_arg1, t_var.bound, factory)
                     if not res or any(
