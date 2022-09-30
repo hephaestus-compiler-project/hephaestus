@@ -1,6 +1,7 @@
 import src.ir.typescript_types as tst
 import src.ir.typescript_ast as ts_ast
 import src.ir.types as tp
+import src.ir.type_utils as tu
 
 def test_type_alias_with_literals():
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringType()).get_type()
@@ -118,3 +119,30 @@ def test_union_to_type_variable_free():
     foo_n = union_n.types[0]
     assert foo_n.type_args[0] == bar.new(
         [tp.WildCardType(tst.NumberType(), variance=tp.Covariant)])
+
+
+def test_union_type_unification_type_var():
+    union = tst.UnionType([tst.StringType(), tst.StringLiteralType("foo")])
+    type_param = tp.TypeParameter("T")
+
+    type_var_map = tu.unify_types(union, type_param, tst.TypeScriptBuiltinFactory())
+    assert len(type_var_map) == 1
+    assert type_var_map == {type_param: union}
+
+
+def test_unify_two_union_types():
+    type_param = tp.TypeParameter("T")
+    union1 = tst.UnionType([tst.NumberLiteralType(1410), tst.NumberType(), tst.StringType()])
+    union2 = tst.UnionType([type_param, tst.NumberType(), tst.StringType()])
+
+    type_var_map = tu.unify_types(union1, union2, tst.TypeScriptBuiltinFactory())
+    assert len(type_var_map) == 1
+    assert type_var_map == {type_param: union1.types[0]}
+
+    type_param2 = tp.TypeParameter("G")
+    union3 = tst.UnionType([type_param, type_param2, tst.StringLiteralType("foo")])
+
+    type_var_map = tu.unify_types(union1, union3, tst.TypeScriptBuiltinFactory())
+    assert len(type_var_map) == 2
+    assert type_var_map == {type_param: union1.types[0],
+                            type_param2: union1.types[1]}
