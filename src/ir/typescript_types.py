@@ -491,6 +491,42 @@ class UnionType(TypeScriptBuiltin):
                              else t)
         return UnionType(new_types)
 
+    def unify_types(self, other, factory, same_type=True):
+        """
+        This is used in src.ir.type_utils in the function
+        unify_types.
+
+        We delegate work here when the first of the two
+        types that are passed to that function is a union type.
+
+        For more information on the function see the detailed
+        explanation at the unify_types function definition.
+
+        The only way a union type type-unification can be
+        achieved is when the first of the two types
+        (here: self) is a union type and the second
+        is either a type variable or another union type
+        with similar union structure and has at least one
+        type variable in its union.
+
+        """
+        type_var_map = {}
+        if (isinstance(other, UnionType)
+                and len(self.types) == len(other.types)
+                and other.has_type_variables()):
+            for i, t in enumerate(self.types):
+                t1 = t
+                t2 = other.types[i]
+                is_type_var = t2.is_type_var()
+                if not is_type_var:
+                    if not t2.is_subtype(t1):
+                        return {}
+                else:
+                    type_var_map[t2] = t1
+        elif other.is_type_var():
+            type_var_map[other] = self
+        return type_var_map
+
     def get_name(self):
         return self.name
 
