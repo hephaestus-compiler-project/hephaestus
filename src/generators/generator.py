@@ -2899,8 +2899,8 @@ class Generator():
             type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}, True
 
-        # the given type is parameterized
-        assert isinstance(etype, (tp.ParameterizedType, tp.WildCardType))
+        # the given type is combound
+        assert etype.is_combound() or etype.is_wildcard()
         type_vars = etype.get_type_variables(self.bt_factory)
         type_params = self.gen_type_params(
             len(type_vars), with_variance=self.language == 'kotlin')
