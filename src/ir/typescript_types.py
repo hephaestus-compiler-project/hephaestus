@@ -438,7 +438,10 @@ class UnionType(TypeScriptBuiltin):
     @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, UnionType):
-            return set(self.types).issubset(other.types)
+            for t in self.types:
+                if not any(t.is_subtype(other_t) for other_t in other.types):
+                    return False
+            return True
         return other.name == 'Object'
 
     def dynamic_subtyping(self, other):
@@ -491,7 +494,7 @@ class UnionType(TypeScriptBuiltin):
                              else t)
         return UnionType(new_types)
 
-    def unify_types(self, other, factory, same_type=True):
+    def unify_types(self, t1, factory, same_type=True):
         """
         This is used in src.ir.type_utils in the function
         unify_types.
@@ -501,31 +504,196 @@ class UnionType(TypeScriptBuiltin):
 
         For more information on the function see the detailed
         explanation at the unify_types function definition.
+        """
+        t2 = self
+        type_var_map = {}
 
-        The only way a union type type-unification can be
-        achieved is when the first of the two types
-        (here: self) is a union type and the second
-        is either a type variable or another union type
-        with similar union structure and has at least one
-        type variable in its union.
+        if not t2.has_type_variables():
+            return {}
 
+        # If T1 is a union type, then get all its types.
+        t1_types = (t1.types if t1.is_combound() and
+                     not t1.is_parameterized()
+                     else [t1])
+
+        if not t1.is_subtype(t2):
+            # Get the Type Variables of T2
+            t_vars = dict(t2.get_type_variables(factory))
+
+            # Find which types of t1 are not already in t2
+            add_to_t2 = set(t1_types) - set(t2.types)
+
+            # If T1 is a union type like 100 | number | string,
+            # we do not need to substitute both 100 and number
+            # in the type variables of T2.
+            # Since number is a supertype of 100, if we only
+            # substitute number, then we have also covered
+            # the subtypes of 100 too!
+            # Hence, we only substitute necessary types in T2
+            # by ensuring that the T1 type we will subtitute
+            # is NOT a subtype of any other types in the T1 union type.
+            for t1_t in t1_types:
+                if any(t1_t.is_subtype(other_t1_t)
+                        and t1_t is not other_t1_t
+                        for other_t1_t in t1_types):
+                    add_to_t2.remove(t1_t)
+
+            # If T1 is a union type, and its types that we need
+            # to substitute in T2 are more than the type variables of T2,
+            # then there is no substitution that ensures T1 <: T2.
+            if len(add_to_t2) > len(t_vars):
+                return {}
+
+            # Get bounds of type variables of T2
+            bounds = [b for b in t_vars.values() if b != {None}]
+
+            # If the type variables have no bounds, then we can just assign
+            # the types from T1 to any type variable.
+            if not bounds:
+                temp = list(t_vars.keys())
+                for t in add_to_t2:
+                    tv = temp.pop(0)
+                    type_var_map[tv] = t
+                return type_var_map
+
+            # Get all the possible substitutions between T1 types (add_to_t2)
+            # and type variables of T2. A type variable can be substituted
+            # with a type in T1 if the type variable has no bound or
+            # if the type is a subtype of a bound.
+            possible_substitutions = {}
+            for t in add_to_t2:
+                subs = set()
+                # Below remember that:
+                #   - k is the type variable
+                #   - v is a set containing its bounds
+                for k,v in t_vars.items():
+                    if v == {None} or any(t.is_subtype(b) for b in v):
+                        subs.add(k)
+
+                # If there are no possible substitutions with type variables
+                # for any given type in T1 (add_to_t2) then there is no
+                # substitution that ensures T1 <: T2.
+                if not subs:
+                    return {}
+                possible_substitutions[t] = subs
+
+            # Decide the order of assignments (if possible)
+            assignments, flag = self.assign_types_to_type_vars(possible_substitutions)
+            if not flag:
+                return {}
+            type_var_map.update(assignments)
+
+
+        # Instantiate any not-utilized T2 type variables with their bound (if they have one).
+        # If they don't have a bound instantiate them with a type from T1.
+        leftover_type_vars = [t for t in t2.types if t.is_type_var() and t not in type_var_map]
+        for type_var in leftover_type_vars:
+            type_var_map[type_var] = type_var.bound if type_var.bound else t1_types[0]
+
+        return type_var_map
+
+    def assign_types_to_type_vars(self, possible_subs):
+        """
+        This method is a helper for the method unify_types of union types (see above)
+
+        Args:
+            - possible_subs: A dict containing (types.Type: set) pairs, which represents possible
+                             T2 type variable (value) susbstitutions with a T1 type (key).
+                             The set values contain compatible type vars of T2.
+
+            - t2_t_vars:     The type variables of T2
+
+            - t1_types:      The types of T1 that we want to substitute in T2
+
+        Returns:
+            - A dict of (TypeVariable: types.Type) pairs representing the substitutions in T2
+
+        This method is needed because we need to find the correct substitutions
+        of the type variables in the T2 union type, in order for all T1 types (T1 can be a union type itself)
+        to be substituted in T2 (if possible).
+
+        Consider the following case:
+
+        T1: number | string
+        T2: boolean | X | Y extends number
+
+        In this case, if we first substituted X with the type number from T1,
+        we would have been left with the type variable Y, which is not compatible
+        with the type string.
+
+        As a result we would falsely conclude that we can not unify the types T1 and T2,
+        when in reality, had we just substituted Y with number and X with string,
+        we would have been ably to correctly unify the two types.
+
+        A naive solution would be to find all the possible substitution permutations
+        between T1 types and T2 type variables.
+
+        Using our approach, after first creating the possible_subs dict,
+        which contains all compatible T2 type variables for each T1 type,
+        we first substitute the T1 type that is compatible with the FEWEST
+        T2 type variables at any given moment.
+
+        Going back two the above case, here is how we tackle it with our new approach:
+
+        T1: number | string
+        T2: boolean | X | Y extends number
+
+        (1) We find the possible substitutions for each T1 type (done outside this method)
+                possible_subs = {number: {X, Y},
+                                string: {X}
+                                }
+
+        (2) We sort the dict based on the length of the type variable sets corresponding to each type
+                sorted_type_subs = [(string, {X}), (number, {X, Y})]
+
+        (3) Now we work on the first element, the pair of string and {X}. We assign the substitution
+            X: string. We remove X from all possible substitutions for other T1 types and then
+            delete the pair with key string from our possible_subs dict.
+
+        (4) We sort the dict again, it now looks like this:
+                sorted_type_subs = [(number, {Y})]
+
+        (5) Assign the substitution Y: number and repeat the rest of step (3)
+
+        (6) The possible_subs dict is now empty, so we return our substitution dictionary
+                return {X: string, Y: number}
         """
         type_var_map = {}
-        if (isinstance(other, UnionType)
-                and len(self.types) == len(other.types)
-                and other.has_type_variables()):
-            for i, t in enumerate(self.types):
-                t1 = t
-                t2 = other.types[i]
-                is_type_var = t2.is_type_var()
-                if not is_type_var:
-                    if not t2.is_subtype(t1):
-                        return {}
-                else:
-                    type_var_map[t2] = t1
-        elif other.is_type_var():
-            type_var_map[other] = self
-        return type_var_map
+
+        # Continue trying to find type variable susbstitutions until
+        # all T1 types are substituted in T2.
+        while possible_subs:
+            # Sort the possible_subs dict, in order to first find a substitution for the T1
+            # type with the fewest compatible T2 type variables.
+            sorted_type_subs = sorted(possible_subs.items(), key=lambda x: len(x), reverse=True)
+
+            # Get the first (T1 type, T2 type variable) pair (sorted_type_subs is a tuples list)
+            type_to_substitute, compatible_tvars = sorted_type_subs[0]
+
+            # If there aren't any compatible_tvars, then that means that there is no possible
+            # order of substitutions that ensures all types in T1 are substituted in T2.
+            # Hence, we return a False flag to indicate that the type unification is not possible.
+            # Note: at this point this happens if at previous iterations of the while loop
+            # we substituted all the type variables that are compatible with this specific type_to_substitute.
+            if not compatible_tvars:
+                return ({}, False)
+
+            # Get any of the compatible type variables and substitute it with the T1 type
+            chosen_tvar = compatible_tvars.pop()
+            type_var_map[chosen_tvar] = type_to_substitute
+
+            # Remove the substituted type variable from the possible substitutions
+            # of all other T1 types.
+            for k in list(possible_subs.keys()):
+                if chosen_tvar in possible_subs[k]:
+                    possible_subs.remove(chosen_tvar)
+
+            # Delete the possible substitutions of the T1 type we just substituted in T2
+            del possible_subs[type_to_substitute]
+
+        # Return the substitutions we found and a flag confirming that there is a possible
+        # order of substitutions that gurantees type unification.
+        return (type_var_map, True)
 
     def get_name(self):
         return self.name

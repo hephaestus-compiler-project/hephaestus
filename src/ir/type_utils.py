@@ -1040,8 +1040,10 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
       class A<T>
       class B : A<String>()
     """
-    if t1.is_combound() and not t1.is_parameterized():
-        return t1.unify_types(t2, factory, same_type)
+    if t2.is_combound() and not t2.is_parameterized():
+        return t2.unify_types(t1, factory, same_type)
+    elif t1.is_combound() and not t1.is_parameterized() and t2.is_type_var():
+        return {t2: t1}
 
     if same_type and type(t1) != type(t2):
         return {}

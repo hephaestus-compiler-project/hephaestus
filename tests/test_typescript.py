@@ -134,6 +134,7 @@ def test_unify_two_union_types():
     type_param = tp.TypeParameter("T")
     union1 = tst.UnionType([tst.NumberLiteralType(1410), tst.NumberType(), tst.StringType()])
     union2 = tst.UnionType([type_param, tst.NumberType(), tst.StringType()])
+    assert union1.is_subtype(union2)
 
     type_var_map = tu.unify_types(union1, union2, tst.TypeScriptBuiltinFactory())
     assert len(type_var_map) == 1
@@ -144,5 +145,5 @@ def test_unify_two_union_types():
 
     type_var_map = tu.unify_types(union1, union3, tst.TypeScriptBuiltinFactory())
     assert len(type_var_map) == 2
-    assert type_var_map == {type_param: union1.types[0],
-                            type_param2: union1.types[1]}
+    assert type_param, type_param2 in type_var_map
+    assert union1.types[1], union1.types[2] in type_var_map.values()
