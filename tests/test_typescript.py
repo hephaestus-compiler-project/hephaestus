@@ -1,3 +1,4 @@
+from src.ir.builtins import NumberType
 import src.ir.typescript_types as tst
 import src.ir.typescript_ast as ts_ast
 import src.ir.types as tp
@@ -130,7 +131,7 @@ def test_union_type_unification_type_var():
     assert type_var_map == {type_param: union}
 
 
-def test_unify_two_union_types():
+def test_union_type_unification():
     type_param = tp.TypeParameter("T")
     union1 = tst.UnionType([tst.NumberLiteralType(1410), tst.NumberType(), tst.StringType()])
     union2 = tst.UnionType([type_param, tst.NumberType(), tst.StringType()])
@@ -147,3 +148,35 @@ def test_unify_two_union_types():
     assert len(type_var_map) == 2
     assert type_param, type_param2 in type_var_map
     assert union1.types[1], union1.types[2] in type_var_map.values()
+
+def test_union_type_unification2():
+    union = tst.UnionType([tst.NumberType(), tst.StringType()])
+    assert tu.unify_types(tst.BooleanType(), union, tst.TypeScriptBuiltinFactory()) == {}
+
+    t1 = tst.NumberType()
+    t2 = tst.UnionType([tst.NumberType(), tp.TypeParameter("T")])
+    res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
+    assert len(res) == 1 and res[t2.types[1]] == t1
+
+    t1 = tst.UnionType([tst.NumberType(), tst.StringType()])
+    res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
+    assert len(res) == 1 and res[t2.types[1]] == t1.types[1]
+
+    t1 = tst.UnionType([tst.NumberType(), tst.StringLiteralType("foo"), tst.StringType()])
+    res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
+    assert len(res) == 1 and res[t2.types[1]] == t1.types[2]
+
+    t1 = tst.UnionType([tst.NumberType(), tst.NumberLiteralType(100), tst.BooleanType(), tst.StringLiteralType("foo"), tst.StringType()])
+
+    t_param1 = tp.TypeParameter("T", bound=tst.StringType())
+    helper_union = tst.UnionType([tst.BooleanType(), tst.StringType()])
+    t_param2 = tp.TypeParameter("G", bound=helper_union)
+    t2 = tst.UnionType([tst.NumberType(), t_param1, t_param2])
+
+    # Unify t1: number | 100 | boolean | "foo" | string
+    # with t2: number | T extends string | G extends (boolean | string)
+    # Result should be {T: StringType, G: BooleanType}
+    res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
+    assert (len(res) == 2 and
+            res[t2.types[1]] == t1.types[4] and
+            res[t2.types[2]] == t1.types[2])

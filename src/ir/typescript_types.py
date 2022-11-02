@@ -532,7 +532,7 @@ class UnionType(TypeScriptBuiltin):
             # Hence, we only substitute necessary types in T2
             # by ensuring that the T1 type we will subtitute
             # is NOT a subtype of any other types in the T1 union type.
-            for t1_t in t1_types:
+            for t1_t in list(add_to_t2):
                 if any(t1_t.is_subtype(other_t1_t)
                         and t1_t is not other_t1_t
                         for other_t1_t in t1_types):
@@ -665,7 +665,7 @@ class UnionType(TypeScriptBuiltin):
         while possible_subs:
             # Sort the possible_subs dict, in order to first find a substitution for the T1
             # type with the fewest compatible T2 type variables.
-            sorted_type_subs = sorted(possible_subs.items(), key=lambda x: len(x), reverse=True)
+            sorted_type_subs = sorted(list(possible_subs.items()), key=lambda x: len(x[1]), reverse=False)
 
             # Get the first (T1 type, T2 type variable) pair (sorted_type_subs is a tuples list)
             type_to_substitute, compatible_tvars = sorted_type_subs[0]
@@ -686,7 +686,7 @@ class UnionType(TypeScriptBuiltin):
             # of all other T1 types.
             for k in list(possible_subs.keys()):
                 if chosen_tvar in possible_subs[k]:
-                    possible_subs.remove(chosen_tvar)
+                    possible_subs[k].remove(chosen_tvar)
 
             # Delete the possible substitutions of the T1 type we just substituted in T2
             del possible_subs[type_to_substitute]
@@ -697,6 +697,9 @@ class UnionType(TypeScriptBuiltin):
 
     def get_name(self):
         return self.name
+
+    def __str__(self):
+        return f'UnionType(TS)({" | ".join([str(t) for t in self.types])})'
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
