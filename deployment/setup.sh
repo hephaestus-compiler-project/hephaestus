@@ -77,6 +77,15 @@ install_groovy_from_source() {
     source $HOME/.bash_profile
 }
 
+install_npm() {
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+    nvm install node
+}
+
+install_typescript() {
+    npm install -g typescript@next
+}
+
 install_kotlin() {
     install_java
     sdk install kotlin
@@ -180,6 +189,11 @@ while getopts "hskagS" OPTION; do
                         add_run_script_to_path
                         ;;
 
+                t)
+                        install_npm
+                        install_typescript
+                        ;;
+
                 s)
                         install_deps
                         install_kotlin_from_source
@@ -211,12 +225,14 @@ while getopts "hskagS" OPTION; do
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
+                        echo "init.sh -t "
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo "init.sh -g "
                         echo "init.sh -S "
                         echo ""
                         echo "   -k     Install latest kotlin version"
+                        echo "   -t     Install latest typescript nightly version"
                         echo "   -s     Install kotlin from source"
                         echo "   -a     Install all kotlin versions"
                         echo "   -g     Install latest groovy version"
