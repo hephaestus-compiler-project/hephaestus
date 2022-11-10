@@ -75,7 +75,7 @@ then
         exit 0
 fi
 
-while getopts "hksagS" OPTION; do
+while getopts "hkstagS" OPTION; do
         case $OPTION in
 
                 k)
