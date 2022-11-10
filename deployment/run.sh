@@ -49,7 +49,7 @@ run_groovy_from_source() {
 
 run_typescript() {
     npm install -g typescript@next
-    python3 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
+    python3.9 hephaestus.py -s $TIME_TO_RUN -t $TRANSFORMATIONS -w $CORES --batch 30 -P \
         --language typescript --disable-use-site-variance \
         --error-filter-patterns patterns.txt
 }
