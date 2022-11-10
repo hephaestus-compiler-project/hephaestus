@@ -82,6 +82,10 @@ while getopts "hksagS" OPTION; do
                         simple_run
                         ;;
 
+                t)
+                        run_typescript
+                        ;;
+
                 s)
                         run_from_source
                         ;;

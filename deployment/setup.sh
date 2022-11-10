@@ -179,7 +179,7 @@ then
         exit 0
 fi
 
-while getopts "hskagS" OPTION; do
+while getopts "hsktagS" OPTION; do
         case $OPTION in
 
                 k)
