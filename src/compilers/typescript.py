@@ -1,4 +1,3 @@
-from collections import defaultdict
 import re
 import os
 from src.compilers.base import BaseCompiler
