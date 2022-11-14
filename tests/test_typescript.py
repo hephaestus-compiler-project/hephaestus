@@ -4,6 +4,7 @@ import src.ir.typescript_ast as ts_ast
 import src.ir.types as tp
 import src.ir.type_utils as tu
 
+
 def test_type_alias_with_literals():
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringType()).get_type()
     number_alias = ts_ast.TypeAliasDeclaration("Bar", tst.NumberType()).get_type()
@@ -15,6 +16,7 @@ def test_type_alias_with_literals():
     assert not string_alias.is_subtype(string_lit)
     assert number_lit.is_subtype(number_alias)
     assert not number_alias.is_subtype(number_lit)
+
 
 def test_type_alias_with_literals2():
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringLiteralType("foo")).get_type()
@@ -28,6 +30,7 @@ def test_type_alias_with_literals2():
     assert string_alias.is_subtype(string_lit)
     assert number_alias.is_subtype(number_lit)
 
+
 def test_union_types_simple():
     union_1 = tst.UnionType([tst.NumberType(), tst.BooleanType()])
 
@@ -40,6 +43,11 @@ def test_union_types_simple():
     assert not union_2.is_subtype(union_1)
     assert union_3.is_subtype(union_1)
     assert union_1.is_subtype(union_3)
+
+
+def test_union_types_other_types():
+    union = tst.UnionType([tst.NumberType(), tst.BooleanType()])
+    assert tst.NumberType().is_subtype(union)
 
 
 def test_union_type_assign():
@@ -130,6 +138,22 @@ def test_union_type_unification_type_var():
     assert len(type_var_map) == 1
     assert type_var_map == {type_param: union}
 
+    # Case 2: unify a union with a bounded type param, which has an
+    # incompatible bound with the given union.
+    union = tst.UnionType([tst.NumberType(), tst.StringType()])
+    type_param = tp.TypeParameter("T", bound=tst.NumberType())
+
+    type_var_map = tu.unify_types(union, type_param,
+                                  tst.TypeScriptBuiltinFactory())
+    assert type_var_map == {}
+
+
+    # Case 3: unify a union with a bounded type param, which has a compatible
+    # bound with the given union.
+    type_param = tp.TypeParameter("T", bound=union)
+    type_var_map = tu.unify_types(union, type_param,
+                                  tst.TypeScriptBuiltinFactory())
+    assert type_var_map == {type_param: union}
 
 def test_union_type_unification():
     type_param = tp.TypeParameter("T")
@@ -148,6 +172,7 @@ def test_union_type_unification():
     assert len(type_var_map) == 2
     assert type_param, type_param2 in type_var_map
     assert union1.types[1], union1.types[2] in type_var_map.values()
+
 
 def test_union_type_unification2():
     union = tst.UnionType([tst.NumberType(), tst.StringType()])

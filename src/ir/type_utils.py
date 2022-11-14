@@ -1042,8 +1042,12 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
     """
     if t2.is_combound() and not t2.is_parameterized():
         return t2.unify_types(t1, factory, same_type)
-    elif t1.is_combound() and not t1.is_parameterized() and t2.is_type_var():
-        return {t2: t1}
+    elif t1.is_combound() and t2.is_type_var():
+        bound = t2.get_bound_rec(factory)
+        if bound is None or t1.is_subtype(bound):
+            return {t2: t1}
+        else:
+            return {}
 
     if same_type and type(t1) != type(t2):
         return {}
