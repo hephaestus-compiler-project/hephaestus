@@ -489,9 +489,14 @@ class UnionType(TypeScriptBuiltin):
         # type variable free.
         new_types = []
         for t in self.types:
-            new_types.append(t.to_type_variable_free(factory)
-                             if t.is_combound()
-                             else t)
+            if t.is_combound():
+                new_type = t.to_type_variable_free(factory)
+            elif t.is_type_var():
+                bound = t.get_bound_rec(factory)
+                new_type = factory.get_any_type() if bound is None else bound
+            else:
+                new_type = t
+            new_types.append(new_type)
         return UnionType(new_types)
 
     def unify_types(self, t1, factory, same_type=True):
@@ -787,7 +792,7 @@ class ArrayType(tp.TypeConstructor, ObjectType):
             "T", variance=tp.Covariant)])
 
 
-class FunctionType(tp.TypeConstructor, ObjectType):
+class FunctionType(tp.TypeConstructor):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
 
@@ -810,6 +815,7 @@ generation functions to the Hephaestus generator
 in order for it to be able to work with language-specific
 features of typescript.
 """
+
 
 def gen_type_alias_decl(gen,
                         etype=None) -> ts_ast.TypeAliasDeclaration:
@@ -835,6 +841,7 @@ def gen_type_alias_decl(gen,
     )
     gen._add_node_to_parent(gen.namespace, type_alias_decl)
     return type_alias_decl
+
 
 def add_type_alias(gen, namespace, type_name, ta_decl):
     gen.context._add_entity(namespace, 'types', type_name, ta_decl.get_type())

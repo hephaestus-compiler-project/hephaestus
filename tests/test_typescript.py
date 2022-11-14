@@ -205,3 +205,17 @@ def test_union_type_unification2():
     assert (len(res) == 2 and
             res[t2.types[1]] == t1.types[4] and
             res[t2.types[2]] == t1.types[2])
+
+
+def test_union_to_type_variable_free():
+    type_param = tp.TypeParameter("S")
+    union = tst.UnionType([tst.NumberType(), type_param])
+
+    new_union = union.to_type_variable_free(tst.TypeScriptBuiltinFactory())
+    assert new_union == tst.UnionType([tst.NumberType(),
+                                       tst.TypeScriptBuiltinFactory().get_any_type()])
+
+    type_param = tp.TypeParameter("S", bound=tst.StringType())
+    union = tst.UnionType([tst.NumberType(), type_param])
+    new_union = union.to_type_variable_free(tst.TypeScriptBuiltinFactory())
+    assert new_union == tst.UnionType([tst.NumberType(), tst.StringType()])
