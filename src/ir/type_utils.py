@@ -522,13 +522,12 @@ def update_type_var_bound_rec(t_param: tp.TypeParameter,
         return
     try:
         current_t = type_var_map[bound]
-        if t.is_subtype(current_t):
-            # The current assignment for the type variable corresponding to
-            # the upper bound of 't_param' is supertype of 't'. So we don't
-            # have to update anything.
-            return
-        t_args[indexes[bound]] = t
-        type_var_map[bound] = t
+        if not t.is_subtype(current_t):
+            t_args[indexes[bound]] = t
+            type_var_map[bound] = t
+        # The current assignment for the type variable corresponding to
+        # the upper bound of 't_param' is supertype of 't'. So we don't
+        # have to update anything.
     except KeyError:
         # This KeyError happens only if a given type parameter has bound
         # corresponding to a type variable of a type constructor. In this
