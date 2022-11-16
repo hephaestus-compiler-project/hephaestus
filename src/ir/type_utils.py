@@ -1045,7 +1045,7 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
     if not same_type and t1.name != t2.name and not t2.is_type_var():
         if not t1.supertypes:
             return {}
-        supertype = t1.supertypes[0]
+        supertype = t1.supertypes[-1]
         return unify_types(supertype, t2, factory, same_type=same_type)
 
     is_type_var = isinstance(t1, tp.TypeParameter)
@@ -1196,7 +1196,7 @@ def find_sam_fun_signature(context, etype, get_function_type, type_var_map={}):
                              for targ in sig.type_args]
         return sig
     if cls_decl.supertypes:
-        return find_sam_fun_signature(context, cls_decl.supertypes[0],
+        return find_sam_fun_signature(context, cls_decl.supertypes[-1],
                                       get_function_type)
     return None
 
@@ -1336,7 +1336,7 @@ def build_type_variable_dependencies(t1: tp.Type, t2: tp.Type):
     supertypes = _get_supertypes(t1)
     parent = t1
     while supertypes:
-        st = supertypes[0]
+        st = supertypes[-1]
         if st.is_parameterized():
             type_deps.update({
                 st.name: [_to_type_var_id(st, t_param)
