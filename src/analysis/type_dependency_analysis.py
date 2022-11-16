@@ -463,6 +463,22 @@ class TypeDependencyAnalysis(DefaultVisitor):
             DeclarationNode("/".join(namespace), decl)
         )
 
+    def _get_receiver_type(self, receiver_t):
+        # If the receiver type is parameterized, compute type variable
+        # assignments.
+        if receiver_t.is_parameterized():
+            return receiver_t, receiver_t.get_type_variable_assignments()
+
+        # If the receiver type is a type variable, compute its bound.
+        if receiver_t.is_type_var():
+            receiver_t = receiver_t.get_bound_rec(self._bt_factory)
+            return receiver_t, {}
+
+        if receiver_t.is_wildcard():
+            return self._get_receiver_type(receiver_t.get_bound_rec())
+
+        return receiver_t, {}
+
     def _visit_assign_with_receiver(self, node):
         prev_expt = self._exp_type
         self._exp_type = None
@@ -475,15 +491,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
                                       self._types)
         if receiver_t is None:
             return
-        type_var_map = {}
-        # If the receiver type is parameterized, compute type variable
-        # assignments
-        if receiver_t.is_parameterized():
-            type_var_map = receiver_t.get_type_variable_assignments()
-        # If the type of receiver is a type variable, get its bound.
-        if receiver_t.is_type_var():
-            receiver_t = receiver_t.get_bound_rec(self._bt_factory)
-
+        receiver_t, type_var_map = self._get_receiver_type(receiver_t)
         f = tu.get_decl_from_inheritance(receiver_t, node.name, self._context)
         assert f is not None, (
             "Field " + node.name + " was not found in class " +
@@ -762,6 +770,13 @@ class TypeDependencyAnalysis(DefaultVisitor):
                 self._inferred_nodes[parent_id].append(
                     TypeNode(ret_type, None))
                 return
+            if decl_ret_type.is_wildcard() and decl_ret_type.bound is not None:
+                self._inferred_nodes[parent_id].append(
+                    TypeNode(ret_type.bound, None)
+                )
+                return
+            if decl_ret_type.is_wildcard():
+                return
             self._infer_type_variables_parameterized_by_ret(
                 parent_id, node_id, decl_ret_type, func_type_parameters,
                 type_var_nodes)
@@ -781,8 +796,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
             if receiver_t is None:
                 return
 
-            if receiver_t.is_type_var():
-                receiver_t = receiver_t.get_bound_rec(self._bt_factory)
+            receiver_t, _ = self._get_receiver_type(receiver_t)
             fun_decl = tu.get_decl_from_inheritance(receiver_t,
                                                     node.func, self._context)
             if fun_decl is None:
