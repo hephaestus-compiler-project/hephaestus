@@ -67,14 +67,14 @@ class Type(Node):
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
-    def dynamic_subtyping(self, other: Type):
+    def two_way_subtyping(self, other: Type):
         """
         Overwritten when a certain type needs
         two-way subtyping checks.
 
         Eg. when checking if a string type is a subtype
         of union type 'Foo | string' we call this method
-        as `union-type.dynamic_subtyping(string_type)`
+        as `union-type.two_way_subtyping(string_type)`
         to check from the union's side.
 
         """

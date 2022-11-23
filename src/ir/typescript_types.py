@@ -456,7 +456,7 @@ class UnionType(TypeScriptBuiltin):
             return True
         return other.name == 'Object'
 
-    def dynamic_subtyping(self, other):
+    def two_way_subtyping(self, other):
         return other in set(self.types)
 
     def substitute_type_args(self, type_map,
