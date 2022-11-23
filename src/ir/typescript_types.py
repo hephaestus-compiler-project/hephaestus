@@ -459,11 +459,11 @@ class UnionType(TypeScriptBuiltin):
     def two_way_subtyping(self, other):
         return other in set(self.types)
 
-    def substitute_type_args(self, type_map,
-                             cond=lambda t: t.has_type_variables()):
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
         new_types = []
         for t in self.types:
-            new_t = (t.substitute_type_args(type_map, cond)
+            new_t = (t.substitute_type(type_map, cond)
                      if t.has_type_variables()
                      else t)
             new_types.append(new_t)

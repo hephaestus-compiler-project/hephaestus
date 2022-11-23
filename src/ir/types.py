@@ -124,18 +124,9 @@ class Type(Node):
                     stack.append(supertype)
         return visited
 
-    def substitute_type_args(self, type_map,
-                             cond=lambda t: t.has_type_variables()):
-        t = type_map.get(self)
-        if t is None or cond(t):
-            # Perform type substitution on the bound of the current type variable.
-            if self.is_type_var() and self.bound is not None:
-                new_bound = self.bound.substitute_type_args(type_map, cond)
-                return TypeParameter(self.name, self.variance, new_bound)
-            # The type parameter does not correspond to an abstract type
-            # so, there is nothing to substitute.
-            return self
-        return t
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
+        return self
 
     def not_related(self, other: Type):
         return not(self.is_subtype(other) or other.is_subtype(self))
@@ -311,6 +302,20 @@ class TypeParameter(AbstractType):
             return False
         return self.bound.is_subtype(other)
 
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
+        t = type_map.get(self)
+        if t is None or cond(t):
+            # Perform type substitution on the bound of the current type
+            # variable.
+            if self.bound is not None:
+                new_bound = self.bound.substitute_type(type_map, cond)
+                return TypeParameter(self.name, self.variance, new_bound)
+            # The type parameter does not correspond to an abstract type
+            # so, there is nothing to substitute.
+            return self
+        return t
+
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
                 self.name == other.name and
@@ -359,10 +364,10 @@ class WildCardType(Type):
         else:
             return {}
 
-    def substitute_type_args(self, type_map,
-                             cond=lambda t: t.has_type_variables()):
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
         if self.bound is not None:
-            new_bound = self.bound.substitute_type_args(type_map, cond)
+            new_bound = self.bound.substitute_type(type_map, cond)
             return WildCardType(new_bound, variance=self.variance)
         t = type_map.get(self)
         if t is None or cond(t):
@@ -414,7 +419,7 @@ class WildCardType(Type):
 
 
 def substitute_type(t, type_map):
-    return t.substitute_type_args(type_map, lambda t: False)
+    return t.substitute_type(type_map, lambda t: False)
 
 
 def perform_type_substitution(etype, type_map,
@@ -437,7 +442,7 @@ def perform_type_substitution(etype, type_map,
     supertypes = []
     for t in etype.supertypes:
         if t.is_parameterized():
-            supertypes.append(t.substitute_type_args(type_map))
+            supertypes.append(t.substitute_type(type_map))
         else:
             supertypes.append(t)
     type_params = []
@@ -678,10 +683,10 @@ class ParameterizedType(SimpleClassifier):
                 continue
         return type_vars
 
-    def substitute_type_args(self, type_map, cond=lambda t: t.has_type_variables()):
+    def substitute_type(self, type_map, cond=lambda t: t.has_type_variables()):
         type_args = []
         for t_arg in self.type_args:
-            type_args.append(t_arg.substitute_type_args(type_map, cond))
+            type_args.append(t_arg.substitute_type(type_map, cond))
         new_type_map = {
             tp: type_args[i]
             for i, tp in enumerate(self.t_constructor.type_parameters)
