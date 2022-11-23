@@ -158,7 +158,7 @@ class Builtin(Type):
 
     def __init__(self, name: str):
         super().__init__(name)
-        self.supertypes = [self]
+        self.supertypes = []
 
     def has_type_variables(self):
         return False

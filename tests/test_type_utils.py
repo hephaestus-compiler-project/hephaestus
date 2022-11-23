@@ -1062,6 +1062,24 @@ def test_instantiate_type_constructor_with_type_var_map():
         type_param3: type_var
     }
 
+    # Case 4: T1, T2 : T1, T3: T2 (type map = {T3: String})
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2", bound=type_param1)
+    type_param3 = tp.TypeParameter("T3", bound=type_param2)
+    type_map = {type_param3: kt.String}
+    types = [kt.Number]
+    t_con = tp.TypeConstructor("Con", [type_param1, type_param2, type_param3])
+    ptype, params = tutils.instantiate_type_constructor(
+        t_con, types=types, type_var_map=type_map)
+    assert ptype.type_args == [kt.String,
+                               kt.String,
+                               kt.String]
+    assert params == {
+        type_param1: kt.String,
+        type_param2: kt.String,
+        type_param3: kt.String
+    }
+
 
 def test_unify_types():
     factory = kt.KotlinBuiltinFactory()

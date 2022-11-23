@@ -1,5 +1,6 @@
 # pylint: disable=protected-access,too-many-instance-attributes,too-many-locals
 # pylint: disable=too-many-statements
+import re
 from collections import OrderedDict
 
 from src.ir import ast, groovy_types as gt, types as tp, type_utils as tu
@@ -274,13 +275,31 @@ class GroovyTranslator(BaseTranslator):
             constructor_fields = "\n" + self.get_ident(extra=2) if fields \
                 else ""
             constructor_fields += ("\n" + self.get_ident(extra=2)).join(fields)
-            return ("{ident}public {name}({params}) {{{fields}{new_line}"
-                    "{close_ident}}}").format(
+            super_call = ""
+            if node.superclasses:
+                supercls = node.superclasses[0]
+                if not isinstance(supercls.class_type, tp.Builtin):
+                    res = ""
+                    if supercls.args:
+                        translator = GroovyTranslator()
+                        translator.context = self.context
+                        translator._cast_number = True
+                        translator._namespace = self._namespace
+                        for expr in supercls.args:
+                            translator.visit(expr)
+                        res = translator._children_res
+                        res = ", ".join(res)
+                        res = re.sub(r'\s+', ' ', res)
+                    super_call = "\n" + self.get_ident(extra=2) + 'super(' + \
+                        res + ");"
+            return ("{ident}public {name}({params}) {{{super_call}{fields}"
+                    "{new_line}{close_ident}}}").format(
                 ident=self.get_ident(),
                 name=node.name,
                 params=constructor_params,
+                super_call=super_call,
                 fields=constructor_fields,
-                new_line="\n" if fields else "",
+                new_line="\n",
                 close_ident=self.get_ident() if fields else ""
             )
 
@@ -317,7 +336,7 @@ class GroovyTranslator(BaseTranslator):
             else:
                 res += " implements " + ", ".join(interfaces)
         body = " {"
-        if function_res or field_res:
+        if function_res or field_res or superclasses:
             body += "\n"
             join_separator = "\n" + self.get_ident()
             if field_res:
