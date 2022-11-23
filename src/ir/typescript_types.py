@@ -8,7 +8,15 @@ import src.ir.ast as ast
 import src.utils as ut
 from src.ir.decorators import two_way_subtyping
 
+
 class TypeScriptBuiltinFactory(bt.BuiltinFactory):
+    def __init__(self, max_union_types=10, max_types_in_union=4,
+                 max_string_literal_types=10, max_num_literal_types=10):
+        self._literal_type_factory = LiteralTypeFactory(
+            max_string_literal_types, max_num_literal_types)
+        self._union_type_factory = UnionTypeFactory(max_union_types,
+                                                    max_types_in_union)
+
     def get_language(self):
         return "typescript"
 
@@ -80,16 +88,17 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
     def get_null_type(self):
         return NullType(primitive=False)
 
-    def get_non_nothing_types(self): # Overwriting Parent method to add TS-specific types
+    def get_non_nothing_types(self):
+        #  Overwriting Parent method to add TS-specific types
         types = super().get_non_nothing_types()
         types.extend([
             self.get_null_type(),
             UndefinedType(primitive=False),
-            ] + literal_types.get_literal_types())
+            ] + self._literal_type_factory.get_literal_types())
         return types
 
     def get_decl_candidates(self):
-        return [gen_type_alias_decl,]
+        return [gen_type_alias_decl, ]
 
     def update_add_node_to_parent(self):
         return {
@@ -98,7 +107,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
     def get_compound_types(self, gen_object):
         return [
-            union_types.get_union_type(gen_object),
+            self._union_type_factory.get_union_type(gen_object),
         ]
 
     def get_constant_candidates(self, constants):
@@ -121,9 +130,12 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
 
         """
         return {
-            "NumberLiteralType": lambda etype: ast.IntegerConstant(etype.literal, NumberLiteralType),
-            "StringLiteralType": lambda etype: ast.StringConstant(etype.literal),
-            "UnionType": lambda etype: union_types.get_union_constant(etype, constants),
+            "NumberLiteralType": lambda etype: ast.IntegerConstant(
+                etype.literal, NumberLiteralType),
+            "StringLiteralType": lambda etype: ast.StringConstant(
+                etype.literal),
+            "UnionType": lambda etype: self._union_type_factory.get_union_constant(
+                etype, constants),
         }
 
 
@@ -755,12 +767,19 @@ class UnionTypeFactory(object):
             the already generated types or create a new one.
 
         """
-        return self.gen_union_type(gen_object)
         generated = len(self.unions)
         if generated == 0:
             return self.gen_union_type(gen_object)
         if generated >= self.max_ut or ut.random.bool():
-            return ut.random.choice(self.unions)
+            union_t = ut.random.choice(self.unions)
+            if union_t.has_type_variables():
+                # We might have selected a union type that holds a type
+                # variable. However, we must be careful because it might be
+                # no possible to use the selected union type since it uses
+                # a type variable that is out of context.
+                return self.gen_union_type(gen_object)
+            else:
+                return union_t
         return self.gen_union_type(gen_object)
 
     def get_union_constant(self, utype, constants):
@@ -830,8 +849,7 @@ def gen_type_alias_decl(gen,
 
     """
     alias_type = (etype if etype else
-                  gen.select_type()
-    )
+                  gen.select_type())
     initial_depth = gen.depth
     gen.depth += 1
     gen.depth = initial_depth
@@ -846,18 +864,3 @@ def gen_type_alias_decl(gen,
 def add_type_alias(gen, namespace, type_name, ta_decl):
     gen.context._add_entity(namespace, 'types', type_name, ta_decl.get_type())
     gen.context._add_entity(namespace, 'decls', type_name, ta_decl)
-
-
-# Literal Types
-
-# TODO make these limits user-configurable
-MAX_STRING_LITERAL_TYPES = 10
-MAX_NUM_LITERAL_TYPES = 10
-literal_types = LiteralTypeFactory(MAX_STRING_LITERAL_TYPES, MAX_NUM_LITERAL_TYPES)
-
-# Union Types
-
-# TODO make these limits user-configurable
-MAX_UNION_TYPES = 10
-MAX_TYPES_IN_UNION = 4
-union_types = UnionTypeFactory(MAX_UNION_TYPES, MAX_TYPES_IN_UNION)

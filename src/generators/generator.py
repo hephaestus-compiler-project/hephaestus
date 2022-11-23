@@ -45,7 +45,7 @@ class Generator():
         self.language = language
         self.logger: Logger = logger
         self.context: Context = None
-        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
+        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]()
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
