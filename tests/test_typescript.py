@@ -6,6 +6,10 @@ import src.ir.type_utils as tu
 
 
 def test_type_alias_with_literals():
+    # Tests subtyping relations between a string alias and string literal
+    # and between a number alias and a number literal.
+    #  - (type Foo = string) with literal "foo"
+    #  - (type Bar = number) with literal 5
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringType()).get_type()
     number_alias = ts_ast.TypeAliasDeclaration("Bar", tst.NumberType()).get_type()
 
@@ -19,6 +23,10 @@ def test_type_alias_with_literals():
 
 
 def test_type_alias_with_literals2():
+    # Tests subtyping relation between a literal alias
+    # and their corresponding literal type.
+    #  - (type Foo = "foo") with literal "foo"
+    #  - (type Bar = "bar") with literal "bar"
     string_alias = ts_ast.TypeAliasDeclaration("Foo", tst.StringLiteralType("foo")).get_type()
     number_alias = ts_ast.TypeAliasDeclaration("Bar", tst.NumberLiteralType(5)).get_type()
 
@@ -32,6 +40,11 @@ def test_type_alias_with_literals2():
 
 
 def test_union_types_simple():
+    # Tests subtyping relation between union types
+    # and the types in their union.
+    #  - number | boolean
+    #  - boolean | "bar"
+    #  - boolean | number
     union_1 = tst.UnionType([tst.NumberType(), tst.BooleanType()])
 
     bar_lit = tst.StringLiteralType("bar")
@@ -46,11 +59,14 @@ def test_union_types_simple():
 
 
 def test_union_types_other_types():
+    # Tests that types A, B are subtypes of A | B
     union = tst.UnionType([tst.NumberType(), tst.BooleanType()])
     assert tst.NumberType().is_subtype(union)
+    assert tst.BooleanType().is_subtype(union)
 
 
 def test_union_type_assign():
+    # Tests correct creation and assignment of union type
     union = tst.UnionType([tst.StringType(), tst.NumberType(), tst.BooleanType(), tst.ObjectType()])
     foo = tst.StringType()
 
@@ -60,6 +76,8 @@ def test_union_type_assign():
 
 
 def test_union_type_param():
+    # Tests that union type bounds of type parameters do not
+    # conflict with the sybtyping relations between the two.
     union1 = tst.UnionType([tst.NumberType(), tst.NullType()])
     union2 = tst.UnionType([tst.StringLiteralType("foo"), tst.NumberType()])
     t_param = tp.TypeParameter("T", bound=union2)
@@ -70,6 +88,7 @@ def test_union_type_param():
 
 
 def test_union_type_substitution():
+    # Tests substitution of type parametes in union types
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     type_param3 = tp.TypeParameter("T3")
@@ -86,6 +105,7 @@ def test_union_type_substitution():
 
 
 def test_union_type_substitution_type_var_bound():
+    # Tests substitution of bounded type parameters in union types
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2", bound=type_param1)
     type_map = {type_param1: tst.StringType()}
@@ -101,6 +121,7 @@ def test_union_type_substitution_type_var_bound():
 
 
 def test_union_to_type_variable_free():
+    # Tests the builtin method to-type-variable-free of union types
     type_param1 = tp.TypeParameter("T1")
     type_param2 = tp.TypeParameter("T2")
     foo = tp.TypeConstructor("Foo", [type_param1])
@@ -134,6 +155,7 @@ def test_union_type_unification_type_var():
     union = tst.UnionType([tst.StringType(), tst.StringLiteralType("foo")])
     type_param = tp.TypeParameter("T")
 
+    # Case 1: Unify a union with an unbounded type param
     type_var_map = tu.unify_types(union, type_param, tst.TypeScriptBuiltinFactory())
     assert len(type_var_map) == 1
     assert type_var_map == {type_param: union}
@@ -161,6 +183,9 @@ def test_union_type_unification():
     union2 = tst.UnionType([type_param, tst.NumberType(), tst.StringType()])
     assert union1.is_subtype(union2)
 
+    # Unify t1: 1410 | number | string
+    # with t2: T | number | string
+    # Result should be: {T: 1410}
     type_var_map = tu.unify_types(union1, union2, tst.TypeScriptBuiltinFactory())
     assert len(type_var_map) == 1
     assert type_var_map == {type_param: union1.types[0]}
@@ -168,6 +193,9 @@ def test_union_type_unification():
     type_param2 = tp.TypeParameter("G")
     union3 = tst.UnionType([type_param, type_param2, tst.StringLiteralType("foo")])
 
+    # Unify t1: 1410 | number | string
+    # with t3: T | G | "foo".
+    # Result should be: {T: number, G: string} or reversed.
     type_var_map = tu.unify_types(union1, union3, tst.TypeScriptBuiltinFactory())
     assert len(type_var_map) == 2
     assert type_param, type_param2 in type_var_map
@@ -178,15 +206,24 @@ def test_union_type_unification2():
     union = tst.UnionType([tst.NumberType(), tst.StringType()])
     assert tu.unify_types(tst.BooleanType(), union, tst.TypeScriptBuiltinFactory()) == {}
 
+    # Unify t1: number
+    # with t2: number | T
+    # Result should be: {T: number}
     t1 = tst.NumberType()
     t2 = tst.UnionType([tst.NumberType(), tp.TypeParameter("T")])
     res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
     assert len(res) == 1 and res[t2.types[1]] == t1
 
+    # Unify t1: number | string
+    # with t2: number | T
+    # Result should be: {T: string}
     t1 = tst.UnionType([tst.NumberType(), tst.StringType()])
     res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
     assert len(res) == 1 and res[t2.types[1]] == t1.types[1]
 
+    # Unify t1: number | "foo" | string
+    # with t2: number | T
+    # Result should be: {T: string}
     t1 = tst.UnionType([tst.NumberType(), tst.StringLiteralType("foo"), tst.StringType()])
     res = tu.unify_types(t1, t2, tst.TypeScriptBuiltinFactory())
     assert len(res) == 1 and res[t2.types[1]] == t1.types[2]
