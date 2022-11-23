@@ -138,9 +138,10 @@ class BuiltinFactory(ABC):
     def get_nothing(self):
         raise NotImplementedError
 
-    def get_dynamic_types(self, gen_object):
-        """ A type is considered dynamic if it can utilize
-        both a builtin type and a user-defined type.
+    def get_compound_types(self, gen_object):
+        """ A type is considered compound if it can consist
+        of other types. This function is used to add a lanuage's
+        native compound types to the generator.
 
         Eg. A TypeScript Union Type: string | myClass
 

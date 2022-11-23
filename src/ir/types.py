@@ -100,7 +100,7 @@ class Type(Node):
     def is_wildcard(self):
         return False
 
-    def is_combound(self):
+    def is_compound(self):
         return False
 
     def is_parameterized(self):
@@ -354,7 +354,7 @@ class WildCardType(Type):
             return self.bound.get_type_variables(factory)
         elif self.bound.is_type_var():
             return {self.bound: {self.bound.get_bound_rec(factory)}}
-        elif self.bound.is_combound():
+        elif self.bound.is_compound():
             return self.bound.get_type_variables(factory)
         else:
             return {}
@@ -539,7 +539,7 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
             )
         )
         return WildCardType(bound, variance)
-    elif t.is_combound():
+    elif t.is_compound():
         return t.to_type_variable_free(factory)
     else:
         return t
@@ -595,7 +595,7 @@ class ParameterizedType(SimpleClassifier):
         # XXX revisit
         self.supertypes = copy(self.t_constructor.supertypes)
 
-    def is_combound(self):
+    def is_compound(self):
         return True
 
     def is_parameterized(self):
@@ -671,7 +671,7 @@ class ParameterizedType(SimpleClassifier):
             if t_arg.is_type_var():
                 type_vars[t_arg].add(
                     t_arg.get_bound_rec(factory))
-            elif t_arg.is_combound() or t_arg.is_wildcard():
+            elif t_arg.is_compound() or t_arg.is_wildcard():
                 for k, v in t_arg.get_type_variables(factory).items():
                     type_vars[k].update(v)
             else:

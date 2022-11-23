@@ -96,7 +96,7 @@ class TypeScriptBuiltinFactory(bt.BuiltinFactory):
             ts_ast.TypeAliasDeclaration: add_type_alias,
         }
 
-    def get_dynamic_types(self, gen_object):
+    def get_compound_types(self, gen_object):
         return [
             union_types.get_union_type(gen_object),
         ]
@@ -432,7 +432,7 @@ class UnionType(TypeScriptBuiltin):
     def get_types(self):
         return self.types
 
-    def is_combound(self):
+    def is_compound(self):
         return True
 
     @two_way_subtyping
@@ -468,7 +468,7 @@ class UnionType(TypeScriptBuiltin):
             if t.is_type_var():
                 type_vars[t].add(
                     t.get_bound_rec(factory))
-            elif t.is_combound() or t.is_wildcard():
+            elif t.is_compound() or t.is_wildcard():
                 for k, v in t.get_type_variables(factory).items():
                     type_vars[k].update(v)
             else:
@@ -479,7 +479,7 @@ class UnionType(TypeScriptBuiltin):
         new_types = []
         for t in self.types:
             new_types.append(t.to_variance_free(type_var_map)
-                             if t.is_combound()
+                             if t.is_compound()
                              else t)
         return UnionType(new_types)
 
@@ -489,7 +489,7 @@ class UnionType(TypeScriptBuiltin):
         # type variable free.
         new_types = []
         for t in self.types:
-            if t.is_combound():
+            if t.is_compound():
                 new_type = t.to_type_variable_free(factory)
             elif t.is_type_var():
                 bound = t.get_bound_rec(factory)
@@ -517,7 +517,7 @@ class UnionType(TypeScriptBuiltin):
             return {}
 
         # If T1 is a union type, then get all its types.
-        t1_types = (t1.types if t1.is_combound() and
+        t1_types = (t1.types if t1.is_compound() and
                      not t1.is_parameterized()
                      else [t1])
 
@@ -715,7 +715,7 @@ class UnionType(TypeScriptBuiltin):
         return hash(str(self.name) + str(self.types))
 
 
-class UnionTypeFactory:
+class UnionTypeFactory(object):
     def __init__(self, max_ut, max_in_union):
         self.max_ut = max_ut
         self.unions = []
@@ -728,7 +728,7 @@ class UnionTypeFactory:
         num_of_types = self.get_number_of_types()
         types = set()
         while len(types) < num_of_types:
-            t = gen.select_type(exclude_dynamic_types=True)
+            t = gen.select_type(exclude_native_compound_types=True)
             types.add(t)
         return list(types)
 
