@@ -47,8 +47,11 @@ run_groovy_from_source() {
         --language groovy --cast-numbers
 }
 
-run_typescript() {
+install_ts_nightly() {
     npm install -g typescript@next
+}
+
+run_typescript() {
     python3.9 hephaestus.py -s $TIME_TO_RUN -t 0 -w $CORES --batch 30 -P \
         --language typescript --disable-use-site-variance \
         --error-filter-patterns patterns.txt
@@ -83,6 +86,7 @@ while getopts "hkstagS" OPTION; do
                         ;;
 
                 t)
+                        install_ts_nightly
                         run_typescript
                         ;;
 
