@@ -17,9 +17,11 @@ from src import utils
 from src.compilers.kotlin import KotlinCompiler
 from src.compilers.groovy import GroovyCompiler
 from src.compilers.java import JavaCompiler
+from src.compilers.typescript import TypeScriptCompiler
 from src.translators.kotlin import KotlinTranslator
 from src.translators.groovy import GroovyTranslator
 from src.translators.java import JavaTranslator
+from src.translators.typescript import TypeScriptTranslator
 from src.modules.processor import ProgramProcessor
 
 
@@ -27,12 +29,14 @@ STOP_COND = False
 TRANSLATORS = {
     'kotlin': KotlinTranslator,
     'groovy': GroovyTranslator,
-    'java': JavaTranslator
+    'java': JavaTranslator,
+    'typescript' : TypeScriptTranslator
 }
 COMPILERS = {
     'kotlin': KotlinCompiler,
     'groovy': GroovyCompiler,
-    'java': JavaCompiler
+    'java': JavaCompiler,
+    'typescript': TypeScriptCompiler
 }
 STATS = {
     "Info": {

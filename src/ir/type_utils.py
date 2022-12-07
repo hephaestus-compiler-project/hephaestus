@@ -1039,6 +1039,15 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
       class A<T>
       class B : A<String>()
     """
+    if t2.is_compound() and not t2.is_parameterized():
+        return t2.unify_types(t1, factory, same_type)
+    elif t1.is_compound() and t2.is_type_var():
+        bound = t2.get_bound_rec(factory)
+        if bound is None or t1.is_subtype(bound):
+            return {t2: t1}
+        else:
+            return {}
+
     if same_type and type(t1) != type(t2):
         return {}
 
@@ -1100,10 +1109,8 @@ def unify_types(t1: tp.Type, t2: tp.Type, factory,
                     if not _update_type_var_map(type_var_map, t_var, t_arg1):
                         return {}
                     continue
-                is_parameterized = isinstance(t_var.bound,
-                                              tp.ParameterizedType)
-                is_parameterized2 = isinstance(t_arg1,
-                                               tp.ParameterizedType)
+                is_parameterized = t_var.bound.is_compound()
+                is_parameterized2 = t_arg1.is_compound()
                 if is_parameterized and is_parameterized2:
                     res = unify_types(t_arg1, t_var.bound, factory)
                     if not res or any(

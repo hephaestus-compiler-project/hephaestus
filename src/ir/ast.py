@@ -5,7 +5,6 @@ from copy import deepcopy
 import src.ir.type_utils as tu
 import src.ir.types as types
 from src import utils
-from src.ir import BUILTIN_FACTORIES
 from src.ir.builtins import BuiltinFactory, FunctionType
 from src.ir.node import Node
 
@@ -32,10 +31,10 @@ class Expr(Node):
 
 class Program(Node):
     # Set default value to kotlin for backward compatibility
-    def __init__(self, context, language):
+    def __init__(self, context, language, bt_factory):
         self.context = context
         self.language = language
-        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
+        self.bt_factory: BuiltinFactory = bt_factory
 
     def children(self):
         return self.context.get_declarations(GLOBAL_NAMESPACE,
@@ -860,6 +859,15 @@ class BottomConstant(Constant):
         return True
 
 
+class NullConstant(Constant):
+    def __init__(self):
+        super().__init__("null")
+
+    def is_equal(self, other):
+        return isinstance(other, NullConstant)
+
+Null = NullConstant()
+
 class IntegerConstant(Constant):
     # TODO: Support Hex Integer literals, binary integer literals?
     def __init__(self, literal: int, integer_type):
@@ -1076,6 +1084,10 @@ class LogicalExpr(BinaryOp):
         "java": [
             Operator('&&'),
             Operator('||')
+        ],
+        "typescript": [
+            Operator('&&'),
+            Operator('||')
         ]
     }
 
@@ -1103,6 +1115,10 @@ class EqualityExpr(BinaryOp):
         "java": [
             Operator('=='),
             Operator('=', is_not=True)
+        ],
+        "typescript": [
+            Operator('==='),
+            Operator('==', is_not= True)
         ]
     }
 
@@ -1132,6 +1148,12 @@ class ComparisonExpr(BinaryOp):
             Operator('>='),
             Operator('<'),
             Operator('<=')
+        ],
+        "typescript": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
         ]
     }
 
@@ -1157,6 +1179,12 @@ class ArithExpr(BinaryOp):
             Operator('*')
         ],
         "java": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ],
+        "typescript": [
             Operator('+'),
             Operator('-'),
             Operator('/'),

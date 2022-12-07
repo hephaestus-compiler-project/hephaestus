@@ -107,7 +107,7 @@ parser.add_argument(
 parser.add_argument(
     "--language",
     default="kotlin",
-    choices=['kotlin', 'groovy', 'java'],
+    choices=['kotlin', 'groovy', 'java', 'typescript'],
     help="Select specific language"
 )
 parser.add_argument(
@@ -235,6 +235,9 @@ def validate_args(args):
 
     if args.examine and not args.replay:
         sys.exit("You cannot use --examine option without the --replay option")
+
+    if args.language == "typescript" and not args.disable_use_site_variance:
+        sys.exit("\nTypeScript does not support use-site variance.\nRun Hephaestus again with the flag --disable-use-site-variance.")
 
 
 def pre_process_args(args):

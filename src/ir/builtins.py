@@ -77,6 +77,10 @@ class BuiltinFactory(ABC):
     def get_function_type(self, nr_parameters=0):
         pass
 
+    @abstractmethod
+    def get_null_type(self):
+        pass
+
     def get_non_nothing_types(self):
         return [
             self.get_any_type(),
@@ -92,7 +96,7 @@ class BuiltinFactory(ABC):
             self.get_boolean_type(),
             self.get_char_type(),
             self.get_string_type(),
-            self.get_array_type()
+            self.get_array_type(),
         ]
 
     def get_number_types(self):
@@ -107,11 +111,49 @@ class BuiltinFactory(ABC):
             self.get_big_integer_type(),
         ]
 
+    def get_decl_candidates(self):
+        """ Overwrite this method to return a list
+        with language-specific AST declaration nodes.
+
+        See implementation in typescript_types.py and
+        TS-specific AST nodes in typescript_ast.py
+
+        """
+        return []
+
+    def update_add_node_to_parent(self):
+        """ Overwrite this to update the dict 'node_type'
+        on src.generators.generator._add_node_to_parent
+        with the respective <ast.Node, src.ir.context>
+        key-value pair for the language-specific AST nodes.
+
+        See implementation in typescript_types.py
+
+        """
+        return {}
+
     def get_function_types(self, max_parameters):
         return [self.get_function_type(i) for i in range(0, max_parameters+1)]
 
     def get_nothing(self):
         raise NotImplementedError
+
+    def get_compound_types(self, gen_object):
+        """ A type is considered compound if it can consist
+        of other types. This function is used to add a lanuage's
+        native compound types to the generator.
+
+        Eg. A TypeScript Union Type: string | myClass
+
+        """
+        return []
+
+    def get_constant_candidates(self, constants):
+        """ Overwrite this function to update the generator
+        constants with language-specific.
+
+        """
+        return {}
 
 
 class AnyType(Builtin):

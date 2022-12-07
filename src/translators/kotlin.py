@@ -1,13 +1,6 @@
 from src.ir import ast, kotlin_types as kt, types as tp, type_utils as tu
 from src.translators.base import BaseTranslator
-
-
-def append_to(visit):
-    def inner(self, node):
-        self._nodes_stack.append(node)
-        res = visit(self, node)
-        self._nodes_stack.pop()
-    return inner
+from src.translators.utils import append_to
 
 
 class KotlinTranslator(BaseTranslator):
@@ -154,12 +147,6 @@ class KotlinTranslator(BaseTranslator):
 
         is_sam = tu.is_sam(self.context, cls_decl=node)
         class_prefix = "interface" if is_sam else node.get_class_prefix()
-        body = ""
-        if function_res:
-            body = " {{\n{function_res}\n{old_ident}}}".format(
-                function_res="\n\n".join(function_res),
-                old_ident=" " * old_ident
-            )
 
         res = "{ident}{f}{o}{p} {n}".format(
             ident=" " * old_ident,
@@ -169,10 +156,6 @@ class KotlinTranslator(BaseTranslator):
                           not is_sam) else "",
             p=class_prefix,
             n=node.name,
-            tps="<" + type_parameters_res + ">" if type_parameters_res else "",
-            fields="(" + ", ".join(field_res) + ")" if field_res else "",
-            s=": " + ", ".join(superclasses_res) if superclasses_res else "",
-            body=body
         )
 
         if type_parameters_res:

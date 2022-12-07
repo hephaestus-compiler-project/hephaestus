@@ -47,6 +47,16 @@ run_groovy_from_source() {
         --language groovy --cast-numbers
 }
 
+install_ts_nightly() {
+    npm install -g typescript@next
+}
+
+run_typescript() {
+    python3.9 hephaestus.py -s $TIME_TO_RUN -t 0 -w $CORES --batch 30 -P \
+        --language typescript --disable-use-site-variance \
+        --error-filter-patterns patterns.txt
+}
+
 run_multiple_versions() {
     cd $CHECK_TYPE_SYSTEMS
     git pull
@@ -68,11 +78,16 @@ then
         exit 0
 fi
 
-while getopts "hksagS" OPTION; do
+while getopts "hkstagS" OPTION; do
         case $OPTION in
 
                 k)
                         simple_run
+                        ;;
+
+                t)
+                        install_ts_nightly
+                        run_typescript
                         ;;
 
                 s)
@@ -94,12 +109,14 @@ while getopts "hksagS" OPTION; do
                 h)
                         echo "Usage:"
                         echo "init.sh -k "
+                        echo "init.sh -t "
                         echo "init.sh -s "
                         echo "init.sh -a "
                         echo "init.sh -g "
                         echo "init.sh -S "
                         echo ""
                         echo "   -k     Simple run"
+                        echo "   -t     Install latest typescript nightly version"
                         echo "   -s     Run from source"
                         echo "   -a     Run multiple versions"
                         echo "   -g     Simple run groovy"

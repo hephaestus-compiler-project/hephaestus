@@ -8,7 +8,15 @@ class ASTVisitor():
         raise NotImplementedError('result() must be implemented')
 
     def visit(self, node):
-        visitors = {
+        visitors = self.get_visitors()
+        visitor = visitors.get(node.__class__)
+        if visitor is None:
+            raise Exception(
+                "Cannot find visitor for instance node " + str(node.__class__))
+        return visitor(node)
+
+    def get_visitors(self):
+        return {
             ast.SuperClassInstantiation: self.visit_super_instantiation,
             ast.ClassDeclaration: self.visit_class_decl,
             types.TypeParameter: self.visit_type_param,
@@ -21,6 +29,7 @@ class ASTVisitor():
             ast.FunctionReference: self.visit_func_ref,
             ast.BottomConstant: self.visit_bottom_constant,
             ast.IntegerConstant: self.visit_integer_constant,
+            ast.NullConstant: self.visit_null_constant,
             ast.RealConstant: self.visit_real_constant,
             ast.CharConstant: self.visit_char_constant,
             ast.StringConstant: self.visit_string_constant,
@@ -40,11 +49,6 @@ class ASTVisitor():
             ast.Program: self.visit_program,
             ast.Block: self.visit_block,
         }
-        visitor = visitors.get(node.__class__)
-        if visitor is None:
-            raise Exception(
-                "Cannot find visitor for instance node " + str(node.__class__))
-        return visitor(node)
 
     def visit_program(self, node):
         raise NotImplementedError('visit_program() must be implemented')
@@ -89,6 +93,9 @@ class ASTVisitor():
     def visit_integer_constant(self, node):
         raise NotImplementedError(
             'visit_integer_constant() must be implemented')
+
+    def visit_null_constant(self, node):
+        raise NotImplementedError('visit_null_constant() must be implemented')
 
     def visit_real_constant(self, node):
         raise NotImplementedError('visit_real_constant() must be implemented')
@@ -193,6 +200,9 @@ class DefaultVisitor(ASTVisitor):
         return self._visit_node(node)
 
     def visit_integer_constant(self, node):
+        return self._visit_node(node)
+
+    def visit_null_constant(self, node):
         return self._visit_node(node)
 
     def visit_real_constant(self, node):

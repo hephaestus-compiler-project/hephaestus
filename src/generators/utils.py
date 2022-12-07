@@ -98,23 +98,3 @@ def init_variance_choices(type_var_map: tu.TypeVarMap) -> tu.VarianceChoices:
             type_var = type_var.bound
             variance_choices[type_var] = (False, False)
     return variance_choices
-
-
-def gen_identifier(ident_type:str=None) -> str:
-    """Generate an identifier name.
-
-    Args:
-        ident_type: None or 'capitalize' or 'lower'
-
-    Raises:
-        AssertionError: Raises an AssertionError if the ident_type is neither
-            'capitalize' nor 'lower'.
-    """
-    word = ut.random.word()
-    if ident_type is None:
-        return word
-    if ident_type == 'lower':
-        return word.lower()
-    if ident_type == 'capitalize':
-        return word.capitalize()
-    raise AssertionError("ident_type should be 'capitalize' or 'lower'")

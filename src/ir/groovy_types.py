@@ -72,6 +72,9 @@ class GroovyBuiltinFactory(bt.BuiltinFactory):
             BooleanType(primitive=True)
         ]
 
+    def get_null_type(self):
+        raise Exception("Groovy does not support null types")
+
     def get_non_nothing_types(self):
         return super().get_non_nothing_types() + self.get_primitive_types()
 

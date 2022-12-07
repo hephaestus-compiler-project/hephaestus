@@ -28,7 +28,7 @@ from src import utils as ut
 from src.generators import generators as gens
 from src.generators import utils as gu
 from src.generators.config import cfg
-from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt
+from src.ir import ast, types as tp, type_utils as tu, kotlin_types as kt, typescript_types as tst
 from src.ir.context import Context
 from src.ir.builtins import BuiltinFactory
 from src.ir import BUILTIN_FACTORIES
@@ -45,7 +45,7 @@ class Generator():
         self.language = language
         self.logger: Logger = logger
         self.context: Context = None
-        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]
+        self.bt_factory: BuiltinFactory = BUILTIN_FACTORIES[language]()
         self.depth = 1
         self._vars_in_context = defaultdict(lambda: 0)
         self._new_from_class = None
@@ -94,7 +94,7 @@ class Generator():
                                  cfg.limits.max_top_level):
             self.gen_top_level_declaration()
         self.generate_main_func()
-        return ast.Program(self.context, self.language)
+        return ast.Program(self.context, self.language, self.bt_factory)
 
     def gen_top_level_declaration(self):
         """Generate a top-level declaration and add it in the context.
@@ -110,12 +110,13 @@ class Generator():
         declarations.
         """
         candidates = [
-            self.gen_variable_decl,
-            self.gen_class_decl,
-            self.gen_func_decl,
+            lambda gen: gen.gen_variable_decl(),
+            lambda gen: gen.gen_class_decl(),
+            lambda gen: gen.gen_func_decl(),
         ]
+        candidates.extend(self.bt_factory.get_decl_candidates())
         gen_func = ut.random.choice(candidates)
-        gen_func()
+        gen_func(self)
 
     def generate_main_func(self) -> ast.FunctionDeclaration:
         """Generate the main function.
@@ -215,7 +216,7 @@ class Generator():
         Returns:
             A function declaration node.
         """
-        func_name = func_name or gu.gen_identifier('lower')
+        func_name = func_name or ut.random.identifier('lower')
 
         initial_namespace = self.namespace
         if namespace:
@@ -273,7 +274,8 @@ class Generator():
                 if (
                     ut.random.bool(prob=0.25) or
                     self.language == 'java' or
-                    self.language == 'groovy' and is_interface
+                    self.language == 'groovy' and is_interface or
+                    self.language == 'typescript' and is_interface
                 )
                 else self._gen_func_params_with_default()
             )
@@ -338,7 +340,7 @@ class Generator():
         Args:
             etype: Parameter type.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         if etype and etype.is_wildcard():
             bound = etype.get_bound_rec()
             param_type = bound or self.select_type(exclude_covariants=True)
@@ -371,7 +373,7 @@ class Generator():
         Returns:
             A class declaration node.
         """
-        class_name = class_name or gu.gen_identifier('capitalize')
+        class_name = class_name or ut.random.identifier('capitalize')
         initial_namespace = self.namespace
         self.namespace += (class_name,)
         initial_depth = self.depth
@@ -536,22 +538,22 @@ class Generator():
 
     def _add_node_to_parent(self, parent_namespace, node):
         node_type = {
-            ast.FunctionDeclaration: self.context.add_func,
-            ast.ClassDeclaration: self.context.add_class,
-            ast.VariableDeclaration: self.context.add_var,
-            ast.FieldDeclaration: self.context.add_var,
-            ast.ParameterDeclaration: self.context.add_var,
-            ast.Lambda: self.context.add_lambda,
+            ast.FunctionDeclaration: lambda gen, p, n, nd: gen.context.add_func(p, n, nd),
+            ast.ClassDeclaration: lambda gen, p, n, nd: gen.context.add_class(p, n, nd),
+            ast.VariableDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.FieldDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.ParameterDeclaration: lambda gen, p, n, nd: gen.context.add_var(p, n, nd),
+            ast.Lambda: lambda gen, p, n, nd: gen.context.add_lambda(p, n, nd),
         }
+        node_type.update(self.bt_factory.update_add_node_to_parent())
         if parent_namespace == ast.GLOBAL_NAMESPACE:
-            node_type[type(node)](parent_namespace, node.name, node)
+            node_type[type(node)](self, parent_namespace, node.name, node)
             return
         parent = self.context.get_decl(parent_namespace[:-1],
                                        parent_namespace[-1])
         if parent and isinstance(parent, ast.ClassDeclaration):
             self._add_node_to_class(parent, node)
-
-        node_type[type(node)](parent_namespace, node.name, node)
+        node_type[type(node)](self, parent_namespace, node.name, node)
 
 
     # And
@@ -710,7 +712,7 @@ class Generator():
     def _gen_type_params_from_existing(self,
                                        func: ast.FunctionDeclaration,
                                        type_var_map
-                                      ) -> (List[tp.TypeParameter], tu.TypeVarMap):
+                                      ) -> Tuple[List[tp.TypeParameter], tu.TypeVarMap]:
         """Gen type parameters for a function that overrides a parameterized
             function.
 
@@ -773,7 +775,7 @@ class Generator():
             etype: Field type.
             class_is_final: Is the class final.
         """
-        name = gu.gen_identifier('lower')
+        name = ut.random.identifier('lower')
         can_override = not class_is_final and ut.random.bool()
         is_final = ut.random.bool()
         field_type = etype or self.select_type(exclude_contravariants=True,
@@ -813,13 +815,14 @@ class Generator():
         vtype = var_type.get_bound_rec() if var_type.is_wildcard() else \
             var_type
         var_decl = ast.VariableDeclaration(
-            gu.gen_identifier('lower'),
+            ut.random.identifier('lower'),
             expr=expr,
             is_final=is_final,
             var_type=vtype,
             inferred_type=var_type)
         self._add_node_to_parent(self.namespace, var_decl)
         return var_decl
+
 
     ##### Expressions #####
 
@@ -1533,7 +1536,7 @@ class Generator():
             if not param.vararg:
                 arg = self.generate_expr(expr_type, only_leaves,
                                          gen_bottom=gen_bottom)
-                if param.default:
+                if param.default and self.language != 'typescript':
                     if self.language == 'kotlin' and ut.random.bool():
                         # Randomly skip some default arguments.
                         args.append(ast.CallArgument(arg, name=param.name))
@@ -1890,7 +1893,9 @@ class Generator():
             self.bt_factory.get_array_type().name: (
                 lambda x: self.gen_array_expr(x, only_leaves, subtype=subtype)
             ),
+            self.bt_factory.get_null_type().name: lambda x: ast.Null
         }
+        constant_candidates.update(self.bt_factory.get_constant_candidates(constant_candidates))
         binary_ops = {
             self.bt_factory.get_boolean_type(): [
                 lambda x: self.gen_logical_expr(x, only_leaves),
@@ -1945,7 +1950,8 @@ class Generator():
                   exclude_covariants=False,
                   exclude_contravariants=False,
                   exclude_type_vars=False,
-                  exclude_function_types=False) -> List[tp.Type]:
+                  exclude_function_types=False,
+                  exclude_native_compound_types=False) -> List[tp.Type]:
         """Get all available types.
 
         Including user-defined types, built-ins, and function types.
@@ -1959,6 +1965,7 @@ class Generator():
             exclude_contravariants: exclude contravariant type parameters.
             exclude_type_vars: exclude type variables.
             exclude_function_types: exclude function types.
+            exclude_native_compound_types: exclude native compound types.
 
         Returns:
             A list of available types.
@@ -1976,7 +1983,6 @@ class Generator():
                 if exclude_contravariants and variance == tp.Contravariant:
                     continue
                 type_params.append(t_param)
-
         if type_params and ut.random.bool():
             return type_params
 
@@ -1988,16 +1994,21 @@ class Generator():
                 t for t in builtins
                 if t.name != self.bt_factory.get_array_type().name
             ]
+
+        compound_types = (self.bt_factory.get_compound_types(self)
+                   if not exclude_native_compound_types
+                   else [])
         if exclude_function_types:
-            return usr_types + builtins
-        return usr_types + builtins + self.function_types
+            return usr_types + builtins + compound_types
+        return usr_types + builtins + compound_types + self.function_types
 
     def select_type(self,
                     ret_types=True,
                     exclude_arrays=False,
                     exclude_covariants=False,
                     exclude_contravariants=False,
-                    exclude_function_types=False) -> tp.Type:
+                    exclude_function_types=False,
+                    exclude_native_compound_types=False) -> tp.Type:
         """Select a type from the all available types.
 
         It will always instantiating type constructors to parameterized types.
@@ -2008,8 +2019,8 @@ class Generator():
             exclude_arrays: exclude array types.
             exclude_covariants: exclude covariant type parameters.
             exclude_contravariants: exclude contravariant type parameters.
-            exclude_type_vars: exclude type variables.
             exclude_function_types: exclude function types.
+            exclude_native_compound_types: exclude native compound types.
 
         Returns:
             Returns a type.
@@ -2018,7 +2029,8 @@ class Generator():
                                exclude_arrays=exclude_arrays,
                                exclude_covariants=exclude_covariants,
                                exclude_contravariants=exclude_contravariants,
-                               exclude_function_types=exclude_function_types)
+                               exclude_function_types=exclude_function_types,
+                               exclude_native_compound_types=exclude_native_compound_types)
         stype = ut.random.choice(types)
         if stype.is_type_constructor():
             exclude_type_vars = stype.name == self.bt_factory.get_array_type().name
@@ -2027,7 +2039,8 @@ class Generator():
                                       exclude_covariants=True,
                                       exclude_contravariants=True,
                                       exclude_type_vars=exclude_type_vars,
-                                      exclude_function_types=exclude_function_types),
+                                      exclude_function_types=exclude_function_types,
+                                      exclude_native_compound_types=exclude_native_compound_types),
                 enable_pecs=self.enable_pecs,
                 disable_variance_functions=self.disable_variance_functions,
                 variance_choices={}
@@ -2793,7 +2806,7 @@ class Generator():
             declaration (field or function).
         """
         initial_namespace = self.namespace
-        class_name = gu.gen_identifier('capitalize')
+        class_name = ut.random.identifier('capitalize')
         type_params = None
 
         # Get return type, type_var_map, and flag for wildcards
@@ -2886,8 +2899,8 @@ class Generator():
             type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}, True
 
-        # the given type is parameterized
-        assert isinstance(etype, (tp.ParameterizedType, tp.WildCardType))
+        # the given type is compound
+        assert etype.is_compound() or etype.is_wildcard()
         type_vars = etype.get_type_variables(self.bt_factory)
         type_params = self.gen_type_params(
             len(type_vars), with_variance=self.language == 'kotlin')

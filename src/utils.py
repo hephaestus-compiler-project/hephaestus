@@ -167,6 +167,28 @@ class RandomUtils():
     def range(self, from_value, to_value):
         return range(0, self.integer(from_value, to_value))
 
+    def identifier(self, ident_type:str=None) -> str:
+        """Generate an identifier name.
+
+        Args:
+            ident_type: None or 'capitalize' or 'lower'
+
+        Raises:
+            AssertionError: Raises an AssertionError if the ident_type is neither
+                'capitalize' nor 'lower'.
+        """
+        word = self.word()
+        if ident_type is None:
+            return word
+        if ident_type == 'lower':
+            return word.lower()
+        if ident_type == 'capitalize':
+            return word.capitalize()
+        raise AssertionError("ident_type should be 'capitalize' or 'lower'")
+
+    def shuffle(self, ll):
+        return self.r.shuffle(ll)
+
 
 random = RandomUtils()
 

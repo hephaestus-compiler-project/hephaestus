@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import List, Dict, Set
 
 from src.ir.node import Node
+from src.ir.decorators import two_way_subtyping
 
 
 class Variance(object):
@@ -66,6 +67,19 @@ class Type(Node):
     def is_subtype(self, other: Type):
         raise NotImplementedError("You have to implement 'is_subtype()'")
 
+    def two_way_subtyping(self, other: Type):
+        """
+        Overwritten when a certain type needs
+        two-way subtyping checks.
+
+        Eg. when checking if a string type is a subtype
+        of union type 'Foo | string' we call this method
+        as `union-type.two_way_subtyping(string_type)`
+        to check from the union's side.
+
+        """
+        return False
+
     def is_assignable(self, other: Type):
         """
         Checks of a value of the current type is assignable to 'other' type.
@@ -84,6 +98,9 @@ class Type(Node):
         return False
 
     def is_wildcard(self):
+        return False
+
+    def is_compound(self):
         return False
 
     def is_parameterized(self):
@@ -106,6 +123,10 @@ class Type(Node):
                     visited.add(supertype)
                     stack.append(supertype)
         return visited
+
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
+        return self
 
     def not_related(self, other: Type):
         return not(self.is_subtype(other) or other.is_subtype(self))
@@ -153,6 +174,7 @@ class Builtin(Type):
         """Hash based on the Type"""
         return hash(str(self.__class__))
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         return other == self or other in self.get_supertypes()
 
@@ -219,6 +241,7 @@ class SimpleClassifier(Classifier):
                     str(t_class[0].t_constructor) + " " + \
                     "do not have the same types"
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         supertypes = self.get_supertypes()
         # Since the subtyping relation is transitive, we must also check
@@ -273,10 +296,25 @@ class TypeParameter(AbstractType):
         # are out of scope in the context where we use this bound.
         return t.to_type_variable_free(factory)
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if not self.bound:
             return False
-        return self.bound == other
+        return self.bound.is_subtype(other)
+
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
+        t = type_map.get(self)
+        if t is None or cond(t):
+            # Perform type substitution on the bound of the current type
+            # variable.
+            if self.bound is not None:
+                new_bound = self.bound.substitute_type(type_map, cond)
+                return TypeParameter(self.name, self.variance, new_bound)
+            # The type parameter does not correspond to an abstract type
+            # so, there is nothing to substitute.
+            return self
+        return t
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and
@@ -302,6 +340,7 @@ class WildCardType(Type):
         self.bound = bound
         self.variance = variance
 
+    @two_way_subtyping
     def is_subtype(self, other):
         if isinstance(other, WildCardType):
             if other.bound is not None:
@@ -320,10 +359,22 @@ class WildCardType(Type):
             return self.bound.get_type_variables(factory)
         elif self.bound.is_type_var():
             return {self.bound: {self.bound.get_bound_rec(factory)}}
-        elif self.bound.is_parameterized():
+        elif self.bound.is_compound():
             return self.bound.get_type_variables(factory)
         else:
             return {}
+
+    def substitute_type(self, type_map,
+                        cond=lambda t: t.has_type_variables()):
+        if self.bound is not None:
+            new_bound = self.bound.substitute_type(type_map, cond)
+            return WildCardType(new_bound, variance=self.variance)
+        t = type_map.get(self)
+        if t is None or cond(t):
+            # The bound does not correspond to abstract type
+            # so there is nothing to substitute
+            return self
+        return t
 
     def get_bound_rec(self):
         if not self.bound:
@@ -367,42 +418,8 @@ class WildCardType(Type):
         return False
 
 
-def _get_type_substitution(etype, type_map,
-                           cond=lambda t: t.has_type_variables()):
-    if etype.is_parameterized():
-        return substitute_type_args(etype, type_map, cond)
-    if etype.is_wildcard() and etype.bound is not None:
-        new_bound = _get_type_substitution(etype.bound, type_map, cond)
-        return WildCardType(new_bound, variance=etype.variance)
-    t = type_map.get(etype)
-    if t is None or cond(t):
-        # Perform type substitution on the bound of the current type variable.
-        if etype.is_type_var() and etype.bound is not None:
-            new_bound = _get_type_substitution(etype.bound, type_map, cond)
-            return TypeParameter(etype.name, etype.variance, new_bound)
-        # The type parameter does not correspond to an abstract type
-        # so, there is nothing to substitute.
-        return etype
-    return t
-
-
-def substitute_type_args(etype, type_map,
-                         cond=lambda t: t.has_type_variables()):
-    assert etype.is_parameterized()
-    type_args = []
-    for t_arg in etype.type_args:
-        type_args.append(_get_type_substitution(t_arg, type_map, cond))
-    new_type_map = {
-        tp: type_args[i]
-        for i, tp in enumerate(etype.t_constructor.type_parameters)
-    }
-    type_con = perform_type_substitution(
-        etype.t_constructor, new_type_map, cond)
-    return ParameterizedType(type_con, type_args)
-
-
 def substitute_type(t, type_map):
-    return _get_type_substitution(t, type_map, lambda t: False)
+    return t.substitute_type(type_map, lambda t: False)
 
 
 def perform_type_substitution(etype, type_map,
@@ -425,7 +442,7 @@ def perform_type_substitution(etype, type_map,
     supertypes = []
     for t in etype.supertypes:
         if t.is_parameterized():
-            supertypes.append(substitute_type_args(t, type_map))
+            supertypes.append(t.substitute_type(type_map))
         else:
             supertypes.append(t)
     type_params = []
@@ -471,6 +488,7 @@ class TypeConstructor(AbstractType):
     def is_type_constructor(self):
         return True
 
+    @two_way_subtyping
     def is_subtype(self, other: Type):
         supertypes = self.get_supertypes()
         matched_supertype = None
@@ -526,7 +544,7 @@ def _to_type_variable_free(t: Type, t_param, factory) -> Type:
             )
         )
         return WildCardType(bound, variance)
-    elif t.is_parameterized():
+    elif t.is_compound():
         return t.to_type_variable_free(factory)
     else:
         return t
@@ -581,6 +599,9 @@ class ParameterizedType(SimpleClassifier):
                          self.t_constructor.supertypes)
         # XXX revisit
         self.supertypes = copy(self.t_constructor.supertypes)
+
+    def is_compound(self):
+        return True
 
     def is_parameterized(self):
         return True
@@ -651,17 +672,28 @@ class ParameterizedType(SimpleClassifier):
         # This function actually returns a dict of the enclosing type variables
         # along with the set of their bounds.
         type_vars = defaultdict(set)
-        for i, t_arg in enumerate(self.type_args):
-            t_arg = t_arg
+        for t_arg in self.type_args:
             if t_arg.is_type_var():
                 type_vars[t_arg].add(
                     t_arg.get_bound_rec(factory))
-            elif t_arg.is_parameterized() or t_arg.is_wildcard():
+            elif t_arg.is_compound() or t_arg.is_wildcard():
                 for k, v in t_arg.get_type_variables(factory).items():
                     type_vars[k].update(v)
             else:
                 continue
         return type_vars
+
+    def substitute_type(self, type_map, cond=lambda t: t.has_type_variables()):
+        type_args = []
+        for t_arg in self.type_args:
+            type_args.append(t_arg.substitute_type(type_map, cond))
+        new_type_map = {
+            tp: type_args[i]
+            for i, tp in enumerate(self.t_constructor.type_parameters)
+        }
+        type_con = perform_type_substitution(
+            self.t_constructor, new_type_map, cond)
+        return ParameterizedType(type_con, type_args)
 
     @property
     def can_infer_type_args(self):
@@ -695,6 +727,7 @@ class ParameterizedType(SimpleClassifier):
         return "{}<{}>".format(self.name, ", ".join([t.get_name()
                                                      for t in self.type_args]))
 
+    @two_way_subtyping
     def is_subtype(self, other: Type) -> bool:
         if super().is_subtype(other):
             return True
