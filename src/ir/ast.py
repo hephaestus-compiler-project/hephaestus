@@ -627,7 +627,7 @@ class ClassDeclaration(Declaration):
         return [
             f
             for f in self.fields
-            if f.can_override
+            if f.can_override and f.is_final
         ]
 
     def get_callable_functions(self, class_decls) -> Set[FunctionDeclaration]:
@@ -1076,6 +1076,10 @@ class LogicalExpr(BinaryOp):
         "java": [
             Operator('&&'),
             Operator('||')
+        ],
+        "scala": [
+            Operator('&&'),
+            Operator('||')
         ]
     }
 
@@ -1103,6 +1107,10 @@ class EqualityExpr(BinaryOp):
         "java": [
             Operator('=='),
             Operator('=', is_not=True)
+        ],
+        "scala": [
+            Operator('=='),
+            Operator('=', is_not=True)
         ]
     }
 
@@ -1128,6 +1136,12 @@ class ComparisonExpr(BinaryOp):
             Operator('<=')
         ],
         "java": [
+            Operator('>'),
+            Operator('>='),
+            Operator('<'),
+            Operator('<=')
+        ],
+        "scala": [
             Operator('>'),
             Operator('>='),
             Operator('<'),
@@ -1161,7 +1175,13 @@ class ArithExpr(BinaryOp):
             Operator('-'),
             Operator('/'),
             Operator('*')
-        ]
+        ],
+        "scala": [
+            Operator('+'),
+            Operator('-'),
+            Operator('/'),
+            Operator('*')
+        ],
     }
 
 
