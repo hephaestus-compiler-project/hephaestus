@@ -4,6 +4,7 @@ catch
 class
 def
 do
+either
 else
 extends
 false
@@ -11,10 +12,12 @@ final
 finally
 for
 forSome
+given
 if
 implicit
 import
 lazy
+macro
 match
 math
 new
@@ -27,6 +30,7 @@ protected
 return
 sealed
 super
+then
 this
 throw
 trait
