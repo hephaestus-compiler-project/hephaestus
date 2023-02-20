@@ -11,7 +11,6 @@ class ScalaCompiler(BaseCompiler):
 
     def __init__(self, input_name, filter_patterns=None):
         input_name = os.path.join(input_name, '*', '*.scala')
-        print(input_name)
         super().__init__(input_name, filter_patterns)
 
     @classmethod
