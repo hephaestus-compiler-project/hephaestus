@@ -186,7 +186,7 @@ class ScalaTranslator(BaseTranslator):
                 else ""
             ),
             name=node.name,
-            bound='<: ' + (
+            bound=' <: ' + (
                 self.get_type_name(node.bound)
                 if node.bound is not None
                 else sc.Any.name
@@ -416,9 +416,22 @@ class ScalaTranslator(BaseTranslator):
         for c in children:
             c.accept(self)
         children_res = self.pop_children_res(children)
-        res = "{}({} {} {})".format(
-            " " * old_ident, children_res[0], node.operator,
-            children_res[1])
+        res = "{ident}({left} {op} {right})".format(
+            ident=" " * old_ident,
+            left=(
+                children_res[0]
+                if not isinstance(node.lexpr,
+                                  (ast.FunctionReference, ast.Lambda))
+                else "({})".format(children_res[0])
+            ),
+            op=node.operator,
+            right=(
+                children_res[1]
+                if not isinstance(node.lexpr,
+                                  (ast.FunctionReference, ast.Lambda))
+                else "({})".format(children_res[1])
+            )
+        )
         self.ident = old_ident
         self._children_res.append(res)
 
@@ -537,8 +550,8 @@ class ScalaTranslator(BaseTranslator):
         self.ident = old_ident
 
         children_res = self.pop_children_res(children)
-        receiver = children_res[0] if children_res else ""
-        res = "{ident}{assign}{receiver}.{name} _".format(
+        receiver = children_res[0] + "." if children_res else ""
+        res = "{ident}{assign}{receiver}{name} _".format(
             ident=" " * self.ident,
             assign="" if not inside_block_unit_function() else "val _y = ",
             receiver=receiver,
