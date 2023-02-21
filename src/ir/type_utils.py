@@ -472,10 +472,11 @@ def _get_available_types(type_constructor,
     return available_types
 
 
-def _get_type_arg_variance(t_param, variance_choices):
+def _get_type_arg_variance(t_param, variance_choices, other_type_params):
     # import it here to prevent circular dependency
     from src.generators.config import cfg
-    if variance_choices is None:
+    in_bound = any(tpa.has_bound_of(t_param) for tpa in other_type_params)
+    if variance_choices is None or in_bound:
         return tp.Invariant
     can_variant, can_contravariant = variance_choices.get(t_param,
                                                           (True, True))
@@ -546,6 +547,7 @@ def _compute_type_variable_assignments(
     t_args = []
     type_var_map = dict(type_var_map or {})
     indexes = {}
+    t_param_len = len(type_parameters)
     for i, t_param in enumerate(type_parameters):
         indexes[t_param] = i
         t = type_var_map.get(t_param)
@@ -659,7 +661,8 @@ def _compute_type_variable_assignments(
                 cls_type, types, True, type_var_map,
                 None if variance_choices is None else {},
             )
-        variance = _get_type_arg_variance(t_param, variance_choices)
+        variance = _get_type_arg_variance(
+            t_param, variance_choices, type_parameters[i + 1: t_param_len])
         t_arg = cls_type
         if not variance.is_invariant() and not cls_type.is_wildcard():
             t_arg = tp.WildCardType(cls_type, variance)
