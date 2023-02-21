@@ -62,6 +62,13 @@ class ScalaBuiltinFactory(bt.BuiltinFactory):
     def get_nothing(self):
         return NothingType()
 
+    def get_non_nothing_types(self):
+        types = super().get_non_nothing_types()
+        types.extend([
+            SeqType()
+        ])
+        return types
+
 
 class ScalaBuiltin(tp.Builtin):
     def __str__(self):
@@ -196,6 +203,12 @@ class ArrayType(tp.TypeConstructor, AnyType):
         self.supertypes.append(AnyType())
 
 
+class SeqType(tp.TypeConstructor, AnyType):
+    def __init__(self, name="Seq"):
+        super().__init__(name, [tp.TypeParameter("T", variance=tp.Covariant)])
+        self.supertypes.append(AnyType())
+
+
 class FunctionType(tp.TypeConstructor, AnyType):
     def __init__(self, nr_type_parameters: int):
         name = "Function" + str(nr_type_parameters)
@@ -223,6 +236,7 @@ Char = CharType()
 String = StringType()
 Boolean = BooleanType()
 Array = ArrayType()
+Seq = SeqType()
 
 NonNothingTypes = [Any, Number, Integer, Short, Long, Byte, Float,
-                   Double, Char, String, Boolean, Array]
+                   Double, Char, String, Boolean, Array, Seq]
