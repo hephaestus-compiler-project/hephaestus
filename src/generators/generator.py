@@ -380,7 +380,7 @@ class Generator():
         is_final = ut.random.bool() and class_type == \
             ast.ClassDeclaration.REGULAR
         type_params = type_params or self.gen_type_params(
-            with_variance=self.language == 'kotlin')
+            with_variance=self.language in ['kotlin', 'scala'])
         cls = ast.ClassDeclaration(
             class_name,
             class_type=class_type,
@@ -1534,7 +1534,7 @@ class Generator():
                 arg = self.generate_expr(expr_type, only_leaves,
                                          gen_bottom=gen_bottom)
                 if param.default:
-                    if self.language == 'kotlin' and ut.random.bool():
+                    if self.language in ['kotlin', 'scala'] and ut.random.bool():
                         # Randomly skip some default arguments.
                         args.append(ast.CallArgument(arg, name=param.name))
                 else:
@@ -2240,9 +2240,12 @@ class Generator():
             # as specialized arrays.
             t_constructor = getattr(param.get_type(), 't_constructor', None)
             return isinstance(t_constructor, kt.SpecializedArrayType)
-        # A vararg is actually a syntactic sugar for a parameter whose type
-        # is an array of something.
-        return param.get_type().name == 'Array'
+        elif self.language == "scala":
+            return param.get_type().name == "Seq"
+        else:
+            # A vararg is actually a syntactic sugar for a parameter whose type
+            # is an array of something.
+            return param.get_type().name == 'Array'
 
     def _gen_func_body(self, ret_type: tp.Type):
         """Generate the body of a function or a lambda.
@@ -2881,7 +2884,7 @@ class Generator():
 
         if isinstance(etype, tp.TypeParameter):
             type_params = self.gen_type_params(
-                count=1, with_variance=self.language == 'kotlin')
+                count=1, with_variance=self.language in ['kotlin', 'scala'])
             type_params[0].bound = etype.get_bound_rec(self.bt_factory)
             type_params[0].variance = tp.Invariant
             return type_params, {etype: type_params[0]}, True
@@ -2890,7 +2893,7 @@ class Generator():
         assert isinstance(etype, (tp.ParameterizedType, tp.WildCardType))
         type_vars = etype.get_type_variables(self.bt_factory)
         type_params = self.gen_type_params(
-            len(type_vars), with_variance=self.language == 'kotlin')
+            len(type_vars), with_variance=self.language in ['kotlin', 'scala'])
         type_var_map = {}
         available_type_params = list(type_params)
         can_wildcard = True
