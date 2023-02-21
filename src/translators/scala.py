@@ -427,7 +427,7 @@ class ScalaTranslator(BaseTranslator):
             op=node.operator,
             right=(
                 children_res[1]
-                if not isinstance(node.lexpr,
+                if not isinstance(node.rexpr,
                                   (ast.FunctionReference, ast.Lambda))
                 else "({})".format(children_res[1])
             )
