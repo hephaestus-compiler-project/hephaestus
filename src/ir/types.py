@@ -255,6 +255,16 @@ class TypeParameter(AbstractType):
     def is_type_var(self):
         return True
 
+    def has_bound_of(self, other: Type) -> bool:
+        if not self.bound:
+            return False
+        bound = self.bound
+        if bound == other:
+            return True
+        if hasattr(bound, "get_type_variables"):
+            return other in bound.get_type_variables(None)
+        return False
+
     def get_bound_rec(self, factory):
         """
         This function recursively gets the bound of the type parameter.

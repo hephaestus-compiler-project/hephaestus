@@ -2,6 +2,20 @@ from src.ir import types as tp, kotlin_types as kt, java_types as jt, \
         groovy_types as gt
 
 
+def test_type_parameter_has_bound_of():
+    type_param1 = tp.TypeParameter("T1")
+    type_param2 = tp.TypeParameter("T2")
+    type_param3 = tp.TypeParameter("T3", bound=type_param1)
+    type_param4 = tp.TypeParameter("T4", bound=kt.String)
+    type_param5 = tp.TypeParameter("T5", bound=tp.TypeConstructor(
+        "F", [type_param2]).new([type_param1]))
+
+    assert not type_param2.has_bound_of(type_param1)
+    assert type_param3.has_bound_of(type_param1)
+    assert not type_param4.has_bound_of(type_param1)
+    assert type_param5.has_bound_of(type_param1)
+
+
 def test_parameterized_supertypes_simple():
     foo_tparam = tp.TypeParameter("T")
     foo_con = tp.TypeConstructor("Foo", [foo_tparam], [])
