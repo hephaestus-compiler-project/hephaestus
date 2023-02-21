@@ -1004,9 +1004,11 @@ def node_in_expr(node, expr):
 
 
 def is_builtin(t, builtin_factory):
-    return isinstance(t, tp.Builtin) or (
-        t.name == builtin_factory.get_array_type().name
-    )
+    t_constructor = getattr(t, "t_constructor", None)
+    if t_constructor is None:
+        return isinstance(t, tp.Builtin)
+    else:
+        return isinstance(t_constructor, tp.Builtin)
 
 
 def _update_type_var_map(type_var_map, key, value):
