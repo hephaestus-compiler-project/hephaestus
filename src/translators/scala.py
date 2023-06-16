@@ -1,4 +1,4 @@
-from src.ir import ast, scala_types as sc, types as tp, type_utils as tu
+from src.ir import ast, scala_types as sc, types as tp
 from src.translators.base import BaseTranslator
 
 
@@ -324,11 +324,17 @@ class ScalaTranslator(BaseTranslator):
 
         param_res = [children_res[i] for i, _ in enumerate(node.params)]
         body_res = children_res[-1] if node.body else ''
+        ret_type_str = (
+            ": " + self.get_type_name(node.ret_type)
+            if node.ret_type
+            else ""
+        )
 
         # use the lambda syntax: { params -> stmt }
-        res = "({params}) => {body}".format(
+        res = "({params}) => {body}{ret}".format(
             params=", ".join(param_res),
-            body=body_res
+            body=body_res,
+            ret=ret_type_str
         )
         self.is_unit = prev_is_unit
         self.is_lambda = prev_is_lambda
@@ -385,9 +391,20 @@ class ScalaTranslator(BaseTranslator):
     @append_to
     def visit_array_expr(self, node):
         if not node.length:
-            self._children_res.append("{}Array[{}]()".format(
-                " " * self.ident,
-                self.get_type_name(node.array_type.type_args[0])))
+            if node.array_type.type_args[0].has_type_variables():
+                self._children_res.append(
+                    "{}Array[Any]().asInstanceOf[Array[{}]]".format(
+                        " " * self.ident,
+                        self.get_type_name(node.array_type.type_args[0])
+                    )
+                )
+            else:
+                self._children_res.append(
+                    "{}Array[{}]()".format(
+                        " " * self.ident,
+                        self.get_type_name(node.array_type.type_args[0])
+                    )
+                )
             return
         old_ident = self.ident
         self.ident = 0
@@ -399,10 +416,15 @@ class ScalaTranslator(BaseTranslator):
 
         template = "{ident}Array[{type_arg}]({values})"
         t_arg = self.get_type_name(node.array_type.type_args[0])
-        return self._children_res.append(template.format(
-            ident=" " * self.ident,
-            type_arg=t_arg,
-            values=", ".join(children_res)))
+        if node.array_type.type_args[0].is_type_var():
+            t_arg = "Any"
+        array_expr = template.format(ident=" " * self.ident,
+                                     type_arg=t_arg,
+                                     values=", ".join(children_res))
+        if node.array_type.type_args[0].is_type_var():
+            array_expr += ".asInstanceOf[Array[{}]]".format(
+                self.get_type_name(node.array_type.type_args[0]))
+        self._children_res.append(array_expr)
 
     @append_to
     def visit_variable(self, node):
@@ -439,19 +461,7 @@ class ScalaTranslator(BaseTranslator):
         self.visit_binary_op(node)
 
     def visit_equality_expr(self, node):
-        prev = self._cast_integers
-        # When we encounter equality epxressions,
-        # we need to explicitly cast integer literals.
-        # Kotlin does not permit operations like the following
-        # val d: Short = 1
-        # d == 2
-        #
-        # As a workaround, we can do
-        # d == 2.toShort()
-        # XXX
-        # self._cast_integers = True
         self.visit_binary_op(node)
-        self._cast_integers = prev
 
     def visit_comparison_expr(self, node):
         self.visit_binary_op(node)
@@ -505,11 +515,11 @@ class ScalaTranslator(BaseTranslator):
                 ident=" " * self.ident))
         # Remove type arguments from Parameterized Type
         elif getattr(node.class_type, 'can_infer_type_args', None) is True:
-            self._children_res.append("{prefix}({values})".format(
+            self._children_res.append("new {prefix}({values})".format(
                 prefix=" " * self.ident + node.class_type.name,
                 values=", ".join(children_res)))
         else:
-            self._children_res.append("{prefix}({values})".format(
+            self._children_res.append("new {prefix}({values})".format(
                 prefix=" " * self.ident + self.get_type_name(node.class_type),
                 values=", ".join(children_res)))
 
@@ -522,12 +532,15 @@ class ScalaTranslator(BaseTranslator):
             c.accept(self)
         children_res = self.pop_children_res(children)
         self.ident = old_ident
-        receiver_expr = (
-            '({})'.format(children_res[0])
-            if isinstance(node.expr, ast.BottomConstant)
-            else children_res[0]
-        )
-        res = "{}{}.{}".format(" " * self.ident, receiver_expr, node.field)
+        if children:
+            receiver_expr = (
+                '({}).'.format(children_res[0])
+                if isinstance(node.expr, ast.BottomConstant)
+                else children_res[0] + "."
+            )
+        else:
+            receiver_expr = ""
+        res = "{}{}{}".format(" " * self.ident, receiver_expr, node.field)
         self._children_res.append(res)
 
     @append_to
@@ -551,6 +564,7 @@ class ScalaTranslator(BaseTranslator):
 
         children_res = self.pop_children_res(children)
         receiver = children_res[0] + "." if children_res else ""
+        # We reference a method that takes at least one parameter
         res = "{ident}{assign}{receiver}{name} _".format(
             ident=" " * self.ident,
             assign="" if not inside_block_unit_function() else "val _y = ",
@@ -574,26 +588,30 @@ class ScalaTranslator(BaseTranslator):
             if not node.can_infer_type_args and node.type_args
             else ""
         )
+        segs = node.func.rsplit(".", 1)
         if node.receiver:
             receiver_expr = (
                 '({})'.format(children_res[0])
                 if isinstance(node.receiver, ast.BottomConstant)
                 else children_res[0]
             )
-            res = "{ident}{rec}.{name}{type_args}({args})".format(
-                ident=" " * self.ident,
-                rec=receiver_expr,
-                name=node.func,
-                type_args=type_args,
-                args=", ".join(children_res[1:])
-            )
+            func = node.func
+            args = children_res[1:]
+            receiver_expr += "."
         else:
-            res = "{ident}{name}{type_args}({args})".format(
-                ident=" " * self.ident,
-                name=node.func,
-                type_args=type_args,
-                args=", ".join(children_res)
+            receiver_expr, func = (
+                ("", node.func)
+                if len(segs) == 1
+                else (segs[0], segs[1])
             )
+            args = children_res
+        res = "{ident}{rec}`{name}`{type_args}({args})".format(
+            ident=" " * self.ident,
+            rec=receiver_expr,
+            name=func,
+            type_args=type_args,
+            args=", ".join(args)
+        )
         self._children_res.append(res)
 
     @append_to
