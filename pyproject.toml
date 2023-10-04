@@ -26,6 +26,23 @@ dependencies = [
     "networkx",
 ]
 
+[tool.setuptools]
+packages = [
+  "src",
+  "src.analysis",
+  "src.compilers",
+  "src.generators",
+  "src.ir",
+  "src.modules",
+  "src.transformations",
+  "src.translators",
+]
+py-modules = ["hephaestus"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+src = ["resources/*"]
+
 [project.scripts]
 hephaestus = "hephaestus:main"
 
