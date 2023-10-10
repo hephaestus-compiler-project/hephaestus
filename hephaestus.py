@@ -58,6 +58,7 @@ STATS = {
         "failed": 0
     },
     "time": 0,
+    "compilation_time": 0,
     "faults": {}
 }
 TEMPLATE_MSG = (u"Test Programs Passed {} / {} \u2714\t\t"
@@ -191,11 +192,13 @@ def stop_condition(iteration, time_passed):
 
 
 def update_stats(res, batch, batch_time):
+    res, compilation_time = res
     failed = len(res)
     passed = batch - failed
     STATS['totals']['failed'] += failed
     STATS['totals']['passed'] += passed
     STATS["time"] += batch_time
+    STATS["compilation_time"] += compilation_time
     STATS['faults'].update(res)
     if not cli_args.debug:
         print_msg()
@@ -384,8 +387,10 @@ def check_oracle(dirname, oracles):
     filter_patterns = utils.path2set(cli_args.error_filter_patterns)
     compiler = COMPILERS[cli_args.language](filename, filter_patterns)
     command_args = compiler.get_compiler_cmd()
+    start_time = time.time()
     # At this point, we run the compiler
     _, err = run_command(command_args)
+    compilation_time = time.time() - start_time
     # TODO In case there is an error in the compiler output and none of the
     # programs match with regex to that error, it means that something bad
     # happened. For example, heap space error. In that case, we should log a
@@ -407,7 +412,7 @@ def check_oracle(dirname, oracles):
                     os.path.join(cli_args.test_directory, str(pid)))
                 proc_res.stats['error'] = compiler.crash_msg
                 output[pid] = proc_res.stats
-        return output
+        return output, compilation_time
 
     output = {}
     for pid, proc_res in oracles.items():
@@ -454,18 +459,18 @@ def check_oracle(dirname, oracles):
                                    str(pid)))
     # Clear the directory of programs.
     shutil.rmtree(dirname)
-    return output
+    return output, compilation_time
 
 
 def check_oracle_mul(dirname, oracles):
     global STOP_COND
     if STOP_COND:
-        return {}
+        return {}, 0
     try:
         return check_oracle(dirname, oracles)
     except KeyboardInterrupt:
         STOP_COND = True
-        return {}
+        return {}, 0
     except Exception as exc:
         if cli_args.print_stacktrace:
             err = str(traceback.format_exc())
@@ -473,7 +478,7 @@ def check_oracle_mul(dirname, oracles):
             err = str(exc)
         print('Internal error while checking the oracle')
         print(err)
-        return {}
+        return {}, 0
 
 
 def _run(process_program, process_res):
@@ -514,7 +519,7 @@ def run():
 
         batch_time = functools.reduce(lambda acc, x: acc + x.stats["time"],
                                       res, 0)
-        res = {} if cli_args.dry_run else check_oracle(testdir, oracles)
+        res = ({}, 0) if cli_args.dry_run else check_oracle(testdir, oracles)
         update_stats(res, batch, batch_time)
 
     try:
