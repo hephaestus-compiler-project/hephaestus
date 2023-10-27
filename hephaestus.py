@@ -376,7 +376,7 @@ def check_oracle(dirname, oracles):
     It gets a dict of oracles, and a directory that includes a batch of
     program.
 
-    It first invokes the compiler to compile all the pograms included in the
+    It first invokes the compiler to compile all the programs included in the
     given directory. Then, based on the given oracles, it decides whether
     the compiler produced the expected output for every program.
 

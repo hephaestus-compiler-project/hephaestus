@@ -200,7 +200,7 @@ class UseAnalysis(DefaultVisitor):
             if isinstance(arg, ast.FunctionCall):
                 # The argument is a function call. So depending on the callee
                 # function, we might add an edge from the callee's function
-                # return node ot the corresponding function's parameter.
+                # return node to the corresponding function's parameter.
                 self._flow_ret_to_callee(arg, param_node)
                 # The ret variable of this function should not point to None.
                 prev = self.add_none_to_call
@@ -220,7 +220,7 @@ class UseAnalysis(DefaultVisitor):
             # return expression of the current function, then we add an edge
             # from the callee's ret node to NONE.
             # For example:
-            # * return if (cond) calee(x) else y =>
+            # * return if (cond) callee(x) else y =>
             #       We add the edge callee_ret -> NONE
             # * return callee(x) => We don't add any edge.
             namespace, fun_decl = fun_nsdecl

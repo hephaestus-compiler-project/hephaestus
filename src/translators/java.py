@@ -1065,7 +1065,7 @@ class JavaTranslator(BaseTranslator):
         else:
             # Global function
             receiver = ""
-            # Use `this` if its a method within current class
+            # Use `this` if it's a method within current class
             parent_cls = self.context.get_parent_class(self._namespace)
             if parent_cls:
                 class_decls = self.context.get_classes(
@@ -1073,7 +1073,7 @@ class JavaTranslator(BaseTranslator):
                 parent_methods = parent_cls.get_callable_functions(class_decls)
                 if node.func in {m.name for m in parent_methods}:
                     receiver = "this"
-            # Do not use a receiver if its a variable (lambda case)
+            # Do not use a receiver if it's a variable (lambda case)
             decl = get_decl(self.context, self._namespace, node.func)
             if decl:
                 namespace, decl = decl

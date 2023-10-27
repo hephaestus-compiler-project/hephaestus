@@ -499,7 +499,7 @@ def test_program14():
 
 def test_program15():
     # class A<T1, T2: T1>(val x: T1)
-    # val x: A<Number, Intgeger> = new A<Number, Integer>(1)
+    # val x: A<Number, Integer> = new A<Number, Integer>(1)
     program = tap.program15
     a = tda.TypeDependencyAnalysis(program)
     a.visit(program)

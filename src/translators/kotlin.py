@@ -476,7 +476,7 @@ class KotlinTranslator(BaseTranslator):
 
     def visit_equality_expr(self, node):
         prev = self._cast_integers
-        # When we encounter equality epxressions,
+        # When we encounter equality expressions,
         # we need to explicitly cast integer literals.
         # Kotlin does not permit operations like the following
         # val d: Short = 1

@@ -138,7 +138,7 @@ parser.add_argument(
     "--cast-numbers",
     action="store_true",
     help=("Cast numeric constants to their actual type"
-          " (this option is used to avoid re-occrrence of"
+          " (this option is used to avoid re-occurrence of"
           " a specific Groovy bug)")
 )
 parser.add_argument(
@@ -213,7 +213,7 @@ def validate_args(args):
         sys.exit("Error: --name {} already exists".format(args.name))
 
     if args.transformation_schedule and args.transformations:
-        sys.exit("Options --transformation-schedule and --transfromations"
+        sys.exit("Options --transformation-schedule and --transformations"
                  " are mutually exclusive. You can't use both.")
 
     if not args.transformation_schedule and args.transformations is None:

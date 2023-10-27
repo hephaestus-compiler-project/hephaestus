@@ -72,7 +72,7 @@ def _replace_type_argument(base_targ: tp.Type, bound: tp.Type, types,
     type_var_map = unify_types(bound, supertype, None)
     if not type_var_map:
         return None
-    # If unification succeeds, we try to instantiate the type contructor
+    # If unification succeeds, we try to instantiate the type constructor
     # of `base_targ` with the proper type arguments so that the returned
     # type is a subtype of `bound`.
     type_args = []
@@ -98,7 +98,7 @@ def _find_candidate_type_args(t_param: tp.TypeParameter,
 
     if bound and bound.is_parameterized():
         # If bound is `parameterized`, we seek for another type argument that
-        # is subtype of the the `new` bound.
+        # is subtype of the `new` bound.
         base_targ = _replace_type_argument(base_targ, bound, types,
                                            t_param.bound.has_type_variables())
     # If `base_targ` is None, this means that
@@ -174,7 +174,7 @@ def _construct_related_types(etype: tp.ParameterizedType, types, get_subtypes,
             if is_type_var and not is_same_type_var:
                 # OK, if T2 is invariant, then the possible types that T1
                 # can have is etype.type_args[i].
-                # This prevents us from situtations like the following.
+                # This prevents us from situations like the following.
                 # A<out T1, T2: T1>
                 # A<Double, Double> is not subtype of A<Number, Number>.
                 type_var_map[t_param.bound] = base_targ
@@ -339,7 +339,7 @@ def find_irrelevant_type(etype: tp.Type, types: List[tp.Type],
         return None
     t = utils.random.choice(available_types)
     if t.is_type_constructor():
-        # Must instantiate the given type constrcutor. Also pass the map of
+        # Must instantiate the given type constructor. Also pass the map of
         # type arguments in order to pass type arguments that are irrelevant
         # with any parameterized type created by this type constructor.
         type_list = [t for t in types if t != etype]

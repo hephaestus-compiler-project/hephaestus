@@ -105,7 +105,7 @@ optional arguments:
   -P, --only-correctness-preserving-transformations
                         Use only correctness-preserving transformations
   --timeout TIMEOUT     Timeout for transformations (in seconds)
-  --cast-numbers        Cast numeric constants to their actual type (this option is used to avoid re-occrrence of a specific Groovy bug)
+  --cast-numbers        Cast numeric constants to their actual type (this option is used to avoid re-occurrence of a specific Groovy bug)
   --disable-use-site-variance
                         Disable use-site variance
   --disable-contravariance-use-site
@@ -257,7 +257,7 @@ you need to implement the following:
 
 * A translator that converts a program written in Hephaestus'
 IR into a program written in the target language.
-To to so, you have to extend the
+To do so, you have to extend the
 [src.translators.base.BaseTranslator](https://github.com/hephaestus-compiler-project/hephaestus/blob/main/src/translators/base.py)
 class.
 
