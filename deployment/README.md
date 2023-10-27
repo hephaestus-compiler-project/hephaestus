@@ -21,6 +21,6 @@ SHELL=/bin/bash
 0 0 1-31/2 * * /root/bin/run.sh -k # or -s or -a
 # to check the logs you can run
 journalctl -u cron
-# to ge tthe output of cron runs
+# to get the output of cron runs
 cat /var/mail/root
 ```

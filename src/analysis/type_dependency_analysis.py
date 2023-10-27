@@ -190,7 +190,7 @@ def _handle_type_inst_call_node(type_graph, node):
 
 def is_combination_feasible(type_graph, combination):
     # Step 1: Remove all required edges from the graph. These edge removals
-    # represent the type infromation that is omitted from the program.
+    # represent the type information that is omitted from the program.
     for node in combination:
         assert node in type_graph, (
             "Node {} was not found in type graph".format(node))
@@ -322,7 +322,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
         2) The given type is parameterized but the inferred node is not
            a type constructor instantiation. In this case, again, we simply
            construct a TypeNode containing the given type.
-        3) Othewrise, we construct a TypeConstructorInstantiationDeclNode
+        3) Otherwise, we construct a TypeConstructorInstantiationDeclNode
            and connect it with the type parameters of the type constructor.
         """
         if not t.is_parameterized():
@@ -947,7 +947,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
 
     def _infer_type_variables_by_call_arguments(self, node_id, type_var_nodes,
                                                 inferred_fields):
-        # Add this point, we furher examine the arguments of a call to
+        # Add this point, we further examine the arguments of a call to
         # see if any of its type variables can be inferred by the arguments
         # passed in the invocation, i.e., A<String>(x)
         for f, f_type in inferred_fields:
@@ -976,7 +976,7 @@ class TypeDependencyAnalysis(DefaultVisitor):
     def _handle_type_constructor_instantiation(self, node,
                                                parent_node_id):
         # If we initialize a type constructor, then create a node for
-        # representing the type constructor instantiatiation (at use-site).
+        # representing the type constructor instantiation (at use-site).
         main_node = TypeConstructorInstantiationCallNode(
             parent_node_id, node.class_type, node)
         self._inferred_nodes[parent_node_id].append(main_node)

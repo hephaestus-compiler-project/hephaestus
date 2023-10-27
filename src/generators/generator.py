@@ -74,11 +74,11 @@ class Generator():
         self.declaration_namespace = None
         self.int_stream = iter(range(1, 10000))
         self._in_super_call = False
-        # We use this data strcuture to store blacklisted classes, i.e.,
+        # We use this data structure to store blacklisted classes, i.e.,
         # classes that are incomplete (we do not have the information regarding
         # their fields and functions yet). So, we avoid instantiating these
         # classes or using them as supertypes, because we do not have the
-        # complete informations about them.
+        # complete information about them.
         self._blacklisted_classes: set = set()
 
     ### Entry Point Generators ###
@@ -732,12 +732,12 @@ class Generator():
         blacklist = func_type_vars + curr_type_vars + list(type_var_map.keys())
         new_type_params = []
         for t_param in func.type_parameters:
-            # Here, we substitute the bound of an overriden parameterized
+            # Here, we substitute the bound of an overridden parameterized
             # function based on the type arguments of the superclass.
             new_type_param = deepcopy(t_param)
             if t_param.name in curr_type_vars:
                 # The child class contains a type variable that has the
-                # same name with a type variable of the overriden function.
+                # same name with a type variable of the overridden function.
                 # So we change the name of the function's type variable to
                 # avoid the conflict.
                 new_name = ut.random.caps(blacklist=blacklist)
@@ -874,7 +874,7 @@ class Generator():
         generators = self.get_generators(expr_type, only_leaves, subtype,
                                          exclude_var, sam_coercion=sam_coercion)
         expr = ut.random.choice(generators)(expr_type)
-        # Make a probablistic choice, and assign the generated expr
+        # Make a probabilistic choice, and assign the generated expr
         # into a variable, and return that variable reference.
         gen_var = (
             not only_leaves and
@@ -902,7 +902,7 @@ class Generator():
             subtype: The type of the generated expression could be a subtype
                 of `expr_type`.
         """
-        # Get all all non-final variables for performing the assignment.
+        # Get all non-final variables for performing the assignment.
         variables = self._get_assignable_vars()
         initial_depth = self.depth
         self.depth += 1
@@ -1256,7 +1256,7 @@ class Generator():
         self.depth = initial_depth
 
         # Note that this an approximation of the type of the whole conditional.
-        # To properly estimate the type of conditional, we need to implememnt
+        # To properly estimate the type of conditional, we need to implement
         # the LUB algorithm.
         # Note the type passed in conditional may be imprecise in the following
         # scenario:

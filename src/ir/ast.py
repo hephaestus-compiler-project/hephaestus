@@ -678,7 +678,7 @@ class ClassDeclaration(Declaration):
 
     def get_all_fields(self, class_decls) -> Set[FieldDeclaration]:
         """
-        All fields (including the inheritted ones) that can be accessed by
+        All fields (including the inherited ones) that can be accessed by
         instantiations of this class.
         """
         fields = set(self.fields)
