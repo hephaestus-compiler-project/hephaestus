@@ -7,7 +7,7 @@ from src.compilers.base import BaseCompiler
 class ScalaCompiler(BaseCompiler):
     ERROR_REGEX = re.compile(
         r"-- .*Error: (.*\.scala):\d+:\d+ -+\n((?:[^-]+))", re.MULTILINE)
-    CRASH_REGEX = re.compile(r"Exception in thread(.*)")
+    CRASH_REGEX = re.compile(r".*at dotty(.*)")
 
     def __init__(self, input_name, filter_patterns=None):
         input_name = os.path.join(input_name, '*', '*.scala')
