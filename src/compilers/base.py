@@ -25,6 +25,10 @@ class BaseCompiler():
         raise NotImplementedError('get_error_msg() must be implemented')
 
     def analyze_compiler_output(self, output):
+        crash_match = re.search(self.CRASH_REGEX, output)
+        if crash_match:
+            self.crash_msg = output
+            return None, []
         failed = defaultdict(list)
         filtered_output = output
         for p in self.filter_patterns:
@@ -34,9 +38,4 @@ class BaseCompiler():
             filename = self.get_filename(match)
             error_msg = self.get_error_msg(match)
             failed[filename].append(error_msg)
-
-        crash_match = re.search(self.CRASH_REGEX, output)
-        if crash_match and not matches:
-            self.crash_msg = output
-            return None, matches
         return failed, matches
