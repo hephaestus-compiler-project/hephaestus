@@ -559,7 +559,7 @@ def run_parallel():
             for i, r in enumerate(results):
                 oracles[start_index + i] = r
             if cli_args.dry_run:
-                return update({})
+                return update(({}, 2))
             pool.apply_async(check_oracle_mul, args=(testdir, oracles),
                              callback=update)
         except KeyboardInterrupt:
