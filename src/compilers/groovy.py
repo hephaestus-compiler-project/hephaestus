@@ -8,7 +8,7 @@ class GroovyCompiler(BaseCompiler):
     # Match (example.groovy):(error message until empty line)
     ERROR_REGEX = re.compile(r'([a-zA-Z0-9\\/_]+.groovy):([\s\S]*?(?=\n{2,}))')
 
-    CRASH_REGEX = re.compile(r'(.*[eE]xception)(.*)')
+    CRASH_REGEX = re.compile(r'(at org.codehaus.groovy)(.*)')
 
     STACKOVERFLOW_REGEX = re.compile(r'(.*java.lang.StackOverflowError)(.*)')
 
@@ -18,10 +18,10 @@ class GroovyCompiler(BaseCompiler):
 
     @classmethod
     def get_compiler_version(cls):
-        return ['groovyc', '-version']
+        return ['groovyc-l', '-version']
 
     def get_compiler_cmd(self):
-        return ['groovyc', '--compile-static', self.input_name]
+        return ['groovyc-l', '--compile-static', self.input_name]
 
     def get_filename(self, match):
         return match[0]
