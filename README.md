@@ -6,7 +6,7 @@ in compilers. This is done by a combination of
 program generation and transformation-based compiler testing.
 
 Currently, Hephaestus has been used to test the type checkers of
-three popular programming languages: Java, Kotlin, and Groovy.
+three popular programming languages: Java, Kotlin, Scala, and Groovy.
 
 
 ## Program Generation
